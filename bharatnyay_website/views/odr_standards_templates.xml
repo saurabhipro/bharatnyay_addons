@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_odr_standards" name="ODR standards and ethics">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Education · Governance</p>
+                            <h1><span class="text-orange">Standards</span> safeguarding ODR legitimacy</h1>
+                            <p class="mx-lg-0">Legitimacy stems from neutrality, impartiality, data minimisation, informed consent about recording, multilingual fairness, grievance escalation for unethical neutrals —
+                                BharatNyay’s controls echo ICODR &amp; NCTDR-aligned guidance distilled for deployments on regulated balance sheets.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <div class="row gy-5">
+                                <div class="col-md-6">
+                                    <h2>Operational safeguards</h2>
+                                    <ul>
+                                        <li>Segregation of duties across recovery desks / legal / neutrals.</li>
+                                        <li>Immutable chatter + downloadable audit packs for supervisory examination.</li>
+                                        <li>Least-privilege access to personally identifiable borrower data.</li>
+                                        <li>Vendor due diligence artefacts for outsourced transcription / hosting.</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h2>Neutral-facing ethics cues</h2>
+                                    <ul>
+                                        <li>Conflict disclosures before appointment acceptance.</li>
+                                        <li>Fee transparency &amp; pass-through disbursement logs.</li>
+                                        <li>Record retention aligned with Evidence Act adaptations for e-records.</li>
+                                        <li>No ex-parte caucus bleed into tribunal deliberations improperly.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <hr class="my-5 opacity-25"/>
+
+                            <h2 class="h4 fw-bold mb-3">Protocols &amp; procedural library</h2>
+                            <p class="text-muted">Deep dives mirroring layered standards and protocol libraries used by mature ODR platforms and institutional ADR programs.</p>
+                            <div class="row g-3 mb-5">
+                                <div class="col-md-6 col-lg-4">
+                                    <a href="/odr/procedural-rules" class="bn-standards-hub-card"><strong>Procedural rules</strong><span>Governing pleadings &amp; calendars</span></a>
+                                </div>
+                                <div class="col-md-6 col-lg-4">
+                                    <a href="/odr/standards/code-of-ethics" class="bn-standards-hub-card"><strong>Code of ethics — neutrals</strong><span>Impartiality &amp; fees</span></a>
+                                </div>
+                                <div class="col-md-6 col-lg-4">
+                                    <a href="/odr/standards/hearing-protocol" class="bn-standards-hub-card"><strong>Hearing &amp; submissions</strong><span>Written rounds → virtual hearing</span></a>
+                                </div>
+                                <div class="col-md-6 col-lg-4">
+                                    <a href="/odr/standards/neutral-appointment" class="bn-standards-hub-card"><strong>Neutral appointment</strong><span>Vetting &amp; challenges</span></a>
+                                </div>
+                                <div class="col-md-6 col-lg-4">
+                                    <a href="/odr/standards/empanelment" class="bn-standards-hub-card"><strong>Empanelment rules</strong><span>Panel governance</span></a>
+                                </div>
+                                <div class="col-md-6 col-lg-4">
+                                    <a href="/odr/standards/video-conferencing" class="bn-standards-hub-card"><strong>Video conferencing</strong><span>Remote integrity</span></a>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-4">Operationalise these safeguards through configuration sessions — BharatNyay’s deployment team aligns each control with issuer policy manuals.</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="/features" class="btn btn-primary rounded-pill">How we encode safeguards</a>
+                                <a href="/contactus" class="btn bn-cta-orange rounded-pill text-white border-0">Contact compliance desk</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

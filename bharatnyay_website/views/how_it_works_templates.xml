@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_how_it_works" name="How it works detailed">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero bn-hero-split text-lg-start">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Operating model</p>
+                            <h1>BharatNyay <span class="text-orange">throughput</span> vs classic ODR steps</h1>
+                            <p class="mx-lg-0">We translate adjudicatory stages into SLA-aware software tasks — so recovery teams, borrower advocates, neutrals share one clock.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <ol class="bn-step-list mb-5">
+                                <li><strong>Pre-filing reconciliation:</strong> balance confirmations, amortisation artefacts, grievance tagging per RBI escalation norms.</li>
+                                <li><strong>Notice discipline:</strong> statutory / contractual notices templated &amp; timestamped prior to arbitrator engagement.</li>
+                                <li><strong>Neutral directory:</strong> empanel arbitrators mediators pulled from segregated credential lists incl. conflict questionnaires.</li>
+                                <li><strong>Evidence exchange:</strong> bundle builders export PDF hearing binders aligning with tribunal directions.</li>
+                                <li><strong>Virtual hearing week:</strong> staggered caucus slots, interpreters, tribunal secretary minute logs optional.</li>
+                                <li><strong>Outcome artefacts:</strong> settlement deeds, interim awards placeholders, disbursement confirmations.</li>
+                                <li><strong>Post-award bookkeeping:</strong> registry filings reminders, stamping notes, supervisory attachments where applicable.</li>
+                            </ol>
+                            <div class="p-4 bg-light rounded-4 border">
+                                <strong>Why timing matters:</strong> Regulators scrutinise undue delay in borrower communications; neutral tribunals dismiss claims for lethargic prosecution — BharatNyay’s timers visualise exposure for legal ops dashboards.
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-5">
+                                <a href="/odr/proceedings" class="btn btn-primary rounded-pill">Compare doctrinal briefing</a>
+                                <a href="/features" class="btn btn-outline-primary rounded-pill">See feature mapping</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

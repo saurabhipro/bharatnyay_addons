@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_odr_proceedings" name="ODR proceedings primer">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Education · Procedures</p>
+                            <h1><span class="text-orange">ODR</span> proceeding stages you can orchestrate digitally</h1>
+                            <p class="mx-lg-0">From intake to interim relief to final outcome, disciplined case management parallels institutional rules published globally — here translated for NBFC portfolios, enterprise disputes, and court-referred ADR programs.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <div class="row gy-5">
+                                <div class="col-lg-6">
+                                    <h2>1 · Intake &amp; joinder readiness</h2>
+                                    <p>Know-your-party checks, claimant onboarding, escrow of supporting debt instruments, tagging related corporate guarantors —
+                                        BharatNyay’s vault mirrors best practice registries advocated by arbitration institutions.</p>
+                                    <h2 class="mt-4">2 · Procedural timetable</h2>
+                                    <p>Deadlines for statements of claim/defence, document production, witness lists, experts — tribunal secretariat dashboards keep defaults visible to both sides (<em>equality of arms</em> shorthand).</p>
+                                    <h2 class="mt-4">3 · Interim measures</h2>
+                                    <p>Emergency arbitrators / tribunal powers analogous to Sections 9 &amp; 17 interplay — tooling records requests, security for costs postings, conservatory attachments where applicable.</p>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h2>4 · Remote hearings etiquette</h2>
+                                    <p>Bandwidth tests, oath administration, contempt-safe recording policies, interpreters — BharatNyay’s hearing module aligns with UNCITRAL notes on procedural integrity online.</p>
+                                    <h2 class="mt-4">5 · Costs &amp; deposits</h2>
+                                    <p>Advance on costs, arbitrator fee mandates, victorious party allocations — surfaced for transparency mandated by tribunal rulesbooks.</p>
+                                    <h2 class="mt-4">6 · Settlement homologation</h2>
+                                    <p>Mediated settlements can convert into consent awards ; partial settlements bifurcate issues cleanly before final pleadings conclude.</p>
+                                </div>
+                            </div>
+                            <p class="mt-4">This lifecycle can run under online mediation, online conciliation, online negotiation, or full arbitration tracks depending on clause design and party consent.</p>
+                            <hr class="my-5 opacity-25"/>
+                            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                               
+                                <span class="text-muted small mb-2 mb-lg-0">Pair this briefing with BharatNyay’s workflow screens.</span>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/odr/model-clause" class="btn btn-primary rounded-pill">Draft clauses →</a>
+                                    <a href="/features" class="btn btn-outline-primary rounded-pill">Where software encodes timers</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

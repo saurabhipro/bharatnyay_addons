@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_cases" name="My portfolio rows">
+        <t t-call="website.layout">
+            <div id="wrap" class="container py-5 bn-portfolio-page">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h2 class="mb-2 text-white">Portfolio (imported loans)</h2>
+                        <p class="text-secondary small mb-4">Portfolio preview aligns with BharatNyay ODR dossiers tied to borrower identity — customise matching rules per deployment.</p>
+                        <div t-if="not loans" class="alert alert-info bg-opacity-25">
+                            No rows match your profile name, or the sheet has not been imported yet.
+                        </div>
+                        <table t-if="loans" class="table table-hover mb-5">
+                            <thead>
+                                <tr>
+                                    <th>Loan number</th>
+                                    <th>Customer</th>
+                                    <th>Branch</th>
+                                    <th>Financed</th>
+                                    <th>Current POS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="loans" t-as="rec">
+                                    <tr>
+                                        <td><span t-field="rec.loan_number"/></td>
+                                        <td><span t-field="rec.customer_name"/></td>
+                                        <td><span t-field="rec.branch_id"/></td>
+                                        <td><span t-field="rec.financed_amount"/></td>
+                                        <td><span t-field="rec.current_pos"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

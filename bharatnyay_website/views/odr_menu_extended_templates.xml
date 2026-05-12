@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- BharatNyay ODR tree: procedural rules + standards / protocols siblings -->
+
+    <template id="page_odr_procedural_rules" name="ODR procedural rules">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Education · Rules posture</p>
+                            <h1><span class="text-orange">Procedural</span> rules in digitised arbitration &amp; mediation</h1>
+                            <p class="mx-lg-0">Parties adopt institutional rulebooks (<em>e.g.</em>, SIAC, ICC, ICA, UNCITRAL) or bespoke charters. BharatNyay encodes timelines, pleadings uploads, arbitrator challenges, confidentiality, interim relief interplay, and tribunal secretary roles so software mirrors the rule narrative — not substitutes it.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <h2>What “procedural rules” govern on-platform activity?</h2>
+                            <ul>
+                                <li><strong>Commencement &amp; joinder:</strong> request for arbitration, claimant roster, ancillary parties, consolidating related facilities.</li>
+                                <li><strong>Seat &amp; language:</strong> defaults from your contractual clause repository; deviations recorded with tribunal leave.</li>
+                                <li><strong>Evidence &amp; discovery:</strong> document production calendars, objections, supplemental bundles before hearing weeks.</li>
+                                <li><strong>Virtual hearings etiquette:</strong> oath, recording disclosure, interpreters, caucus blackout windows.</li>
+                                <li><strong>Costs &amp; deposits:</strong> advance on arbitrator fees — surfaced for finance sign-off workflows.</li>
+                                <li><strong>Settlement homologation:</strong> mediated minutes converted to consent awards with registrar reminders.</li>
+                            </ul>
+                            <p class="text-muted small">Deploy with issuer counsel approving the governing rules text; configure BharatNyay to flag breaches of internal SLAs referencing those rules.</p>
+                            <div class="bn-odr-proto-grid mt-4">
+                                <a href="/odr/proceedings" class="bn-odr-proto-chip">Proceedings ladder</a>
+                                <a href="/odr/model-clause" class="bn-odr-proto-chip">Model clause cues</a>
+                                <a href="/odr/standards" class="bn-odr-proto-chip">Standards overview</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_odr_code_of_ethics" name="Neutrals code of ethics">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Standards · Neutrals</p>
+                            <h1><span class="text-orange">Code</span> of ethics for neutrals online</h1>
+                            <p class="mx-lg-0">Impartiality, independence, diligent preparation, avoidance of undue delay, nondisclosure obligations, equitable treatment of witnesses, and remuneration transparency underpin legitimate ODR — aligned globally with institute codes BharatNyay customers typically adopt.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <h2>Operational hooks inside BharatNyay</h2>
+                            <ul>
+                                <li>Conflict disclosure questionnaires before arbitrator acceptance clicks.</li>
+                                <li>Immutable logs separating caucus vs joint session artefacts.</li>
+                                <li>Fee schedules versioned beside appointment letters.</li>
+                                <li>Grievance escalation paths for unethical conduct surfaced to supervisory counsel.</li>
+                            </ul>
+                            <div class="bn-odr-proto-grid mt-4">
+                                <a href="/odr/standards/neutral-appointment" class="bn-odr-proto-chip">Appointment protocol</a>
+                                <a href="/odr/standards/empanelment" class="bn-odr-proto-chip">Empanelment rules</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_odr_hearing_protocol" name="Hearing and submission protocol">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Protocols · Hearings</p>
+                            <h1><span class="text-orange">Hearing</span> &amp; submission choreography</h1>
+                            <p class="mx-lg-0">Proportionate written rounds, simultaneous / sequential disclosures, tribunal-directed expert evidence, guarded cross-examination online, objections handling, interpreters, and clerking minutes — BharatNyay’s hearing module aligns with UNCITRAL’s notes on virtual integrity.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <ol class="bn-step-list">
+                                <li>Pre-hearing bundles locked with hash metadata for tamper-awareness.</li>
+                                <li>Live technical checks + bandwidth declarations stored with consent.</li>
+                                <li>Recording policy signed by representatives before gavel metaphorically drops.</li>
+                                <li>Post-hearing written submissions routed with tribunal-set deadlines.</li>
+                            </ol>
+                            <div class="bn-odr-proto-grid mt-4">
+                                <a href="/odr/standards/video-conferencing" class="bn-odr-proto-chip">Video protocol</a>
+                                <a href="/odr/proceedings" class="bn-odr-proto-chip">Proceedings overview</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_odr_neutral_appointment" name="Neutral appointment protocol">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Protocols · Constitution</p>
+                            <h1><span class="text-orange">Appointing</span> tribunal &amp; neutrals fairly</h1>
+                            <p class="mx-lg-0">Panels may be curated lists, rotational assignments, veto windows, umpire escalation, staggered confirmations — BharatNyay automates timelines and evidentiary artefacts so parties defend natural justice accusations later.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <ul>
+                                <li>Vetting credentials, speciality tags (banking, SARFAESI, MSME).</li>
+                                <li>Strike-out / shortlist rounds with SLA clocks.</li>
+                                <li>Challenge mechanics mirroring ACA 1996 practice notes.</li>
+                                <li>Substitute arbitrator flows when unavoidable conflicts ripen.</li>
+                            </ul>
+                            <div class="bn-odr-proto-grid mt-4">
+                                <a href="/odr/standards/code-of-ethics" class="bn-odr-proto-chip">Code of ethics</a>
+                                <a href="/odr/standards/empanelment" class="bn-odr-proto-chip">Empanelment</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_odr_empanelment" name="Neutral empanelment rules">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Protocols · Panels</p>
+                            <h1><span class="text-orange">BharatNyay</span> neutral empanelment playbook</h1>
+                            <p class="mx-lg-0">Institutions publish empanelment standards (education, experiential hours, mentorship, malpractice insurance expectations). BharatNyay digitises onboarding packets, KPI reviews, rotational fairness, grievance dossiers similar to institutional empanelment programs.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <p>Built around workflows common to institutional ODR registries and Indian dispute programs — customise every rubric locally for your regulatory and contractual needs.</p>
+                            <div class="bn-odr-proto-grid mt-4">
+                                <a href="/odr/standards/code-of-ethics" class="bn-odr-proto-chip">Ethics</a>
+                                <a href="/contactus" class="bn-odr-proto-chip">Join empanelment</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_odr_video_conferencing" name="Video conferencing rules">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Protocols · Remote</p>
+                            <h1><span class="text-orange">Video</span> conferencing guardrails</h1>
+                            <p class="mx-lg-0">Authentication of participants, network resilience, contingency dial-ins, courtroom dress/professional attire guidance, banning surreptitious recording, interpreter channels, breakout rooms etiquette — BharatNyay’s hearing invitations embed these mandates where issuers insist.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <ul>
+                                <li>Join links segmented by role — neutral vs party vs registrar.</li>
+                                <li>Minutes upload slot post-session with SLA for objections.</li>
+                                <li>Failover numbering when conferencing vendor degrades unexpectedly.</li>
+                            </ul>
+                            <div class="bn-odr-proto-grid mt-4">
+                                <a href="/odr/standards/hearing-protocol" class="bn-odr-proto-chip">Hearing protocol</a>
+                                <a href="/features" class="bn-odr-proto-chip">Product mapping</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

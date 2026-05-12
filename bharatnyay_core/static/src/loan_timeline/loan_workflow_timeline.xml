@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bharatnyay_core.WorkflowTimelineField">
+        <div class="bn-loan-stage-timeline w-100" t-att-class="props.readonly ? 'o_readonly_modifier' : ''">
+            <div class="bn-loan-stage-head">
+                <strong>Case workflow</strong>
+                <span><t t-esc="currentIndex() + 1"/>/<t t-esc="steps.length"/> done</span>
+            </div>
+            <div class="bn-loan-stage-rail" role="list" aria-label="Workflow timeline">
+                <t t-foreach="steps" t-as="step" t-key="step.key">
+                    <button
+                        type="button"
+                        t-att-class="nodeClass(step_index)"
+                        t-att-title="step.label"
+                        t-att-disabled="props.readonly"
+                        t-att-tabindex="props.readonly ? -1 : 0"
+                        t-on-click="() => this.onPick(step)"
+                        t-on-keydown="(ev) => this.keyboardNav(ev, step)"
+                        role="listitem"
+                    >
+                        <span class="bn-stage-dot"><i class="fa fa-check"/></span>
+                        <span class="bn-stage-title"><t t-esc="step.label"/></span>
+                        <span t-att-class="stageStatusClass(step_index)"><t t-esc="stageStatusLabel(step_index)"/></span>
+                        <span class="bn-stage-section"><t t-esc="step.section"/></span>
+                    </button>
+                    <span t-if="step_index &lt; steps.length - 1" t-att-class="connectorClass(step_index)"/>
+                </t>
+            </div>
+            <div class="bn-loan-stage-current">
+                Current step: <strong t-esc="currentPhaseLabel()"/>
+            </div>
+        </div>
+    </t>
+</templates>

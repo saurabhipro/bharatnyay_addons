@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="homepage" name="BharatNyay Homepage" inherit_id="website.homepage">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="oe_structure bn-landing-root">
+                <t t-set="bn_nav_inner" t-value="False"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+
+                <section class="bn-hero">
+                    <div class="container position-relative">
+                        <div class="bn-chip"><i class="fa fa-star me-1 text-warning"/> India’s AI-assisted ODR dispute stack</div>
+                        <h1>BharatNyay</h1>
+                        <div class="bn-tagline-lg">Click Karo! Resolve Karo!</div>
+                        <p class="bn-hero-copy">Fast, fair routes for loan and portfolio disputes built on proven <abbr title="Online Dispute Resolution" class="border-0 text-decoration-none"><strong class="text-white">ODR</strong></abbr> ideas:
+                            structured <strong class="text-white">negotiation</strong>, neutral-led <strong class="text-white">mediation</strong>,
+                            <strong class="text-white">conciliation</strong>, and <strong class="text-white">arbitration</strong> under the Arbitration &amp; Conciliation Act, 1996 — online, secure, and audit-aware.
+                            BharatNyay supports individuals, enterprises, and institutions with legally aligned digital dispute workflows.</p>
+                        <div class="bn-hero-buttons">
+                            <a href="/contactus" class="btn bn-btn-orange">Government →</a>
+                            <a href="/contactus" class="btn bn-btn-outline-light border-0">Corporate →</a>
+                        </div>
+                        <div class="bn-trust-pills">
+                            <span><i class="fa fa-gavel me-2"/> Arb. &amp; Conciliation Act 1996</span>
+                            <span><i class="fa fa-shield me-2"/> Party autonomy + neutral safeguards</span>
+                            <span><i class="fa fa-lock me-2"/> Signed-in workspace</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bn-stats">
+                    <div class="container">
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-check"/></div><h3>856+</h3><p>Cases tracked</p></div></div>
+                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-trophy"/></div><h3>91%</h3><p>Resolution fidelity</p></div></div>
+                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-clock-o"/></div><h3>14 days</h3><p>SLA target</p></div></div>
+                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-inr"/></div><h3>₹12.5 Cr+</h3><p>Portfolio value</p></div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bn-light-section bn-odr-callout-home">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-10 bn-prose-muted">
+                                <span class="bn-badge-pill">ODR snapshot</span>
+                                <p class="lead mb-3"><strong>Online Dispute Resolution (ODR)</strong> integrates technology with mediation, conciliation,
+                                    negotiation, or arbitration — so pleadings, evidence, and hearings can proceed without needless travel,
+                                    aligned with UNCITRAL’s technical notes on ODR foundations and proportional case management.</p>
+                                <p class="mb-3">BharatNyay service lanes include online mediation, online arbitration, online conciliation, and online negotiation.
+                                    These tracks are designed to resolve disputes faster, legally, and securely while preserving commercial and customer relationships.</p>
+                                <div class="d-flex flex-wrap gap-2 justify-content-lg-center">
+                                    <a href="/odr/what-is" class="btn btn-outline-primary btn-sm rounded-pill">What is ODR?</a>
+                                    <a href="/odr/proceedings" class="btn btn-outline-primary btn-sm rounded-pill">Proceedings ladder</a>
+                                    <a href="/features" class="btn btn-outline-primary btn-sm rounded-pill">Platform fit</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bn-trusted-strip">
+                    <div class="container">
+                        <p class="small text-muted text-center text-uppercase fw-semibold mb-3 letter-spacing-sm">Trusted by teams across India’s lending ecosystem</p>
+                        <div class="bn-trusted-inner">
+                            <span>Bajaj Finance</span><span>HDFC Bank</span><span>SBI</span>
+                            <span>ICICI Bank</span><span>Axis Bank</span><span>Kotak Mahindra</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bn-light-section scroll-target" id="features">
+                    <div class="container">
+                        <div class="bn-section-title">
+                            <span class="bn-badge-pill">Platform features</span>
+                            <h2>Operational depth for lawful ODR</h2>
+                            <p class="lead">Rails that mirror how institutional ADR blends party-driven negotiations with adjudicatory closure — dossiers, neutrality, timelines, hearings, and artefacts from one cockpit.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6 col-xl-4">
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-file-text-o"/></div><h4>Electronic filing vault</h4><p>Governed filings, versioning, tagging, and chronological trails — analogous to procedural registers ODR institutes maintain for transparency.</p></article>
+                            </div>
+                            <div class="col-md-6 col-xl-4">
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-balance-scale"/></div><h4>Escalation ladder</h4><p>Mapped from pre-arbitral consultations through neutral appointment, aligning with UNCITRAL’s emphasis on exhaustion of amicable tiers where parties agree.</p></article>
+                            </div>
+                            <div class="col-md-6 col-xl-4">
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-microchip"/></div><h4>AI-assisted triage</h4><p>Portfolio classification hints, SLA risk spotting, anomaly flags — always reviewable so humans certify outcomes (ICODR good-practice echoes).</p></article>
+                            </div>
+                            <div class="col-md-6 col-xl-4">
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Mandatory notices discipline</h4><p>Dated communications respecting cooling-off etiquette before arbitration petitions consume court bandwidth.</p></article>
+                            </div>
+                            <div class="col-md-6 col-xl-4">
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-line-chart"/></div><h4>Financial exposure KPIs</h4><p>Portfolio POS/claim overlays so creditor committees quantify exposure while neutrals supervise proportionality.</p></article>
+                            </div>
+                            <div class="col-md-6 col-xl-4">
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-gavel"/></div><h4>Hearing &amp; award readiness</h4><p>Secure conferencing hooks, chatter logs, interim capture fields — artefacts expected when converting digital hearings into settlements or awards.</p></article>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4"><a href="/features" class="fw-semibold">Full feature briefing →</a></div>
+                    </div>
+                </section>
+
+                <section class="bn-light-section pb-5" id="how">
+                    <div class="container">
+                        <div class="bn-section-title">
+                            <span class="bn-badge-pill">How it works</span>
+                            <h2>Stages parties expect in disciplined ODR</h2>
+                            <p class="lead">BharatNyay hard-wires intake, neutrality, procedural fairness logs, and repository hygiene for mediation, conciliation, negotiation, and arbitration at production scale.</p>
+                        </div>
+                        <div class="row g-4 text-center">
+                            <div class="col-md-3">
+                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
+                                    <strong class="d-block fs-4 text-primary mb-2">01</strong>
+                                    <h5 class="fw-bold mb-2">Consent &amp; clause check</h5>
+                                    <p class="text-muted small mb-0">Validate arbitration agreements / ODR tiers and seat language before escalating.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
+                                    <strong class="d-block fs-4 text-primary mb-2">02</strong>
+                                    <h5 class="fw-bold mb-2">Negotiate &amp; mediate</h5>
+                                    <p class="text-muted small mb-0">Controlled notices, caucus slots, escalation clocks — chatter becomes evidence of good faith effort.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
+                                    <strong class="d-block fs-4 text-primary mb-2">03</strong>
+                                    <h5 class="fw-bold mb-2">Neutral &amp; hearing</h5>
+                                    <p class="text-muted small mb-0">Appointment logs, disclosures, digitally witnessed hearings respecting natural justice norms.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
+                                    <strong class="d-block fs-4 text-primary mb-2">04</strong>
+                                    <h5 class="fw-bold mb-2">Settlement / award</h5>
+                                    <p class="text-muted small mb-0">Document repository ready for stamping, filings, RBI/NCLT interplay where jurisdiction permits.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4"><a href="/how-it-works" class="fw-semibold">Deep dive on timings →</a></div>
+                    </div>
+                </section>
+
+                <section class="bn-stake-section" id="stakeholders">
+                    <div class="container">
+                        <div class="bn-section-title">
+                            <span class="bn-badge-pill">Our stakeholders</span>
+                            <h2>Governance-ready roles</h2>
+                            <p class="lead">Consumers, financiers, neutrals, and supervisors converge on one fabric — aligning with fiduciary duties and supervisory expectations for fair recovery (<abbr title="Reserve Bank of India">RBI</abbr>).</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-user"/></div><h4>Borrowers</h4><p>Fair EMI disputes, coercion complaints, SARFAESI interplay — mediated channels before escalation.</p></article></div>
+                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-building"/></div><h4>Lenders &amp; NBFCs</h4><p>Repeatable dockets respecting fair practices code timelines and escalation governance.</p></article></div>
+                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-pencil-square-o"/></div><h4>Neutrals</h4><p>Remote case management disclosures, neutrality declarations, remuneration transparency.</p></article></div>
+                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Regulators / audit</h4><p>Grievance redress artefacts, SLA telemetry, segregation of duties for sensitive actions.</p></article></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bn-light-section" id="testimonials">
+                    <div class="container">
+                        <div class="bn-section-title">
+                            <span class="bn-badge-pill">Testimonials</span>
+                            <h2>Trusted by thousands</h2>
+                            <p class="lead small text-muted mx-auto">Illustrative stories — customise with live references after deployment.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <blockquote class="bn-testimonial-card">
+                                    <div class="stars"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/></div>
+                                    <p class="quote">“Structured ODR ladders closed my EMI overcharge in twelve days.”</p>
+                                    <footer class="user-info"><span class="avatar">SR</span><div class="name-box"><h5>Sneha Reddy</h5><p>Borrower, Hyderabad</p></div></footer>
+                                </blockquote>
+                            </div>
+                            <div class="col-md-4">
+                                <blockquote class="bn-testimonial-card">
+                                    <div class="stars"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/></div>
+                                    <p class="quote">“Neutral dashboards shave hours versus inbox arbitration.”</p>
+                                    <footer class="user-info"><span class="avatar">AP</span><div class="name-box"><h5>Adv. Priya Sharma</h5><p>Mediator</p></div></footer>
+                                </blockquote>
+                            </div>
+                            <div class="col-md-4">
+                                <blockquote class="bn-testimonial-card">
+                                    <div class="stars"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/></div>
+                                    <p class="quote">“Penalty reversal path finally matched our clause library governance.”</p>
+                                    <footer class="user-info"><span class="avatar">VE</span><div class="name-box"><h5>Vikram Enterprises</h5><p>MSME borrower, Mumbai</p></div></footer>
+                                </blockquote>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bn-light-section pt-2 pb-5">
+                    <div class="container">
+                        <div class="bn-cta-box">
+                            <h2>Deploy governed ODR for your portfolios</h2>
+                            <p>Book a blueprint session — neutrality policy, arbitrator panel rules, data residency, escalation matrices, integrations.</p>
+                            <div class="d-flex flex-wrap justify-content-center gap-3">
+                                <a class="btn bn-cta-orange" href="/contactus">File a dispute now →</a>
+                                <a class="btn bn-cta-white" href="/odr/model-clause">Review model clause cues</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <t t-call="bharatnyay_website.bn_public_footer"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,168 @@
+/* Loan form: playbook cards + KPI strip scoped to BharatNyay portfolio form */
+.o_form_view .o_sheet.bn-loan-form-shell {
+    max-width: 1400px;
+}
+
+.bn-loan-form-shell .bn-loan-workflow-block {
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.85rem 1rem 1rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.bn-loan-form-shell .bn-workflow-phase-row label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b !important;
+    font-weight: 650;
+}
+
+.bn-loan-form-shell .bn-hero-strip {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.bn-loan-form-shell .bn-section-row.row {
+    --bs-gutter-x: 0.85rem;
+    --bs-gutter-y: 0.85rem;
+}
+
+.bn-loan-form-shell .bn-loan-panel {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    overflow: hidden;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
+    }
+}
+
+.bn-loan-form-shell .bn-loan-panel-h {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #0f172a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.bn-loan-form-shell .bn-loan-panel-body {
+    padding: 0.65rem 0.85rem 0.35rem;
+
+    /* flatten inner group borders for cleaner cards */
+    .o_inner_group.col-lg-12 {
+        margin-bottom: 0 !important;
+
+        tbody tr {
+            border-bottom: none;
+        }
+    }
+
+    label.o_form_label {
+        font-weight: 500;
+        opacity: 0.85;
+    }
+}
+
+.bn-loan-form-shell .bn-panel-claim .bn-loan-panel-h {
+    background: linear-gradient(90deg, #dbeafe 0%, #cffafe 100%);
+    border-bottom-color: rgba(148, 163, 184, 0.4);
+}
+
+.bn-loan-form-shell .bn-panel-respond .bn-loan-panel-h {
+    background: linear-gradient(90deg, #ffedd5 0%, #fed7aa 100%);
+}
+
+.bn-loan-form-shell .bn-panel-loan .bn-loan-panel-h {
+    background: linear-gradient(90deg, #dcfce7 0%, #d1fae5 100%);
+}
+
+.bn-loan-form-shell .bn-panel-arbitrator .bn-loan-panel-h {
+    background: linear-gradient(90deg, #ffedd5 0%, #fcd34d 55%, #ffe4e6 100%);
+}
+
+.bn-loan-form-shell .bn-panel-ai .bn-loan-panel-h {
+    background: linear-gradient(90deg, #e0e7ff 0%, #ddd6fe 100%);
+}
+
+.bn-loan-form-shell .bn-panel-notes .bn-loan-panel-h {
+    background: linear-gradient(90deg, #e0f2fe 0%, #eef2ff 100%);
+}
+
+.bn-loan-form-shell .bn-kpi-micro-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 1rem 0;
+
+    .bn-kpi-pill {
+        flex: 1 1 120px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        padding: 0.5rem 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+
+        > i.fa {
+            color: #6366f1;
+            opacity: 0.85;
+        }
+
+        dl {
+            margin: 0;
+        }
+
+        dt {
+            margin: 0;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.06em;
+        }
+
+        dd {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+    }
+}
+
+.bn-loan-form-shell .bn-conf-bar-track {
+    height: 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+
+    span {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #818cf8, #4338ca);
+    }
+}
+
+.bn-loan-form-shell .bn-doc-tools {
+    padding: 0.45rem 0.75rem;
+    border-radius: 10px;
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    margin-bottom: 0.85rem;
+
+    .fa {
+        color: #475569;
+    }
+}

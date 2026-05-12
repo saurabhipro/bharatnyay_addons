@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+      Root action + first child BOTH point to Dashboard so opening the app
+      always resolves a client action before any window action walk (see
+      addons/web/models/ir_ui_menu.py load_web_menus).
+      "Portfolio" parent folder removed — it had no action and forced the walker
+      to dive into Loan sheet first.
+    -->
+    <menuitem id="menu_bharatnyay_root"
+              name="BharatNyay"
+              sequence="10"
+              action="action_bharatnyay_dashboard"/>
+
+    <menuitem id="menu_bharatnyay_dashboard_menu"
+              name="Dashboard"
+              parent="menu_bharatnyay_root"
+              action="action_bharatnyay_dashboard"
+              sequence="1"/>
+
+    <menuitem id="menu_bharatnyay_loans"
+              name="Loan sheet"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_loan"
+              sequence="15"/>
+
+    <menuitem id="menu_bharatnyay_workflow"
+              name="Workflow queues"
+              parent="menu_bharatnyay_root"
+              sequence="25"/>
+    <menuitem id="menu_bharatnyay_user_roles"
+              name="User roles"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_user_role_assignment"
+              sequence="30"/>
+    <menuitem id="menu_bharatnyay_notice_1"
+              name="Notice"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_notice"
+              sequence="10"/>
+    <menuitem id="menu_bharatnyay_notice_2"
+              name="Appointment of Arbitrator"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_appointment_arbitrator"
+              sequence="20"/>
+    <menuitem id="menu_bharatnyay_notice_3"
+              name="Legacy Notice 3"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_notice"
+              groups="base.group_no_one"
+              sequence="30"/>
+    <menuitem id="menu_bharatnyay_hearing_status"
+              name="Hearing status"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_hearing_status"
+              sequence="40"/>
+    <menuitem id="menu_bharatnyay_arbitrator_appointed"
+              name="Arbitrator Appointed"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_arbitrator_appointed"
+              sequence="50"/>
+    <menuitem id="menu_bharatnyay_final_award"
+              name="Final award"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_final_award"
+              sequence="60"/>
+    <menuitem id="menu_bharatnyay_paid"
+              name="Paid"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_paid"
+              sequence="70"/>
+
+    <menuitem id="menu_bharatnyay_masters"
+              name="Masters"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_branch"
+              sequence="40"/>
+
+    <menuitem id="menu_bharatnyay_region"
+              name="Regions"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_region"
+              sequence="10"/>
+    <menuitem id="menu_bharatnyay_borrower_state"
+              name="States"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_borrower_state"
+              sequence="20"/>
+    <menuitem id="menu_bharatnyay_branch"
+              name="Branches"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_branch"
+              sequence="30"/>
+    <menuitem id="menu_bharatnyay_loan_location"
+              name="Locations"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_loan_location"
+              sequence="40"/>
+    <menuitem id="menu_bharatnyay_product_class"
+              name="Product classes"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_product_class"
+              sequence="50"/>
+    <menuitem id="menu_bharatnyay_writeoff"
+              name="Write-offs"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_writeoff"
+              sequence="60"/>
+    <menuitem id="menu_bharatnyay_law_firm"
+              name="Law firms"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_law_firm"
+              sequence="70"/>
+    <menuitem id="menu_bharatnyay_notification_template"
+              name="Notification templates"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_notification_template"
+              sequence="80"/>
+</odoo>

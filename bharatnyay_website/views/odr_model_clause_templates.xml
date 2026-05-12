@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_odr_model_clause" name="ODR model clause">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Education · Agreements</p>
+                            <h1><span class="text-orange">Model</span> ODR clauses for lending contracts</h1>
+                            <p class="mx-lg-0">Clauses shape seat, tribunal constitution, escalation tiers, confidentiality, interim relief interplay, electronic service of process, and appellate routes — BharatNyay’s clause workshop piggybacks on patterns seen in arbitration institutions worldwide.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <h2>Checklist bullets for counsel-led drafting</h2>
+                            <ul>
+                                <li><strong>Jurisdiction layering:</strong> expressly carve SARFAESI / DRT paths where statute mandates.</li>
+                                <li><strong>Cool-off ladder:</strong> minimum days between notice, mediator assignment, arbitrator challenge window.</li>
+                                <li><strong>Electronic records:</strong> admissibility of BharatNyay exports as business records.</li>
+                                <li><strong>Emergency arbitrator:</strong> opt-in/opt-out aligning with Arbitration Act timelines.</li>
+                                <li><strong>Language &amp; seat:</strong> pick Indian seat unless regulatory ring-fencing forbids offshore seats.</li>
+                            </ul>
+                            <div class="p-4 bg-light rounded-4 border mt-5">
+                                <small class="text-uppercase text-muted fw-semibold">Sample illustrative snippet (must be bespoke)</small>
+                                <pre class="small mt-3 mb-0 bg-white border rounded p-3" style="white-space:pre-wrap;">“Any dispute arising from this Facility Letter shall first be submitted to BharatNyay’s guided negotiation and mediation tiers for not less than [●] calendar days.
+If unresolved, the matter shall be finally settled by arbitration in [Seat], in [Language], administered in accordance with the Arbitration &amp;
+Conciliation Act, 1996 and [Institutional Rules].
+The tribunal may conduct hearings electronically; parties waive objections to authenticity solely on digital modality where integrity controls are evidenced.”</pre>
+                            </div>
+                            <p class="small text-muted mt-3 mb-5">Adapt numbers, tribunal rules, supervisory court references, stamping duties, taxation of costs inline with issuer legal guidance.</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="/odr/standards" class="btn btn-primary rounded-pill">Neutrality &amp; ethics →</a>
+                                <a href="/contactus" class="btn btn-outline-secondary rounded-pill">Book clause workshop</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

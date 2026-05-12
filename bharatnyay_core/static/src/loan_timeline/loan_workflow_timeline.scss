@@ -1,0 +1,124 @@
+.bn-loan-stage-timeline {
+    border: 1px solid #dce4ee;
+    border-radius: 12px;
+    padding: 0.85rem;
+    background: #fff;
+}
+
+.bn-loan-stage-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    color: #475569;
+    font-size: 0.78rem;
+}
+
+.bn-loan-stage-rail {
+    display: flex;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+}
+
+.bn-stage-node {
+    border: 0;
+    background: transparent;
+    min-width: 110px;
+    max-width: 128px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0 0.15rem;
+    color: #334155;
+}
+
+.bn-stage-link {
+    flex: 0 0 22px;
+    height: 2px;
+    margin-top: 15px;
+    border-radius: 999px;
+    background: #cbd5e1;
+}
+
+.bn-stage-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 0.25rem;
+    border: 2px solid #cbd5e1;
+    background: #f8fafc;
+    color: transparent;
+    font-size: 11px;
+}
+
+.bn-stage-title {
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 650;
+    line-height: 1.2;
+    min-height: 2.2em;
+}
+
+.bn-stage-state {
+    display: block;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-top: 1px;
+}
+
+.bn-stage-section {
+    display: block;
+    font-size: 0.58rem;
+    color: #94a3b8;
+}
+
+.bn-stage-done .bn-stage-dot {
+    background: #10b981;
+    border-color: #0f9c6e;
+    color: #fff;
+}
+.bn-stage-done.bn-stage-link {
+    background: #10b981;
+}
+.bn-stage-done .bn-stage-state {
+    color: #0f766e;
+}
+
+.bn-stage-active .bn-stage-dot {
+    background: #facc15;
+    border-color: #f59e0b;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25);
+}
+.bn-stage-active.bn-stage-link {
+    background: #facc15;
+}
+.bn-stage-active .bn-stage-state {
+    color: #b45309;
+}
+
+.bn-stage-pending .bn-stage-dot {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.bn-stage-pending .bn-stage-state {
+    color: #64748b;
+}
+
+.bn-loan-stage-current {
+    margin-top: 0.4rem;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.74rem;
+    color: #334155;
+
+    strong {
+        color: #0f172a;
+    }
+}

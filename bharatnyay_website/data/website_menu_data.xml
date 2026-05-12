@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Top-level shortcuts -->
+    <record id="menu_bharatnyay_features" model="website.menu">
+        <field name="name">Features</field>
+        <field name="url">/features</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="15"/>
+    </record>
+
+    <record id="menu_bharatnyay_how" model="website.menu">
+        <field name="name">How It Works</field>
+        <field name="url">/how-it-works</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="18"/>
+    </record>
+
+    <!-- BharatNyay About ODR tree (shown in Odoo website menu hierarchy) -->
+    <record id="menu_about_odr" model="website.menu">
+        <field name="name">About ODR</field>
+        <field name="url">/odr/what-is</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="21"/>
+    </record>
+
+    <record id="menu_odr_child_what" model="website.menu">
+        <field name="name">What is ODR</field>
+        <field name="url">/odr/what-is</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="10"/>
+    </record>
+
+    <record id="menu_odr_child_proceedings" model="website.menu">
+        <field name="name">ODR Proceedings</field>
+        <field name="url">/odr/proceedings</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="15"/>
+    </record>
+
+    <record id="menu_odr_child_procedural_rules" model="website.menu">
+        <field name="name">Procedural Rules</field>
+        <field name="url">/odr/procedural-rules</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="20"/>
+    </record>
+
+    <record id="menu_odr_child_model_clause" model="website.menu">
+        <field name="name">ODR Model Clause</field>
+        <field name="url">/odr/model-clause</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="25"/>
+    </record>
+
+    <record id="menu_odr_standards_parent" model="website.menu">
+        <field name="name">Standards &amp; protocols</field>
+        <field name="url">/odr/standards</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="30"/>
+    </record>
+
+    <record id="menu_odr_standards_ethics" model="website.menu">
+        <field name="name">Code of ethics</field>
+        <field name="url">/odr/standards/code-of-ethics</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_odr_standards_parent"/>
+        <field name="sequence" eval="10"/>
+    </record>
+
+    <record id="menu_odr_standards_hearing" model="website.menu">
+        <field name="name">Hearing &amp; submission protocol</field>
+        <field name="url">/odr/standards/hearing-protocol</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_odr_standards_parent"/>
+        <field name="sequence" eval="20"/>
+    </record>
+
+    <record id="menu_odr_standards_appointment" model="website.menu">
+        <field name="name">Protocol for neutrals appointment</field>
+        <field name="url">/odr/standards/neutral-appointment</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_odr_standards_parent"/>
+        <field name="sequence" eval="30"/>
+    </record>
+
+    <record id="menu_odr_standards_empanelment" model="website.menu">
+        <field name="name">Neutral empanelment rules</field>
+        <field name="url">/odr/standards/empanelment</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_odr_standards_parent"/>
+        <field name="sequence" eval="40"/>
+    </record>
+
+    <record id="menu_odr_standards_video" model="website.menu">
+        <field name="name">Video conferencing rules</field>
+        <field name="url">/odr/standards/video-conferencing</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="menu_odr_standards_parent"/>
+        <field name="sequence" eval="50"/>
+    </record>
+
+    <record id="menu_bharatnyay_about_public" model="website.menu">
+        <field name="name">About</field>
+        <field name="url">/about</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="35"/>
+    </record>
+
+    <record id="menu_bharatnyay_testimonials" model="website.menu">
+        <field name="name">Stories</field>
+        <field name="url">/#testimonials</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="40"/>
+    </record>
+
+    <record id="menu_bharatnyay_contact" model="website.menu">
+        <field name="name">Contact</field>
+        <field name="url">/contactus</field>
+        <field name="website_id" ref="website.default_website"/>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" eval="50"/>
+    </record>
+</odoo>

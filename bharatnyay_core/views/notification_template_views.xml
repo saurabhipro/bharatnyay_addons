@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_notification_template_search" model="ir.ui.view">
+        <field name="name">bharat.notification.template.search</field>
+        <field name="model">bharat.notification.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="notice_type"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bharat_notification_template_list" model="ir.ui.view">
+        <field name="name">bharat.notification.template.list</field>
+        <field name="model">bharat.notification.template</field>
+        <field name="arch" type="xml">
+            <list string="Notification templates">
+                <field name="name"/>
+                <field name="notice_type"/>
+                <field name="subject_template"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_notification_template_form" model="ir.ui.view">
+        <field name="name">bharat.notification.template.form</field>
+        <field name="model">bharat.notification.template</field>
+        <field name="arch" type="xml">
+            <form string="Notification template">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="notice_type"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="subject_template" placeholder="Use placeholders like {loan_number}, {customer_name}"/>
+                    </group>
+                    <group>
+                        <field name="body_template" nolabel="1" placeholder="Template body with placeholders."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_notification_template" model="ir.actions.act_window">
+        <field name="name">Notification templates</field>
+        <field name="res_model">bharat.notification.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_notification_template_search"/>
+    </record>
+</odoo>

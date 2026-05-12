@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Shared public chrome: set t-set bn_nav_inner to True before t-call on inner/stacked layouts -->
+    <template id="bn_public_nav" name="BharatNyay public navbar">
+        <nav t-attf-class="navbar navbar-expand-lg navbar-dark bn-site-nav fixed-top#{bn_nav_inner and ' bn-about-nav-fix' or ''}" aria-label="BharatNyay main">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <span class="bn-logo-badge" aria-hidden="true">BN</span>
+                    <span class="visually-hidden">BharatNyay</span>
+                    <span class="bn-brand-lines">
+                        <small>Click Karo! Resolve Karo!</small>
+                    </span>
+                </a>
+                <button class="navbar-toggler rounded border-0" type="button" data-bs-toggle="collapse" data-bs-target="#bnNavCollapsePublic" aria-controls="bnNavCollapsePublic" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"/>
+                </button>
+                <div class="collapse navbar-collapse" id="bnNavCollapsePublic">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-lg-center">
+                        <li class="nav-item"><a class="nav-link" href="/features">Features</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/how-it-works">How It Works</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle bn-odr-dd-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">About ODR</a>
+                            <ul class="dropdown-menu dropdown-menu-dark bn-odr-mega-dd">
+                                <li><span class="dropdown-item-text small text-muted px-3 py-2">Knowledge base · India-facing ODR</span></li>
+                                <li><a class="dropdown-item" href="/odr/what-is">What is ODR</a></li>
+                                <li><a class="dropdown-item" href="/odr/proceedings">ODR proceedings</a></li>
+                                <li><a class="dropdown-item" href="/odr/procedural-rules">Procedural rules</a></li>
+                                <li><a class="dropdown-item" href="/odr/model-clause">ODR model clause</a></li>
+                                <li class="dropend bn-odr-dropend">
+                                    <a href="#" class="dropdown-item dropdown-toggle d-flex justify-content-between align-items-center" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                        Standards &amp; protocols
+                                        <span class="fa fa-angle-right ms-3 small bn-odr-chevron"/>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-submenu dropdown-menu-dark shadow-lg">
+                                        <li><a class="dropdown-item" href="/odr/standards">Overview hub</a></li>
+                                        <li><hr class="dropdown-divider"/></li>
+                                        <li><a class="dropdown-item" href="/odr/standards/code-of-ethics">Code of ethics — neutrals</a></li>
+                                        <li><a class="dropdown-item" href="/odr/standards/hearing-protocol">Hearing &amp; submissions</a></li>
+                                        <li><a class="dropdown-item" href="/odr/standards/neutral-appointment">Neutral appointment protocol</a></li>
+                                        <li><a class="dropdown-item" href="/odr/standards/empanelment">Neutral empanelment rules</a></li>
+                                        <li><a class="dropdown-item" href="/odr/standards/video-conferencing">Video conferencing rules</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="/#testimonials">Stories</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/about">About us</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/contactus">Contact</a></li>
+                    </ul>
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 ms-lg-2">
+                        <a class="nav-link bn-nav-cta-login py-2" href="/web/login">Login</a>
+                        <a class="btn bn-nav-file" href="/contactus">File dispute →</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </template>
+
+    <template id="bn_public_footer" name="BharatNyay public footer">
+        <footer class="bn-site-footer" id="contact">
+            <div class="container">
+                <div class="row gy-5">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="bn-footer-brand text-white">BharatNyay</div>
+                        <p class="text-secondary small lh-lg mb-4">India’s digital justice rails for portfolios — aligning negotiation, mediation, and arbitration (<abbr title="Online Dispute Resolution">ODR</abbr>) with Arbitration Act 1996 practice and supervisory norms.</p>
+                    </div>
+                    <div class="col-6 col-lg-2">
+                        <h6>Platform</h6>
+                        <a href="/features">Features</a>
+                        <a href="/how-it-works">How it works</a>
+                        <a href="/about">About us</a>
+                        <a href="/web/login">Workspace</a>
+                        <a href="/contactus">File dispute</a>
+                        <a href="/bharat/cases">Portfolio preview</a>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <h6>ODR resources</h6>
+                        <a href="/odr/what-is">What is ODR?</a>
+                        <a href="/odr/proceedings">ODR proceedings</a>
+                        <a href="/odr/procedural-rules">Procedural rules</a>
+                        <a href="/odr/model-clause">Model clause</a>
+                        <a href="/odr/standards">Standards hub</a>
+                        <a href="/odr/standards/code-of-ethics">Code of ethics</a>
+                        <a href="/odr/standards/hearing-protocol">Hearing protocol</a>
+                        <a href="https://rbi.org.in" target="_blank" rel="noopener">RBI guidance</a>
+                    </div>
+                    <div class="col-md-12 col-lg-3">
+                        <h6>Contact</h6>
+                        <a href="mailto:support@bharatnyay.in">support@bharatnyay.in</a>
+                        <span class="d-block mt-2 text-secondary small">Corporate HQ · New Delhi, India</span>
+                        <span class="d-block text-secondary small">Helpline · 1800-XXX-XXXX</span>
+                    </div>
+                </div>
+                <div class="bn-footer-bottom text-secondary">
+                    <span>© <t t-esc="datetime.datetime.now().year"/> BharatNyay. All rights reserved.</span>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a class="text-secondary" href="#">Privacy policy</a>
+                        <a class="text-secondary" href="#">Terms of service</a>
+                        <a class="text-secondary" href="#">Grievance redressal</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </template>
+</odoo>

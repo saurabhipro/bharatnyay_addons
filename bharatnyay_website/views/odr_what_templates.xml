@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_odr_what_is" name="What is ODR">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Education · Foundations</p>
+                            <h1><span class="text-orange">What is</span> Online Dispute Resolution (ODR)?</h1>
+                            <p class="mx-lg-0">ODR is the structured use of information &amp; communications technology so parties resolve disputes outside overburdened court dockets,
+                                typically via negotiation tiers, mediator-led dialogue, neutral evaluation, arbitration, or hybrid blends — respecting party autonomy acknowledged in UNCITRAL’s ODR workstreams.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <h2>Codified flexibility (India context)</h2>
+                            <p>Parties may weave ODR timelines into contractual frameworks referencing the Arbitration &amp; Conciliation Act, 1996 for binding outcomes,
+                                or choose conciliation statutes / specialised tribunals when sector law demands. BharatNyay helps lenders articulate fair-practice-aligned ladders before escalation to courts.</p>
+
+                            <h2 class="mt-5">Negotiation · mediation · arbitration triangle</h2>
+                            <ul>
+                                <li><strong>Negotiation:</strong> bilaterals or caucus-guided discussions — technology logs intent to settle without waiving statutory rights.</li>
+                                <li><strong>Mediation / conciliation:</strong> facilitative neutrals shepherd interests; caucus confidentiality remains sacrosanct.</li>
+                                <li><strong>Arbitration:</strong> adversarial adjudication with tribunal awards resembling court judgments subject to Sections 34/37 challenges.</li>
+                            </ul>
+
+                            <h2 class="mt-5">Core online ODR services on BharatNyay</h2>
+                            <ul>
+                                <li><strong>Online Mediation:</strong> structured facilitation to preserve business and borrower relationships.</li>
+                                <li><strong>Online Arbitration:</strong> enforceable adjudication with digital evidence trails.</li>
+                                <li><strong>Online Conciliation:</strong> settlement-focused neutral assistance for faster closure.</li>
+                                <li><strong>Online Negotiation:</strong> direct and assisted tracks before escalation.</li>
+                            </ul>
+
+                            <h2 class="mt-5">Why digital modality matters now</h2>
+                            <p>Across India’s geography-heavy lending books, proportional ODR slashes travel burdens, aligns with RBI grievance SLA expectations,
+                                and frees bench capacity while maintaining audit trails prized by supervisory reviews.</p>
+                            <p>BharatNyay is designed for individuals, businesses, and institutional or court-referred caseloads that require legally aligned, secure, and relationship-preserving outcomes.</p>
+
+                            <div class="alert alert-secondary border rounded-4 mt-4">
+                                <strong>Disclaimer:</strong> This primer is explanatory. Nothing here constitutes legal advice; involve qualified counsel before finalising clauses.
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-5">
+                                <a href="/odr/proceedings" class="btn btn-primary rounded-pill">Proceedings ladder →</a>
+                                <a href="/how-it-works" class="btn btn-outline-secondary rounded-pill">How BharatNyay stages maps here</a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

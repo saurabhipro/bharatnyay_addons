@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_report_bharat_loan_notice" model="ir.actions.report">
+        <field name="name">Notice Letter</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_notice</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_notice</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Notice - %s' % (object.loan_number or 'Loan')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_envelope" model="ir.actions.report">
+        <field name="name">Envelope Labels</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_envelope</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_envelope</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Envelopes - %s' % (object.loan_number or 'Loan')</field>
+    </record>
+
+    <template id="report_bharat_loan_notice">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <t t-set="notice_title" t-value="(o.notice_hand or '').strip() or 'Notice'"/>
+                        <h2 style="margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
+                            <span t-esc="notice_title"/>
+                        </h2>
+                        <h4 style="margin-top: 0; margin-bottom: 14px; color: #444;">Loan Communication Letter</h4>
+
+                        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>Date:</strong> <span t-esc="o.deliver_date or o.create_date.date()"/></span>
+                                <span><strong>Loan Number:</strong> <span t-esc="o.loan_number or '-'"/></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><strong>Borrower:</strong> <span t-esc="o.customer_name or '-'"/></span>
+                                <span><strong>Stage:</strong> <span t-esc="dict(o._fields['workflow_stage'].selection).get(o.workflow_stage, '-')"/></span>
+                            </div>
+                        </div>
+
+                        <p><strong>Branch:</strong> <span t-esc="(o.branch_id.name or o.branch or '-')"/></p>
+                        <p><strong>State / Region:</strong> <span t-esc="' / '.join([x for x in [o.borrower_state_id.name if o.borrower_state_id else o.borrower_state, o.region_id.name if o.region_id else o.region] if x]) or '-'"/></p>
+                        <p><strong>Product:</strong> <span t-esc="o.product or (o.product_class_id.name if o.product_class_id else o.product_classification) or '-'"/></p>
+                        <p>
+                            <strong>Current POS:</strong>
+                            <span t-field="o.current_pos" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                        </p>
+                        <p>
+                            <strong>Claim Amount:</strong>
+                            <span t-field="o.claim_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                        </p>
+
+                        <div style="margin-top: 18px;">
+                            <p>Dear <span t-esc="o.customer_name or 'Borrower'"/>,</p>
+                            <p style="text-align: justify;">
+                                This communication is issued in relation to the above loan account under the
+                                applicable provisions of the Arbitration and Conciliation Act, 1996 and the
+                                governing loan and contractual documents. You are hereby called upon to respond
+                                within the stipulated period and to participate in the arbitration process.
+                            </p>
+                            <p style="text-align: justify;">
+                                You may select an arbitrator from the panel list provided below / shared by the
+                                case team. Upon such selection, online hearing proceedings will be scheduled,
+                                and the selected arbitrator shall conduct the hearing and pass the arbitral
+                                award in accordance with law.
+                            </p>
+                            <p style="text-align: justify;">
+                                In case of non-response or non-participation, further action may be taken as
+                                permissible under law, including continuation of ex-parte proceedings.
+                            </p>
+                        </div>
+
+                        <p style="margin-top: 24px;">Regards,<br/>BharatNyay Legal Operations</p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_envelope">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page" style="padding: 24mm 18mm; page-break-after: always;">
+                    <div style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">To,</div>
+                    <div style="font-size: 18px; line-height: 1.45;">
+                        <div><strong t-esc="o.customer_name or 'Borrower Name'"/></div>
+                        <div t-if="o.borrower_address"><span t-esc="o.borrower_address"/></div>
+                        <div t-if="o.location_id or o.location">
+                            <span t-esc="o.location_id.name if o.location_id else o.location"/>
+                        </div>
+                        <div>
+                            <span t-esc="o.borrower_state_id.name if o.borrower_state_id else (o.borrower_state or '')"/>
+                            <t t-if="(o.region_id and o.region_id.name) or o.region">
+                                , <span t-esc="o.region_id.name if o.region_id else o.region"/>
+                            </t>
+                        </div>
+                    </div>
+                    <div style="margin-top: 24px; font-size: 13px;">
+                        <div>
+                            <strong>BharatNyay Case:</strong> <span t-esc="o.case_number or '-'"/>
+                        </div>
+                        <div>
+                            <strong>Batch:</strong> <span t-esc="o.batch_number or '-'"/>
+                        </div>
+                        <strong>Loan:</strong> <span t-esc="o.loan_number or '-'"/>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

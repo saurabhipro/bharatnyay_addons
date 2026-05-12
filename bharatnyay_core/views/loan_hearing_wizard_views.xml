@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_hearing_schedule_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.hearing.schedule.wizard.form</field>
+        <field name="model">bharat.loan.hearing.schedule.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Schedule Hearing">
+                <group>
+                    <field name="loan_id"/>
+                    <field name="hearing_datetime"/>
+                    <field name="hearing_link_type" widget="radio" options="{'horizontal': true}"/>
+                    <field name="hearing_video_url" placeholder="https://meet.google.com/..."
+                           widget="url" invisible="hearing_link_type == 'odoo'"/>
+                    <field name="invite_user_ids" widget="many2many_tags"
+                           options="{'no_create': True}"
+                           placeholder="Add internal users to email with the hearing invitation…"/>
+                    <field name="hearing_notes" placeholder="Dial-in PIN, documents to upload, …"/>
+                </group>
+                <footer>
+                    <button string="Schedule &amp; Move to Hearing" type="object" name="action_schedule" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_interim_award_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.interim.award.wizard.form</field>
+        <field name="model">bharat.loan.interim.award.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Pass Interim Award">
+                <group>
+                    <field name="loan_id"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="interim_award_amount"/>
+                    <field name="interim_award_notes" placeholder="Procedural directions, deposit orders, timelines, …"/>
+                </group>
+                <footer>
+                    <button string="Record interim award" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

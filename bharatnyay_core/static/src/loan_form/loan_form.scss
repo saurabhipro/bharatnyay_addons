@@ -1,0 +1,358 @@
+// BharatNyay loan form polish.
+.o_form_view.o_bharat_loan_form {
+
+    // ── Hero card ───────────────────────────────────────────────────────
+    .bn-loan-hero {
+        position: relative;
+        background:
+            radial-gradient(120% 140% at 100% 0%, rgba(99, 102, 241, 0.10) 0%, rgba(99, 102, 241, 0) 55%),
+            linear-gradient(135deg, #f6f8ff 0%, #eef2ff 60%, #f9fbff 100%);
+        border: 1px solid #d8e3ff;
+        border-radius: 18px;
+        padding: 20px 24px;
+        margin-bottom: 18px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        gap: 22px;
+        align-items: stretch;
+        box-shadow:
+            0 1px 2px rgba(15, 23, 42, 0.04),
+            0 6px 22px rgba(30, 41, 89, 0.06);
+
+        @media (max-width: 992px) {
+            grid-template-columns: 1fr;
+        }
+
+        .bn-hero-left {
+            min-width: 0;
+        }
+
+        .bn-hero-eyebrow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 8px;
+            font-size: 0.78rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #64748b;
+
+            .bn-eyebrow-label {
+                color: #94a3b8;
+            }
+
+            .bn-sep {
+                color: #cbd5e1;
+            }
+
+            .o_field_widget {
+                color: #0f172a;
+                font-weight: 700;
+            }
+        }
+
+        .bn-customer {
+            margin: 6px 0 10px;
+            font-size: 1.7rem;
+            line-height: 1.15;
+            font-weight: 700;
+            color: #0b1e4d;
+            letter-spacing: -0.01em;
+
+            .o_field_widget {
+                color: inherit;
+                font: inherit;
+            }
+        }
+
+        .bn-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .bn-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #ffffff;
+            border: 1px solid #e0e7ff;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            color: #1e293b;
+            max-width: 100%;
+
+            i, .fa {
+                color: #4f46e5;
+                font-size: 0.8rem;
+            }
+
+            .bn-meta-label {
+                color: #64748b;
+                font-weight: 500;
+            }
+
+            .o_field_widget {
+                font-weight: 600;
+                color: #0f172a;
+                min-width: 0;
+                max-width: 16rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            &.bn-meta-chip-soft {
+                background: #eef2ff;
+                border-color: #c7d2fe;
+
+                i, .fa {
+                    color: #4338ca;
+                }
+            }
+        }
+
+        .bn-hero-right {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            align-content: stretch;
+            min-width: 0;
+        }
+
+        .bn-kpi {
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            min-height: 76px;
+            min-width: 0;
+            border: 1px solid transparent;
+
+            .bn-kpi-head {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 0;
+            }
+
+            .bn-kpi-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                display: grid;
+                place-items: center;
+                flex-shrink: 0;
+                font-size: 0.8rem;
+
+                i.fa {
+                    line-height: 1;
+                }
+            }
+
+            .bn-kpi-label {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                font-weight: 600;
+                min-width: 0;
+                line-height: 1.2;
+            }
+
+            .bn-kpi-val,
+            .bn-kpi-val .o_field_widget {
+                font-size: 1.1rem;
+                font-weight: 700;
+                line-height: 1.2;
+                max-width: 100%;
+                min-width: 0;
+                overflow-wrap: anywhere;
+                word-break: normal;
+                hyphens: manual;
+            }
+
+            /* Financed — emerald */
+            &.bn-kpi-financed {
+                background: linear-gradient(145deg, #ecfdf5 0%, #f0fdf4 55%, #ffffff 100%);
+                border-color: #a7f3d0;
+
+                .bn-kpi-icon {
+                    background: rgba(16, 185, 129, 0.2);
+                    color: #059669;
+                }
+
+                .bn-kpi-label {
+                    color: #047857;
+                }
+
+                .bn-kpi-val,
+                .bn-kpi-val .o_field_widget {
+                    color: #064e3b;
+                }
+            }
+
+            /* Current POS — purple (primary accent) */
+            &.bn-kpi-pos {
+                background: linear-gradient(135deg, #4f46e5 0%, #6366f1 92%, #7c73f6 100%);
+                border-color: rgba(79, 70, 229, 0.35);
+
+                .bn-kpi-icon {
+                    background: rgba(255, 255, 255, 0.22);
+                    color: #ffffff;
+                }
+
+                .bn-kpi-label {
+                    color: rgba(255, 255, 255, 0.9);
+                }
+
+                .bn-kpi-val,
+                .bn-kpi-val .o_field_widget {
+                    color: #ffffff;
+                }
+            }
+
+            /* Claim — amber */
+            &.bn-kpi-claim {
+                background: linear-gradient(145deg, #fffbeb 0%, #fef9c3 45%, #ffffff 100%);
+                border-color: #fcd34d;
+
+                .bn-kpi-icon {
+                    background: rgba(217, 119, 6, 0.16);
+                    color: #d97706;
+                }
+
+                .bn-kpi-label {
+                    color: #b45309;
+                }
+
+                .bn-kpi-val,
+                .bn-kpi-val .o_field_widget {
+                    color: #78350f;
+                }
+            }
+
+            /* Disbursed — sky */
+            &.bn-kpi-disbursed {
+                background: linear-gradient(145deg, #eff6ff 0%, #e0f2fe 52%, #ffffff 100%);
+                border-color: #93c5fd;
+
+                .bn-kpi-icon {
+                    background: rgba(37, 99, 235, 0.14);
+                    color: #2563eb;
+                }
+
+                .bn-kpi-label {
+                    color: #1d4ed8;
+                }
+
+                .bn-kpi-val,
+                .bn-kpi-val .o_field_widget {
+                    color: #1e3a8a;
+                }
+            }
+
+            /* Readonly char widgets: no grey input chrome (would hide tile colors / POS contrast) */
+            .bn-kpi-val .o_field_widget[readonly],
+            .bn-kpi-val .o_field_widget.o_readonly {
+                .o_input,
+                input,
+                textarea {
+                    background: transparent !important;
+                    border: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    box-shadow: none !important;
+                    color: inherit !important;
+                    font-size: inherit !important;
+                    font-weight: inherit !important;
+                    line-height: inherit !important;
+                    min-height: 0 !important;
+                }
+            }
+        }
+    }
+
+    // ── Wide enough label columns in two-column groups (avoid smashed labels) ──
+    .o_form_sheet .o_group.o_inner_group {
+        td.o_td_label {
+            min-width: 11rem !important;
+        }
+
+        .o_td_label .o_form_label {
+            white-space: normal !important;
+        }
+
+        .o_field_label_cell {
+            min-width: 10rem !important;
+        }
+    }
+
+    // ── Group headers ───────────────────────────────────────────────────
+    .o_inner_group > .o_group > .o_horizontal_separator,
+    .o_group > .o_horizontal_separator {
+        color: #1e3a8a;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        padding-bottom: 6px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    // ── Readonly imported fields: tinted background, no input chrome ────
+    .o_field_widget[readonly="1"],
+    .o_field_widget.o_readonly {
+        .o_input,
+        input,
+        textarea {
+            background-color: #f8fafc !important;
+            border-color: #eef2f7 !important;
+            color: #0f172a;
+        }
+    }
+
+    // ── Notebook tabs: pill underline ───────────────────────────────────
+    .o_notebook .nav-tabs {
+        gap: 2px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 12px;
+
+        .nav-link {
+            font-weight: 600;
+            color: #475569;
+            border: none;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            padding: 8px 14px;
+            transition: color .12s, border-color .12s, background .12s;
+
+            &:hover {
+                color: #1e3a8a;
+                background: rgba(79, 70, 229, 0.04);
+            }
+
+            &.active {
+                color: #1e3a8a;
+                border-bottom-color: #4f46e5;
+                background: transparent;
+            }
+        }
+    }
+
+    // ── X2many tables: cleaner header row ───────────────────────────────
+    .o_field_x2many .o_list_renderer thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+    }
+}

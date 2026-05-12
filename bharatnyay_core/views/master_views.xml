@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Regions -->
+    <record id="view_bharat_region_search" model="ir.ui.view">
+        <field name="name">bharat.region.search</field>
+        <field name="model">bharat.region</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_region_tree" model="ir.ui.view">
+        <field name="name">bharat.region.list</field>
+        <field name="model">bharat.region</field>
+        <field name="arch" type="xml">
+            <list string="Regions" editable="bottom">
+                <field name="name"/>
+                <field name="code" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_region_form" model="ir.ui.view">
+        <field name="name">bharat.region.form</field>
+        <field name="model">bharat.region</field>
+        <field name="arch" type="xml">
+            <form string="Region">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_region" model="ir.actions.act_window">
+        <field name="name">Regions</field>
+        <field name="res_model">bharat.region</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_region_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define regions used on loans (same set as your sheet).</p>
+        </field>
+    </record>
+
+    <!-- Borrower states -->
+    <record id="view_bharat_borrower_state_search" model="ir.ui.view">
+        <field name="name">bharat.borrower_state.search</field>
+        <field name="model">bharat.borrower_state</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="region_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_borrower_state_tree" model="ir.ui.view">
+        <field name="name">bharat.borrower_state.list</field>
+        <field name="model">bharat.borrower_state</field>
+        <field name="arch" type="xml">
+            <list string="States" editable="bottom">
+                <field name="name"/>
+                <field name="region_id" optional="show"/>
+                <field name="code" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_borrower_state_form" model="ir.ui.view">
+        <field name="name">bharat.borrower_state.form</field>
+        <field name="model">bharat.borrower_state</field>
+        <field name="arch" type="xml">
+            <form string="State">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="region_id"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_borrower_state" model="ir.actions.act_window">
+        <field name="name">States</field>
+        <field name="res_model">bharat.borrower_state</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_borrower_state_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Borrower states (e.g. Punjab) for loan rows.</p>
+        </field>
+    </record>
+
+    <!-- Branches -->
+    <record id="view_bharat_branch_search" model="ir.ui.view">
+        <field name="name">bharat.branch.search</field>
+        <field name="model">bharat.branch</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="borrower_state_id"/>
+                <field name="region_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_branch_tree" model="ir.ui.view">
+        <field name="name">bharat.branch.list</field>
+        <field name="model">bharat.branch</field>
+        <field name="arch" type="xml">
+            <list string="Branches" editable="bottom">
+                <field name="name"/>
+                <field name="borrower_state_id" optional="show"/>
+                <field name="region_id" optional="show"/>
+                <field name="code" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_branch_form" model="ir.ui.view">
+        <field name="name">bharat.branch.form</field>
+        <field name="model">bharat.branch</field>
+        <field name="arch" type="xml">
+            <form string="Branch">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                    <group string="Geography">
+                        <field name="borrower_state_id"/>
+                        <field name="region_id"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_branch" model="ir.actions.act_window">
+        <field name="name">Branches</field>
+        <field name="res_model">bharat.branch</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_branch_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Branches match your disbursement spreadsheet.</p>
+        </field>
+    </record>
+
+    <!-- Locations -->
+    <record id="view_bharat_loan_location_search" model="ir.ui.view">
+        <field name="name">bharat.loan_location.search</field>
+        <field name="model">bharat.loan_location</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="branch_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_loan_location_tree" model="ir.ui.view">
+        <field name="name">bharat.loan_location.list</field>
+        <field name="model">bharat.loan_location</field>
+        <field name="arch" type="xml">
+            <list string="Locations" editable="bottom">
+                <field name="name"/>
+                <field name="branch_id" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_loan_location_form" model="ir.ui.view">
+        <field name="name">bharat.loan_location.form</field>
+        <field name="model">bharat.loan_location</field>
+        <field name="arch" type="xml">
+            <form string="Location">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="branch_id"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_loan_location" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="res_model">bharat.loan_location</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_location_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Office or city locations linked to a branch when needed.</p>
+        </field>
+    </record>
+
+    <!-- Product class -->
+    <record id="view_bharat_product_class_search" model="ir.ui.view">
+        <field name="name">bharat.product_class.search</field>
+        <field name="model">bharat.product_class</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_product_class_tree" model="ir.ui.view">
+        <field name="name">bharat.product_class.list</field>
+        <field name="model">bharat.product_class</field>
+        <field name="arch" type="xml">
+            <list string="Product classes" editable="bottom">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_product_class_form" model="ir.ui.view">
+        <field name="name">bharat.product_class.form</field>
+        <field name="model">bharat.product_class</field>
+        <field name="arch" type="xml">
+            <form string="Product class">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_product_class" model="ir.actions.act_window">
+        <field name="name">Product classes</field>
+        <field name="res_model">bharat.product_class</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_product_class_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Examples: SELF EMP, SALARIED…</p>
+        </field>
+    </record>
+
+    <!-- Write-off -->
+    <record id="view_bharat_writeoff_search" model="ir.ui.view">
+        <field name="name">bharat.writeoff.search</field>
+        <field name="model">bharat.writeoff</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_writeoff_tree" model="ir.ui.view">
+        <field name="name">bharat.writeoff.list</field>
+        <field name="model">bharat.writeoff</field>
+        <field name="arch" type="xml">
+            <list string="Write-offs" editable="bottom">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_writeoff_form" model="ir.ui.view">
+        <field name="name">bharat.writeoff.form</field>
+        <field name="model">bharat.writeoff</field>
+        <field name="arch" type="xml">
+            <form string="Write-off">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_writeoff" model="ir.actions.act_window">
+        <field name="name">Write-offs</field>
+        <field name="res_model">bharat.writeoff</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_writeoff_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Write-off buckets as on the sheet (e.g. WRITEOFF).</p>
+        </field>
+    </record>
+
+    <!-- Law firms -->
+    <record id="view_bharat_law_firm_search" model="ir.ui.view">
+        <field name="name">bharat.law_firm.search</field>
+        <field name="model">bharat.law_firm</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="phone"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_law_firm_tree" model="ir.ui.view">
+        <field name="name">bharat.law_firm.list</field>
+        <field name="model">bharat.law_firm</field>
+        <field name="arch" type="xml">
+            <list string="Law firms" editable="bottom">
+                <field name="name"/>
+                <field name="phone" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_law_firm_form" model="ir.ui.view">
+        <field name="name">bharat.law_firm.form</field>
+        <field name="model">bharat.law_firm</field>
+        <field name="arch" type="xml">
+            <form string="Law firm">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="phone" widget="phone"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_law_firm" model="ir.actions.act_window">
+        <field name="name">Law firms</field>
+        <field name="res_model">bharat.law_firm</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_law_firm_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Panels or counsels instructed on Lok Adalat rows.</p>
+        </field>
+    </record>
+</odoo>

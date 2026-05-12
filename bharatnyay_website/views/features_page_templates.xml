@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="page_features" name="BharatNyay features">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero bn-hero-split text-lg-start">
+                        <div class="container">
+                            <p class="bn-hash mb-3">Product · ODR mapping</p>
+                            <h1>Platform features <span class="text-orange">mapped</span> to ODR practice</h1>
+                            <p class="mx-lg-0">Every capability below cites the procedural job it supports — from party notifications to neutral appointment through evidence-grade exports.</p>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-wide">
+                            <h2 class="mb-3">Service tracks BharatNyay supports</h2>
+                            <p class="mb-4">BharatNyay powers online mediation, arbitration, conciliation, and negotiation workflows for financial institutions, enterprises, and high-volume recovery operations.
+                                Each service track keeps legal timelines, neutrality records, and communication history in one governed system.</p>
+                            <div class="row g-5">
+                                <div class="col-lg-6">
+                                    <h3 class="h4 text-primary">Electronic case file &amp; audit trail</h3>
+                                    <p>Versioned uploads, metadata tags, chatter linked to stage transitions — satisfy proportionality &amp; disclosure expectations in arbitration rules while cutting email sprawl.</p>
+                                    <h3 class="h4 text-primary mt-4">Configurable workflow ladder</h3>
+                                    <p>Stage locks enforce cooling-off / fair practice windows before escalation; mirrors multi-tier ODR choreography (negotiate → mediate → arbitrate).</p>
+                                    <h3 class="h4 text-primary mt-4">AI-assisted triage</h3>
+                                    <p>Anomaly detection + portfolio bucketing accelerates human reviewers to focus on edge cases — aligning with responsible AI guardrails discussed in global ODR councils.</p>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h3 class="h4 text-primary">Notice &amp; deliverability</h3>
+                                    <p>Template libraries, PDF artefacts, proof-of-dispatch fields — align with statutory acknowledgment requirements before arbitration invocation.</p>
+                                    <h3 class="h4 text-primary mt-4">Hearing orchestration</h3>
+                                    <p>Calendar sync, invitation mail merge, external or Odoo-hosted join links, caucus notes segregation — operationalises remote hearing guidance from institutional rulebooks.</p>
+                                    <h3 class="h4 text-primary mt-4">Interim &amp; KPI visibility</h3>
+                                    <p>Crystallise interim captures, financial exposure dashboards, settlement probability analytics for board risk committees.</p>
+                                </div>
+                            </div>
+                            <hr class="my-5 opacity-25"/>
+                            <p class="lead">Need clause context? Pair with <a href="/odr/model-clause">model clause primer</a> and <a href="/odr/proceedings">proceedings roadmap</a>.</p>
+                            <a href="/contactus" class="btn bn-cta-orange text-white border-0 rounded-pill mt-2">Speak with solution architects</a>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+</odoo>

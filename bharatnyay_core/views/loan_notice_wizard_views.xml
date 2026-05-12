@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_notice_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.notice.wizard.form</field>
+        <field name="model">bharat.loan.notice.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Notice">
+                <group>
+                    <field name="loan_id"/>
+                    <field name="notice_type"/>
+                    <field name="notice_number"/>
+                    <field name="template_id"/>
+                    <field name="recipient_partner_id"/>
+                </group>
+                <group>
+                    <field name="subject"/>
+                    <field name="body" nolabel="1"/>
+                </group>
+                <footer>
+                    <button string="Send Email" type="object" name="action_send" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

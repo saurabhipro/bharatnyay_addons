@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="seq_bharat_loan_case_number" model="ir.sequence">
+        <field name="name">Bharat Loan Case Number</field>
+        <field name="code">bharat.loan.case.number</field>
+        <field name="prefix">BN/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="number_increment">1</field>
+        <field name="implementation">standard</field>
+    </record>
+
+    <record id="seq_bharat_loan_import_batch" model="ir.sequence">
+        <field name="name">Bharat Loan Import Batch</field>
+        <field name="code">bharat.loan.import.batch</field>
+        <field name="prefix">Batch </field>
+        <field name="padding">1</field>
+        <field name="number_increment">1</field>
+        <field name="implementation">standard</field>
+    </record>
+</odoo>

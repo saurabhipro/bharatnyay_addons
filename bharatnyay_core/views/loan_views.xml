@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_search" model="ir.ui.view">
+        <field name="name">bharat.loan.search</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Omnibox: one chip searches loan #, BharatNyay case #, batch, borrower, respondent A/C -->
+                <field name="loan_number"
+                       string="Loan / case # / borrower"
+                       filter_domain="['|', '|', '|', '|', '|', '|',
+                                       ('loan_number', 'ilike', self),
+                                       ('case_number', 'ilike', self),
+                                       ('batch_number', 'ilike', self),
+                                       ('customer_name', 'ilike', self),
+                                       ('respondent_loan_reference', 'ilike', self),
+                                       ('borrower_phone', 'ilike', self),
+                                       ('borrower_email', 'ilike', self)]"/>
+                <field name="case_number" string="BharatNyay case #"/>
+                <field name="batch_number"/>
+                <field name="customer_name"/>
+                <field name="branch_id"/>
+                <field name="borrower_state_id"/>
+                <field name="region_id"/>
+                <field name="product_class_id"/>
+                <field name="law_firm_id"/>
+                <field name="product"/>
+                <field name="collection_manager_name"/>
+                <field name="workflow_phase"/>
+                <field name="workflow_stage"/>
+                <field name="respondent_name"/>
+                <separator/>
+                <filter string="Has claim" name="has_claim" domain="[('claim_amount','&gt;',0)]"/>
+                <filter string="Notice" name="wf_notice" domain="[('workflow_stage','=','notice')]"/>
+                <filter string="Appointment of Arbitrator" name="wf_appoint_arb" domain="[('workflow_stage','=','appointment_of_arbitrator')]"/>
+                <filter string="Arbitrator Appointed" name="wf_arb_appointed" domain="[('workflow_stage','=','arbitrator_appointed')]"/>
+                <filter string="Hearing" name="wf_hearing" domain="[('workflow_stage','=','hearing')]"/>
+                <filter string="Final award" name="wf_final_award" domain="[('workflow_stage','=','final_award')]"/>
+                <filter string="Paid" name="wf_paid" domain="[('workflow_stage','=','paid')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Region" name="grp_region" context="{'group_by': 'region_id'}"/>
+                    <filter string="State" name="grp_state" context="{'group_by': 'borrower_state_id'}"/>
+                    <filter string="Branch" name="grp_branch" context="{'group_by': 'branch_id'}"/>
+                    <filter string="Product class" name="grp_pclass" context="{'group_by': 'product_class_id'}"/>
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_tree" model="ir.ui.view">
+        <field name="name">bharat.loan.list</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <list string="Loans" multi_edit="1">
+                <field name="case_number"/>
+                <field name="batch_number" optional="show"/>
+                <field name="loan_number"/>
+                <field name="customer_name"/>
+                <field name="branch_id" optional="show"/>
+                <field name="borrower_state_id" optional="hide"/>
+                <field name="region_id" optional="hide"/>
+                <field name="financed_amount" sum="Financed"/>
+                <field name="current_pos" sum="POS"/>
+                <field name="workflow_stage_display" string="Workflow stage" optional="show"/>
+                <field name="workflow_stage" optional="hide"/>
+                <field name="workflow_section" optional="hide"/>
+                <field name="workflow_phase" optional="hide"/>
+                <field name="claim_amount" sum="Claim"/>
+                <field name="lok_adalat_date" optional="show"/>
+                <field name="disbursement_date" optional="show"/>
+                <field name="collection_manager_name" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_kanban" model="ir.ui.view">
+        <field name="name">bharat.loan.kanban</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="workflow_stage" records_draggable="1">
+                <field name="loan_number"/>
+                <field name="customer_name"/>
+                <field name="workflow_stage"/>
+                <field name="branch_id"/>
+                <field name="current_pos"/>
+                <field name="claim_amount"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click o_kanban_record">
+                            <div class="o_kanban_record_top">
+                                <strong><field name="loan_number"/></strong>
+                            </div>
+                            <div><field name="customer_name"/></div>
+                            <div class="text-muted"><field name="branch_id"/></div>
+                            <div class="mt-2">
+                                <span class="me-3">POS: <field name="current_pos" widget="monetary"/></span>
+                                <span>Claim: <field name="claim_amount" widget="monetary"/></span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_calendar" model="ir.ui.view">
+        <field name="name">bharat.loan.calendar</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <calendar string="Loan Calendar" date_start="deliver_date" color="workflow_stage" mode="month">
+                <field name="loan_number"/>
+                <field name="customer_name"/>
+                <field name="workflow_stage"/>
+                <field name="branch_id"/>
+                <field name="deliver_status"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_form" model="ir.ui.view">
+        <field name="name">bharat.loan.form</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <form string="Loan" class="o_bharat_loan_form">
+                <header>
+                    <field name="workflow_stage" widget="statusbar"/>
+                    <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"/>
+                    <button name="action_appoint_arbitrator" type="object" string="Appoint Arbitrator"/>
+                    <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"/>
+                    <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
+                            invisible="workflow_stage != 'hearing'"/>
+                    <button name="action_join_hearing_meeting" type="object" string="Join Meeting Online"
+                            invisible="workflow_stage != 'hearing'"/>
+                    <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
+                            invisible="workflow_stage != 'hearing'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_notice_lines" type="object" class="oe_stat_button" icon="fa-envelope-o">
+                            <field name="notice_count" widget="statinfo" string="Notices"/>
+                        </button>
+                        <button name="action_open_hearing_lines" type="object" class="oe_stat_button" icon="fa-video-camera">
+                            <field name="hearing_log_count" widget="statinfo" string="Hearings"/>
+                        </button>
+                        <button name="action_open_interim_orders" type="object" class="oe_stat_button" icon="fa-gavel">
+                            <field name="interim_order_count" widget="statinfo" string="Interim orders"/>
+                        </button>
+                        <button name="action_open_award_documents" type="object" class="oe_stat_button" icon="fa-trophy">
+                            <field name="award_document_count" widget="statinfo" string="Awards"/>
+                        </button>
+                    </div>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="workflow_section" invisible="1"/>
+                    <widget name="web_ribbon" title="Paid" bg_color="text-bg-success"
+                            invisible="workflow_stage != 'paid'"/>
+                    <widget name="web_ribbon" title="Final award" bg_color="text-bg-info"
+                            invisible="workflow_stage != 'final_award'"/>
+
+                    <div class="bn-loan-hero">
+                        <div class="bn-hero-left">
+                            <div class="bn-hero-eyebrow">
+                                <span class="bn-eyebrow-label">Case</span>
+                                <field name="case_number" readonly="1" nolabel="1"/>
+                                <span class="bn-sep">·</span>
+                                <span class="bn-eyebrow-label">Batch</span>
+                                <field name="batch_number" readonly="1" nolabel="1"/>
+                            </div>
+                            <h1 class="bn-customer">
+                                <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name"/>
+                            </h1>
+                            <div class="bn-hero-meta">
+                                <span class="bn-meta-chip">
+                                    <i class="fa fa-file-text-o" role="img" aria-label="Loan"/>
+                                    <span class="bn-meta-label">Loan</span>
+                                    <field name="loan_number" readonly="1" nolabel="1"/>
+                                </span>
+                                <span class="bn-meta-chip">
+                                    <i class="fa fa-building-o" role="img" aria-label="Branch"/>
+                                    <field name="branch_id" readonly="1" nolabel="1"/>
+                                </span>
+                                <span class="bn-meta-chip">
+                                    <i class="fa fa-tag" role="img" aria-label="Product class"/>
+                                    <field name="product_class_id" readonly="1" nolabel="1"/>
+                                </span>
+                                <span class="bn-meta-chip bn-meta-chip-soft">
+                                    <i class="fa fa-flag-checkered" role="img" aria-label="Stage"/>
+                                    <field name="workflow_stage_display" readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bn-hero-right">
+                            <div class="bn-kpi bn-kpi-financed">
+                                <div class="bn-kpi-head">
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-money"/></span>
+                                    <span class="bn-kpi-label">Financed</span>
+                                </div>
+                                <field name="hero_financed_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
+                            </div>
+                            <div class="bn-kpi bn-kpi-pos">
+                                <div class="bn-kpi-head">
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-line-chart"/></span>
+                                    <span class="bn-kpi-label">Current POS</span>
+                                </div>
+                                <field name="hero_pos_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
+                            </div>
+                            <div class="bn-kpi bn-kpi-claim">
+                                <div class="bn-kpi-head">
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-balance-scale"/></span>
+                                    <span class="bn-kpi-label">Claim</span>
+                                </div>
+                                <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
+                            </div>
+                            <div class="bn-kpi bn-kpi-disbursed">
+                                <div class="bn-kpi-head">
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-calendar"/></span>
+                                    <span class="bn-kpi-label">Disbursed</span>
+                                </div>
+                                <field name="hero_disburse_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="Borrower (imported)">
+                            <field name="borrower_email" readonly="1" widget="email"/>
+                            <field name="borrower_phone" readonly="1" widget="phone"/>
+                            <field name="collection_manager_name" readonly="1"/>
+                            <field name="collection_contact_phone" readonly="1" widget="phone"/>
+                            <field name="borrower_state_id" readonly="1"/>
+                        </group>
+                        <group string="Case &amp; arbitration">
+                            <field name="workflow_phase" string="Stage note"/>
+                            <field name="respondent_name"/>
+                            <field name="respondent_loan_reference"/>
+                            <field name="arbitrator_id" options="{'no_create': True}"/>
+                            <field name="arbitrator_name" invisible="arbitrator_id"/>
+                            <field name="arbitrator_email" readonly="arbitrator_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="🔔 Notices">
+                            <group string="All notices sent / responses">
+                                <field name="notice_line_ids" nolabel="1">
+                                    <list create="0" delete="0" multi_edit="0">
+                                        <field name="notice_number"/>
+                                        <field name="notice_label" readonly="1"/>
+                                        <field name="sent_on"/>
+                                        <field name="sent_by_id"/>
+                                        <field name="recipient_partner_id"/>
+                                        <field name="sent_to"/>
+                                        <field name="subject"/>
+                                        <field name="notice_pdf_filename"/>
+                                        <field name="response_received_on" readonly="1"/>
+                                        <field name="response_pdf_filename" readonly="1"/>
+                                        <button name="action_record_response" type="object" string="Record reply"
+                                                class="btn-link" icon="fa-inbox"/>
+                                    </list>
+                                    <form string="Notice detail">
+                                            <header>
+                                                <button name="action_record_response" type="object"
+                                                        string="Record respondent reply" class="btn-primary"/>
+                                            </header>
+                                            <group>
+                                                <group>
+                                                    <field name="notice_number"/>
+                                                    <field name="notice_label" readonly="1"/>
+                                                    <field name="notice_type"/>
+                                                    <field name="sent_on"/>
+                                                    <field name="sent_by_id"/>
+                                                    <field name="recipient_partner_id"/>
+                                                    <field name="sent_to"/>
+                                                    <field name="subject"/>
+                                                </group>
+                                                <group>
+                                                    <field name="notice_pdf" filename="notice_pdf_filename" widget="pdf_viewer"/>
+                                                    <field name="notice_pdf_filename" invisible="1"/>
+                                                    <field name="response_pdf" filename="response_pdf_filename" widget="pdf_viewer" readonly="1"/>
+                                                    <field name="response_pdf_filename" invisible="1"/>
+                                                    <field name="response_received_on" readonly="1"/>
+                                                </group>
+                                            </group>
+                                            <group string="Mail body / response notes">
+                                                <field name="body_html" widget="html"/>
+                                                <field name="response_notes"/>
+                                            </group>
+                                    </form>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="🎥 Hearing" name="page_hearing">
+                            <group>
+                                <group string="Schedule">
+                                    <field name="hearing_datetime"/>
+                                    <field name="hearing_link_type"/>
+                                    <field name="hearing_video_url" widget="url"
+                                           invisible="hearing_link_type == 'odoo'"/>
+                                    <field name="hearing_invite_user_ids" widget="many2many_tags"
+                                           options="{'no_create': True}"/>
+                                    <field name="hearing_notes"/>
+                                </group>
+                                <group string="Interim award">
+                                    <field name="interim_award_date"/>
+                                    <field name="interim_award_amount"/>
+                                    <field name="interim_award_notes"/>
+                                </group>
+                            </group>
+                            <separator string="Hearing log"/>
+                            <field name="hearing_line_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="hearing_datetime"/>
+                                    <field name="link_type"/>
+                                    <field name="meeting_link" widget="url"/>
+                                    <field name="invitees"/>
+                                    <field name="created_by_id"/>
+                                </list>
+                                <form string="Hearing detail">
+                                    <group>
+                                        <group>
+                                            <field name="hearing_datetime"/>
+                                            <field name="link_type"/>
+                                            <field name="meeting_link" widget="url"/>
+                                            <field name="invitees"/>
+                                            <field name="created_by_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="notes"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                            <separator string="Interim orders"/>
+                            <field name="interim_order_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="order_date"/>
+                                    <field name="amount"/>
+                                    <field name="notes"/>
+                                    <field name="order_pdf_filename"/>
+                                </list>
+                                <form string="Interim order">
+                                    <group>
+                                        <group>
+                                            <field name="order_date"/>
+                                            <field name="hearing_line_id"/>
+                                            <field name="amount"/>
+                                            <field name="created_by_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="order_pdf" filename="order_pdf_filename" widget="pdf_viewer"/>
+                                            <field name="order_pdf_filename" invisible="1"/>
+                                            <field name="notes"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="🏆 Awards" name="page_awards">
+                            <field name="award_document_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="award_type"/>
+                                    <field name="award_date"/>
+                                    <field name="created_by_id"/>
+                                    <field name="award_pdf_filename"/>
+                                    <field name="award_notes"/>
+                                </list>
+                                <form string="Award document">
+                                    <group>
+                                        <group>
+                                            <field name="award_type"/>
+                                            <field name="award_date"/>
+                                            <field name="created_by_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="award_pdf" filename="award_pdf_filename" widget="pdf_viewer"/>
+                                            <field name="award_pdf_filename" invisible="1"/>
+                                            <field name="award_notes"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="📝 Case notes" name="page_notes">
+                            <field name="case_dispute_notes" nolabel="1"
+                                   placeholder="Case summary, strategy, evidence, key dates..."/>
+                        </page>
+                        <page string="📚 Reference" name="page_reference">
+                            <group>
+                                <group string="Geography (imported)">
+                                    <field name="region_id" readonly="1"/>
+                                    <field name="borrower_state_id" readonly="1"/>
+                                    <field name="branch_id" readonly="1"/>
+                                    <field name="location_id" readonly="1"/>
+                                </group>
+                                <group string="Product &amp; legal (imported)">
+                                    <field name="product_class_id" readonly="1"/>
+                                    <field name="product" readonly="1"/>
+                                    <field name="writeoff_id" readonly="1"/>
+                                    <field name="law_firm_id" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Borrower address">
+                                <field name="borrower_address" readonly="1" nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter open_attachments="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_loan" model="ir.actions.act_window">
+        <field name="name">Loan sheet</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="path">bharatnyay-loan</field>
+        <field name="view_mode">list,kanban,calendar,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Import or capture loan rows.</p>
+            <p>Set up <strong>Masters</strong> once (regions, branches, …), then link them here. Use <strong>Favorites → Import Records</strong> and map spreadsheet columns.</p>
+        </field>
+    </record>
+    <record id="action_bharat_loan_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_bharat_loan_tree"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+    <record id="action_bharat_loan_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_bharat_loan_form"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+    <record id="action_bharat_loan_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_bharat_loan_kanban"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+    <record id="action_bharat_loan_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="view_bharat_loan_calendar"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+
+    <record id="action_bharat_loan_notice" model="ir.actions.act_window">
+        <field name="name">Notice</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('workflow_stage', '=', 'notice')]</field>
+    </record>
+    <record id="action_bharat_loan_appointment_arbitrator" model="ir.actions.act_window">
+        <field name="name">Appointment of Arbitrator</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('workflow_stage', '=', 'appointment_of_arbitrator')]</field>
+    </record>
+    <record id="action_bharat_loan_arbitrator_appointed" model="ir.actions.act_window">
+        <field name="name">Arbitrator Appointed</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('workflow_stage', '=', 'arbitrator_appointed')]</field>
+    </record>
+    <record id="action_bharat_loan_hearing_status" model="ir.actions.act_window">
+        <field name="name">Hearing status</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('workflow_stage', '=', 'hearing')]</field>
+    </record>
+    <record id="action_bharat_loan_final_award" model="ir.actions.act_window">
+        <field name="name">Final award</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('workflow_stage', '=', 'final_award')]</field>
+    </record>
+    <record id="action_bharat_loan_paid" model="ir.actions.act_window">
+        <field name="name">Paid</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('workflow_stage', '=', 'paid')]</field>
+    </record>
+
+    <record id="action_bharat_loan_bulk_notice_pdf" model="ir.actions.server">
+        <field name="name">Generate notice PDF (selected)</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_notice').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_envelope_pdf" model="ir.actions.server">
+        <field name="name">Generate envelope PDF (selected)</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_envelope').report_action(records)</field>
+    </record>
+</odoo>
