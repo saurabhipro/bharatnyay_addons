@@ -130,7 +130,10 @@
                     <field name="workflow_stage" widget="statusbar"/>
                     <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"/>
                     <button name="action_appoint_arbitrator" type="object" string="Appoint Arbitrator"/>
-                    <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"/>
+                    <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"
+                            invisible="workflow_stage == 'hearing'"/>
+                    <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"
+                            invisible="workflow_stage != 'hearing'"/>
                     <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
                             invisible="workflow_stage != 'hearing'"/>
                     <button name="action_join_hearing_meeting" type="object" string="Join Meeting Online"
@@ -195,28 +198,28 @@
                         <div class="bn-hero-right">
                             <div class="bn-kpi bn-kpi-financed">
                                 <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-money"/></span>
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-money" title="Financed"/></span>
                                     <span class="bn-kpi-label">Financed</span>
                                 </div>
                                 <field name="hero_financed_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
                             </div>
                             <div class="bn-kpi bn-kpi-pos">
                                 <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-line-chart"/></span>
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-line-chart" title="Current POS"/></span>
                                     <span class="bn-kpi-label">Current POS</span>
                                 </div>
                                 <field name="hero_pos_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
                             </div>
                             <div class="bn-kpi bn-kpi-claim">
                                 <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-balance-scale"/></span>
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-balance-scale" title="Claim"/></span>
                                     <span class="bn-kpi-label">Claim</span>
                                 </div>
                                 <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
                             </div>
                             <div class="bn-kpi bn-kpi-disbursed">
                                 <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-calendar"/></span>
+                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-calendar" title="Disbursed"/></span>
                                     <span class="bn-kpi-label">Disbursed</span>
                                 </div>
                                 <field name="hero_disburse_display" readonly="1" nolabel="1" class="bn-kpi-val"/>

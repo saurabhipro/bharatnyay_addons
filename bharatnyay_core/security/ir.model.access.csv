@@ -11,6 +11,7 @@ access_bharat_user_role_assignment,bharat.user.role.assignment,model_bharat_user
 access_bharat_notification_template,bharat.notification.template,model_bharat_notification_template,base.group_user,1,1,1,1
 access_bharat_loan_notice_wizard,bharat.loan.notice.wizard,model_bharat_loan_notice_wizard,base.group_user,1,1,1,1
 access_bharat_loan_notice_response_wizard,bharat.loan.notice.response.wizard,model_bharat_loan_notice_response_wizard,base.group_user,1,1,1,1
+access_bharat_loan_hearing_slot_line,bharat.loan.hearing.slot.line,model_bharat_loan_hearing_slot_line,base.group_user,1,1,1,1
 access_bharat_loan_hearing_schedule_wizard,bharat.loan.hearing.schedule.wizard,model_bharat_loan_hearing_schedule_wizard,base.group_user,1,1,1,1
 access_bharat_loan_interim_award_wizard,bharat.loan.interim.award.wizard,model_bharat_loan_interim_award_wizard,base.group_user,1,1,1,1
 access_bharat_loan_notice_line,bharat.loan.notice.line,model_bharat_loan_notice_line,base.group_user,1,1,1,1

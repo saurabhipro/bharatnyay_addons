@@ -1,0 +1,88 @@
+.bn-slot-grid-field {
+    width: 100%;
+    max-width: 560px;
+}
+
+.bn-slot-grid-empty {
+    padding: 12px 4px;
+    font-size: 0.9rem;
+}
+
+.bn-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 8px;
+    padding: 4px 0 12px;
+}
+
+.bn-slot-cell {
+    border: none;
+    border-radius: 10px;
+    min-height: 58px;
+    padding: 6px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    font: inherit;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+        filter: brightness(1.02);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.92;
+    }
+}
+
+/* Free = green */
+.bn-slot-cell--free {
+    background: linear-gradient(160deg, #bbf7d0 0%, #86efac 100%);
+    color: #14532d;
+}
+
+/* Unavailable (e.g. past) = grey */
+.bn-slot-cell--unavailable {
+    background: linear-gradient(160deg, #f1f5f9 0%, #cbd5e1 100%);
+    color: #475569;
+}
+
+/* Booked = red */
+.bn-slot-cell--booked {
+    background: linear-gradient(160deg, #fecaca 0%, #f87171 100%);
+    color: #7f1d1d;
+}
+
+.bn-slot-cell--selected:not(:disabled) {
+    outline: 3px solid #166534;
+    outline-offset: 1px;
+    box-shadow: 0 0 0 2px #fff, 0 4px 14px rgba(22, 101, 52, 0.35);
+}
+
+.bn-slot-ico {
+    font-size: 0.95rem;
+    line-height: 1;
+    opacity: 0.9;
+}
+
+.bn-slot-num {
+    font-weight: 800;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.bn-slot-time {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    opacity: 0.88;
+}

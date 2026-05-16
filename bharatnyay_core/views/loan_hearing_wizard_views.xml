@@ -5,19 +5,43 @@
         <field name="model">bharat.loan.hearing.schedule.wizard</field>
         <field name="arch" type="xml">
             <form string="Schedule Hearing">
+                <field name="hearing_reschedule" invisible="1"/>
+                <field name="hearing_datetime" invisible="1"/>
                 <group>
                     <field name="loan_id"/>
-                    <field name="hearing_datetime"/>
+                </group>
+                <group string="Schedule">
+                    <field name="scheduler_date" invisible="use_manual_time"/>
+                    <field name="use_manual_time"/>
+                </group>
+                <group string="Pick a slot (09:00–17:00 · 30 min · 16 slots · 8 per row)"
+                       invisible="use_manual_time">
+                    <field name="slot_board_json" invisible="1"/>
+                    <field name="grid_selected_index"
+                           widget="bn_hearing_slot_grid"
+                           colspan="2"
+                           nolabel="1"/>
+                </group>
+                <group string="Selected time">
+                    <field name="selected_slot_range_display"
+                           readonly="1"
+                           invisible="use_manual_time"
+                           placeholder="Tap a green slot above"/>
+                    <field name="hearing_datetime" invisible="not use_manual_time"/>
+                </group>
+                <group string="Meeting link">
                     <field name="hearing_link_type" widget="radio" options="{'horizontal': true}"/>
                     <field name="hearing_video_url" placeholder="https://meet.google.com/..."
                            widget="url" invisible="hearing_link_type == 'odoo'"/>
                     <field name="invite_user_ids" widget="many2many_tags"
                            options="{'no_create': True}"
-                           placeholder="Add internal users to email with the hearing invitation…"/>
-                    <field name="hearing_notes" placeholder="Dial-in PIN, documents to upload, …"/>
+                           placeholder="Internal users to notify…"/>
                 </group>
                 <footer>
-                    <button string="Schedule &amp; Move to Hearing" type="object" name="action_schedule" class="btn-primary"/>
+                    <button string="Schedule &amp; Move to Hearing" type="object" name="action_schedule"
+                            class="btn-primary" invisible="hearing_reschedule"/>
+                    <button string="Save new time" type="object" name="action_schedule"
+                            class="btn-primary" invisible="not hearing_reschedule"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

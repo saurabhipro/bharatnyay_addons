@@ -49,6 +49,12 @@
               action="action_bharat_loan_notice"
               groups="base.group_no_one"
               sequence="30"/>
+    <menuitem id="menu_bharatnyay_hearings_today"
+              name="Today's hearings"
+              parent="menu_bharatnyay_workflow"
+              action="action_bharat_loan_hearing_line_arbitrator_today"
+              sequence="37"/>
+
     <menuitem id="menu_bharatnyay_hearing_status"
               name="Hearing status"
               parent="menu_bharatnyay_workflow"

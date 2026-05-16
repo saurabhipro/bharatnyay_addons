@@ -126,7 +126,7 @@ class BharatLoan(models.Model):
         group_expand='_group_expand_workflow_stage',
     )
     workflow_stage_display = fields.Char(
-        string='Workflow stage',
+        string='Stage display',
         compute='_compute_workflow_stage_display',
     )
     workflow_stage_index = fields.Integer(
@@ -623,6 +623,26 @@ class BharatLoan(models.Model):
             'view_mode': 'form',
             'target': 'new',
             'context': {'default_loan_id': self.id},
+        }
+
+    def action_reschedule_hearing(self):
+        """Move hearing date/time while remaining in Hearing stage (Teams-like reschedule)."""
+        self.ensure_one()
+        if self.workflow_stage != 'hearing':
+            raise UserError(
+                _('Use “Schedule Hearing” before the Hearing stage. Reschedule is only for active hearings.')
+            )
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Reschedule hearing'),
+            'res_model': 'bharat.loan.hearing.schedule.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
+                'default_loan_id': self.id,
+                'default_hearing_reschedule': True,
+            },
         }
 
     def _hearing_invitation_html(self):
@@ -1332,7 +1352,42 @@ class BharatLoanHearingLine(models.Model):
     meeting_link = fields.Char(string='Meeting/case link')
     notes = fields.Text(string='Hearing instructions')
     invitees = fields.Char(string='Invitees')
-    created_by_id = fields.Many2one('res.users', string='Created by', default=lambda self: self.env.user)
+    created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    def action_join_meeting(self):
+        """Open video URL or Odoo loan link in a browser tab."""
+        self.ensure_one()
+        loan = self.loan_id.sudo()
+        url = (self.meeting_link or '').strip()
+        if self.link_type == 'odoo' or not url:
+            url = (loan._hearing_build_odoo_case_url() or '').strip()
+        if not url:
+            raise UserError(_('No meeting link is stored on this hearing.'))
+        normalized = loan._hearing_normalize_external_meeting_url(url)
+        return {
+            'type': 'ir.actions.act_url',
+            'url': normalized,
+            'target': 'new',
+        }
+
+    def action_reschedule_hearing(self):
+        """Open schedule wizard for this loan while staying in Hearing stage."""
+        self.ensure_one()
+        loan = self.loan_id
+        if loan.workflow_stage != 'hearing':
+            raise UserError(_('Reschedule from this list only applies to cases in the Hearing stage.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Reschedule hearing'),
+            'res_model': 'bharat.loan.hearing.schedule.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'active_id': loan.id,
+                'default_loan_id': loan.id,
+                'default_hearing_reschedule': True,
+            },
+        }
 
 
 class BharatLoanInterimOrder(models.Model):
@@ -1353,7 +1408,7 @@ class BharatLoanInterimOrder(models.Model):
     notes = fields.Text(string='Order notes')
     order_pdf = fields.Binary(string='Interim order PDF', attachment=True)
     order_pdf_filename = fields.Char(string='Interim PDF filename')
-    created_by_id = fields.Many2one('res.users', string='Created by', default=lambda self: self.env.user)
+    created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
 
 
 class BharatLoanAwardDocument(models.Model):
@@ -1371,4 +1426,4 @@ class BharatLoanAwardDocument(models.Model):
     award_notes = fields.Text(string='Award summary')
     award_pdf = fields.Binary(string='Award PDF', attachment=True)
     award_pdf_filename = fields.Char(string='Award filename')
-    created_by_id = fields.Many2one('res.users', string='Created by', default=lambda self: self.env.user)
+    created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)

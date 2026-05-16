@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bharatnyay_core.HearingSlotGridField">
+        <div class="bn-slot-grid-field">
+            <div t-if="slots.length === 0" class="bn-slot-grid-empty text-muted">
+                Pick a day and ensure an arbitrator is set on the loan to load the grid (16 slots, 09:00–17:00, 8 per row).
+            </div>
+            <div t-else="" class="bn-slot-grid" role="grid" aria-label="Hearing time slots">
+                <t t-foreach="slots" t-as="slot" t-key="slot.index">
+                    <button type="button"
+                            role="gridcell"
+                            t-att-class="cellClass(slot)"
+                            t-att-disabled="isDisabled(slot)"
+                            t-att-title="slotTitle(slot)"
+                            t-on-click.stop="() => this.onSelect(slot)">
+                        <i t-att-class="slotIconClass(slot)" aria-hidden="true"/>
+                        <span class="bn-slot-num" t-esc="slot.index"/>
+                        <span class="bn-slot-time" t-esc="slot.label"/>
+                    </button>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
