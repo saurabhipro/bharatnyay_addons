@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_hearing_line_search" model="ir.ui.view">
+        <field name="name">bharat.loan.hearing.line.search</field>
+        <field name="model">bharat.loan.hearing.line</field>
+        <field name="arch" type="xml">
+            <search string="Hearings">
+                <field name="loan_id"/>
+                <field name="meeting_link"/>
+                <field name="hearing_datetime"/>
+                <separator/>
+                <filter string="Today" name="today" date="hearing_datetime"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_hearing_line_tree" model="ir.ui.view">
+        <field name="name">bharat.loan.hearing.line.list</field>
+        <field name="model">bharat.loan.hearing.line</field>
+        <field name="arch" type="xml">
+            <list string="Hearings" default_order="hearing_datetime asc" multi_edit="0">
+                <button name="action_join_meeting" type="object" string="Join" class="btn-link" title="Open meeting link"/>
+                <button name="action_reschedule_hearing" type="object" string="Reschedule" class="btn-link"/>
+                <field name="hearing_datetime"/>
+                <field name="loan_id"/>
+                <field name="link_type"/>
+                <field name="meeting_link" widget="url"/>
+                <field name="invitees" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_hearing_line_calendar" model="ir.ui.view">
+        <field name="name">bharat.loan.hearing.line.calendar</field>
+        <field name="model">bharat.loan.hearing.line</field>
+        <field name="arch" type="xml">
+            <calendar string="My hearings"
+                      date_start="hearing_datetime"
+                      mode="week"
+                      color="loan_id"
+                      event_open_popup="true"
+                      quick_create="false">
+                <field name="loan_id"/>
+                <field name="meeting_link"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_hearing_line_form" model="ir.ui.view">
+        <field name="name">bharat.loan.hearing.line.form</field>
+        <field name="model">bharat.loan.hearing.line</field>
+        <field name="arch" type="xml">
+            <form string="Hearing">
+                <header>
+                    <button name="action_join_meeting" type="object" string="Join meeting" class="btn-primary"/>
+                    <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="loan_id"/>
+                        <field name="hearing_datetime"/>
+                        <field name="link_type"/>
+                        <field name="meeting_link" widget="url"/>
+                        <field name="invitees"/>
+                        <field name="notes"/>
+                        <field name="created_by_id" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_loan_hearing_line_arbitrator_today" model="ir.actions.act_window">
+        <field name="name">Today's hearings</field>
+        <field name="res_model">bharat.loan.hearing.line</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_hearing_line_search"/>
+        <field name="domain">[('loan_id.arbitrator_id', '=', uid)]</field>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hearings match this filter.
+            </p>
+            <p>
+                Open the week view to browse other dates. Only loans where you are the arbitrator appear here.
+            </p>
+        </field>
+    </record>
+</odoo>
