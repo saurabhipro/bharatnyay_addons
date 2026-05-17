@@ -40,6 +40,8 @@
             'bharatnyay_core/static/src/loan_form/loan_form.scss',
             'bharatnyay_core/static/src/dashboard/bharatnyay_dashboard.xml',
             'bharatnyay_core/static/src/dashboard/bharatnyay_dashboard.js',
+            'bharatnyay_core/static/src/js/user_menus.js',
+
         ],
     },
     'installable': True,
