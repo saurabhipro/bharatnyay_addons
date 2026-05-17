@@ -41,7 +41,6 @@
         <field name="implied_ids" eval="[
             (4, ref('base.group_user')),
             (4, ref('group_bharat_case_manager')),
-            (4, ref('group_bharat_arbitrator')),
             (4, ref('group_bharat_borrower')),
             (4, ref('group_bharat_lender')),
         ]"/>
