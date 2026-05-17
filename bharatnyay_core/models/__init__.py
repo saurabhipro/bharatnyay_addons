@@ -6,7 +6,7 @@ from . import product_class
 from . import writeoff
 from . import law_firm
 from . import notification_template
-from . import user_role_assignment
+from . import res_users
 from . import bharat_nbfc
 from . import product_template
 from . import account_move

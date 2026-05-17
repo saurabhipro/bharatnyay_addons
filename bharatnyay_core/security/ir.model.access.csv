@@ -7,7 +7,6 @@ access_bharat_loan_location,bharat.loan_location,model_bharat_loan_location,base
 access_bharat_product_class,bharat.product_class,model_bharat_product_class,base.group_user,1,1,1,1
 access_bharat_writeoff,bharat.writeoff,model_bharat_writeoff,base.group_user,1,1,1,1
 access_bharat_law_firm,bharat.law_firm,model_bharat_law_firm,base.group_user,1,1,1,1
-access_bharat_user_role_assignment,bharat.user.role.assignment,model_bharat_user_role_assignment,base.group_user,1,1,1,1
 access_bharat_notification_template,bharat.notification.template,model_bharat_notification_template,base.group_user,1,1,1,1
 access_bharat_loan_notice_wizard,bharat.loan.notice.wizard,model_bharat_loan_notice_wizard,base.group_user,1,1,1,1
 access_bharat_loan_notice_response_wizard,bharat.loan.notice.response.wizard,model_bharat_loan_notice_response_wizard,base.group_user,1,1,1,1

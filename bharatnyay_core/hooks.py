@@ -257,11 +257,58 @@ DEMO_USERS_ROLES = (
 )
 
 
+def _table_exists(cr, table_name):
+    cr.execute(
+        """
+        SELECT EXISTS (
+            SELECT 1
+              FROM information_schema.tables
+             WHERE table_catalog = current_database()
+               AND table_name = %s
+        )
+        """,
+        (table_name,),
+    )
+    return bool(cr.fetchone()[0])
+
+
+def migrate_user_role_assignments_to_res_users(cr):
+    """Copy legacy assignment rows onto ``res.users``, then drop the old table."""
+    if not _table_exists(cr, 'bharat_user_role_assignment'):
+        return
+    if not _column_exists(cr, 'public', 'res_users', 'bharat_role'):
+        _logger.warning('bharatnyay_core: skip role migration — res_users.bharat_role missing')
+        return
+
+    cr.execute("""
+        SELECT DISTINCT ON (user_id)
+               user_id, role, region_id, borrower_state_id, branch_id, location_id, note
+          FROM bharat_user_role_assignment
+         WHERE active IS TRUE AND user_id IS NOT NULL
+         ORDER BY user_id, id DESC
+    """)
+    rows = cr.fetchall()
+    for user_id, role, region_id, state_id, branch_id, location_id, note in rows:
+        cr.execute("""
+            UPDATE res_users
+               SET bharat_role = %s,
+                   bharat_region_id = %s,
+                   bharat_borrower_state_id = %s,
+                   bharat_branch_id = %s,
+                   bharat_location_id = %s,
+                   bharat_role_note = COALESCE(%s, bharat_role_note)
+             WHERE id = %s
+               AND (bharat_role IS NULL OR bharat_role = '')
+        """, (role, region_id, state_id, branch_id, location_id, note, user_id))
+
+    cr.execute('DROP TABLE IF EXISTS bharat_user_role_assignment CASCADE')
+    _logger.info('bharatnyay_core: migrated %s user role assignment(s) to res.users', len(rows))
+
+
 def seed_bharatnyay_demo_users_and_roles(cr):
-    """Idempotent demo users + ``bharat.user.role.assignment`` rows (sandbox passwords)."""
+    """Idempotent demo users with BharatNyay operational roles (sandbox passwords)."""
     env = api.Environment(cr, SUPERUSER_ID, {})
 
-    Assign = env['bharat.user.role.assignment'].sudo()
     Users = env['res.users'].sudo()
 
     group_user = env.ref('base.group_user', raise_if_not_found=False)
@@ -292,18 +339,18 @@ def seed_bharatnyay_demo_users_and_roles(cr):
         _logger.info('bharatnyay_core: created demo user %s', login)
         return u
 
-    def _ensure_role(user_id, role):
-        if Assign.search([('user_id', '=', user_id), ('role', '=', role)], limit=1):
+    def _ensure_role(user, role):
+        if user.bharat_role:
             return
         try:
-            Assign.create({'user_id': user_id, 'role': role, 'active': True})
-            _logger.info('bharatnyay_core: created role assignment %s for user id %s', role, user_id)
+            user.write({'bharat_role': role})
+            _logger.info('bharatnyay_core: set role %s on user %s', role, user.login)
         except Exception:
-            _logger.warning('bharatnyay_core: could not create assignment %s for user id %s', role, user_id)
+            _logger.warning('bharatnyay_core: could not set role %s on user %s', role, user.login)
 
     for login, name, email, role in DEMO_USERS_ROLES:
         usr = _ensure_user(login, name, email)
-        _ensure_role(usr.id, role)
+        _ensure_role(usr, role)
 
     env.invalidate_all()
 
@@ -312,5 +359,6 @@ __all__ = [
     'repair_loan_foreign_key_columns',
     'repair_loan_arbitrator_id_column',
     'repair_loan_hearing_columns',
+    'migrate_user_role_assignments_to_res_users',
     'seed_bharatnyay_demo_users_and_roles',
 ]

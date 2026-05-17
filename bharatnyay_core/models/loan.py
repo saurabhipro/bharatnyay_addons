@@ -391,12 +391,14 @@ class BharatLoan(models.Model):
 
     @api.model
     def _domain_arbitrator_users(self):
-        """Users listed as arbitrator in BharatNyay role assignments (active)."""
-        Assignment = self.env['bharat.user.role.assignment'].sudo()
-        assigns = Assignment.search([('role', '=', 'arbitrator'), ('active', '=', True)])
-        uids = assigns.mapped('user_id').filtered(lambda u: u.active).ids
-        if uids:
-            return [('id', 'in', uids)]
+        """Internal users marked as arbitrator on their user record (active)."""
+        arbitrators = self.env['res.users'].sudo().search([
+            ('bharat_role', '=', 'arbitrator'),
+            ('active', '=', True),
+            ('share', '=', False),
+        ])
+        if arbitrators:
+            return [('id', 'in', arbitrators.ids)]
         return [('share', '=', False)]
 
     @staticmethod

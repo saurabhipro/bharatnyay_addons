@@ -92,11 +92,11 @@ class BharatWebsite(http.Controller):
         thanks_flag = bool(request.params.get('thanks'))
         error = False
 
-        assigns = request.env['bharat.user.role.assignment'].sudo().search([
-            ('role', '=', 'arbitrator'),
+        arbitrators = request.env['res.users'].sudo().search([
+            ('bharat_role', '=', 'arbitrator'),
             ('active', '=', True),
+            ('share', '=', False),
         ])
-        arbitrators = assigns.mapped('user_id').filtered(lambda u: u.active)
 
         if request.httprequest.method == 'POST':
             otp = (post.get('otp') or '').strip()
