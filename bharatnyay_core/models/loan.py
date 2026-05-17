@@ -65,11 +65,19 @@ class BharatLoan(models.Model):
     lok_adalat_location = fields.Char(string='Lok Adalat / Conciliation Location')
     lok_adalat_location_address = fields.Text(string='Lok Adalat / Conciliation Address')
 
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        required=True,
+        index=True,
+    )
     currency_id = fields.Many2one(
         'res.currency',
         string='Currency',
-        default=lambda self: self.env.company.currency_id,
-        required=True,
+        compute='_compute_currency_id',
+        store=True,
+        readonly=True,
     )
     financed_amount = fields.Monetary(string='Financed amount', currency_field='currency_id')
     disbursement_date = fields.Date(string='Date of disbursement')
@@ -301,6 +309,14 @@ class BharatLoan(models.Model):
         default=0,
         help='Rough doc-pack count shown on the KPI strip.',
     )
+
+    @api.depends('company_id', 'company_id.currency_id')
+    def _compute_currency_id(self):
+        for loan in self:
+            if loan.company_id:
+                loan.currency_id = loan.company_id.currency_id
+            else:
+                loan.currency_id = self.env.company.currency_id
 
     @api.depends('branch_id', 'branch', 'borrower_state_id', 'borrower_state')
     def _compute_respondent_territory_display(self):
@@ -973,6 +989,8 @@ class BharatLoan(models.Model):
             self._coerce_many2one_name_strings(values)
             self._populate_master_links_from_text(values)
             self._populate_text_from_master_links(values)
+            if not values.get('company_id'):
+                values['company_id'] = self.env.company.id
             normalized.append(values)
         return super().create(normalized)
 
