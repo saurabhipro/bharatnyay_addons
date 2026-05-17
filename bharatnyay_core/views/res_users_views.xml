@@ -9,6 +9,7 @@
                 <field name="email"/>
                 <field name="bharat_role"/>
                 <filter string="Has role" name="has_role" domain="[('bharat_role', '!=', False)]"/>
+                <filter string="Admins" name="role_admin" domain="[('bharat_role', '=', 'admin')]"/>
                 <filter string="Case managers" name="role_cm" domain="[('bharat_role', '=', 'case_manager')]"/>
                 <filter string="Arbitrators" name="role_arb" domain="[('bharat_role', '=', 'arbitrator')]"/>
                 <filter string="Borrowers" name="role_borrower" domain="[('bharat_role', '=', 'borrower')]"/>
@@ -87,7 +88,7 @@
         ]"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Assign operational roles by geography and location.</p>
-            <p>Map internal users as Case Manager, Arbitrator, Borrower, or Lender.</p>
+            <p>Map internal users as Admin, Case Manager, Arbitrator, Borrower, or Lender. The matching access group is applied automatically.</p>
         </field>
     </record>
 </odoo>
