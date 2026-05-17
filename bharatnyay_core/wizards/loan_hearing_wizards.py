@@ -244,6 +244,31 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         self.ensure_one()
         if not self.loan_id or not self.scheduler_date or not self.loan_id.arbitrator_id:
             return {'slots': []}
+        Block = self.env['bharat.arbitrator.blockout'].sudo()
+        au = self.loan_id.arbitrator_id
+        day = self.scheduler_date
+        if Block.search(
+            [
+                ('user_id', '=', au.id),
+                ('date_start', '<=', day),
+                ('date_end', '>=', day),
+            ],
+            limit=1,
+        ):
+            tz = self._user_timezone()
+            slots = []
+            for idx, local_start in enumerate(self._fixed_grid_local_starts(self.scheduler_date, tz), start=1):
+                utc_naive = local_start.astimezone(pytz.UTC).replace(tzinfo=None)
+                utc_str = fields.Datetime.to_string(utc_naive)
+                label = local_start.strftime('%H:%M')
+                slots.append({
+                    'index': idx,
+                    'label': label,
+                    'status': 'unavailable',
+                    'available': False,
+                    'utc': utc_str,
+                })
+            return {'slots': slots}
         busy = self._busy_hearing_starts_utc(self.loan_id.arbitrator_id, exclude_loan=self.loan_id)
         tz = self._user_timezone()
         slots = []

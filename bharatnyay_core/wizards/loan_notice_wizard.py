@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import base64
+import secrets
+import uuid
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -93,13 +95,10 @@ class BharatLoanNoticeWizard(models.TransientModel):
         pdf_content = False
         pdf_filename = False
         pdf_bytes = None
-        report = self.env.ref('bharatnyay_core.action_report_bharat_loan_notice', raise_if_not_found=False)
-        if report:
-            pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=self.loan_id.ids)
-            pdf_content = base64.b64encode(pdf_bytes)
-            pdf_filename = 'Notice_%s_%s.pdf' % (self.notice_number or 1, self.loan_id.loan_number or self.loan_id.id)
+        token = uuid.uuid4().hex
+        otp = '%06d' % secrets.randbelow(1000000)
 
-        self.env['bharat.loan.notice.line'].create({
+        line = self.env['bharat.loan.notice.line'].create({
             'loan_id': self.loan_id.id,
             'notice_type': self.notice_type,
             'notice_number': self.notice_number or 1,
@@ -109,9 +108,22 @@ class BharatLoanNoticeWizard(models.TransientModel):
             'sent_to': recipient_email,
             'subject': self.subject,
             'body_html': (self.body or '').replace('\n', '<br/>'),
-            'notice_pdf': pdf_content,
-            'notice_pdf_filename': pdf_filename,
+            'qr_access_token': token,
+            'microsite_otp_code': otp,
         })
+
+        report = self.env.ref(
+            'bharatnyay_core.action_report_bharat_notice_line_notice',
+            raise_if_not_found=False,
+        )
+        if report:
+            pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=line.ids)
+            pdf_content = base64.b64encode(pdf_bytes)
+            pdf_filename = (
+                'Notice_%s_%s_%s.pdf'
+                % (self.notice_number or 1, self.loan_id.loan_number or self.loan_id.id, token[:8])
+            )
+            line.write({'notice_pdf': pdf_content, 'notice_pdf_filename': pdf_filename})
 
         self.loan_id.write({'workflow_stage': self.notice_type})
 
@@ -120,10 +132,10 @@ class BharatLoanNoticeWizard(models.TransientModel):
                 f"Notice sent: <b>Notice {self.notice_number or 1}</b>"
                 f"<br/>To: {recipient_label} &lt;{recipient_email}&gt;"
                 f"<br/>Subject: {self.subject}"
+                f"<br/>Borrower microsite OTP (demo): <b>{otp}</b>"
             ),
         )
         if pdf_bytes and pdf_filename:
-            # Chatter previews PDFs attached to mail.message — content must be raw bytes, not base64.
             post_vals['attachments'] = [(pdf_filename, pdf_bytes)]
         self.loan_id.message_post(**post_vals)
         return {'type': 'ir.actions.act_window_close'}

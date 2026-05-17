@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_nbfc_tree" model="ir.ui.view">
+        <field name="name">bharat.nbfc.list</field>
+        <field name="model">bharat.nbfc</field>
+        <field name="arch" type="xml">
+            <list string="NBFC / lenders">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="partner_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_nbfc_form" model="ir.ui.view">
+        <field name="name">bharat.nbfc.form</field>
+        <field name="model">bharat.nbfc</field>
+        <field name="arch" type="xml">
+            <form string="NBFC">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="partner_id"
+                               placeholder="Link the NBFC legal entity — use Sales ▸ Pricelists for special rates."/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_nbfc" model="ir.actions.act_window">
+        <field name="name">NBFC / lenders</field>
+        <field name="res_model">bharat.nbfc</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_bharat_arbitrator_blockout_tree" model="ir.ui.view">
+        <field name="name">bharat.arbitrator.blockout.list</field>
+        <field name="model">bharat.arbitrator.blockout</field>
+        <field name="arch" type="xml">
+            <list string="Arbitrator block-outs">
+                <field name="user_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_arbitrator_blockout_form" model="ir.ui.view">
+        <field name="name">bharat.arbitrator.blockout.form</field>
+        <field name="model">bharat.arbitrator.blockout</field>
+        <field name="arch" type="xml">
+            <form string="Block-out">
+                <sheet>
+                    <group>
+                        <field name="user_id"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_arbitrator_blockout" model="ir.actions.act_window">
+        <field name="name">Arbitrator calendar block-outs</field>
+        <field name="res_model">bharat.arbitrator.blockout</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_bharat_postal_import_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.postal.tracking.import.wizard.form</field>
+        <field name="model">bharat.postal.tracking.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Postal tracking import">
+                <group>
+                    <field name="dry_run"/>
+                    <field name="raw_text" widget="text" placeholder="Tracking No,Dispatch Date,Delivery Status,Delivery Date&#10;ABC123,01-01-2026,Delivered,05-01-2026"/>
+                </group>
+                <footer>
+                    <button name="action_import" string="Run import" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_postal_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import postal tracking</field>
+        <field name="res_model">bharat.postal.tracking.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_bharat_arbitration_invoice_loader_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.arbitration.invoice.line.loader.wizard.form</field>
+        <field name="model">bharat.arbitration.invoice.line.loader.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add arbitration lines">
+                <group>
+                    <field name="move_id" invisible="1"/>
+                    <field name="loan_ids" widget="many2many_tags"/>
+                </group>
+                <footer>
+                    <button name="action_apply" string="Add invoice lines" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

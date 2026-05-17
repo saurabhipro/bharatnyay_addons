@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <!-- Demo NBFC + one product per arbitration stage (rates = Sales Price on product). -->
+    <record id="sample_nbfc_demo_finance" model="bharat.nbfc">
+        <field name="name">Demo Finance NBFC</field>
+        <field name="code">DMONBFC</field>
+    </record>
+
+    <record id="sample_product_bn_notice_1" model="product.template">
+        <field name="name">Arbitration — Notice 1</field>
+        <field name="type">service</field>
+        <field name="list_price">100</field>
+        <field name="bharat_arbitration_stage">notice_1</field>
+    </record>
+    <record id="sample_product_bn_notice_2" model="product.template">
+        <field name="name">Arbitration — Notice 2</field>
+        <field name="type">service</field>
+        <field name="list_price">100</field>
+        <field name="bharat_arbitration_stage">notice_2</field>
+    </record>
+    <record id="sample_product_bn_notice_3" model="product.template">
+        <field name="name">Arbitration — Notice 3</field>
+        <field name="type">service</field>
+        <field name="list_price">100</field>
+        <field name="bharat_arbitration_stage">notice_3</field>
+    </record>
+    <record id="sample_product_bn_hearing_1" model="product.template">
+        <field name="name">Arbitration — Hearing 1</field>
+        <field name="type">service</field>
+        <field name="list_price">200</field>
+        <field name="bharat_arbitration_stage">hearing_1</field>
+    </record>
+    <record id="sample_product_bn_hearing_2" model="product.template">
+        <field name="name">Arbitration — Hearing 2</field>
+        <field name="type">service</field>
+        <field name="list_price">200</field>
+        <field name="bharat_arbitration_stage">hearing_2</field>
+    </record>
+    <record id="sample_product_bn_hearing_3" model="product.template">
+        <field name="name">Arbitration — Hearing 3</field>
+        <field name="type">service</field>
+        <field name="list_price">300</field>
+        <field name="bharat_arbitration_stage">hearing_3</field>
+    </record>
+    <record id="sample_product_bn_award" model="product.template">
+        <field name="name">Arbitration — Award</field>
+        <field name="type">service</field>
+        <field name="list_price">500</field>
+        <field name="bharat_arbitration_stage">award</field>
+    </record>
+</odoo>

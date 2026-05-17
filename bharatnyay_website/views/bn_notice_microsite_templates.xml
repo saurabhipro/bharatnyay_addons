@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="bn_notice_microsite_page" name="Notice QR response">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-5 col-lg-8 mx-auto">
+                    <t t-if="thanks">
+                        <h1 class="mb-3">Thank you</h1>
+                        <p class="lead">Your arbitrator preference has been recorded on the BharatNyay case file.</p>
+                        <p class="text-muted">You may close this page. The case team may contact you with next steps.</p>
+                    </t>
+                    <t t-else="">
+                        <h1 class="mb-2">BharatNyay notice response</h1>
+                        <p class="text-muted mb-4">
+                            Loan <strong t-esc="loan.loan_number"/> · Case <strong t-esc="loan.case_number or '—'"/>
+                        </p>
+                        <t t-if="error">
+                            <div class="alert alert-danger" role="alert">
+                                <span t-esc="error"/>
+                            </div>
+                        </t>
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <p><strong>OTP (demo)</strong>: enter the 6-digit code shown on your notice email.</p>
+                                <form t-attf-action="/bn/respond/{{ line.qr_access_token }}" method="post" class="o_mark_required">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="mb-3">
+                                        <label class="form-label">OTP</label>
+                                        <input class="form-control" type="text" name="otp" maxlength="8" required="required"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose arbitrator</label>
+                                        <select class="form-select" name="arbitrator_id" required="required">
+                                            <option value="">—</option>
+                                            <t t-foreach="arbitrators" t-as="u">
+                                                <option t-att-value="u.id"><t t-esc="u.name"/></option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Preferred hearing slot / notes (optional)</label>
+                                        <textarea class="form-control" name="preferred_slot" rows="3"/>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="consent" value="1" id="bn_consent" required="required"/>
+                                        <label class="form-check-label" for="bn_consent">
+                                            I confirm that I am authorised to submit this preference for the borrower on this loan.
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    </t>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

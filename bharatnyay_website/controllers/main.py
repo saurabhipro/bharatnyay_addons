@@ -1,6 +1,6 @@
 import logging
 
-from odoo import http
+from odoo import _, fields, http
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -72,4 +72,69 @@ class BharatWebsite(http.Controller):
         return request.render(
             'bharatnyay_website.portal_my_cases',
             {'loans': loans},
+        )
+
+    @http.route(
+        ['/bn/respond/<string:token>'],
+        type='http',
+        auth='public',
+        website=True,
+        methods=['GET', 'POST'],
+        csrf=True,
+    )
+    def bn_notice_respond(self, token, **post):
+        NoticeLine = request.env['bharat.loan.notice.line'].sudo()
+        line = NoticeLine.search([('qr_access_token', '=', token)], limit=1)
+        if not line:
+            return request.not_found()
+
+        loan = line.loan_id.sudo()
+        thanks_flag = bool(request.params.get('thanks'))
+        error = False
+
+        assigns = request.env['bharat.user.role.assignment'].sudo().search([
+            ('role', '=', 'arbitrator'),
+            ('active', '=', True),
+        ])
+        arbitrators = assigns.mapped('user_id').filtered(lambda u: u.active)
+
+        if request.httprequest.method == 'POST':
+            otp = (post.get('otp') or '').strip()
+            arb_raw = post.get('arbitrator_id')
+            pref = (post.get('preferred_slot') or '').strip()
+            consent = post.get('consent')
+            try:
+                arb_id = int(arb_raw or 0)
+            except (TypeError, ValueError):
+                arb_id = 0
+
+            if otp != (line.microsite_otp_code or ''):
+                error = _('Invalid OTP. Use the 6-digit code from your notice correspondence.')
+            elif not arb_id or arb_id not in arbitrators.ids:
+                error = _('Please choose an arbitrator from the approved list.')
+            elif not consent:
+                error = _('Please tick consent to proceed.')
+            else:
+                loan.write({'arbitrator_id': arb_id})
+                line.write({
+                    'borrower_slot_preference': pref,
+                    'microsite_last_submit_at': fields.Datetime.now(),
+                })
+                loan.message_post(
+                    body=_(
+                        'Borrower submitted arbitrator preference via QR microsite (notice %s).'
+                    )
+                    % (line.notice_label or ''),
+                )
+                return request.redirect('/bn/respond/%s?thanks=1' % token)
+
+        return request.render(
+            'bharatnyay_website.bn_notice_microsite_page',
+            {
+                'line': line,
+                'loan': loan,
+                'arbitrators': arbitrators,
+                'thanks': thanks_flag,
+                'error': error,
+            },
         )

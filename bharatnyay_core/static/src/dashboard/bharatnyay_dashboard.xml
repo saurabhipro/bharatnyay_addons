@@ -83,6 +83,39 @@
                         </div>
                     </div>
 
+                    <div class="bn-kpi-grid bn-kpi-phase mt-3">
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Hearings today</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
+                            <div class="bn-kpi-trend">Scheduled hearing lines</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Dispatch backlog</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.pending_dispatch || 0)"/>
+                            <div class="bn-kpi-trend">Notice sent, not delivered</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Draft invoices</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.draft_invoices || 0)"/>
+                            <div class="bn-kpi-trend">Billing annexures</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">No arbitrator</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.cases_without_arbitrator || 0)"/>
+                            <div class="bn-kpi-trend">Appointment stage</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Award pending</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.pending_award_upload || 0)"/>
+                            <div class="bn-kpi-trend">Final award, no doc</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Loan activities due</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.loan_activities_due || 0)"/>
+                            <div class="bn-kpi-trend">Open Odoo activities</div>
+                        </div>
+                    </div>
+
                     <div class="bn-stage-strip">
                         <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
                             <button type="button"

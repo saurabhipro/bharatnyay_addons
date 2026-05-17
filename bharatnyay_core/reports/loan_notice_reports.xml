@@ -83,6 +83,90 @@
         </t>
     </template>
 
+    <record id="action_report_bharat_notice_line_notice" model="ir.actions.report">
+        <field name="name">Notice PDF (QR microsite)</field>
+        <field name="model">bharat.loan.notice.line</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_notice_line_notice_doc</field>
+        <field name="report_file">bharatnyay_core.report_bharat_notice_line_notice_doc</field>
+        <field name="print_report_name">'Notice QR - %s' % (object.loan_id.loan_number or object.id)</field>
+    </record>
+
+    <template id="report_bharat_notice_line_notice_doc">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <t t-set="loan" t-value="o.loan_id"/>
+                        <t t-set="notice_title" t-value="(loan.notice_hand or '').strip() or 'Notice'"/>
+                        <h2 style="margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
+                            <span t-esc="notice_title"/>
+                        </h2>
+                        <h4 style="margin-top: 0; margin-bottom: 14px; color: #444;">Loan Communication Letter</h4>
+
+                        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span><strong>Date:</strong> <span t-esc="loan.deliver_date or loan.create_date.date()"/></span>
+                                <span><strong>Loan Number:</strong> <span t-esc="loan.loan_number or '-'"/></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><strong>Borrower:</strong> <span t-esc="loan.customer_name or '-'"/></span>
+                                <span><strong>Stage:</strong> <span t-esc="dict(loan._fields['workflow_stage'].selection).get(loan.workflow_stage, '-')"/></span>
+                            </div>
+                        </div>
+
+                        <p><strong>Branch:</strong> <span t-esc="(loan.branch_id.name or loan.branch or '-')"/></p>
+                        <p><strong>State / Region:</strong> <span t-esc="' / '.join([x for x in [loan.borrower_state_id.name if loan.borrower_state_id else loan.borrower_state, loan.region_id.name if loan.region_id else loan.region] if x]) or '-'"/></p>
+                        <p><strong>Product:</strong> <span t-esc="loan.product or (loan.product_class_id.name if loan.product_class_id else loan.product_classification) or '-'"/></p>
+                        <p>
+                            <strong>Current POS:</strong>
+                            <span t-field="loan.current_pos" t-options='{"widget": "monetary", "display_currency": loan.currency_id}'/>
+                        </p>
+                        <p>
+                            <strong>Claim Amount:</strong>
+                            <span t-field="loan.claim_amount" t-options='{"widget": "monetary", "display_currency": loan.currency_id}'/>
+                        </p>
+
+                        <div style="margin-top: 18px;">
+                            <p>Dear <span t-esc="loan.customer_name or 'Borrower'"/>,</p>
+                            <p style="text-align: justify;">
+                                This communication is issued in relation to the above loan account under the
+                                applicable provisions of the Arbitration and Conciliation Act, 1996 and the
+                                governing loan and contractual documents. You are hereby called upon to respond
+                                within the stipulated period and to participate in the arbitration process.
+                            </p>
+                            <p style="text-align: justify;">
+                                You may select an arbitrator from the panel list provided below / shared by the
+                                case team. Upon such selection, online hearing proceedings will be scheduled,
+                                and the selected arbitrator shall conduct the hearing and pass the arbitral
+                                award in accordance with law.
+                            </p>
+                            <p style="text-align: justify;">
+                                In case of non-response or non-participation, further action may be taken as
+                                permissible under law, including continuation of ex-parte proceedings.
+                            </p>
+                        </div>
+
+                        <p style="margin-top: 24px;">Regards,<br/>BharatNyay Legal Operations</p>
+
+                        <div style="margin-top: 28px; padding-top: 12px; border-top: 1px solid #eee;">
+                            <p style="font-size: 12px; color: #444;">
+                                Scan the QR code with your phone to confirm OTP and submit arbitrator preference.
+                            </p>
+                            <img t-if="o.notice_microsite_url_encoded"
+                                 style="width: 140px; height: 140px;"
+                                 t-att-src="'/report/barcode/?type=QR&amp;width=180&amp;height=180&amp;value=' + o.notice_microsite_url_encoded"/>
+                            <p style="font-size: 11px; color: #666;">
+                                Notice ref: <span t-esc="o.notice_label"/> · Microsite URL:<br/>
+                                <span style="word-break: break-all;" t-esc="o.notice_microsite_url"/>
+                            </p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
     <template id="report_bharat_loan_envelope">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">

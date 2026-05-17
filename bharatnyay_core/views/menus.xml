@@ -82,6 +82,37 @@
               action="action_bharat_branch"
               sequence="40"/>
 
+    <menuitem id="menu_bharatnyay_billing_root"
+              name="Billing &amp; ops"
+              parent="menu_bharatnyay_root"
+              sequence="18"/>
+
+    <menuitem id="menu_bharatnyay_nbfc"
+              name="NBFC / lenders"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_nbfc"
+              sequence="10"/>
+    <menuitem id="menu_bharatnyay_arbitration_products"
+              name="Arbitration billing products"
+              parent="menu_bharatnyay_billing_root"
+              action="action_product_template_arbitration_billing"
+              sequence="20"/>
+    <menuitem id="menu_bharatnyay_customer_invoices"
+              name="Customer invoices"
+              parent="menu_bharatnyay_billing_root"
+              action="account.action_move_out_invoice_type"
+              sequence="30"/>
+    <menuitem id="menu_bharatnyay_arbitrator_blockout_menu"
+              name="Arbitrator block-outs"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_arbitrator_blockout"
+              sequence="40"/>
+    <menuitem id="menu_bharatnyay_postal_import"
+              name="Import postal tracking"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_postal_import_wizard"
+              sequence="50"/>
+
     <menuitem id="menu_bharatnyay_region"
               name="Regions"
               parent="menu_bharatnyay_masters"

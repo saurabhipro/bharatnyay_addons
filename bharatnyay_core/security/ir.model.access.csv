@@ -18,3 +18,7 @@ access_bharat_loan_notice_line,bharat.loan.notice.line,model_bharat_loan_notice_
 access_bharat_loan_hearing_line,bharat.loan.hearing.line,model_bharat_loan_hearing_line,base.group_user,1,1,1,1
 access_bharat_loan_interim_order,bharat.loan.interim.order,model_bharat_loan_interim_order,base.group_user,1,1,1,1
 access_bharat_loan_award_document,bharat.loan.award.document,model_bharat_loan_award_document,base.group_user,1,1,1,1
+access_bharat_nbfc,bharat.nbfc,model_bharat_nbfc,base.group_user,1,1,1,1
+access_bharat_arbitrator_blockout,bharat.arbitrator.blockout,model_bharat_arbitrator_blockout,base.group_user,1,1,1,1
+access_bharat_postal_tracking_import_wizard,bharat.postal.tracking.import.wizard,model_bharat_postal_tracking_import_wizard,base.group_user,1,1,1,1
+access_bharat_arbitration_invoice_line_loader_wizard,bharat.arbitration.invoice.line.loader.wizard,model_bharat_arbitration_invoice_line_loader_wizard,base.group_user,1,1,1,1

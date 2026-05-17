@@ -3,7 +3,10 @@
 
 from collections import defaultdict
 import logging
+from datetime import datetime, time as dt_time
 
+import pytz
+import werkzeug.urls
 from markupsafe import escape
 
 from odoo import _, api, fields, models
@@ -23,6 +26,12 @@ class BharatLoan(models.Model):
     loan_number = fields.Char(string='Loan Number', required=True, index=True)
     case_number = fields.Char(string='BharatNyay Case Number', copy=False, index=True, readonly=True, tracking=True)
     batch_number = fields.Char(string='Batch Number', copy=False, index=True, tracking=True)
+    nbfc_id = fields.Many2one(
+        'bharat.nbfc',
+        string='NBFC / lender',
+        index=True,
+        help='Used for NBFC-specific billing rates and lender dashboards.',
+    )
     customer_name = fields.Char(string='Customer Name')
 
     # Keep master links for normalized future usage.
@@ -271,7 +280,8 @@ class BharatLoan(models.Model):
         """Loan rows have no ``name`` field; search omnibox + M2Os match several references."""
         args = list(args or [])
         if not (name or '').strip():
-            return super().name_search(name, args=args, operator=operator, limit=limit, order=order)
+            # Odoo 18+ BaseModel.name_search does not accept ``order``; keep sort via search when needed.
+            return super().name_search(name, args=args, operator=operator, limit=limit)
         or_domain = expression.OR(
             [
                 [('loan_number', operator, name)],
@@ -1053,6 +1063,9 @@ class BharatLoan(models.Model):
                 'create_date',
                 'deliver_status',
                 'lok_adalat_date',
+                'notice_count',
+                'award_document_count',
+                'arbitrator_id',
             ],
             order='create_date desc',
             limit=100000,
@@ -1070,6 +1083,10 @@ class BharatLoan(models.Model):
         by_branch = defaultdict(lambda: {'total': 0, 'active_pos': 0, 'pos_sum': 0.0, 'claim_sum': 0.0})
         by_product_label = defaultdict(int)
         by_stage = defaultdict(int)
+
+        pending_dispatch = 0
+        cases_no_arbitrator = 0
+        pending_award_upload = 0
 
         for row in rows:
             pos_val = row.get('current_pos') or 0.0
@@ -1097,7 +1114,15 @@ class BharatLoan(models.Model):
             if delivered or row.get('lok_adalat_date'):
                 lok_done += 1
 
+            if (row.get('notice_count') or 0) > 0 and not delivered and not row.get('lok_adalat_date'):
+                pending_dispatch += 1
+
             stage_key = row.get('workflow_stage') or ''
+            if stage_key == 'appointment_of_arbitrator' and not row.get('arbitrator_id'):
+                cases_no_arbitrator += 1
+            if stage_key == 'final_award' and not (row.get('award_document_count') or 0):
+                pending_award_upload += 1
+
             if stage_key:
                 by_stage[stage_key] += 1
 
@@ -1208,6 +1233,30 @@ class BharatLoan(models.Model):
 
         pos_ratio = round(100 * active_followup / total, 1) if total else 0.0
 
+        tzname = self.env.user.tz or 'UTC'
+        tz = pytz.timezone(tzname)
+        today = fields.Date.context_today(self)
+        start_local = tz.localize(datetime.combine(today, dt_time.min))
+        end_local = tz.localize(datetime.combine(today, dt_time.max))
+        start_utc = start_local.astimezone(pytz.UTC).replace(tzinfo=None)
+        end_utc = end_local.astimezone(pytz.UTC).replace(tzinfo=None)
+        start_s = fields.Datetime.to_string(start_utc)
+        end_s = fields.Datetime.to_string(end_utc)
+
+        hearings_today = self.env['bharat.loan.hearing.line'].sudo().search_count([
+            ('hearing_datetime', '>=', start_s),
+            ('hearing_datetime', '<=', end_s),
+        ])
+        draft_invoices = self.env['account.move'].sudo().search_count([
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'draft'),
+            ('bharat_arbitration_invoice', '=', True),
+        ])
+        activities_open = self.env['mail.activity'].sudo().search_count([
+            ('res_model', '=', 'bharat.loan'),
+            ('date_deadline', '<=', fields.Date.context_today(self)),
+        ])
+
         return {
             'currency_id': Currency.id,
             'currency_symbol': Currency.symbol or '₹',
@@ -1220,6 +1269,12 @@ class BharatLoan(models.Model):
                 'unique_customers': uniq_borrowers,
                 'total_pos_amount': round(total_pos, 2),
                 'total_claim_amount': round(total_claim, 2),
+                'hearings_today': hearings_today,
+                'pending_dispatch': pending_dispatch,
+                'draft_invoices': draft_invoices,
+                'cases_without_arbitrator': cases_no_arbitrator,
+                'pending_award_upload': pending_award_upload,
+                'loan_activities_due': activities_open,
             },
             'monthly_created': monthly_series,
             'product_mix': pie,
@@ -1299,6 +1354,20 @@ class BharatLoanNoticeLine(models.Model):
     _order = 'sent_on desc, id desc'
 
     loan_id = fields.Many2one('bharat.loan', required=True, ondelete='cascade', index=True)
+    qr_access_token = fields.Char(
+        string='QR token',
+        copy=False,
+        index=True,
+        help='Opaque token embedded in the notice QR code for the borrower microsite.',
+    )
+    microsite_otp_code = fields.Char(string='Borrower OTP (demo)', copy=False)
+    microsite_last_submit_at = fields.Datetime(string='Microsite last submit', copy=False)
+    borrower_slot_preference = fields.Char(string='Borrower hearing preference', copy=False)
+    notice_microsite_url = fields.Char(string='Microsite URL', compute='_compute_notice_microsite_links')
+    notice_microsite_url_encoded = fields.Char(
+        string='Microsite URL (encoded)',
+        compute='_compute_notice_microsite_links',
+    )
     notice_number = fields.Integer(string='Notice #', default=1, index=True)
     notice_label = fields.Char(string='Notice label', compute='_compute_notice_label', store=True)
     notice_type = fields.Selection([('notice', 'Notice')], default='notice', required=True)
@@ -1319,6 +1388,15 @@ class BharatLoanNoticeLine(models.Model):
     response_pdf_filename = fields.Char(string='Response filename')
     response_notes = fields.Text(string='Response notes')
     response_received_on = fields.Datetime(string='Response received on')
+
+    @api.depends('qr_access_token')
+    def _compute_notice_microsite_links(self):
+        base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
+        for rec in self:
+            tok = rec.qr_access_token or ''
+            full = '%s/bn/respond/%s' % (base, tok) if tok else ''
+            rec.notice_microsite_url = full
+            rec.notice_microsite_url_encoded = werkzeug.urls.url_quote(full, safe='') if full else ''
 
     @api.depends('notice_number')
     def _compute_notice_label(self):

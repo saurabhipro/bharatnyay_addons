@@ -18,6 +18,7 @@
                                        ('borrower_email', 'ilike', self)]"/>
                 <field name="case_number" string="BharatNyay case #"/>
                 <field name="batch_number"/>
+                <field name="nbfc_id"/>
                 <field name="customer_name"/>
                 <field name="branch_id"/>
                 <field name="borrower_state_id"/>
@@ -56,6 +57,7 @@
             <list string="Loans" multi_edit="1">
                 <field name="case_number"/>
                 <field name="batch_number" optional="show"/>
+                <field name="nbfc_id" optional="show"/>
                 <field name="loan_number"/>
                 <field name="customer_name"/>
                 <field name="branch_id" optional="show"/>
@@ -229,6 +231,7 @@
 
                     <group>
                         <group string="Borrower (imported)">
+                            <field name="nbfc_id"/>
                             <field name="borrower_email" readonly="1" widget="email"/>
                             <field name="borrower_phone" readonly="1" widget="phone"/>
                             <field name="collection_manager_name" readonly="1"/>

@@ -112,6 +112,14 @@
         }
     }
 
+    .bn-kpi-phase {
+        margin-bottom: 1rem;
+
+        .bn-kpi-value {
+            font-size: 1.35rem;
+        }
+    }
+
     .bn-stage-strip {
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));

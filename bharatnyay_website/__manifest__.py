@@ -1,6 +1,6 @@
 {
     "name": "BharatNyay Website",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "icon": "/bharatnyay_website/static/description/icon.png",
     "summary": "Public marketing site & landing experience for BharatNyay ODR",
     "description": """
@@ -28,6 +28,7 @@
         "views/features_page_templates.xml",
         "views/how_it_works_templates.xml",
         "views/portal_cases_templates.xml",
+        "views/bn_notice_microsite_templates.xml",
     ],
     "assets": {
         "web.assets_frontend": [
