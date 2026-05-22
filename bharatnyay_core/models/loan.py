@@ -992,7 +992,6 @@ class BharatLoan(models.Model):
             values = dict(vals)
             self._apply_arbitrator_user_to_vals(self.env, values)
             self._apply_case_manager_user_to_vals(self.env, values)
-            self._resolve_case_manager_from_text(values)
             if not values.get('case_number'):
                 values['case_number'] = self.env['ir.sequence'].next_by_code('bharat.loan.case.number') or '/'
             if shared_batch_number and not values.get('batch_number'):
@@ -1010,7 +1009,6 @@ class BharatLoan(models.Model):
         values = dict(vals)
         self._apply_arbitrator_user_to_vals(self.env, values)
         self._apply_case_manager_user_to_vals(self.env, values)
-        self._resolve_case_manager_from_text(values)
         self._normalize_workflow_values(values)
         self._coerce_many2one_name_strings(values)
         self._populate_master_links_from_text(values)

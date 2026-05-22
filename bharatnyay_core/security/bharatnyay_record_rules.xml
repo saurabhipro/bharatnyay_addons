@@ -12,6 +12,30 @@
         <field name="perm_unlink" eval="True"/>
     </record>
 
+    <!-- Case manager: only loans assigned on case_manager_id. -->
+    <record id="rule_bharat_loan_case_manager" model="ir.rule">
+        <field name="name">BharatNyay loan: case manager own cases</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="domain_force">[('case_manager_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_bharat_case_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Lender: loans for NBFC companies the user may access. -->
+    <record id="rule_bharat_loan_lender" model="ir.rule">
+        <field name="name">BharatNyay loan: lender company cases</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_bharat_lender'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
     <!-- Arbitrator: only loans where they are the assigned arbitrator. -->
     <record id="rule_bharat_loan_arbitrator" model="ir.rule">
         <field name="name">BharatNyay loan: arbitrator own cases</field>

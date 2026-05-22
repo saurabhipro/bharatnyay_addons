@@ -27,11 +27,13 @@
     <menuitem id="menu_bharatnyay_workflow"
               name="Workflow queues"
               parent="menu_bharatnyay_root"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system,bharatnyay_core.group_bharat_arbitrator"
               sequence="25"/>
     <menuitem id="menu_bharatnyay_user_roles"
               name="User roles"
               parent="menu_bharatnyay_root"
               action="action_bharat_user_role_assignment"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system"
               sequence="30"/>
     <menuitem id="menu_bharatnyay_notice_1"
               name="Notice"
@@ -80,11 +82,13 @@
               name="Masters"
               parent="menu_bharatnyay_root"
               action="action_bharat_branch"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system"
               sequence="40"/>
 
     <menuitem id="menu_bharatnyay_billing_root"
               name="Billing &amp; ops"
               parent="menu_bharatnyay_root"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system"
               sequence="18"/>
 
     <menuitem id="menu_bharatnyay_arbitration_products"

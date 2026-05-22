@@ -14,6 +14,7 @@
         'security/bharatnyay_groups.xml',
         'security/bharatnyay_record_rules.xml',
         'security/ir.model.access.csv',
+        'data/demo_case_manager_user.xml',
         'data/loan_sequence_data.xml',
         'data/bharat_billing_sample_data.xml',
         'data/notification_template_data.xml',
