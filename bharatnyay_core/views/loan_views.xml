@@ -26,7 +26,7 @@
                 <field name="product_class_id"/>
                 <field name="law_firm_id"/>
                 <field name="product"/>
-                <field name="collection_manager_name"/>
+                <field name="case_manager_id"/>
                 <field name="workflow_phase"/>
                 <field name="workflow_stage"/>
                 <field name="respondent_name"/>
@@ -54,7 +54,7 @@
         <field name="name">bharat.loan.list</field>
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
-            <list string="Loans" multi_edit="1">
+            <list string="Loans">
                 <field name="case_number"/>
                 <field name="batch_number" optional="show"/>
                 <field name="company_id" optional="show"/>
@@ -72,7 +72,7 @@
                 <field name="claim_amount" sum="Claim"/>
                 <field name="lok_adalat_date" optional="show"/>
                 <field name="disbursement_date" optional="show"/>
-                <field name="collection_manager_name" optional="hide"/>
+                <field name="case_manager_id" optional="show"/>
                 <field name="currency_id" column_invisible="1"/>
             </list>
         </field>
@@ -235,8 +235,7 @@
                             <field name="currency_id" invisible="0"/>
                             <field name="borrower_email" readonly="1" widget="email"/>
                             <field name="borrower_phone" readonly="1" widget="phone"/>
-                            <field name="collection_manager_name" readonly="1"/>
-                            <field name="collection_contact_phone" readonly="1" widget="phone"/>
+                            <field name="case_manager_id" options="{'no_create': True}"/>
                             <field name="borrower_state_id" readonly="1"/>
                         </group>
                         <group string="Case &amp; arbitration">

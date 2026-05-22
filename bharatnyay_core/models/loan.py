@@ -77,8 +77,13 @@ class BharatLoan(models.Model):
     financed_amount = fields.Monetary(string='Financed amount', currency_field='currency_id')
     disbursement_date = fields.Date(string='Date of disbursement')
     product = fields.Char(string='Product')
-    collection_manager_name = fields.Char(string='Collection manager')
-    collection_contact_phone = fields.Char(string='Contact no. (collection)')
+    case_manager_id = fields.Many2one(
+        'res.users',
+        string='Case manager',
+        index=True,
+        tracking=True,
+        help='Internal user with Case Manager operational role.',
+    )
 
     acm_name = fields.Char(string='ACM name')
     complete_assignment = fields.Char(string='Complete assignment')
@@ -426,6 +431,16 @@ class BharatLoan(models.Model):
         if user:
             vals['arbitrator_name'] = user.name
             vals['arbitrator_email'] = user.email or ''
+
+    @staticmethod
+    def _apply_case_manager_user_to_vals(env, vals):
+        """Normalize case_manager_id when cleared during import/write."""
+        if 'case_manager_id' not in vals:
+            return
+        cm = vals['case_manager_id']
+        if not cm:
+            vals['case_manager_id'] = False
+
 
     @api.onchange('arbitrator_id')
     def _onchange_arbitrator_id(self):
@@ -976,6 +991,8 @@ class BharatLoan(models.Model):
         for vals in vals_list:
             values = dict(vals)
             self._apply_arbitrator_user_to_vals(self.env, values)
+            self._apply_case_manager_user_to_vals(self.env, values)
+            self._resolve_case_manager_from_text(values)
             if not values.get('case_number'):
                 values['case_number'] = self.env['ir.sequence'].next_by_code('bharat.loan.case.number') or '/'
             if shared_batch_number and not values.get('batch_number'):
@@ -992,6 +1009,8 @@ class BharatLoan(models.Model):
     def write(self, vals):
         values = dict(vals)
         self._apply_arbitrator_user_to_vals(self.env, values)
+        self._apply_case_manager_user_to_vals(self.env, values)
+        self._resolve_case_manager_from_text(values)
         self._normalize_workflow_values(values)
         self._coerce_many2one_name_strings(values)
         self._populate_master_links_from_text(values)
@@ -1301,8 +1320,9 @@ class BharatLoan(models.Model):
         super()._register_hook()
         try:
             from odoo.addons.bharatnyay_core.hooks import (
-                migrate_nbfc_to_res_company,
+                migrate_collection_manager_to_case_manager,
                 repair_loan_arbitrator_id_column,
+                repair_loan_case_manager_id_column,
                 repair_loan_foreign_key_columns,
                 repair_loan_hearing_columns,
                 seed_bharatnyay_demo_users_and_roles,
@@ -1352,9 +1372,10 @@ class BharatLoan(models.Model):
                 WHERE notice_type = 'settled'
                 """
             )
-            migrate_nbfc_to_res_company(cr)
+            migrate_collection_manager_to_case_manager(cr)
             repair_loan_foreign_key_columns(cr)
             repair_loan_arbitrator_id_column(cr)
+            repair_loan_case_manager_id_column(cr)
             repair_loan_hearing_columns(cr)
             seed_bharatnyay_demo_users_and_roles(cr)
             cr.commit()
