@@ -36,6 +36,36 @@ class ResUsers(models.Model):
     bharat_branch_id = fields.Many2one('bharat.branch', string='Branch', index=True)
     bharat_location_id = fields.Many2one('bharat.loan_location', string='Location', index=True)
     bharat_role_note = fields.Char(string='Role notes')
+    bharat_loan_count = fields.Integer(
+        string='Assigned cases',
+        compute='_compute_bharat_loan_count',
+    )
+
+    def _bharat_loan_assignment_domain(self):
+        """Domain of ``bharat.loan`` rows assigned to this user by operational role."""
+        self.ensure_one()
+        if self.bharat_role == 'case_manager':
+            return [('case_manager_id', '=', self.id)]
+        if self.bharat_role == 'arbitrator':
+            return [('arbitrator_id', '=', self.id)]
+        if self.bharat_role == 'lender':
+            return ['|', ('company_id', '=', False), ('company_id', 'in', self.company_ids.ids)]
+        if self.bharat_role == 'admin':
+            return []
+        return [('id', '=', 0)]
+
+    @api.depends('bharat_role', 'company_ids')
+    def _compute_bharat_loan_count(self):
+        Loan = self.env['bharat.loan'].sudo()
+        for user in self:
+            user.bharat_loan_count = Loan.search_count(user._bharat_loan_assignment_domain())
+
+    def action_view_bharat_loans(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('bharatnyay_core.action_bharat_loan')
+        action['domain'] = self._bharat_loan_assignment_domain()
+        action['context'] = dict(self.env.context)
+        return action
 
     @api.model
     def _bharat_operational_groups(self):
