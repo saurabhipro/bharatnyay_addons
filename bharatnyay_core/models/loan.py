@@ -964,7 +964,6 @@ class BharatLoan(models.Model):
             'bharat.branch',
             vals.get('branch'),
             {
-                'region_id': vals.get('region_id'),
                 'borrower_state_id': vals.get('borrower_state_id'),
             },
         ) if vals.get('branch') else False
