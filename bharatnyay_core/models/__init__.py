@@ -1,4 +1,5 @@
 from . import region
+from . import res_country_state
 from . import branch
 from . import loan_location
 from . import product_class

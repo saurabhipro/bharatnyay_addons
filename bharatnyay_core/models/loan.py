@@ -957,6 +957,8 @@ class BharatLoan(models.Model):
         state = self._resolve_country_state(vals.get('borrower_state')) if vals.get('borrower_state') else False
         if state and not vals.get('borrower_state_id'):
             vals['borrower_state_id'] = state.id
+        if state and state.region_id and not vals.get('region_id'):
+            vals['region_id'] = state.region_id.id
 
         branch = self._ensure_master(
             'bharat.branch',
@@ -1066,8 +1068,13 @@ class BharatLoan(models.Model):
     @api.onchange('borrower_state_id')
     def _onchange_borrower_state(self):
         for rec in self:
-            if rec.borrower_state_id:
-                rec.borrower_state = rec.borrower_state_id.name
+            st = rec.borrower_state_id
+            if not st:
+                continue
+            rec.borrower_state = st.name
+            if st.region_id and (not rec.region_id or rec.region_id == st.region_id):
+                rec.region_id = st.region_id
+                rec.region = st.region_id.name
 
     @api.onchange('location_id')
     def _onchange_location(self):

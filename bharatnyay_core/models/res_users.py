@@ -169,3 +169,10 @@ class ResUsers(models.Model):
             if branch.region_id:
                 user.bharat_region_id = branch.region_id
 
+    @api.onchange('bharat_borrower_state_id')
+    def _onchange_bharat_borrower_state_id(self):
+        for user in self:
+            state = user.bharat_borrower_state_id
+            if state and state.region_id and not user.bharat_region_id:
+                user.bharat_region_id = state.region_id
+
