@@ -1,46 +1,374 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo noupdate="1">
-    <!-- One product per arbitration stage (rates = Sales Price on product). Lenders use res.company. -->
+    <!--
+      Demo stack (USD): NBFC partner + milestone products + 10 loans in batch BN-DEMO-BILL.
+      Post-init hook creates one draft customer invoice (USD) with aggregated milestone lines.
+      Distribution: 5 × Notice 3 (appointment), 3 × Hearing 1 (arbitrator appointed), 1 × Hearing 2, 1 × Hearing 3.
+      Notice history varies (1 / 2 / 3 notices per case); arbitrator-appointed rows include dummy hearings (0–2 lines).
+    -->
+    <record id="sample_partner_nbfc_billing" model="res.partner">
+        <field name="name">Demo NBFC Billing (USD)</field>
+        <field name="company_type">company</field>
+    </record>
+
+    <record id="sample_nbfc_demo_finance" model="bharat.nbfc">
+        <field name="name">Demo Finance NBFC</field>
+        <field name="code">DMONBFC</field>
+        <field name="partner_id" ref="sample_partner_nbfc_billing"/>
+    </record>
+
     <record id="sample_product_bn_notice_1" model="product.template">
-        <field name="name">Arbitration — Notice 1</field>
+        <field name="name">Arbitration — Notice 1 (USD)</field>
         <field name="type">service</field>
         <field name="list_price">100</field>
         <field name="bharat_arbitration_stage">notice_1</field>
     </record>
     <record id="sample_product_bn_notice_2" model="product.template">
-        <field name="name">Arbitration — Notice 2</field>
+        <field name="name">Arbitration — Notice 2 (USD)</field>
         <field name="type">service</field>
         <field name="list_price">100</field>
         <field name="bharat_arbitration_stage">notice_2</field>
     </record>
     <record id="sample_product_bn_notice_3" model="product.template">
-        <field name="name">Arbitration — Notice 3</field>
+        <field name="name">Arbitration — Notice 3 (USD)</field>
         <field name="type">service</field>
         <field name="list_price">100</field>
         <field name="bharat_arbitration_stage">notice_3</field>
     </record>
     <record id="sample_product_bn_hearing_1" model="product.template">
-        <field name="name">Arbitration — Hearing 1</field>
+        <field name="name">Arbitration — Hearing 1 (USD)</field>
         <field name="type">service</field>
         <field name="list_price">200</field>
         <field name="bharat_arbitration_stage">hearing_1</field>
     </record>
     <record id="sample_product_bn_hearing_2" model="product.template">
-        <field name="name">Arbitration — Hearing 2</field>
+        <field name="name">Arbitration — Hearing 2 (USD)</field>
         <field name="type">service</field>
         <field name="list_price">200</field>
         <field name="bharat_arbitration_stage">hearing_2</field>
     </record>
     <record id="sample_product_bn_hearing_3" model="product.template">
-        <field name="name">Arbitration — Hearing 3</field>
+        <field name="name">Arbitration — Hearing 3 (USD)</field>
         <field name="type">service</field>
         <field name="list_price">300</field>
         <field name="bharat_arbitration_stage">hearing_3</field>
     </record>
     <record id="sample_product_bn_award" model="product.template">
-        <field name="name">Arbitration — Award</field>
+        <field name="name">Arbitration — Award (USD)</field>
         <field name="type">service</field>
         <field name="list_price">500</field>
         <field name="bharat_arbitration_stage">award</field>
+    </record>
+
+    <!-- 5 cases → milestone Notice 3 (awaiting arbitrator appointment) -->
+    <record id="sample_loan_bn_d01" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-01</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Alpha</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">appointment_of_arbitrator</field>
+        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2026-01-06 09:00:00',
+            'sent_to': 'borrower.alpha@demo.bn',
+            'subject': 'LO-BNDEMO-01 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+    </record>
+    <record id="sample_loan_bn_d02" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-02</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Bravo</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">appointment_of_arbitrator</field>
+        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2026-01-07 11:15:00',
+            'sent_to': 'borrower.bravo@demo.bn',
+            'subject': 'LO-BNDEMO-02 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+    </record>
+    <record id="sample_loan_bn_d03" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-03</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Charlie</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">appointment_of_arbitrator</field>
+        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2026-01-10 09:30:00',
+            'sent_to': 'borrower.charlie@demo.bn',
+            'subject': 'LO-BNDEMO-03 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2026-02-03 14:00:00',
+            'sent_to': 'borrower.charlie@demo.bn',
+            'subject': 'LO-BNDEMO-03 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+    </record>
+    <record id="sample_loan_bn_d04" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-04</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Delta</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">appointment_of_arbitrator</field>
+        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2026-01-12 10:00:00',
+            'sent_to': 'borrower.delta@demo.bn',
+            'subject': 'LO-BNDEMO-04 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2026-02-07 09:45:00',
+            'sent_to': 'borrower.delta@demo.bn',
+            'subject': 'LO-BNDEMO-04 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+    </record>
+    <record id="sample_loan_bn_d05" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-05</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Echo</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">appointment_of_arbitrator</field>
+        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2026-01-14 08:30:00',
+            'sent_to': 'borrower.echo@demo.bn',
+            'subject': 'LO-BNDEMO-05 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2026-02-01 13:20:00',
+            'sent_to': 'borrower.echo@demo.bn',
+            'subject': 'LO-BNDEMO-05 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 3,
+            'notice_type': 'notice',
+            'sent_on': '2026-02-20 16:00:00',
+            'sent_to': 'borrower.echo@demo.bn',
+            'subject': 'LO-BNDEMO-05 — Notice 3',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+    </record>
+
+    <!-- 3 cases → milestone Hearing 1 (arbitrator appointed / arbitration-ready bucket) -->
+    <record id="sample_loan_bn_d06" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-06</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Foxtrot</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">arbitrator_appointed</field>
+        <field name="workflow_phase">Arbitrator Appointed</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2025-11-02 09:00:00',
+            'sent_to': 'borrower.foxtrot@demo.bn',
+            'subject': 'LO-BNDEMO-06 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2025-11-28 11:00:00',
+            'sent_to': 'borrower.foxtrot@demo.bn',
+            'subject': 'LO-BNDEMO-06 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 3,
+            'notice_type': 'notice',
+            'sent_on': '2025-12-18 15:30:00',
+            'sent_to': 'borrower.foxtrot@demo.bn',
+            'subject': 'LO-BNDEMO-06 — Notice 3',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+        <field name="hearing_line_ids" eval="[(0, 0, {
+            'hearing_datetime': '2026-05-06 10:00:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d06-h1',
+        })]"/>
+    </record>
+    <record id="sample_loan_bn_d07" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-07</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Golf</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">arbitrator_appointed</field>
+        <field name="workflow_phase">Arbitrator Appointed</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2025-10-15 09:30:00',
+            'sent_to': 'borrower.golf@demo.bn',
+            'subject': 'LO-BNDEMO-07 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2025-11-05 14:00:00',
+            'sent_to': 'borrower.golf@demo.bn',
+            'subject': 'LO-BNDEMO-07 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 3,
+            'notice_type': 'notice',
+            'sent_on': '2025-12-02 10:15:00',
+            'sent_to': 'borrower.golf@demo.bn',
+            'subject': 'LO-BNDEMO-07 — Notice 3',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+        <field name="hearing_line_ids" eval="[(0, 0, {
+            'hearing_datetime': '2026-05-08 09:30:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d07-h1',
+        }), (0, 0, {
+            'hearing_datetime': '2026-05-15 14:00:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d07-h2',
+        })]"/>
+    </record>
+    <record id="sample_loan_bn_d08" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-08</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Hotel</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">arbitrator_appointed</field>
+        <field name="workflow_phase">Arbitrator Appointed</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2025-09-20 08:45:00',
+            'sent_to': 'borrower.hotel@demo.bn',
+            'subject': 'LO-BNDEMO-08 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2025-10-22 11:30:00',
+            'sent_to': 'borrower.hotel@demo.bn',
+            'subject': 'LO-BNDEMO-08 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 3,
+            'notice_type': 'notice',
+            'sent_on': '2025-11-30 09:00:00',
+            'sent_to': 'borrower.hotel@demo.bn',
+            'subject': 'LO-BNDEMO-08 — Notice 3',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+    </record>
+
+    <!-- Hearing stage: 2 past hearings → Hearing 2 product -->
+    <record id="sample_loan_bn_d09" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-09</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower India</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">hearing</field>
+        <field name="workflow_phase">Hearing</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2025-08-12 09:00:00',
+            'sent_to': 'borrower.india@demo.bn',
+            'subject': 'LO-BNDEMO-09 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2025-09-03 14:30:00',
+            'sent_to': 'borrower.india@demo.bn',
+            'subject': 'LO-BNDEMO-09 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 3,
+            'notice_type': 'notice',
+            'sent_on': '2025-10-28 10:00:00',
+            'sent_to': 'borrower.india@demo.bn',
+            'subject': 'LO-BNDEMO-09 — Notice 3',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+        <field name="hearing_line_ids" eval="[(0, 0, {
+            'hearing_datetime': '2026-04-10 09:30:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d09-a',
+        }), (0, 0, {
+            'hearing_datetime': '2026-04-18 14:00:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d09-b',
+        })]"/>
+    </record>
+
+    <!-- Hearing stage: 3 past hearings → Hearing 3 product -->
+    <record id="sample_loan_bn_d10" model="bharat.loan">
+        <field name="loan_number">LO-BNDEMO-10</field>
+        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="batch_number">BN-DEMO-BILL</field>
+        <field name="customer_name">Borrower Juliet</field>
+        <field name="currency_id" ref="base.USD"/>
+        <field name="workflow_stage">hearing</field>
+        <field name="workflow_phase">Hearing</field>
+        <field name="notice_line_ids" eval="[(0, 0, {
+            'notice_number': 1,
+            'notice_type': 'notice',
+            'sent_on': '2025-07-08 09:15:00',
+            'sent_to': 'borrower.juliet@demo.bn',
+            'subject': 'LO-BNDEMO-10 — Notice 1',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 2,
+            'notice_type': 'notice',
+            'sent_on': '2025-08-19 13:00:00',
+            'sent_to': 'borrower.juliet@demo.bn',
+            'subject': 'LO-BNDEMO-10 — Notice 2',
+            'sent_by_id': ref('base.user_admin'),
+        }), (0, 0, {
+            'notice_number': 3,
+            'notice_type': 'notice',
+            'sent_on': '2025-09-25 16:45:00',
+            'sent_to': 'borrower.juliet@demo.bn',
+            'subject': 'LO-BNDEMO-10 — Notice 3',
+            'sent_by_id': ref('base.user_admin'),
+        })]"/>
+        <field name="hearing_line_ids" eval="[(0, 0, {
+            'hearing_datetime': '2026-03-05 11:00:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d10-a',
+        }), (0, 0, {
+            'hearing_datetime': '2026-03-12 11:00:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d10-b',
+        }), (0, 0, {
+            'hearing_datetime': '2026-03-20 11:00:00',
+            'link_type': 'external',
+            'meeting_link': 'https://meet.example.com/bn-d10-c',
+        })]"/>
     </record>
 </odoo>

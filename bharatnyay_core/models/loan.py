@@ -521,6 +521,24 @@ class BharatLoan(models.Model):
             rec.interim_order_count = len(rec.interim_order_ids)
             rec.award_document_count = len(rec.award_document_ids)
 
+    def bharat_arbitration_bill_stage(self):
+        """Map case workflow + activity to arbitration billing SKU (product.template stage)."""
+        self.ensure_one()
+        ws = self.workflow_stage or ''
+        n_notice = len(self.notice_line_ids)
+        n_hear = len(self.hearing_line_ids)
+        if self.award_document_ids or ws == 'final_award':
+            return 'award'
+        if ws == 'hearing':
+            idx = min(max(n_hear, 1), 3)
+            return 'hearing_%s' % idx
+        if ws == 'arbitrator_appointed':
+            return 'hearing_1'
+        if ws == 'appointment_of_arbitrator':
+            return 'notice_3'
+        idx = min(max(n_notice, 1), 3)
+        return 'notice_%s' % idx
+
     def action_open_notice_lines(self):
         self.ensure_one()
         return {

@@ -22,8 +22,8 @@
                 Create one service product per arbitration milestone.
             </p>
             <p>
-                Set <b>Arbitration billing stage</b> and use <b>Sales price</b> as the default rate.
-                Use NBFC partner <b>pricelists</b> for lender-specific amounts.
+                Set <b>Arbitration billing stage</b> and set <b>Sales price</b> in <b>USD</b> (set product currency to USD
+                or price in USD per your accounting setup). NBFC-specific amounts: use partner <b>pricelists</b>.
             </p>
         </field>
     </record>
@@ -35,10 +35,15 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <button name="action_open_arbitration_line_loader"
-                        string="Add arbitration lines from cases"
+                        string="Bill loan batch (milestones)"
                         type="object"
                         class="btn-secondary"
                         invisible="move_type != 'out_invoice' or state != 'draft'"/>
+            </xpath>
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="bharat_invoice_batch_ref"
+                       readonly="state != 'draft'"
+                       invisible="not bharat_invoice_batch_ref and not bharat_arbitration_invoice"/>
             </xpath>
             <xpath expr="//sheet" position="inside">
                 <field name="bharat_arbitration_invoice" invisible="1"/>
