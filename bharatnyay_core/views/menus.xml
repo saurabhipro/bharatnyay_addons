@@ -86,7 +86,7 @@
               parent="menu_bharatnyay_masters"
               action="action_bharat_user_role_assignment"
               groups="bharatnyay_core.group_bharat_admin,base.group_system"
-              sequence="17"/>
+              sequence="9"/>
 
     <menuitem id="menu_bharatnyay_billing_root"
               name="Billing &amp; ops"

@@ -31,7 +31,6 @@ class ResUsers(models.Model):
     bharat_borrower_state_id = fields.Many2one(
         'res.country.state',
         string='State',
-        domain="[('country_id.code', '=', 'IN')]",
         index=True,
     )
     bharat_branch_id = fields.Many2one('bharat.branch', string='Branch', index=True)
@@ -146,6 +145,25 @@ class ResUsers(models.Model):
         user._sync_bharat_role_groups()
         return user
 
+    @api.onchange('bharat_region_id')
+    def _onchange_bharat_region_id(self):
+        for user in self:
+            if user.bharat_borrower_state_id and (
+                not user.bharat_region_id
+                or user.bharat_borrower_state_id.region_id != user.bharat_region_id
+            ):
+                user.bharat_borrower_state_id = False
+            if user.bharat_branch_id and (
+                not user.bharat_region_id
+                or user.bharat_branch_id.region_id != user.bharat_region_id
+            ):
+                user.bharat_branch_id = False
+            if user.bharat_location_id and (
+                not user.bharat_region_id
+                or user.bharat_location_id.region_id != user.bharat_region_id
+            ):
+                user.bharat_location_id = False
+
     @api.onchange('bharat_location_id')
     def _onchange_bharat_location_id(self):
         for user in self:
@@ -163,16 +181,30 @@ class ResUsers(models.Model):
         for user in self:
             branch = user.bharat_branch_id
             if not branch:
+                if user.bharat_location_id:
+                    user.bharat_location_id = False
                 continue
             if branch.borrower_state_id:
                 user.bharat_borrower_state_id = branch.borrower_state_id
             if branch.region_id:
                 user.bharat_region_id = branch.region_id
+            if user.bharat_location_id and user.bharat_location_id.branch_id != branch:
+                user.bharat_location_id = False
 
     @api.onchange('bharat_borrower_state_id')
     def _onchange_bharat_borrower_state_id(self):
         for user in self:
             state = user.bharat_borrower_state_id
-            if state and state.region_id and not user.bharat_region_id:
+            if state and state.region_id:
                 user.bharat_region_id = state.region_id
+            if user.bharat_branch_id and (
+                not state
+                or user.bharat_branch_id.borrower_state_id != state
+            ):
+                user.bharat_branch_id = False
+            if user.bharat_location_id and (
+                not state
+                or user.bharat_location_id.state_id != state
+            ):
+                user.bharat_location_id = False
 
