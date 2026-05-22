@@ -29,12 +29,7 @@
               parent="menu_bharatnyay_root"
               groups="bharatnyay_core.group_bharat_admin,base.group_system,bharatnyay_core.group_bharat_arbitrator"
               sequence="25"/>
-    <menuitem id="menu_bharatnyay_user_roles"
-              name="User roles"
-              parent="menu_bharatnyay_root"
-              action="action_bharat_user_role_assignment"
-              groups="bharatnyay_core.group_bharat_admin,base.group_system"
-              sequence="30"/>
+    
     <menuitem id="menu_bharatnyay_notice_1"
               name="Notice"
               parent="menu_bharatnyay_workflow"
@@ -84,6 +79,14 @@
               action="action_bharat_branch"
               groups="bharatnyay_core.group_bharat_admin,base.group_system"
               sequence="40"/>
+
+
+    <menuitem id="menu_bharatnyay_user_roless"
+              name="User roles"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_user_role_assignment"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system"
+              sequence="17"/>
 
     <menuitem id="menu_bharatnyay_billing_root"
               name="Billing &amp; ops"
