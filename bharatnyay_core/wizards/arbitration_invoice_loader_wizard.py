@@ -5,36 +5,32 @@ from odoo.exceptions import UserError
 
 class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
     _name = 'bharat.arbitration.invoice.line.loader.wizard'
-    _description = 'Add customer invoice lines from loan cases (arbitration products)'
+    _description = 'Bill a loan batch on a customer invoice (aggregated milestone lines)'
 
     move_id = fields.Many2one(
         'account.move',
-        string='Invoice',
+        string='Draft invoice',
         required=True,
         ondelete='cascade',
         domain=[('move_type', '=', 'out_invoice'), ('state', '=', 'draft')],
     )
-    loan_ids = fields.Many2many(
-        'bharat.loan',
-        string='Cases',
+    batch_number = fields.Char(
+        string='Loan batch number',
         required=True,
-        help='One invoice line per case using the product mapped to the inferred arbitration stage.',
+        help='Matches Loan sheet ▸ Batch number. All cases in this batch are billed together; '
+        'invoice lines aggregate by milestone task (Notice 1–3, Hearing 1–3, Award) using your billing products.',
     )
+    preview_case_count = fields.Integer(string='Cases found', compute='_compute_preview')
 
-    @api.model
-    def _infer_bill_stage(self, loan):
-        ws = loan.workflow_stage or ''
-        n_notice = len(loan.notice_line_ids)
-        n_hear = len(loan.hearing_line_ids)
-        if loan.award_document_ids or ws == 'final_award':
-            return 'award'
-        if ws == 'hearing':
-            idx = min(max(n_hear, 1), 3)
-            return 'hearing_%s' % idx
-        if ws in ('arbitrator_appointed', 'appointment_of_arbitrator'):
-            return 'notice_3'
-        idx = min(max(n_notice, 1), 3)
-        return 'notice_%s' % idx
+    @api.depends('batch_number')
+    def _compute_preview(self):
+        Loan = self.env['bharat.loan']
+        for wiz in self:
+            bn = (wiz.batch_number or '').strip()
+            if not bn:
+                wiz.preview_case_count = 0
+                continue
+            wiz.preview_case_count = Loan.search_count([('batch_number', '=', bn)])
 
     def action_apply(self):
         self.ensure_one()
@@ -42,42 +38,23 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
         if move.state != 'draft' or move.move_type != 'out_invoice':
             raise UserError(_('Open this wizard from a draft customer invoice.'))
 
-        Template = self.env['product.template'].sudo()
-        labels = dict(Template._fields['bharat_arbitration_stage'].selection)
-        line_cmds = []
+        batch = (self.batch_number or '').strip()
+        if not batch:
+            raise UserError(_('Enter the loan batch number.'))
 
-        for loan in self.loan_ids:
-            stage_key = self._infer_bill_stage(loan)
-            tmpl = Template.search([('bharat_arbitration_stage', '=', stage_key)], limit=2)
-            if len(tmpl) != 1:
-                raise UserError(
-                    _('Configure exactly one product with arbitration stage “%s” (found %s).')
-                    % (labels.get(stage_key, stage_key), len(tmpl))
-                )
-            product = tmpl.product_variant_ids[:1]
-            if not product:
-                raise UserError(_('Product “%s” has no variant.') % tmpl.display_name)
-            product = product[0]
-            line_name = '%s — %s / %s' % (
-                tmpl.name,
-                loan.loan_number or loan.id,
-                loan.case_number or _('no case #'),
-            )
-            line_cmds.append(
-                (
-                    0,
-                    0,
-                    {
-                        'product_id': product.id,
-                        'quantity': 1,
-                        'name': line_name,
-                    },
-                )
-            )
+        loans = self.env['bharat.loan'].search([('batch_number', '=', batch)])
+        if not loans:
+            raise UserError(_('No loans found with batch number “%s”.') % batch)
+
+        cmds = self.env['account.move'].bharat_prepare_arbitration_invoice_line_commands(loans, batch)
+        if not cmds:
+            raise UserError(_('No billable milestone lines were produced (check case workflow stages).'))
 
         move.with_context(check_move_validity=False).write({
-            'invoice_line_ids': line_cmds,
+            'invoice_line_ids': cmds,
             'bharat_arbitration_invoice': True,
+            'bharat_invoice_batch_ref': batch,
+            'ref': move.ref or (_('BharatNyay batch %s') % batch),
         })
 
         return {

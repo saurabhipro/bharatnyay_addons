@@ -355,6 +355,14 @@ def seed_bharatnyay_demo_users_and_roles(cr):
     env.invalidate_all()
 
 
+def post_init_hook(cr, registry):
+    """After install/upgrade: draft demo invoice for batch BN-DEMO-BILL when sample data exists."""
+    from odoo import api, SUPERUSER_ID
+
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    env['account.move'].sudo()._bharat_demo_seed_batch_invoice()
+
+
 __all__ = [
     'repair_loan_foreign_key_columns',
     'repair_loan_arbitrator_id_column',
