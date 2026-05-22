@@ -28,7 +28,12 @@ class ResUsers(models.Model):
         index=True,
     )
     bharat_region_id = fields.Many2one('bharat.region', string='Region', index=True)
-    bharat_borrower_state_id = fields.Many2one('bharat.borrower_state', string='State', index=True)
+    bharat_borrower_state_id = fields.Many2one(
+        'res.country.state',
+        string='State',
+        domain="[('country_id.code', '=', 'IN')]",
+        index=True,
+    )
     bharat_branch_id = fields.Many2one('bharat.branch', string='Branch', index=True)
     bharat_location_id = fields.Many2one('bharat.loan_location', string='Location', index=True)
     bharat_role_note = fields.Char(string='Role notes')
@@ -164,9 +169,3 @@ class ResUsers(models.Model):
             if branch.region_id:
                 user.bharat_region_id = branch.region_id
 
-    @api.onchange('bharat_borrower_state_id')
-    def _onchange_bharat_borrower_state_id(self):
-        for user in self:
-            state = user.bharat_borrower_state_id
-            if state and state.region_id and not user.bharat_region_id:
-                user.bharat_region_id = state.region_id

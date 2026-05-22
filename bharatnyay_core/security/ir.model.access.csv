@@ -1,7 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_bharat_loan,bharat.loan,model_bharat_loan,base.group_user,1,1,1,1
 access_bharat_region,bharat.region,model_bharat_region,base.group_user,1,1,1,1
-access_bharat_borrower_state,bharat.borrower_state,model_bharat_borrower_state,base.group_user,1,1,1,1
 access_bharat_branch,bharat.branch,model_bharat_branch,base.group_user,1,1,1,1
 access_bharat_loan_location,bharat.loan_location,model_bharat_loan_location,base.group_user,1,1,1,1
 access_bharat_product_class,bharat.product_class,model_bharat_product_class,base.group_user,1,1,1,1

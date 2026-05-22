@@ -30,7 +30,12 @@ class BharatLoan(models.Model):
 
     # Keep master links for normalized future usage.
     region_id = fields.Many2one('bharat.region', string='Region (master)', index=True)
-    borrower_state_id = fields.Many2one('bharat.borrower_state', string='State (master)', index=True)
+    borrower_state_id = fields.Many2one(
+        'res.country.state',
+        string='State',
+        domain="[('country_id.code', '=', 'IN')]",
+        index=True,
+    )
     branch_id = fields.Many2one('bharat.branch', string='Branch (master)', index=True)
     location_id = fields.Many2one('bharat.loan_location', string='Location (master)')
     product_class_id = fields.Many2one('bharat.product_class', string='Product class (master)', index=True)
@@ -878,6 +883,20 @@ class BharatLoan(models.Model):
         }
 
     @api.model
+    def _resolve_country_state(self, name):
+        """Match imported state text to ``res.country.state`` (India)."""
+        if not name:
+            return False
+        value = str(name).strip()
+        if not value:
+            return False
+        country = self.env.ref('base.in', raise_if_not_found=False)
+        domain = [('name', '=ilike', value)]
+        if country:
+            domain.append(('country_id', '=', country.id))
+        return self.env['res.country.state'].search(domain, limit=1)
+
+    @api.model
     def _ensure_master(self, model_name, name, extra_vals=None):
         """Get-or-create helper for master records from imported text."""
         if not name:
@@ -903,7 +922,7 @@ class BharatLoan(models.Model):
         """Resolve plain name strings mistakenly mapped to *_id columns (import edge cases)."""
         spec = (
             ('region_id', 'bharat.region', 'region'),
-            ('borrower_state_id', 'bharat.borrower_state', 'borrower_state'),
+            ('borrower_state_id', 'res.country.state', 'borrower_state'),
             ('branch_id', 'bharat.branch', 'branch'),
             ('location_id', 'bharat.loan_location', 'location'),
             ('product_class_id', 'bharat.product_class', 'product_classification'),
@@ -920,7 +939,10 @@ class BharatLoan(models.Model):
             if stripped.isdigit():
                 vals[m2o_fname] = int(stripped)
                 continue
-            rec = self._ensure_master(model_name, stripped)
+            if model_name == 'res.country.state':
+                rec = self._resolve_country_state(stripped)
+            else:
+                rec = self._ensure_master(model_name, stripped)
             if rec:
                 vals[m2o_fname] = rec.id
                 vals.setdefault(text_fname, stripped)
@@ -932,15 +954,9 @@ class BharatLoan(models.Model):
         if region and not vals.get('region_id'):
             vals['region_id'] = region.id
 
-        state = self._ensure_master(
-            'bharat.borrower_state',
-            vals.get('borrower_state'),
-            {'region_id': vals.get('region_id')},
-        ) if vals.get('borrower_state') else False
+        state = self._resolve_country_state(vals.get('borrower_state')) if vals.get('borrower_state') else False
         if state and not vals.get('borrower_state_id'):
             vals['borrower_state_id'] = state.id
-        if state and state.region_id and not vals.get('region_id'):
-            vals['region_id'] = state.region_id.id
 
         branch = self._ensure_master(
             'bharat.branch',
@@ -986,7 +1002,7 @@ class BharatLoan(models.Model):
         if vals.get('region_id') and not vals.get('region'):
             vals['region'] = self.env['bharat.region'].browse(vals['region_id']).name
         if vals.get('borrower_state_id') and not vals.get('borrower_state'):
-            vals['borrower_state'] = self.env['bharat.borrower_state'].browse(vals['borrower_state_id']).name
+            vals['borrower_state'] = self.env['res.country.state'].browse(vals['borrower_state_id']).name
         if vals.get('branch_id') and not vals.get('branch'):
             vals['branch'] = self.env['bharat.branch'].browse(vals['branch_id']).name
         if vals.get('location_id') and not vals.get('location'):
@@ -1050,17 +1066,8 @@ class BharatLoan(models.Model):
     @api.onchange('borrower_state_id')
     def _onchange_borrower_state(self):
         for rec in self:
-            st = rec.borrower_state_id
-            if (
-                st
-                and st.region_id
-                and (not rec.region_id or rec.region_id == st.region_id)
-            ):
-                rec.region_id = st.region_id
-            if st:
-                rec.borrower_state = st.name
-                if st.region_id:
-                    rec.region = st.region_id.name
+            if rec.borrower_state_id:
+                rec.borrower_state = rec.borrower_state_id.name
 
     @api.onchange('location_id')
     def _onchange_location(self):
@@ -1336,6 +1343,7 @@ class BharatLoan(models.Model):
         super()._register_hook()
         try:
             from odoo.addons.bharatnyay_core.hooks import (
+                migrate_borrower_state_to_country_state,
                 migrate_collection_manager_to_case_manager,
                 repair_loan_arbitrator_id_column,
                 repair_loan_case_manager_id_column,
@@ -1388,6 +1396,7 @@ class BharatLoan(models.Model):
                 WHERE notice_type = 'settled'
                 """
             )
+            migrate_borrower_state_to_country_state(cr)
             migrate_collection_manager_to_case_manager(cr)
             repair_loan_foreign_key_columns(cr)
             repair_loan_arbitrator_id_column(cr)

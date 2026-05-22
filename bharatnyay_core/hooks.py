@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 
 FK_SPECS = (
     ('region_id', 'bharat_region', 'bharat.region', 'region'),
-    ('borrower_state_id', 'bharat_borrower_state', 'bharat.borrower_state', 'borrower_state'),
+    ('borrower_state_id', 'res_country_state', 'res.country.state', 'borrower_state'),
     ('branch_id', 'bharat_branch', 'bharat.branch', 'branch'),
     ('location_id', 'bharat_loan_location', 'bharat.loan_location', 'location'),
     ('product_class_id', 'bharat_product_class', 'bharat.product_class', 'product_classification'),
@@ -135,9 +135,17 @@ def repair_loan_foreign_key_columns(cr):
             if k in cache_by_lower:
                 return cache_by_lower[k]
             meta = Meta.search([('name', '=ilike', nm.strip())], limit=1)
+            if comodel_name == 'res.country.state' and not meta:
+                country = env.ref('base.in', raise_if_not_found=False)
+                domain = [('name', '=ilike', nm.strip())]
+                if country:
+                    domain.append(('country_id', '=', country.id))
+                meta = Meta.search(domain, limit=1)
             if meta:
                 cache_by_lower[k] = meta.id
                 return meta.id
+            if comodel_name == 'res.country.state':
+                return False
             meta = Meta.create({'name': nm.strip()})
             cache_by_lower[k] = meta.id
             return meta.id
@@ -272,6 +280,56 @@ def _table_exists(cr, table_name):
     return bool(cr.fetchone()[0])
 
 
+def migrate_borrower_state_to_country_state(cr):
+    """Remap legacy ``bharat.borrower_state`` FKs to ``res.country.state`` before model removal."""
+    if not _table_exists(cr, 'bharat_borrower_state'):
+        return
+
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    country = env.ref('base.in', raise_if_not_found=False)
+    country_id = country.id if country else False
+    State = env['res.country.state'].sudo()
+
+    cr.execute('SELECT id, name FROM bharat_borrower_state WHERE COALESCE(name, \'\') <> \'\'')
+    mapping = {}
+    for old_id, name in cr.fetchall():
+        nm = (name or '').strip()
+        if not nm:
+            continue
+        domain = [('name', '=ilike', nm)]
+        if country_id:
+            domain.append(('country_id', '=', country_id))
+        state = State.search(domain, limit=1)
+        if state:
+            mapping[old_id] = state.id
+
+    targets = (
+        ('bharat_loan', 'borrower_state_id'),
+        ('bharat_branch', 'borrower_state_id'),
+        ('res_users', 'bharat_borrower_state_id'),
+    )
+    for table, column in targets:
+        if not _table_exists(cr, table):
+            continue
+        if not _column_exists(cr, 'public', table, column):
+            continue
+        for old_id, new_id in mapping.items():
+            cr.execute(
+                'UPDATE {} SET {} = %s WHERE {} = %s'.format(table, column, column),
+                (new_id, old_id),
+            )
+        cr.execute(
+            'UPDATE {} SET {} = NULL WHERE {} IN (SELECT id FROM bharat_borrower_state)'.format(
+                table, column, column
+            )
+        )
+
+    _logger.info(
+        'bharatnyay_core: migrated %s borrower state row(s) to res.country.state',
+        len(mapping),
+    )
+
+
 def migrate_user_role_assignments_to_res_users(cr):
     """Copy legacy assignment rows onto ``res.users``, then drop the old table."""
     if not _table_exists(cr, 'bharat_user_role_assignment'):
@@ -367,6 +425,7 @@ __all__ = [
     'repair_loan_foreign_key_columns',
     'repair_loan_arbitrator_id_column',
     'repair_loan_hearing_columns',
+    'migrate_borrower_state_to_country_state',
     'migrate_user_role_assignments_to_res_users',
     'seed_bharatnyay_demo_users_and_roles',
 ]

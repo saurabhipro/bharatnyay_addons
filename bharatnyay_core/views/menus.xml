@@ -123,7 +123,7 @@
     <menuitem id="menu_bharatnyay_borrower_state"
               name="States"
               parent="menu_bharatnyay_masters"
-              action="action_bharat_borrower_state"
+              action="action_bharat_country_state"
               sequence="20"/>
     <menuitem id="menu_bharatnyay_branch"
               name="Branches"

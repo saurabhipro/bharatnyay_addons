@@ -64,7 +64,7 @@
                     <group string="Location scope" invisible="bharat_role == 'lender'">
                         <group>
                             <field name="bharat_region_id" options="{'no_create': True}"/>
-                            <field name="bharat_borrower_state_id" options="{'no_create': True}"/>
+                            <field name="bharat_borrower_state_id" options="{'no_create': True}" domain="[('country_id.code', '=', 'IN')]"/>
                         </group>
                         <group>
                             <field name="bharat_branch_id" options="{'no_create': True}"/>
