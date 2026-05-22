@@ -168,12 +168,17 @@ class ResUsers(models.Model):
     def _onchange_bharat_location_id(self):
         for user in self:
             loc = user.bharat_location_id
-            if not loc or not loc.branch_id:
+            if not loc:
                 continue
-            user.bharat_branch_id = loc.branch_id
-            if loc.branch_id.borrower_state_id:
+            if loc.branch_id:
+                user.bharat_branch_id = loc.branch_id
+            if loc.state_id:
+                user.bharat_borrower_state_id = loc.state_id
+            elif loc.branch_id and loc.branch_id.borrower_state_id:
                 user.bharat_borrower_state_id = loc.branch_id.borrower_state_id
-            if loc.branch_id.region_id:
+            if loc.region_id:
+                user.bharat_region_id = loc.region_id
+            elif loc.branch_id and loc.branch_id.region_id:
                 user.bharat_region_id = loc.branch_id.region_id
 
     @api.onchange('bharat_branch_id')

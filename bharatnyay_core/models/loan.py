@@ -964,6 +964,7 @@ class BharatLoan(models.Model):
             'bharat.branch',
             vals.get('branch'),
             {
+                'region_id': vals.get('region_id'),
                 'borrower_state_id': vals.get('borrower_state_id'),
             },
         ) if vals.get('branch') else False
@@ -977,10 +978,20 @@ class BharatLoan(models.Model):
         location = self._ensure_master(
             'bharat.loan_location',
             vals.get('location'),
-            {'branch_id': vals.get('branch_id')},
+            {
+                'region_id': vals.get('region_id'),
+                'state_id': vals.get('borrower_state_id'),
+                'branch_id': vals.get('branch_id'),
+            },
         ) if vals.get('location') else False
         if location and not vals.get('location_id'):
             vals['location_id'] = location.id
+        if location and location.region_id and not vals.get('region_id'):
+            vals['region_id'] = location.region_id.id
+        if location and location.state_id and not vals.get('borrower_state_id'):
+            vals['borrower_state_id'] = location.state_id.id
+        if location and location.branch_id and not vals.get('branch_id'):
+            vals['branch_id'] = location.branch_id.id
 
         if vals.get('product_classification') and not vals.get('product_class_id'):
             pclass = self._ensure_master('bharat.product_class', vals.get('product_classification'))
@@ -1079,18 +1090,24 @@ class BharatLoan(models.Model):
     def _onchange_location(self):
         for rec in self:
             loc = rec.location_id
-            if not loc or not loc.branch_id:
+            if not loc:
                 continue
             rec.location = loc.name
-            rec.branch_id = loc.branch_id
-            b = loc.branch_id
-            rec.branch = b.name
-            if b.region_id:
-                rec.region_id = b.region_id
-                rec.region = b.region_id.name
-            if b.borrower_state_id:
-                rec.borrower_state_id = b.borrower_state_id
-                rec.borrower_state = b.borrower_state_id.name
+            if loc.branch_id:
+                rec.branch_id = loc.branch_id
+                rec.branch = loc.branch_id.name
+            if loc.state_id:
+                rec.borrower_state_id = loc.state_id
+                rec.borrower_state = loc.state_id.name
+            elif loc.branch_id and loc.branch_id.borrower_state_id:
+                rec.borrower_state_id = loc.branch_id.borrower_state_id
+                rec.borrower_state = loc.branch_id.borrower_state_id.name
+            if loc.region_id:
+                rec.region_id = loc.region_id
+                rec.region = loc.region_id.name
+            elif loc.branch_id and loc.branch_id.region_id:
+                rec.region_id = loc.branch_id.region_id
+                rec.region = loc.branch_id.region_id.name
 
     @api.onchange('region_id', 'product_class_id', 'writeoff_id', 'law_firm_id')
     def _onchange_master_labels(self):

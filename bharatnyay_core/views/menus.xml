@@ -76,10 +76,34 @@
     <menuitem id="menu_bharatnyay_masters"
               name="Masters"
               parent="menu_bharatnyay_root"
-              action="action_bharat_branch"
               groups="bharatnyay_core.group_bharat_admin,base.group_system"
               sequence="40"/>
 
+    <menuitem id="menu_bharatnyay_geography"
+              name="Geography"
+              parent="menu_bharatnyay_masters"
+              sequence="5"/>
+
+    <menuitem id="menu_bharatnyay_region"
+              name="Regions"
+              parent="menu_bharatnyay_geography"
+              action="action_bharat_region"
+              sequence="10"/>
+    <menuitem id="menu_bharatnyay_borrower_state"
+              name="States"
+              parent="menu_bharatnyay_geography"
+              action="action_bharat_country_state"
+              sequence="20"/>
+    <menuitem id="menu_bharatnyay_branch"
+              name="Branches"
+              parent="menu_bharatnyay_geography"
+              action="action_bharat_branch"
+              sequence="30"/>
+    <menuitem id="menu_bharatnyay_loan_location"
+              name="Locations"
+              parent="menu_bharatnyay_geography"
+              action="action_bharat_loan_location"
+              sequence="40"/>
 
     <menuitem id="menu_bharatnyay_user_roless"
               name="User roles"
@@ -115,26 +139,6 @@
               action="action_bharat_postal_import_wizard"
               sequence="50"/>
 
-    <menuitem id="menu_bharatnyay_region"
-              name="Regions"
-              parent="menu_bharatnyay_masters"
-              action="action_bharat_region"
-              sequence="10"/>
-    <menuitem id="menu_bharatnyay_borrower_state"
-              name="States"
-              parent="menu_bharatnyay_masters"
-              action="action_bharat_country_state"
-              sequence="20"/>
-    <menuitem id="menu_bharatnyay_branch"
-              name="Branches"
-              parent="menu_bharatnyay_masters"
-              action="action_bharat_branch"
-              sequence="30"/>
-    <menuitem id="menu_bharatnyay_loan_location"
-              name="Locations"
-              parent="menu_bharatnyay_masters"
-              action="action_bharat_loan_location"
-              sequence="40"/>
     <menuitem id="menu_bharatnyay_product_class"
               name="Product classes"
               parent="menu_bharatnyay_masters"

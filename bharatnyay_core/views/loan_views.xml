@@ -20,9 +20,10 @@
                 <field name="batch_number"/>
                 <field name="company_id"/>
                 <field name="customer_name"/>
-                <field name="branch_id"/>
-                <field name="borrower_state_id"/>
                 <field name="region_id"/>
+                <field name="borrower_state_id"/>
+                <field name="branch_id"/>
+                <field name="location_id"/>
                 <field name="product_class_id"/>
                 <field name="law_firm_id"/>
                 <field name="product"/>
@@ -60,9 +61,10 @@
                 <field name="company_id" optional="show"/>
                 <field name="loan_number"/>
                 <field name="customer_name"/>
-                <field name="branch_id" optional="show"/>
-                <field name="borrower_state_id" optional="hide"/>
                 <field name="region_id" optional="hide"/>
+                <field name="borrower_state_id" optional="hide"/>
+                <field name="branch_id" optional="show"/>
+                <field name="location_id" optional="hide"/>
                 <field name="financed_amount" sum="Financed"/>
                 <field name="current_pos" sum="POS"/>
                 <field name="workflow_stage_display" string="Workflow stage" optional="show"/>
