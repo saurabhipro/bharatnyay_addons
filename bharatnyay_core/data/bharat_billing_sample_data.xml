@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo noupdate="1">
     <!--
-      Demo stack (USD): NBFC partner + milestone products + 10 loans in batch BN-DEMO-BILL.
+      Demo stack (USD): billing partner + milestone products + 10 loans in batch BN-DEMO-BILL (lender = main company).
       Post-init hook creates one draft customer invoice (USD) with aggregated milestone lines.
       Distribution: 5 × Notice 3 (appointment), 3 × Hearing 1 (arbitrator appointed), 1 × Hearing 2, 1 × Hearing 3.
       Notice history varies (1 / 2 / 3 notices per case); arbitrator-appointed rows include dummy hearings (0–2 lines).
@@ -9,12 +9,6 @@
     <record id="sample_partner_nbfc_billing" model="res.partner">
         <field name="name">Demo NBFC Billing (USD)</field>
         <field name="company_type">company</field>
-    </record>
-
-    <record id="sample_nbfc_demo_finance" model="bharat.nbfc">
-        <field name="name">Demo Finance NBFC</field>
-        <field name="code">DMONBFC</field>
-        <field name="partner_id" ref="sample_partner_nbfc_billing"/>
     </record>
 
     <record id="sample_product_bn_notice_1" model="product.template">
@@ -63,10 +57,9 @@
     <!-- 5 cases → milestone Notice 3 (awaiting arbitrator appointment) -->
     <record id="sample_loan_bn_d01" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-01</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Alpha</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">appointment_of_arbitrator</field>
         <field name="workflow_phase">Appointment of Arbitrator</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -80,10 +73,9 @@
     </record>
     <record id="sample_loan_bn_d02" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-02</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Bravo</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">appointment_of_arbitrator</field>
         <field name="workflow_phase">Appointment of Arbitrator</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -97,10 +89,9 @@
     </record>
     <record id="sample_loan_bn_d03" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-03</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Charlie</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">appointment_of_arbitrator</field>
         <field name="workflow_phase">Appointment of Arbitrator</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -121,10 +112,9 @@
     </record>
     <record id="sample_loan_bn_d04" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-04</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Delta</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">appointment_of_arbitrator</field>
         <field name="workflow_phase">Appointment of Arbitrator</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -145,10 +135,9 @@
     </record>
     <record id="sample_loan_bn_d05" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-05</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Echo</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">appointment_of_arbitrator</field>
         <field name="workflow_phase">Appointment of Arbitrator</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -178,10 +167,9 @@
     <!-- 3 cases → milestone Hearing 1 (arbitrator appointed / arbitration-ready bucket) -->
     <record id="sample_loan_bn_d06" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-06</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Foxtrot</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">arbitrator_appointed</field>
         <field name="workflow_phase">Arbitrator Appointed</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -214,10 +202,9 @@
     </record>
     <record id="sample_loan_bn_d07" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-07</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Golf</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">arbitrator_appointed</field>
         <field name="workflow_phase">Arbitrator Appointed</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -254,10 +241,9 @@
     </record>
     <record id="sample_loan_bn_d08" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-08</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Hotel</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">arbitrator_appointed</field>
         <field name="workflow_phase">Arbitrator Appointed</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -287,10 +273,9 @@
     <!-- Hearing stage: 2 past hearings → Hearing 2 product -->
     <record id="sample_loan_bn_d09" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-09</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower India</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">hearing</field>
         <field name="workflow_phase">Hearing</field>
         <field name="notice_line_ids" eval="[(0, 0, {
@@ -329,10 +314,9 @@
     <!-- Hearing stage: 3 past hearings → Hearing 3 product -->
     <record id="sample_loan_bn_d10" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-10</field>
-        <field name="nbfc_id" ref="sample_nbfc_demo_finance"/>
+        <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Juliet</field>
-        <field name="currency_id" ref="base.USD"/>
         <field name="workflow_stage">hearing</field>
         <field name="workflow_phase">Hearing</field>
         <field name="notice_line_ids" eval="[(0, 0, {
