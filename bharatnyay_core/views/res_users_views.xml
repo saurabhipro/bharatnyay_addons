@@ -31,6 +31,7 @@
                 <field name="name"/>
                 <field name="email"/>
                 <field name="bharat_role" string="Role"/>
+                <field name="company_id" string="Lender" optional="show"/>
                 <field name="bharat_branch_id" optional="show"/>
                 <field name="active"/>
             </list>
@@ -56,7 +57,11 @@
                             <field name="active" widget="boolean_toggle"/>
                         </group>
                     </group>
-                    <group string="Location scope">
+                    <group string="Lender scope" invisible="bharat_role != 'lender'">
+                        <field name="company_id" string="Lender / company" options="{'no_create': True}"/>
+                        <field name="company_ids" string="Allowed lenders" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                    <group string="Location scope" invisible="bharat_role == 'lender'">
                         <group>
                             <field name="bharat_region_id" options="{'no_create': True}"/>
                             <field name="bharat_borrower_state_id" options="{'no_create': True}"/>
