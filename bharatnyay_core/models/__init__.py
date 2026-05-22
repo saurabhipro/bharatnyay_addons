@@ -7,7 +7,6 @@ from . import writeoff
 from . import law_firm
 from . import notification_template
 from . import res_users
-from . import bharat_nbfc
 from . import product_template
 from . import account_move
 from . import bharat_arbitrator_blockout

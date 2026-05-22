@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo noupdate="1">
-    <!-- Demo NBFC + one product per arbitration stage (rates = Sales Price on product). -->
-    <record id="sample_nbfc_demo_finance" model="bharat.nbfc">
-        <field name="name">Demo Finance NBFC</field>
-        <field name="code">DMONBFC</field>
-    </record>
-
+    <!-- One product per arbitration stage (rates = Sales Price on product). Lenders use res.company. -->
     <record id="sample_product_bn_notice_1" model="product.template">
         <field name="name">Arbitration — Notice 1</field>
         <field name="type">service</field>

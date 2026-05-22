@@ -53,7 +53,7 @@ class BharatNotificationTemplate(models.Model):
             'workflow_phase': loan.workflow_phase or '',
             'arbitrator_name': arb_name,
             'hearing_datetime': hearing_dt,
-            'nbfc_name': loan.nbfc_id.name if loan.nbfc_id else '',
+            'nbfc_name': loan.company_id.name if loan.company_id else '',
             'outstanding_amount': f'{loan.current_pos or 0:.2f}',
         }
 

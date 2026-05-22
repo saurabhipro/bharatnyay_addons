@@ -19,7 +19,7 @@
               sequence="1"/>
 
     <menuitem id="menu_bharatnyay_loans"
-              name="Loan sheet"
+              name="Cases"
               parent="menu_bharatnyay_root"
               action="action_bharat_loan"
               sequence="15"/>
@@ -87,11 +87,6 @@
               parent="menu_bharatnyay_root"
               sequence="18"/>
 
-    <menuitem id="menu_bharatnyay_nbfc"
-              name="NBFC / lenders"
-              parent="menu_bharatnyay_billing_root"
-              action="action_bharat_nbfc"
-              sequence="10"/>
     <menuitem id="menu_bharatnyay_arbitration_products"
               name="Arbitration billing products"
               parent="menu_bharatnyay_billing_root"

@@ -26,12 +26,6 @@ class BharatLoan(models.Model):
     loan_number = fields.Char(string='Loan Number', required=True, index=True)
     case_number = fields.Char(string='BharatNyay Case Number', copy=False, index=True, readonly=True, tracking=True)
     batch_number = fields.Char(string='Batch Number', copy=False, index=True, tracking=True)
-    nbfc_id = fields.Many2one(
-        'bharat.nbfc',
-        string='NBFC / lender',
-        index=True,
-        help='Used for NBFC-specific billing rates and lender dashboards.',
-    )
     customer_name = fields.Char(string='Customer Name')
 
     # Keep master links for normalized future usage.
@@ -67,10 +61,11 @@ class BharatLoan(models.Model):
 
     company_id = fields.Many2one(
         'res.company',
-        string='Company',
+        string='Lender / company',
         default=lambda self: self.env.company,
         required=True,
         index=True,
+        help='Odoo company (NBFC / lender). Used for billing rates, multi-company scope, and lender dashboards.',
     )
     currency_id = fields.Many2one(
         'res.currency',
@@ -1306,6 +1301,7 @@ class BharatLoan(models.Model):
         super()._register_hook()
         try:
             from odoo.addons.bharatnyay_core.hooks import (
+                migrate_nbfc_to_res_company,
                 repair_loan_arbitrator_id_column,
                 repair_loan_foreign_key_columns,
                 repair_loan_hearing_columns,
@@ -1356,6 +1352,7 @@ class BharatLoan(models.Model):
                 WHERE notice_type = 'settled'
                 """
             )
+            migrate_nbfc_to_res_company(cr)
             repair_loan_foreign_key_columns(cr)
             repair_loan_arbitrator_id_column(cr)
             repair_loan_hearing_columns(cr)
