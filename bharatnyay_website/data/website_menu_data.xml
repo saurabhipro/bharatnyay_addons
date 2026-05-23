@@ -66,44 +66,45 @@
         <field name="sequence" eval="30"/>
     </record>
 
+    <!-- Standards detail pages: siblings under About ODR (Odoo allows max 2 menu levels) -->
     <record id="menu_odr_standards_ethics" model="website.menu">
         <field name="name">Code of ethics</field>
         <field name="url">/odr/standards/code-of-ethics</field>
         <field name="website_id" ref="website.default_website"/>
-        <field name="parent_id" ref="menu_odr_standards_parent"/>
-        <field name="sequence" eval="10"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="31"/>
     </record>
 
     <record id="menu_odr_standards_hearing" model="website.menu">
         <field name="name">Hearing &amp; submission protocol</field>
         <field name="url">/odr/standards/hearing-protocol</field>
         <field name="website_id" ref="website.default_website"/>
-        <field name="parent_id" ref="menu_odr_standards_parent"/>
-        <field name="sequence" eval="20"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="32"/>
     </record>
 
     <record id="menu_odr_standards_appointment" model="website.menu">
         <field name="name">Protocol for neutrals appointment</field>
         <field name="url">/odr/standards/neutral-appointment</field>
         <field name="website_id" ref="website.default_website"/>
-        <field name="parent_id" ref="menu_odr_standards_parent"/>
-        <field name="sequence" eval="30"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="33"/>
     </record>
 
     <record id="menu_odr_standards_empanelment" model="website.menu">
         <field name="name">Neutral empanelment rules</field>
         <field name="url">/odr/standards/empanelment</field>
         <field name="website_id" ref="website.default_website"/>
-        <field name="parent_id" ref="menu_odr_standards_parent"/>
-        <field name="sequence" eval="40"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="34"/>
     </record>
 
     <record id="menu_odr_standards_video" model="website.menu">
         <field name="name">Video conferencing rules</field>
         <field name="url">/odr/standards/video-conferencing</field>
         <field name="website_id" ref="website.default_website"/>
-        <field name="parent_id" ref="menu_odr_standards_parent"/>
-        <field name="sequence" eval="50"/>
+        <field name="parent_id" ref="menu_about_odr"/>
+        <field name="sequence" eval="35"/>
     </record>
 
     <record id="menu_bharatnyay_about_public" model="website.menu">
