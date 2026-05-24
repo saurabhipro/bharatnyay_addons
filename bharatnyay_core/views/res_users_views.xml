@@ -45,6 +45,8 @@
         <field name="arch" type="xml">
             <form string="User role">
                 <sheet>
+                    <field name="image_1920" widget="image" class="oe_avatar"
+                           options="{'zoom': true, 'preview_image': 'avatar_128'}"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_bharat_loans" type="object"
                                 class="oe_stat_button" icon="fa-briefcase"
