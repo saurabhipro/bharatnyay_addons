@@ -106,7 +106,73 @@
         </field>
     </record>
 
-    <!-- Branches -->
+    <!-- Locations (Region → State → Location) -->
+    <record id="view_bharat_loan_location_search" model="ir.ui.view">
+        <field name="name">bharat.loan_location.search</field>
+        <field name="model">bharat.loan_location</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="region_id"/>
+                <field name="state_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_loan_location_tree" model="ir.ui.view">
+        <field name="name">bharat.loan_location.list</field>
+        <field name="model">bharat.loan_location</field>
+        <field name="arch" type="xml">
+            <list string="Locations">
+                <field name="region_id" optional="show"/>
+                <field name="state_id" optional="show"/>
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_loan_location_form" model="ir.ui.view">
+        <field name="name">bharat.loan_location.form</field>
+        <field name="model">bharat.loan_location</field>
+        <field name="arch" type="xml">
+            <form string="Location">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Location name"/></h1>
+                    </div>
+                    <group string="Geography">
+                        <group>
+                            <field name="region_id" required="1" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                            <field name="state_id" required="1"
+                                   options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                                   domain="[('country_id.code', '=', 'IN'), ('region_id', '!=', False), ('region_id', '=', region_id)]"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_loan_location" model="ir.actions.act_window">
+        <field name="name">Locations</field>
+        <field name="res_model">bharat.loan_location</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_bharat_loan_location_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_bharat_loan_location_form')}),
+        ]"/>
+        <field name="search_view_id" ref="view_bharat_loan_location_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">City or office locations under a state (e.g. CHANDIGARH).</p>
+        </field>
+    </record>
+
+    <!-- Branches (Region → State → Location → Branch) -->
     <record id="view_bharat_branch_search" model="ir.ui.view">
         <field name="name">bharat.branch.search</field>
         <field name="model">bharat.branch</field>
@@ -115,6 +181,7 @@
                 <field name="name"/>
                 <field name="region_id"/>
                 <field name="borrower_state_id"/>
+                <field name="location_id"/>
                 <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
             </search>
         </field>
@@ -126,6 +193,7 @@
             <list string="Branches">
                 <field name="region_id" optional="show"/>
                 <field name="borrower_state_id" optional="show"/>
+                <field name="location_id" optional="show"/>
                 <field name="name"/>
                 <field name="code" optional="hide"/>
                 <field name="active" widget="boolean_toggle"/>
@@ -149,6 +217,9 @@
                             <field name="borrower_state_id" string="State" required="1"
                                    options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                                    domain="[('country_id.code', '=', 'IN'), ('region_id', '!=', False), ('region_id', '=', region_id)]"/>
+                            <field name="location_id" required="1"
+                                   options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                                   domain="[('region_id', '=', region_id), ('state_id', '=', borrower_state_id)]"/>
                         </group>
                         <group>
                             <field name="code"/>
@@ -170,75 +241,7 @@
         ]"/>
         <field name="search_view_id" ref="view_bharat_branch_search"/>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Branches match your disbursement spreadsheet.</p>
-        </field>
-    </record>
-
-    <!-- Locations -->
-    <record id="view_bharat_loan_location_search" model="ir.ui.view">
-        <field name="name">bharat.loan_location.search</field>
-        <field name="model">bharat.loan_location</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="region_id"/>
-                <field name="state_id"/>
-                <field name="branch_id"/>
-                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
-            </search>
-        </field>
-    </record>
-    <record id="view_bharat_loan_location_tree" model="ir.ui.view">
-        <field name="name">bharat.loan_location.list</field>
-        <field name="model">bharat.loan_location</field>
-        <field name="arch" type="xml">
-            <list string="Locations">
-                <field name="region_id" optional="show"/>
-                <field name="state_id" optional="show"/>
-                <field name="branch_id" optional="show"/>
-                <field name="name"/>
-                <field name="active" widget="boolean_toggle"/>
-            </list>
-        </field>
-    </record>
-    <record id="view_bharat_loan_location_form" model="ir.ui.view">
-        <field name="name">bharat.loan_location.form</field>
-        <field name="model">bharat.loan_location</field>
-        <field name="arch" type="xml">
-            <form string="Location">
-                <sheet>
-                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
-                    <group string="Geography">
-                        <group>
-                            <field name="region_id" required="1" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                            <field name="state_id" required="1"
-                                   options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
-                                   domain="[('country_id.code', '=', 'IN'), ('region_id', '!=', False), ('region_id', '=', region_id)]"/>
-                            <field name="branch_id" required="1"
-                                   options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
-                                   domain="[('region_id', '=', region_id), ('borrower_state_id', '=', state_id)]"/>
-                        </group>
-                        <group>
-                            <field name="name" string="Location"/>
-                            <field name="active" widget="boolean_toggle"/>
-                        </group>
-                    </group>
-                </sheet>
-                <chatter/>
-            </form>
-        </field>
-    </record>
-    <record id="action_bharat_loan_location" model="ir.actions.act_window">
-        <field name="name">Locations</field>
-        <field name="res_model">bharat.loan_location</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'list', 'view_id': ref('view_bharat_loan_location_tree')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_bharat_loan_location_form')}),
-        ]"/>
-        <field name="search_view_id" ref="view_bharat_loan_location_search"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Office or city locations linked to a branch when needed.</p>
+            <p class="o_view_nocontent_smiling_face">Branches under a location (e.g. CHANDIGARH-SECTOR40).</p>
         </field>
     </record>
 

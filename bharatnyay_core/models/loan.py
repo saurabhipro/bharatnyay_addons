@@ -960,28 +960,12 @@ class BharatLoan(models.Model):
         if state and state.region_id and not vals.get('region_id'):
             vals['region_id'] = state.region_id.id
 
-        branch = self._ensure_master(
-            'bharat.branch',
-            vals.get('branch'),
-            {
-                'region_id': vals.get('region_id'),
-                'borrower_state_id': vals.get('borrower_state_id'),
-            },
-        ) if vals.get('branch') else False
-        if branch and not vals.get('branch_id'):
-            vals['branch_id'] = branch.id
-        if branch and branch.region_id and not vals.get('region_id'):
-            vals['region_id'] = branch.region_id.id
-        if branch and branch.borrower_state_id and not vals.get('borrower_state_id'):
-            vals['borrower_state_id'] = branch.borrower_state_id.id
-
         location = self._ensure_master(
             'bharat.loan_location',
             vals.get('location'),
             {
                 'region_id': vals.get('region_id'),
                 'state_id': vals.get('borrower_state_id'),
-                'branch_id': vals.get('branch_id'),
             },
         ) if vals.get('location') else False
         if location and not vals.get('location_id'):
@@ -990,8 +974,24 @@ class BharatLoan(models.Model):
             vals['region_id'] = location.region_id.id
         if location and location.state_id and not vals.get('borrower_state_id'):
             vals['borrower_state_id'] = location.state_id.id
-        if location and location.branch_id and not vals.get('branch_id'):
-            vals['branch_id'] = location.branch_id.id
+
+        branch = self._ensure_master(
+            'bharat.branch',
+            vals.get('branch'),
+            {
+                'region_id': vals.get('region_id'),
+                'borrower_state_id': vals.get('borrower_state_id'),
+                'location_id': vals.get('location_id'),
+            },
+        ) if vals.get('branch') else False
+        if branch and not vals.get('branch_id'):
+            vals['branch_id'] = branch.id
+        if branch and branch.region_id and not vals.get('region_id'):
+            vals['region_id'] = branch.region_id.id
+        if branch and branch.borrower_state_id and not vals.get('borrower_state_id'):
+            vals['borrower_state_id'] = branch.borrower_state_id.id
+        if branch and branch.location_id and not vals.get('location_id'):
+            vals['location_id'] = branch.location_id.id
 
         if vals.get('product_classification') and not vals.get('product_class_id'):
             pclass = self._ensure_master('bharat.product_class', vals.get('product_classification'))
@@ -1068,12 +1068,21 @@ class BharatLoan(models.Model):
             if not branch:
                 continue
             rec.branch = branch.name
-            if branch.region_id:
-                rec.region_id = branch.region_id
-                rec.region = branch.region_id.name
+            if branch.location_id:
+                rec.location_id = branch.location_id
+                rec.location = branch.location_id.name
             if branch.borrower_state_id:
                 rec.borrower_state_id = branch.borrower_state_id
                 rec.borrower_state = branch.borrower_state_id.name
+            elif branch.location_id and branch.location_id.state_id:
+                rec.borrower_state_id = branch.location_id.state_id
+                rec.borrower_state = branch.location_id.state_id.name
+            if branch.region_id:
+                rec.region_id = branch.region_id
+                rec.region = branch.region_id.name
+            elif branch.location_id and branch.location_id.region_id:
+                rec.region_id = branch.location_id.region_id
+                rec.region = branch.location_id.region_id.name
 
     @api.onchange('borrower_state_id')
     def _onchange_borrower_state(self):
@@ -1091,23 +1100,20 @@ class BharatLoan(models.Model):
         for rec in self:
             loc = rec.location_id
             if not loc:
+                if rec.branch_id:
+                    rec.branch_id = False
+                    rec.branch = False
                 continue
             rec.location = loc.name
-            if loc.branch_id:
-                rec.branch_id = loc.branch_id
-                rec.branch = loc.branch_id.name
             if loc.state_id:
                 rec.borrower_state_id = loc.state_id
                 rec.borrower_state = loc.state_id.name
-            elif loc.branch_id and loc.branch_id.borrower_state_id:
-                rec.borrower_state_id = loc.branch_id.borrower_state_id
-                rec.borrower_state = loc.branch_id.borrower_state_id.name
             if loc.region_id:
                 rec.region_id = loc.region_id
                 rec.region = loc.region_id.name
-            elif loc.branch_id and loc.branch_id.region_id:
-                rec.region_id = loc.branch_id.region_id
-                rec.region = loc.branch_id.region_id.name
+            if rec.branch_id and rec.branch_id.location_id != loc:
+                rec.branch_id = False
+                rec.branch = False
 
     @api.onchange('region_id', 'product_class_id', 'writeoff_id', 'law_firm_id')
     def _onchange_master_labels(self):

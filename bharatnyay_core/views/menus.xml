@@ -94,15 +94,15 @@
               parent="menu_bharatnyay_geography"
               action="action_bharat_country_state"
               sequence="20"/>
-    <menuitem id="menu_bharatnyay_branch"
-              name="Branches"
-              parent="menu_bharatnyay_geography"
-              action="action_bharat_branch"
-              sequence="30"/>
     <menuitem id="menu_bharatnyay_loan_location"
               name="Locations"
               parent="menu_bharatnyay_geography"
               action="action_bharat_loan_location"
+              sequence="30"/>
+    <menuitem id="menu_bharatnyay_branch"
+              name="Branches"
+              parent="menu_bharatnyay_geography"
+              action="action_bharat_branch"
               sequence="40"/>
 
     <menuitem id="menu_bharatnyay_user_roless"

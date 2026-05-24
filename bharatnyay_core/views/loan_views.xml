@@ -400,8 +400,8 @@
                                 <group string="Geography (imported)">
                                     <field name="region_id" readonly="1"/>
                                     <field name="borrower_state_id" readonly="1"/>
-                                    <field name="branch_id" readonly="1"/>
                                     <field name="location_id" readonly="1"/>
+                                    <field name="branch_id" readonly="1"/>
                                 </group>
                                 <group string="Product &amp; legal (imported)">
                                     <field name="product_class_id" readonly="1"/>

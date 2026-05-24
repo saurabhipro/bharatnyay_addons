@@ -183,48 +183,48 @@ class ResUsers(models.Model):
                 or user.bharat_borrower_state_id.region_id != user.bharat_region_id
             ):
                 user.bharat_borrower_state_id = False
-            if user.bharat_branch_id and (
-                not user.bharat_region_id
-                or user.bharat_branch_id.region_id != user.bharat_region_id
-            ):
-                user.bharat_branch_id = False
             if user.bharat_location_id and (
                 not user.bharat_region_id
                 or user.bharat_location_id.region_id != user.bharat_region_id
             ):
                 user.bharat_location_id = False
-
-    @api.onchange('bharat_location_id')
-    def _onchange_bharat_location_id(self):
-        for user in self:
-            loc = user.bharat_location_id
-            if not loc:
-                continue
-            if loc.branch_id:
-                user.bharat_branch_id = loc.branch_id
-            if loc.state_id:
-                user.bharat_borrower_state_id = loc.state_id
-            elif loc.branch_id and loc.branch_id.borrower_state_id:
-                user.bharat_borrower_state_id = loc.branch_id.borrower_state_id
-            if loc.region_id:
-                user.bharat_region_id = loc.region_id
-            elif loc.branch_id and loc.branch_id.region_id:
-                user.bharat_region_id = loc.branch_id.region_id
+            if user.bharat_branch_id and (
+                not user.bharat_region_id
+                or user.bharat_branch_id.region_id != user.bharat_region_id
+            ):
+                user.bharat_branch_id = False
 
     @api.onchange('bharat_branch_id')
     def _onchange_bharat_branch_id(self):
         for user in self:
             branch = user.bharat_branch_id
             if not branch:
-                if user.bharat_location_id:
-                    user.bharat_location_id = False
                 continue
+            if branch.location_id:
+                user.bharat_location_id = branch.location_id
             if branch.borrower_state_id:
                 user.bharat_borrower_state_id = branch.borrower_state_id
+            elif branch.location_id and branch.location_id.state_id:
+                user.bharat_borrower_state_id = branch.location_id.state_id
             if branch.region_id:
                 user.bharat_region_id = branch.region_id
-            if user.bharat_location_id and user.bharat_location_id.branch_id != branch:
-                user.bharat_location_id = False
+            elif branch.location_id and branch.location_id.region_id:
+                user.bharat_region_id = branch.location_id.region_id
+
+    @api.onchange('bharat_location_id')
+    def _onchange_bharat_location_id(self):
+        for user in self:
+            location = user.bharat_location_id
+            if not location:
+                if user.bharat_branch_id:
+                    user.bharat_branch_id = False
+                continue
+            if location.state_id:
+                user.bharat_borrower_state_id = location.state_id
+            if location.region_id:
+                user.bharat_region_id = location.region_id
+            if user.bharat_branch_id and user.bharat_branch_id.location_id != location:
+                user.bharat_branch_id = False
 
     @api.onchange('bharat_borrower_state_id')
     def _onchange_bharat_borrower_state_id(self):
@@ -232,14 +232,14 @@ class ResUsers(models.Model):
             state = user.bharat_borrower_state_id
             if state and state.region_id:
                 user.bharat_region_id = state.region_id
-            if user.bharat_branch_id and (
-                not state
-                or user.bharat_branch_id.borrower_state_id != state
-            ):
-                user.bharat_branch_id = False
             if user.bharat_location_id and (
                 not state
                 or user.bharat_location_id.state_id != state
             ):
                 user.bharat_location_id = False
+            if user.bharat_branch_id and (
+                not state
+                or user.bharat_branch_id.borrower_state_id != state
+            ):
+                user.bharat_branch_id = False
 

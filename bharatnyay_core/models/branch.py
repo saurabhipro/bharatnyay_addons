@@ -23,20 +23,22 @@ class BharatBranch(models.Model):
         index=True,
         tracking=True,
     )
+    location_id = fields.Many2one(
+        'bharat.loan_location',
+        string='Location',
+        index=True,
+        tracking=True,
+    )
     active = fields.Boolean(default=True, tracking=True)
 
     _sql_constraints = [
         ('bharat_branch_name_uniq', 'unique(name)', 'This branch already exists.'),
     ]
 
-    @api.constrains('region_id', 'borrower_state_id')
-    def _check_state_matches_region(self):
+    @api.constrains('region_id', 'borrower_state_id', 'location_id')
+    def _check_branch_geography(self):
         for rec in self:
-            if (
-                rec.region_id
-                and rec.borrower_state_id
-                and rec.borrower_state_id.region_id != rec.region_id
-            ):
+            if rec.borrower_state_id and rec.region_id and rec.borrower_state_id.region_id != rec.region_id:
                 raise ValidationError(
                     'State "%(state)s" does not belong to region "%(region)s".'
                     % {
@@ -44,6 +46,17 @@ class BharatBranch(models.Model):
                         'region': rec.region_id.name,
                     }
                 )
+            if rec.location_id:
+                if rec.region_id and rec.location_id.region_id != rec.region_id:
+                    raise ValidationError(
+                        'Location "%(location)s" does not belong to region "%(region)s".'
+                        % {'location': rec.location_id.name, 'region': rec.region_id.name}
+                    )
+                if rec.borrower_state_id and rec.location_id.state_id != rec.borrower_state_id:
+                    raise ValidationError(
+                        'Location "%(location)s" does not belong to state "%(state)s".'
+                        % {'location': rec.location_id.name, 'state': rec.borrower_state_id.display_name}
+                    )
 
     @api.onchange('region_id')
     def _onchange_region_id(self):
@@ -53,14 +66,29 @@ class BharatBranch(models.Model):
                 or rec.borrower_state_id.region_id != rec.region_id
             ):
                 rec.borrower_state_id = False
+            if rec.location_id and (
+                not rec.region_id or rec.location_id.region_id != rec.region_id
+            ):
+                rec.location_id = False
 
     @api.onchange('borrower_state_id')
     def _onchange_borrower_state_id(self):
         for rec in self:
             state = rec.borrower_state_id
-            if not state or not state.region_id:
-                continue
-            if not rec.region_id:
+            if state and state.region_id:
                 rec.region_id = state.region_id
-            elif state.region_id != rec.region_id:
-                rec.borrower_state_id = False
+            if rec.location_id and (
+                not state or rec.location_id.state_id != state
+            ):
+                rec.location_id = False
+
+    @api.onchange('location_id')
+    def _onchange_location_id(self):
+        for rec in self:
+            location = rec.location_id
+            if not location:
+                return
+            if location.region_id:
+                rec.region_id = location.region_id
+            if location.state_id:
+                rec.borrower_state_id = location.state_id

@@ -73,12 +73,12 @@
                         <field name="bharat_borrower_state_id" string="State"
                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                                domain="[('country_id.code', '=', 'IN'), ('region_id', '!=', False), ('region_id', '=', bharat_region_id)]"/>
-                        <field name="bharat_branch_id" string="Branch"
-                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
-                               domain="[('region_id', '=', bharat_region_id), ('borrower_state_id', '=', bharat_borrower_state_id)]"/>
                         <field name="bharat_location_id" string="Location"
                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
-                               domain="[('region_id', '=', bharat_region_id), ('state_id', '=', bharat_borrower_state_id), ('branch_id', '=', bharat_branch_id)]"/>
+                               domain="[('region_id', '=', bharat_region_id), ('state_id', '=', bharat_borrower_state_id)]"/>
+                        <field name="bharat_branch_id" string="Branch"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                               domain="[('region_id', '=', bharat_region_id), ('borrower_state_id', '=', bharat_borrower_state_id), ('location_id', '=', bharat_location_id)]"/>
                     </group>
                     <group>
                         <field name="bharat_role_note" placeholder="Optional notes (scope, escalation, panel details)…"/>
