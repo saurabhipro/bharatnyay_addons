@@ -28,6 +28,7 @@
         'views/bharat_operational_views.xml',
         'views/bharat_account_product_views.xml',
         'views/loan_hearing_wizard_views.xml',
+        'views/loan_assign_arbitrator_wizard_views.xml',
         'views/hearing_line_views.xml',
         'reports/loan_notice_reports.xml',
         'views/loan_views.xml',
@@ -50,4 +51,5 @@
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
+    'post_init_hook': 'post_init_hook',
 }

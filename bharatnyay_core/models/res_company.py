@@ -65,6 +65,7 @@ class ResCompany(models.Model):
                     'company_id': company.id,
                     'stage_id': stage.id,
                     'sequence': stage.sequence,
+                    'is_arbitrator': stage.code == 'appointment_of_arbitrator',
                 }
                 for stage in master_stages
             ])

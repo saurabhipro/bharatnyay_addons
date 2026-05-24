@@ -177,6 +177,11 @@ class BharatLoan(models.Model):
         store=True,
         index=True,
     )
+    state_is_arbitrator = fields.Boolean(
+        string='Stage allows arbitrator assignment',
+        compute='_compute_state_is_arbitrator',
+        store=True,
+    )
     state_display = fields.Char(
         string='Stage display',
         compute='_compute_state_display',
@@ -410,6 +415,19 @@ class BharatLoan(models.Model):
             label = rec.state_id.name or 'Unknown'
             ico = self.STAGE_ICONS.get(rec.state_id.code or '', '•')
             rec.state_display = f'{ico} {label}'
+
+    @api.depends(
+        'state_id',
+        'company_id',
+        'company_id.loan_stage_line_ids.is_arbitrator',
+        'company_id.loan_stage_line_ids.stage_id',
+    )
+    def _compute_state_is_arbitrator(self):
+        for rec in self:
+            line = rec.company_id.loan_stage_line_ids.filtered(
+                lambda row: row.stage_id == rec.state_id
+            )[:1]
+            rec.state_is_arbitrator = bool(line.is_arbitrator)
 
     @staticmethod
     def _format_amount_compact(amount):
@@ -746,6 +764,21 @@ class BharatLoan(models.Model):
         if '://' in u:
             return u
         return 'https://%s' % u
+
+    def action_assign_arbitrator(self):
+        self.ensure_one()
+        if not self.state_is_arbitrator:
+            raise UserError(_('Assign Arbitrator is not available for the current workflow stage.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Assign Arbitrator'),
+            'res_model': 'bharat.loan.assign.arbitrator.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_loan_id': self.id,
+            },
+        }
 
     def action_appoint_arbitrator(self):
         for rec in self:

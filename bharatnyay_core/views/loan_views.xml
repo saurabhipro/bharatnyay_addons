@@ -136,11 +136,15 @@
                     <field name="company_id" invisible="1"/>
                     <field name="allowed_stage_ids" invisible="1"/>
                     <field name="state_code" invisible="1"/>
+                    <field name="state_is_arbitrator" invisible="1"/>
                     <field name="state_id" widget="statusbar"
                            domain="[('id', 'in', allowed_stage_ids)]"
                            options="{'clickable': '1'}"/>
                     <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"/>
-                    <button name="action_appoint_arbitrator" type="object" string="Appoint Arbitrator"/>
+                    <button name="action_assign_arbitrator" type="object" string="Assign Arbitrator"
+                            class="btn-primary" invisible="not state_is_arbitrator"/>
+                    <button name="action_appoint_arbitrator" type="object" string="Appoint Arbitrator"
+                            invisible="state_is_arbitrator"/>
                     <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"
                             invisible="state_code == 'hearing'"/>
                     <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"

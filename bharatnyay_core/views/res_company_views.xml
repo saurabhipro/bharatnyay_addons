@@ -16,6 +16,7 @@
                             <field name="sequence" widget="handle"/>
                             <field name="stage_id"
                                    options="{'no_create': True, 'no_quick_create': True}"/>
+                            <field name="is_arbitrator" optional="show"/>
                             <field name="stage_code" optional="show"/>
                             <field name="stage_name" optional="hide"/>
                         </list>
@@ -109,6 +110,7 @@
                                     <field name="sequence" widget="handle"/>
                                     <field name="stage_id"
                                            options="{'no_create': True, 'no_quick_create': True}"/>
+                                    <field name="is_arbitrator" optional="show"/>
                                     <field name="stage_code" optional="show"/>
                                     <field name="stage_name" optional="hide"/>
                                 </list>

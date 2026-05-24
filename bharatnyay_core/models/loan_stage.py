@@ -107,6 +107,11 @@ class BharatCompanyLoanStage(models.Model):
         index=True,
     )
     sequence = fields.Integer(default=10)
+    is_arbitrator = fields.Boolean(
+        string='Assign arbitrator',
+        default=False,
+        help='When enabled, cases at this stage show an Assign Arbitrator button on the loan form.',
+    )
     stage_code = fields.Char(related='stage_id.code', readonly=True)
     stage_name = fields.Char(related='stage_id.name', readonly=True)
 
