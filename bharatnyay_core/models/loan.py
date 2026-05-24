@@ -24,6 +24,14 @@ class BharatLoan(models.Model):
     _rec_name = 'loan_number'
 
     loan_number = fields.Char(string='Loan Number', required=True, index=True)
+
+    _sql_constraints = [
+        (
+            'loan_number_uniq',
+            'unique(loan_number)',
+            'Loan number must be unique. A loan with this number already exists.',
+        ),
+    ]
     case_number = fields.Char(string='BharatNyay Case Number', copy=False, index=True, readonly=True, tracking=True)
     batch_number = fields.Char(string='Batch Number', copy=False, index=True, tracking=True)
     customer_name = fields.Char(string='Customer Name')
@@ -490,6 +498,25 @@ class BharatLoan(models.Model):
             if rec.arbitrator_id:
                 rec.arbitrator_name = rec.arbitrator_id.name
                 rec.arbitrator_email = rec.arbitrator_id.email or ''
+
+    @api.constrains('loan_number')
+    def _check_loan_number_unique(self):
+        for rec in self:
+            loan_number = (rec.loan_number or '').strip()
+            if not loan_number:
+                continue
+            duplicate = self.search([
+                ('loan_number', '=', loan_number),
+                ('id', '!=', rec.id),
+            ], limit=1)
+            if duplicate:
+                raise ValidationError(
+                    _('Loan number "%(number)s" already exists (case %(case)s).')
+                    % {
+                        'number': loan_number,
+                        'case': duplicate.case_number or duplicate.display_name,
+                    }
+                )
 
     @api.constrains('workflow_section')
     def _check_workflow_section(self):
@@ -1070,6 +1097,11 @@ class BharatLoan(models.Model):
         if vals.get('law_firm_id') and not vals.get('law_firm_name'):
             vals['law_firm_name'] = self.env['bharat.law_firm'].browse(vals['law_firm_id']).name
 
+    @staticmethod
+    def _normalize_loan_number_in_vals(vals):
+        if 'loan_number' in vals and vals['loan_number'] is not False:
+            vals['loan_number'] = (vals['loan_number'] or '').strip()
+
     @api.model_create_multi
     def create(self, vals_list):
         is_import = bool(self.env.context.get('import_file') or self.env.context.get('from_import'))
@@ -1080,6 +1112,7 @@ class BharatLoan(models.Model):
         normalized = []
         for vals in vals_list:
             values = dict(vals)
+            self._normalize_loan_number_in_vals(values)
             self._apply_arbitrator_user_to_vals(self.env, values)
             self._apply_case_manager_user_to_vals(self.env, values)
             if not values.get('case_number'):
@@ -1097,6 +1130,7 @@ class BharatLoan(models.Model):
 
     def write(self, vals):
         values = dict(vals)
+        self._normalize_loan_number_in_vals(values)
         self._apply_arbitrator_user_to_vals(self.env, values)
         self._apply_case_manager_user_to_vals(self.env, values)
         self._normalize_workflow_values(values)
