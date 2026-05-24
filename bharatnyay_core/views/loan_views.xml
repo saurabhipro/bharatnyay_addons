@@ -197,6 +197,10 @@
                                     <field name="branch_id" readonly="1" nolabel="1"/>
                                 </span>
                                 <span class="bn-meta-chip">
+                                    <i class="fa fa-map-marker" role="img" aria-label="Location"/>
+                                    <field name="location_id" readonly="1" nolabel="1"/>
+                                </span>
+                                <span class="bn-meta-chip">
                                     <i class="fa fa-tag" role="img" aria-label="Product class"/>
                                     <field name="product_class_id" readonly="1" nolabel="1"/>
                                 </span>
@@ -244,8 +248,14 @@
                             <field name="currency_id" invisible="0"/>
                             <field name="borrower_email" readonly="1" widget="email"/>
                             <field name="borrower_phone" readonly="1" widget="phone"/>
+                            <field name="case_manager_manual" invisible="1"/>
                             <field name="case_manager_id" options="{'no_create': True}"/>
                             <field name="borrower_state_id" readonly="1"/>
+                        </group>
+                        <group string="Location &amp; branch">
+                            <field name="location_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="branch_id" options="{'no_create': True, 'no_create_edit': True}"
+                                   domain="['|', ('location_id', '=', location_id), ('location_id', '=', False)]"/>
                         </group>
                         <group string="Case &amp; arbitration">
                             <field name="workflow_phase" string="Stage note"/>

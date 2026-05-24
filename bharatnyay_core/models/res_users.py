@@ -33,8 +33,20 @@ class ResUsers(models.Model):
         string='State',
         index=True,
     )
-    bharat_branch_id = fields.Many2one('bharat.branch', string='Branch', index=True)
-    bharat_location_id = fields.Many2one('bharat.loan_location', string='Location', index=True)
+    bharat_branch_ids = fields.Many2many(
+        'bharat.branch',
+        'bharat_res_users_branch_rel',
+        'user_id',
+        'branch_id',
+        string='Branches',
+    )
+    bharat_location_ids = fields.Many2many(
+        'bharat.loan_location',
+        'bharat_res_users_location_rel',
+        'user_id',
+        'location_id',
+        string='Locations',
+    )
     bharat_role_note = fields.Char(string='Role notes')
     bharat_loan_count = fields.Integer(
         string='Assigned cases',
@@ -66,6 +78,30 @@ class ResUsers(models.Model):
         action['domain'] = self._bharat_loan_assignment_domain()
         action['context'] = dict(self.env.context)
         return action
+
+    @api.model
+    def _find_case_manager_for_scope(self, branch_id=False, location_id=False):
+        """Return the first active case manager whose branch/location scope matches."""
+        if branch_id and not location_id:
+            branch = self.env['bharat.branch'].browse(branch_id)
+            if branch.location_id:
+                location_id = branch.location_id.id
+        if not branch_id and not location_id:
+            return False
+
+        candidates = self.search([
+            ('bharat_role', '=', 'case_manager'),
+            ('active', '=', True),
+        ], order='id')
+        for user in candidates:
+            if not user.bharat_branch_ids and not user.bharat_location_ids:
+                continue
+            if user.bharat_branch_ids and (not branch_id or branch_id not in user.bharat_branch_ids.ids):
+                continue
+            if user.bharat_location_ids and (not location_id or location_id not in user.bharat_location_ids.ids):
+                continue
+            return user.id
+        return False
 
     @api.model
     def _bharat_operational_groups(self):
@@ -109,13 +145,27 @@ class ResUsers(models.Model):
     def create(self, vals_list):
         users = super().create(vals_list)
         users.filtered('bharat_role')._sync_bharat_role_groups()
+        if any(
+            'bharat_role' in vals or 'bharat_branch_ids' in vals or 'bharat_location_ids' in vals
+            for vals in vals_list
+        ):
+            users.filtered(
+                lambda u: u.bharat_role == 'case_manager' and u.active
+            )._bharat_trigger_loan_case_manager_recompute()
         return users
 
     def write(self, vals):
         res = super().write(vals)
         if 'bharat_role' in vals:
             self._sync_bharat_role_groups()
+        if {'bharat_role', 'bharat_branch_ids', 'bharat_location_ids', 'active'} & set(vals):
+            self.filtered(
+                lambda u: u.bharat_role == 'case_manager' and u.active
+            )._bharat_trigger_loan_case_manager_recompute()
         return res
+
+    def _bharat_trigger_loan_case_manager_recompute(self):
+        self.env['bharat.loan'].sudo()._recompute_auto_case_managers()
 
     @api.model
     def bharatnyay_ensure_demo_case_manager(self):
@@ -183,48 +233,48 @@ class ResUsers(models.Model):
                 or user.bharat_borrower_state_id.region_id != user.bharat_region_id
             ):
                 user.bharat_borrower_state_id = False
-            if user.bharat_location_id and (
-                not user.bharat_region_id
-                or user.bharat_location_id.region_id != user.bharat_region_id
-            ):
-                user.bharat_location_id = False
-            if user.bharat_branch_id and (
-                not user.bharat_region_id
-                or user.bharat_branch_id.region_id != user.bharat_region_id
-            ):
-                user.bharat_branch_id = False
+            if user.bharat_region_id:
+                user.bharat_location_ids = user.bharat_location_ids.filtered(
+                    lambda loc: loc.region_id == user.bharat_region_id
+                )
+                user.bharat_branch_ids = user.bharat_branch_ids.filtered(
+                    lambda branch: branch.region_id == user.bharat_region_id
+                )
+            else:
+                user.bharat_location_ids = False
+                user.bharat_branch_ids = False
 
-    @api.onchange('bharat_branch_id')
-    def _onchange_bharat_branch_id(self):
+    @api.onchange('bharat_branch_ids')
+    def _onchange_bharat_branch_ids(self):
         for user in self:
-            branch = user.bharat_branch_id
-            if not branch:
+            branches = user.bharat_branch_ids
+            if not branches:
                 continue
-            if branch.location_id:
-                user.bharat_location_id = branch.location_id
+            branch = branches[0]
+            if branch.region_id:
+                user.bharat_region_id = branch.region_id
             if branch.borrower_state_id:
                 user.bharat_borrower_state_id = branch.borrower_state_id
             elif branch.location_id and branch.location_id.state_id:
                 user.bharat_borrower_state_id = branch.location_id.state_id
-            if branch.region_id:
-                user.bharat_region_id = branch.region_id
-            elif branch.location_id and branch.location_id.region_id:
-                user.bharat_region_id = branch.location_id.region_id
+            locations = branches.mapped('location_id')
+            if locations:
+                user.bharat_location_ids = user.bharat_location_ids | locations
 
-    @api.onchange('bharat_location_id')
-    def _onchange_bharat_location_id(self):
+    @api.onchange('bharat_location_ids')
+    def _onchange_bharat_location_ids(self):
         for user in self:
-            location = user.bharat_location_id
-            if not location:
-                if user.bharat_branch_id:
-                    user.bharat_branch_id = False
+            locations = user.bharat_location_ids
+            if not locations:
                 continue
+            location = locations[0]
             if location.state_id:
                 user.bharat_borrower_state_id = location.state_id
             if location.region_id:
                 user.bharat_region_id = location.region_id
-            if user.bharat_branch_id and user.bharat_branch_id.location_id != location:
-                user.bharat_branch_id = False
+            user.bharat_branch_ids = user.bharat_branch_ids.filtered(
+                lambda branch: not branch.location_id or branch.location_id in locations
+            )
 
     @api.onchange('bharat_borrower_state_id')
     def _onchange_bharat_borrower_state_id(self):
@@ -232,14 +282,14 @@ class ResUsers(models.Model):
             state = user.bharat_borrower_state_id
             if state and state.region_id:
                 user.bharat_region_id = state.region_id
-            if user.bharat_location_id and (
-                not state
-                or user.bharat_location_id.state_id != state
-            ):
-                user.bharat_location_id = False
-            if user.bharat_branch_id and (
-                not state
-                or user.bharat_branch_id.borrower_state_id != state
-            ):
-                user.bharat_branch_id = False
+            if state:
+                user.bharat_location_ids = user.bharat_location_ids.filtered(
+                    lambda loc: loc.state_id == state
+                )
+                user.bharat_branch_ids = user.bharat_branch_ids.filtered(
+                    lambda branch: branch.borrower_state_id == state
+                )
+            else:
+                user.bharat_location_ids = False
+                user.bharat_branch_ids = False
 

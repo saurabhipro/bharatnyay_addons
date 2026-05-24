@@ -90,12 +90,22 @@ class BharatLoan(models.Model):
     financed_amount = fields.Monetary(string='Financed amount', currency_field='currency_id')
     disbursement_date = fields.Date(string='Date of disbursement')
     product = fields.Char(string='Product')
+    case_manager_manual = fields.Boolean(
+        string='Case manager manually set',
+        default=False,
+        copy=False,
+    )
     case_manager_id = fields.Many2one(
         'res.users',
         string='Case manager',
+        compute='_compute_case_manager_id',
+        inverse='_inverse_case_manager_id',
+        store=True,
+        precompute=True,
+        readonly=False,
         index=True,
         tracking=True,
-        help='Internal user with Case Manager operational role.',
+        help='Internal user with Case Manager operational role. Auto-assigned from branch/location scope.',
     )
 
     acm_name = fields.Char(string='ACM name')
@@ -482,15 +492,32 @@ class BharatLoan(models.Model):
             vals['arbitrator_name'] = user.name
             vals['arbitrator_email'] = user.email or ''
 
-    @staticmethod
-    def _apply_case_manager_user_to_vals(env, vals):
-        """Normalize case_manager_id when cleared during import/write."""
-        if 'case_manager_id' not in vals:
-            return
-        cm = vals['case_manager_id']
-        if not cm:
-            vals['case_manager_id'] = False
+    @api.depends('branch_id', 'location_id', 'branch_id.location_id', 'case_manager_manual')
+    def _compute_case_manager_id(self):
+        print("compute_case_manager_id")
+        Users = self.env['res.users']
+        for rec in self:
+            if rec.case_manager_manual:
+                continue
+            branch_id = rec.branch_id.id if rec.branch_id else False
+            location_id = rec.location_id.id if rec.location_id else False
+            cm_id = Users._find_case_manager_for_scope(branch_id, location_id)
+            rec.case_manager_id = cm_id or False
 
+    def _inverse_case_manager_id(self):
+        for rec in self:
+            rec.case_manager_manual = bool(rec.case_manager_id)
+
+    @api.model
+    def _recompute_auto_case_managers(self):
+        """Re-run auto assignment for loans not manually assigned."""
+        loans = self.search([
+            ('case_manager_manual', '=', False),
+            '|', ('branch_id', '!=', False), ('location_id', '!=', False),
+        ])
+        if loans:
+            self.env.add_to_compute(self._fields['case_manager_id'], loans)
+        return True
 
     @api.onchange('arbitrator_id')
     def _onchange_arbitrator_id(self):
@@ -1114,7 +1141,6 @@ class BharatLoan(models.Model):
             values = dict(vals)
             self._normalize_loan_number_in_vals(values)
             self._apply_arbitrator_user_to_vals(self.env, values)
-            self._apply_case_manager_user_to_vals(self.env, values)
             if not values.get('case_number'):
                 values['case_number'] = self.env['ir.sequence'].next_by_code('bharat.loan.case.number') or '/'
             if shared_batch_number and not values.get('batch_number'):
@@ -1132,7 +1158,6 @@ class BharatLoan(models.Model):
         values = dict(vals)
         self._normalize_loan_number_in_vals(values)
         self._apply_arbitrator_user_to_vals(self.env, values)
-        self._apply_case_manager_user_to_vals(self.env, values)
         self._normalize_workflow_values(values)
         self._coerce_many2one_name_strings(values)
         self._populate_master_links_from_text(values)
