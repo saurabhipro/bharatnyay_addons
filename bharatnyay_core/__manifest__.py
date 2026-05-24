@@ -9,7 +9,7 @@
     """,
     'category': 'Operations/Disputes',
     'author': 'BharatNyay Team',
-    'depends': ['web', 'mail', 'account', 'account_payment'],
+    'depends': ['web', 'mail', 'account', 'account_payment', 'spiffy_theme_backend'],
     'data': [
         'security/bharatnyay_groups.xml',
         'security/bharatnyay_record_rules.xml',
@@ -44,7 +44,7 @@
             'bharatnyay_core/static/src/dashboard/bharatnyay_dashboard.xml',
             'bharatnyay_core/static/src/dashboard/bharatnyay_dashboard.js',
             'bharatnyay_core/static/src/js/user_menus.js',
-
+            ('after', 'spiffy_theme_backend/static/src/scss/list_view_row_filters.scss', 'bharatnyay_core/static/src/list_view/list_primary_header.scss'),
         ],
     },
     'installable': True,
