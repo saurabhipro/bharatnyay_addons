@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="loan_stage_commencement_main" model="bharat.loan.stage">
+        <field name="code">commencement</field>
+        <field name="name">Commencement</field>
+        <field name="sequence">1</field>
+        <field name="section">1</field>
+        <field name="phase">Commencement</field>
+    </record>
+    <record id="loan_stage_notice_main" model="bharat.loan.stage">
+        <field name="code">notice</field>
+        <field name="name">Notice</field>
+        <field name="sequence">2</field>
+        <field name="section">21</field>
+        <field name="phase">Notice</field>
+    </record>
+    <record id="loan_stage_appointment_main" model="bharat.loan.stage">
+        <field name="code">appointment_of_arbitrator</field>
+        <field name="name">Appointment of Arbitrator</field>
+        <field name="sequence">3</field>
+        <field name="section">11</field>
+        <field name="phase">Appointment of Arbitrator</field>
+    </record>
+    <record id="loan_stage_arbitrator_main" model="bharat.loan.stage">
+        <field name="code">arbitrator_appointed</field>
+        <field name="name">Arbitrator Appointed</field>
+        <field name="sequence">4</field>
+        <field name="section">11</field>
+        <field name="phase">Arbitrator Appointed</field>
+    </record>
+    <record id="loan_stage_hearing_main" model="bharat.loan.stage">
+        <field name="code">hearing</field>
+        <field name="name">Hearing</field>
+        <field name="sequence">5</field>
+        <field name="section">24</field>
+        <field name="phase">Hearing</field>
+    </record>
+    <record id="loan_stage_final_award_main" model="bharat.loan.stage">
+        <field name="code">final_award</field>
+        <field name="name">Final Arbitration Award</field>
+        <field name="sequence">6</field>
+        <field name="section">31</field>
+        <field name="phase">Final Arbitration Award</field>
+    </record>
+    <record id="loan_stage_paid_main" model="bharat.loan.stage">
+        <field name="code">paid</field>
+        <field name="name">Paid</field>
+        <field name="sequence">7</field>
+        <field name="section">31</field>
+        <field name="phase">Paid</field>
+    </record>
+</odoo>

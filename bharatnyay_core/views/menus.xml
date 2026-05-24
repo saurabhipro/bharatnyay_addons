@@ -105,6 +105,12 @@
               action="action_bharat_branch"
               sequence="40"/>
 
+    <menuitem id="menu_bharatnyay_lenders"
+              name="Lenders"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_lender"
+              sequence="8"/>
+
     <menuitem id="menu_bharatnyay_user_roless"
               name="User roles"
               parent="menu_bharatnyay_masters"
@@ -138,6 +144,12 @@
               parent="menu_bharatnyay_billing_root"
               action="action_bharat_postal_import_wizard"
               sequence="50"/>
+
+    <menuitem id="menu_bharatnyay_loan_stage"
+              name="Loan stages"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_loan_stage"
+              sequence="45"/>
 
     <menuitem id="menu_bharatnyay_product_class"
               name="Product classes"

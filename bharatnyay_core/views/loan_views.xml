@@ -29,16 +29,17 @@
                 <field name="product"/>
                 <field name="case_manager_id"/>
                 <field name="workflow_phase"/>
-                <field name="workflow_stage"/>
+                <field name="state_id"/>
+                <field name="state_code"/>
                 <field name="respondent_name"/>
                 <separator/>
                 <filter string="Has claim" name="has_claim" domain="[('claim_amount','&gt;',0)]"/>
-                <filter string="Notice" name="wf_notice" domain="[('workflow_stage','=','notice')]"/>
-                <filter string="Appointment of Arbitrator" name="wf_appoint_arb" domain="[('workflow_stage','=','appointment_of_arbitrator')]"/>
-                <filter string="Arbitrator Appointed" name="wf_arb_appointed" domain="[('workflow_stage','=','arbitrator_appointed')]"/>
-                <filter string="Hearing" name="wf_hearing" domain="[('workflow_stage','=','hearing')]"/>
-                <filter string="Final award" name="wf_final_award" domain="[('workflow_stage','=','final_award')]"/>
-                <filter string="Paid" name="wf_paid" domain="[('workflow_stage','=','paid')]"/>
+                <filter string="Notice" name="wf_notice" domain="[('state_code','=','notice')]"/>
+                <filter string="Appointment of Arbitrator" name="wf_appoint_arb" domain="[('state_code','=','appointment_of_arbitrator')]"/>
+                <filter string="Arbitrator Appointed" name="wf_arb_appointed" domain="[('state_code','=','arbitrator_appointed')]"/>
+                <filter string="Hearing" name="wf_hearing" domain="[('state_code','=','hearing')]"/>
+                <filter string="Final award" name="wf_final_award" domain="[('state_code','=','final_award')]"/>
+                <filter string="Paid" name="wf_paid" domain="[('state_code','=','paid')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Region" name="grp_region" context="{'group_by': 'region_id'}"/>
@@ -67,8 +68,9 @@
                 <field name="location_id" optional="hide"/>
                 <field name="financed_amount" sum="Financed"/>
                 <field name="current_pos" sum="POS"/>
-                <field name="workflow_stage_display" string="Workflow stage" optional="show"/>
-                <field name="workflow_stage" optional="hide"/>
+                <field name="state_display" string="Stage" optional="show"/>
+                <field name="state_id" optional="hide"/>
+                <field name="state_code" column_invisible="1"/>
                 <field name="workflow_section" optional="hide"/>
                 <field name="workflow_phase" optional="hide"/>
                 <field name="claim_amount" sum="Claim"/>
@@ -84,10 +86,10 @@
         <field name="name">bharat.loan.kanban</field>
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="workflow_stage" records_draggable="1">
+            <kanban default_group_by="state_id" records_draggable="1">
                 <field name="loan_number"/>
                 <field name="customer_name"/>
-                <field name="workflow_stage"/>
+                <field name="state_id"/>
                 <field name="branch_id"/>
                 <field name="current_pos"/>
                 <field name="claim_amount"/>
@@ -115,10 +117,10 @@
         <field name="name">bharat.loan.calendar</field>
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
-            <calendar string="Loan Calendar" date_start="deliver_date" color="workflow_stage" mode="month">
+            <calendar string="Loan Calendar" date_start="deliver_date" color="state_id" mode="month">
                 <field name="loan_number"/>
                 <field name="customer_name"/>
-                <field name="workflow_stage"/>
+                <field name="state_id"/>
                 <field name="branch_id"/>
                 <field name="deliver_status"/>
             </calendar>
@@ -131,19 +133,24 @@
         <field name="arch" type="xml">
             <form string="Loan" class="o_bharat_loan_form">
                 <header>
-                    <field name="workflow_stage" widget="statusbar"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="allowed_stage_ids" invisible="1"/>
+                    <field name="state_code" invisible="1"/>
+                    <field name="state_id" widget="statusbar"
+                           domain="[('id', 'in', allowed_stage_ids)]"
+                           options="{'clickable': '1'}"/>
                     <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"/>
                     <button name="action_appoint_arbitrator" type="object" string="Appoint Arbitrator"/>
                     <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"
-                            invisible="workflow_stage == 'hearing'"/>
+                            invisible="state_code == 'hearing'"/>
                     <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"
-                            invisible="workflow_stage != 'hearing'"/>
+                            invisible="state_code != 'hearing'"/>
                     <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
-                            invisible="workflow_stage != 'hearing'"/>
+                            invisible="state_code != 'hearing'"/>
                     <button name="action_join_hearing_meeting" type="object" string="Join Meeting Online"
-                            invisible="workflow_stage != 'hearing'"/>
+                            invisible="state_code != 'hearing'"/>
                     <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
-                            invisible="workflow_stage != 'hearing'"/>
+                            invisible="state_code != 'hearing'"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -163,9 +170,9 @@
                    
                     <field name="workflow_section" invisible="1"/>
                     <widget name="web_ribbon" title="Paid" bg_color="text-bg-success"
-                            invisible="workflow_stage != 'paid'"/>
+                            invisible="state_code != 'paid'"/>
                     <widget name="web_ribbon" title="Final award" bg_color="text-bg-info"
-                            invisible="workflow_stage != 'final_award'"/>
+                            invisible="state_code != 'final_award'"/>
 
                     <div class="bn-loan-hero">
                         <div class="bn-hero-left">
@@ -195,7 +202,7 @@
                                 </span>
                                 <span class="bn-meta-chip bn-meta-chip-soft">
                                     <i class="fa fa-flag-checkered" role="img" aria-label="Stage"/>
-                                    <field name="workflow_stage_display" readonly="1" nolabel="1"/>
+                                    <field name="state_display" readonly="1" nolabel="1"/>
                                 </span>
                             </div>
                         </div>
@@ -463,42 +470,42 @@
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('workflow_stage', '=', 'notice')]</field>
+        <field name="domain">[('state_code', '=', 'notice')]</field>
     </record>
     <record id="action_bharat_loan_appointment_arbitrator" model="ir.actions.act_window">
         <field name="name">Appointment of Arbitrator</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('workflow_stage', '=', 'appointment_of_arbitrator')]</field>
+        <field name="domain">[('state_code', '=', 'appointment_of_arbitrator')]</field>
     </record>
     <record id="action_bharat_loan_arbitrator_appointed" model="ir.actions.act_window">
         <field name="name">Arbitrator Appointed</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('workflow_stage', '=', 'arbitrator_appointed')]</field>
+        <field name="domain">[('state_code', '=', 'arbitrator_appointed')]</field>
     </record>
     <record id="action_bharat_loan_hearing_status" model="ir.actions.act_window">
         <field name="name">Hearing status</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('workflow_stage', '=', 'hearing')]</field>
+        <field name="domain">[('state_code', '=', 'hearing')]</field>
     </record>
     <record id="action_bharat_loan_final_award" model="ir.actions.act_window">
         <field name="name">Final award</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('workflow_stage', '=', 'final_award')]</field>
+        <field name="domain">[('state_code', '=', 'final_award')]</field>
     </record>
     <record id="action_bharat_loan_paid" model="ir.actions.act_window">
         <field name="name">Paid</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('workflow_stage', '=', 'paid')]</field>
+        <field name="domain">[('state_code', '=', 'paid')]</field>
     </record>
 
     <record id="action_bharat_loan_bulk_notice_pdf" model="ir.actions.server">

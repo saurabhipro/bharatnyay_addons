@@ -385,4 +385,60 @@
             <p class="o_view_nocontent_smiling_face">Panels or counsels instructed on Lok Adalat rows.</p>
         </field>
     </record>
+
+    <!-- Loan stages (master) -->
+    <record id="view_bharat_loan_stage_search" model="ir.ui.view">
+        <field name="name">bharat.loan.stage.search</field>
+        <field name="model">bharat.loan.stage</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="view_bharat_loan_stage_tree" model="ir.ui.view">
+        <field name="name">bharat.loan.stage.list</field>
+        <field name="model">bharat.loan.stage</field>
+        <field name="arch" type="xml">
+            <list string="Loan stages" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="section" optional="show"/>
+                <field name="phase" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_bharat_loan_stage_form" model="ir.ui.view">
+        <field name="name">bharat.loan.stage.form</field>
+        <field name="model">bharat.loan.stage</field>
+        <field name="arch" type="xml">
+            <form string="Loan stage">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="sequence"/>
+                        <field name="section"/>
+                        <field name="phase"/>
+                        <field name="active"/>
+                        <field name="fold"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_bharat_loan_stage" model="ir.actions.act_window">
+        <field name="name">Loan stages</field>
+        <field name="res_model">bharat.loan.stage</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_stage_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define loan workflow stages once, then assign them to each company.</p>
+        </field>
+    </record>
 </odoo>

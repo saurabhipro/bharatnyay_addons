@@ -187,7 +187,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
 
         loan_domain = [
             ('arbitrator_id', '=', arbitrator_user.id),
-            ('workflow_stage', '=', 'hearing'),
+            ('state_code', '=', 'hearing'),
             ('hearing_datetime', '!=', False),
         ]
         if exclude_loan:
@@ -412,11 +412,11 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         self.ensure_one()
         loan = self.loan_id
         if self.hearing_reschedule:
-            if loan.workflow_stage != 'hearing':
+            if loan._stage_code() != 'hearing':
                 raise UserError(
                     _('Reschedule is only available when the case is already in the Hearing stage.')
                 )
-        elif loan.workflow_stage != 'arbitrator_appointed':
+        elif loan._stage_code() != 'arbitrator_appointed':
             raise UserError(
                 _('Schedule Hearing is only available when the arbitrator has been appointed.')
             )
@@ -460,8 +460,10 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             'hearing_invite_user_ids': [(6, 0, self.invite_user_ids.ids)],
         }
         if not self.hearing_reschedule:
-            vals_loan['workflow_stage'] = 'hearing'
-            vals_loan['workflow_phase'] = 'Hearing'
+            hearing_stage = loan._get_company_stage('hearing', loan.company_id)
+            if hearing_stage:
+                vals_loan['state_id'] = hearing_stage.id
+                vals_loan['workflow_phase'] = hearing_stage.phase or 'Hearing'
 
         loan.write(vals_loan)
 
@@ -529,7 +531,7 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
     def action_confirm(self):
         self.ensure_one()
         loan = self.loan_id
-        if loan.workflow_stage != 'hearing':
+        if loan._stage_code() != 'hearing':
             raise UserError(_('Pass Interim Award is only available during the Hearing stage.'))
         if not (self.interim_award_notes or '').strip():
             raise UserError(_('Describe the interim directions or rationale.'))

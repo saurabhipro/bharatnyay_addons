@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Settings → Companies (standard Odoo company form) -->
+    <record id="view_company_form_loan_stages" model="ir.ui.view">
+        <field name="name">res.company.form.loan.stages</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Loan stages" name="loan_stages">
+                    <p class="text-muted">
+                        Pick stages from the master list (Masters → Loan stages). Drag rows to set order for this company.
+                    </p>
+                    <field name="loan_stage_line_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="stage_id"
+                                   options="{'no_create': True, 'no_quick_create': True}"/>
+                            <field name="stage_code" optional="show"/>
+                            <field name="stage_name" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- BharatNyay → Masters → Lenders -->
+    <record id="view_bharat_lender_search" model="ir.ui.view">
+        <field name="name">res.company.search.bharat.lender</field>
+        <field name="model">res.company</field>
+        <field name="arch" type="xml">
+            <search string="Lenders">
+                <field name="name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="vat"/>
+                <field name="currency_id"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bharat_lender_tree" model="ir.ui.view">
+        <field name="name">res.company.list.bharat.lender</field>
+        <field name="model">res.company</field>
+        <field name="arch" type="xml">
+            <list string="Lenders">
+                <field name="name"/>
+                <field name="currency_id"/>
+                <field name="loan_count" string="Cases"/>
+                <field name="loan_stage_count" string="Stages"/>
+                <field name="email" optional="show"/>
+                <field name="phone" optional="show"/>
+                <field name="vat" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_lender_form" model="ir.ui.view">
+        <field name="name">res.company.form.bharat.lender</field>
+        <field name="model">res.company</field>
+        <field name="arch" type="xml">
+            <form string="Lender">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_loans"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-briefcase">
+                            <field name="loan_count" widget="statinfo" string="Cases"/>
+                        </button>
+                    </div>
+                    <field name="logo" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Lender / NBFC name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Lender profile">
+                            <field name="currency_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="mobile"/>
+                            <field name="website" widget="url"/>
+                            <field name="vat"/>
+                            <field name="company_registry"/>
+                        </group>
+                        <group string="Address">
+                            <label for="street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..." class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="city" placeholder="City" class="o_address_city"/>
+                                <field name="state_id" class="o_address_state" placeholder="State"
+                                       options="{'no_open': True}"/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Loan workflow stages" name="loan_stages">
+                            <p class="text-muted">
+                                Select stages from the master list (Masters → Loan stages). Drag to set pipeline order for this lender.
+                            </p>
+                            <field name="loan_stage_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="stage_id"
+                                           options="{'no_create': True, 'no_quick_create': True}"/>
+                                    <field name="stage_code" optional="show"/>
+                                    <field name="stage_name" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Cases" name="loan_cases">
+                            <field name="loan_ids" readonly="1">
+                                <list>
+                                    <field name="case_number"/>
+                                    <field name="loan_number"/>
+                                    <field name="customer_name"/>
+                                    <field name="state_id"/>
+                                    <field name="current_pos" sum="POS"/>
+                                    <field name="claim_amount" sum="Claim"/>
+                                    <field name="branch_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_lender" model="ir.actions.act_window">
+        <field name="name">Lenders</field>
+        <field name="res_model">res.company</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_lender_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register NBFCs / lenders and configure their loan workflow stages.
+            </p>
+            <p>
+                Each lender is an Odoo company. Assign workflow stages from the master list — no need to recreate stages per lender.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_bharat_lender_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_bharat_lender_tree"/>
+        <field name="act_window_id" ref="action_bharat_lender"/>
+    </record>
+    <record id="action_bharat_lender_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_bharat_lender_form"/>
+        <field name="act_window_id" ref="action_bharat_lender"/>
+    </record>
+</odoo>

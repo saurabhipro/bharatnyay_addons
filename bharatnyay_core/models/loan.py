@@ -119,42 +119,49 @@ class BharatLoan(models.Model):
     deliver_date = fields.Date(string='Deliver date')
     deliver_status = fields.Char(string='Deliver status')
 
-    WORKFLOW_STAGES = [
-        ('commencement', 'Commencement'),
-        ('notice', 'Notice'),
-        ('appointment_of_arbitrator', 'Appointment of Arbitrator'),
-        ('arbitrator_appointed', 'Arbitrator Appointed'),
-        ('hearing', 'Hearing'),
-        ('final_award', 'Final Arbitration Award'),
-        ('paid', 'Paid'),
-    ]
-    WORKFLOW_STAGE_META = {
-        'commencement': {'section': 1, 'phase': 'Commencement'},
-        'notice': {'section': 21, 'phase': 'Notice'},
-        'appointment_of_arbitrator': {'section': 11, 'phase': 'Appointment of Arbitrator'},
-        'arbitrator_appointed': {'section': 11, 'phase': 'Arbitrator Appointed'},
-        'hearing': {'section': 24, 'phase': 'Hearing'},
-        'final_award': {'section': 31, 'phase': 'Final Arbitration Award'},
-        'paid': {'section': 31, 'phase': 'Paid'},
+    STAGE_ICONS = {
+        'commencement': '🚀',
+        'notice': '📩',
+        'appointment_of_arbitrator': '👤',
+        'arbitrator_appointed': '✅',
+        'hearing': '🎥',
+        'final_award': '⚖️',
+        'paid': '💰',
+    }
+    STAGE_STYLE = {
+        'commencement': {'color': '#6366f1', 'icon': 'fa-flag-checkered'},
+        'notice': {'color': '#0ea5e9', 'icon': 'fa-envelope-open-o'},
+        'appointment_of_arbitrator': {'color': '#f59e0b', 'icon': 'fa-user-plus'},
+        'arbitrator_appointed': {'color': '#8b5cf6', 'icon': 'fa-user-circle-o'},
+        'hearing': {'color': '#10b981', 'icon': 'fa-video-camera'},
+        'final_award': {'color': '#ef4444', 'icon': 'fa-gavel'},
+        'paid': {'color': '#22c55e', 'icon': 'fa-check-circle-o'},
     }
 
     # ── Dispute playbook / workflow ──────────────────────────────────────
-    workflow_stage = fields.Selection(
-        selection=WORKFLOW_STAGES,
-        string='Workflow stage',
-        default='notice',
-        index=True,
+    state_id = fields.Many2one(
+        'bharat.loan.stage',
+        string='Stage',
         tracking=True,
-        group_expand='_group_expand_workflow_stage',
+        index=True,
+        domain="[('id', 'in', allowed_stage_ids)]",
+        group_expand='_group_expand_state_id',
+        default=lambda self: self._default_state_id(),
     )
-    workflow_stage_display = fields.Char(
-        string='Stage display',
-        compute='_compute_workflow_stage_display',
+    allowed_stage_ids = fields.Many2many(
+        'bharat.loan.stage',
+        compute='_compute_allowed_stage_ids',
+        string='Allowed stages',
     )
-    workflow_stage_index = fields.Integer(
-        string='Workflow order',
-        compute='_compute_workflow_stage_index',
+    state_code = fields.Char(
+        string='Stage code',
+        related='state_id.code',
         store=True,
+        index=True,
+    )
+    state_display = fields.Char(
+        string='Stage display',
+        compute='_compute_state_display',
     )
     workflow_section = fields.Integer(
         string='Workflow section',
@@ -337,29 +344,54 @@ class BharatLoan(models.Model):
                 parts.append(rec.borrower_state)
             rec.respondent_territory_display = ', '.join(p for p in parts if p)
 
-    @api.depends('workflow_stage')
-    def _compute_workflow_stage_index(self):
-        order = {key: idx for idx, (key, _) in enumerate(self.WORKFLOW_STAGES, start=1)}
+    @api.depends(
+        'company_id',
+        'company_id.loan_stage_line_ids',
+        'company_id.loan_stage_line_ids.stage_id',
+    )
+    def _compute_allowed_stage_ids(self):
         for rec in self:
-            rec.workflow_stage_index = order.get(rec.workflow_stage or '', 1)
+            if rec.company_id:
+                rec.allowed_stage_ids = rec.company_id._loan_stages_ordered()
+            else:
+                rec.allowed_stage_ids = self.env['bharat.loan.stage'].search([])
 
-    @api.depends('workflow_stage')
-    def _compute_workflow_stage_display(self):
-        labels = dict(self.WORKFLOW_STAGES)
-        icons = {
-            'commencement': '🚀',
-            'notice': '📩',
-            'appointment_of_arbitrator': '👤',
-            'arbitrator_appointed': '✅',
-            'hearing': '🎥',
-            'final_award': '⚖️',
-            'paid': '💰',
-        }
+    @api.model
+    def _default_state_id(self):
+        company = self.env.company
+        stage = company._get_loan_stage_by_code('notice') if company else self.env['bharat.loan.stage']
+        return stage.id if stage else False
+
+    @api.model
+    def _get_company_stage(self, code, company=None):
+        company = company or self.env.company
+        if hasattr(company, '_get_loan_stage_by_code'):
+            return company._get_loan_stage_by_code(code)
+        return self.env['bharat.loan.stage'].search([('code', '=', code)], limit=1)
+
+    def _stage_code(self):
+        self.ensure_one()
+        return self.state_id.code or ''
+
+    def _write_stage_by_code(self, code):
+        self.ensure_one()
+        stage = self._get_company_stage(code, self.company_id)
+        if not stage:
+            raise UserError(_('Workflow stage “%s” is not configured for company %s.') % (code, self.company_id.display_name))
+        vals = {'state_id': stage.id}
+        if stage.section:
+            vals['workflow_section'] = stage.section
+        if stage.phase:
+            vals['workflow_phase'] = stage.phase
+        self.write(vals)
+        return stage
+
+    @api.depends('state_id', 'state_id.name', 'state_id.code')
+    def _compute_state_display(self):
         for rec in self:
-            stage = rec.workflow_stage or ''
-            label = labels.get(stage, stage or 'Unknown')
-            ico = icons.get(stage, '•')
-            rec.workflow_stage_display = f'{ico} {label}'
+            label = rec.state_id.name or 'Unknown'
+            ico = self.STAGE_ICONS.get(rec.state_id.code or '', '•')
+            rec.state_display = f'{ico} {label}'
 
     @staticmethod
     def _format_amount_compact(amount):
@@ -406,9 +438,14 @@ class BharatLoan(models.Model):
                 rec.hero_disburse_display = d.strftime('%d %b %y')
 
     @api.model
-    def _group_expand_workflow_stage(self, stages, domain):
-        """Kanban/read_group: show every workflow stage column even when empty."""
-        return [key for key, _label in self.WORKFLOW_STAGES]
+    def _group_expand_state_id(self, stages, domain):
+        """Kanban/read_group: show every assigned company stage column even when empty."""
+        company = self.env.company
+        for leaf in domain:
+            if isinstance(leaf, (list, tuple)) and leaf[0] == 'company_id' and leaf[1] == '=':
+                company = self.env['res.company'].browse(leaf[2])
+                break
+        return company._loan_stages_ordered() if company else self.env['bharat.loan.stage']
 
     @api.model
     def _domain_arbitrator_users(self):
@@ -463,55 +500,66 @@ class BharatLoan(models.Model):
             if sec < 1 or sec > 31:
                 raise ValidationError(_("Workflow section must be between 1 and 31."))
 
-    @api.onchange('workflow_stage')
-    def _onchange_workflow_stage(self):
+    @api.onchange('state_id')
+    def _onchange_state_id(self):
         for rec in self:
-            stage = rec.workflow_stage
-            if not stage:
+            if not rec.state_id:
                 continue
-            meta = self.WORKFLOW_STAGE_META.get(stage, {})
-            if meta.get('section'):
-                rec.workflow_section = meta['section']
-            if meta.get('phase'):
-                rec.workflow_phase = meta['phase']
+            if rec.state_id.section:
+                rec.workflow_section = rec.state_id.section
+            if rec.state_id.phase:
+                rec.workflow_phase = rec.state_id.phase
 
     @api.onchange('workflow_section')
     def _onchange_workflow_section(self):
-        order_keys = [key for key, _ in self.WORKFLOW_STAGES]
         for rec in self:
             section = rec.workflow_section or 1
-            best = order_keys[0]
+            company = rec.company_id or self.env.company
+            stages = company._loan_stages_ordered()
+            if not stages:
+                continue
+            best = stages[0]
             best_delta = 10**9
-            for key in order_keys:
-                sec = self.WORKFLOW_STAGE_META.get(key, {}).get('section', 1)
-                delta = abs(sec - section)
+            for stage in stages:
+                delta = abs((stage.section or 1) - section)
                 if delta < best_delta:
-                    best = key
+                    best = stage
                     best_delta = delta
-            rec.workflow_stage = best
+            rec.state_id = best
 
     @api.model
     def _normalize_workflow_values(self, vals):
-        stage = vals.get('workflow_stage')
-        if stage:
-            meta = self.WORKFLOW_STAGE_META.get(stage, {})
-            vals.setdefault('workflow_section', meta.get('section', 1))
-            vals.setdefault('workflow_phase', meta.get('phase', ''))
+        company_id = vals.get('company_id') or self.env.company.id
+        company = self.env['res.company'].browse(company_id)
+        if not company.exists():
+            company = self.env.company
+        if vals.get('state_id'):
+            stage = self.env['bharat.loan.stage'].browse(vals['state_id'])
+            if stage:
+                vals.setdefault('workflow_section', stage.section or 1)
+                vals.setdefault('workflow_phase', stage.phase or '')
             return
         section = vals.get('workflow_section')
         if section is None:
+            if not vals.get('state_id'):
+                default = company._get_loan_stage_by_code('notice') if company else self.env['bharat.loan.stage']
+                if default:
+                    vals.setdefault('state_id', default.id)
+                    vals.setdefault('workflow_section', default.section or 1)
+                    vals.setdefault('workflow_phase', default.phase or '')
             return
-        order_keys = [key for key, _ in self.WORKFLOW_STAGES]
-        best = order_keys[0]
+        stages = company._loan_stages_ordered() if company else self.env['bharat.loan.stage'].search([])
+        if not stages:
+            return
+        best = stages[0]
         best_delta = 10**9
-        for key in order_keys:
-            sec = self.WORKFLOW_STAGE_META.get(key, {}).get('section', 1)
-            delta = abs(sec - section)
+        for stage in stages:
+            delta = abs((stage.section or 1) - section)
             if delta < best_delta:
-                best = key
+                best = stage
                 best_delta = delta
-        vals.setdefault('workflow_stage', best)
-        vals.setdefault('workflow_phase', self.WORKFLOW_STAGE_META.get(best, {}).get('phase', ''))
+        vals.setdefault('state_id', best.id)
+        vals.setdefault('workflow_phase', best.phase or '')
 
     @api.depends(
         'notice_line_ids',
@@ -529,7 +577,7 @@ class BharatLoan(models.Model):
     def bharat_arbitration_bill_stage(self):
         """Map case workflow + activity to arbitration billing SKU (product.template stage)."""
         self.ensure_one()
-        ws = self.workflow_stage or ''
+        ws = self._stage_code()
         n_notice = len(self.notice_line_ids)
         n_hear = len(self.hearing_line_ids)
         if self.award_document_ids or ws == 'final_award':
@@ -654,10 +702,7 @@ class BharatLoan(models.Model):
                 if rec.arbitrator_id
                 else (rec.arbitrator_name or '').strip()
             )
-            rec.write({
-                'workflow_stage': 'arbitrator_appointed',
-                'workflow_phase': 'Arbitrator Appointed',
-            })
+            rec._write_stage_by_code('arbitrator_appointed')
             rec.message_post(
                 body=_("Arbitrator appointed: <b>%s</b>") % (arb_label,),
             )
@@ -665,17 +710,16 @@ class BharatLoan(models.Model):
 
     def action_schedule_hearing(self):
         self.ensure_one()
-        if self.workflow_stage == 'hearing':
+        if self._stage_code() == 'hearing':
             raise UserError(
                 _('This case is already at Hearing. Use the Hearing tab to change date, link, or notes.')
             )
-        if self.workflow_stage != 'arbitrator_appointed':
-            stages = dict(self._fields['workflow_stage'].selection)
+        if self._stage_code() != 'arbitrator_appointed':
             raise UserError(
                 _('Schedule Hearing is only available when the arbitrator has been appointed.')
                 + ' '
                 + _('Current workflow stage is: %s')
-                % stages.get(self.workflow_stage, self.workflow_stage or '?')
+                % (self.state_id.name or '?')
             )
         return {
             'type': 'ir.actions.act_window',
@@ -689,7 +733,7 @@ class BharatLoan(models.Model):
     def action_reschedule_hearing(self):
         """Move hearing date/time while remaining in Hearing stage (Teams-like reschedule)."""
         self.ensure_one()
-        if self.workflow_stage != 'hearing':
+        if self._stage_code() != 'hearing':
             raise UserError(
                 _('Use “Schedule Hearing” before the Hearing stage. Reschedule is only for active hearings.')
             )
@@ -756,7 +800,7 @@ class BharatLoan(models.Model):
 
     def action_send_hearing_video_link(self):
         for rec in self:
-            if rec.workflow_stage != 'hearing':
+            if rec._stage_code() != 'hearing':
                 raise UserError(
                     _('Send video link only when the case is in the Hearing stage.')
                 )
@@ -842,7 +886,7 @@ class BharatLoan(models.Model):
     def action_join_hearing_meeting(self):
         """Open meeting join target in a new browser tab (never duplicate this form dialog)."""
         self.ensure_one()
-        if self.workflow_stage != 'hearing':
+        if self._stage_code() != 'hearing':
             raise UserError(_('Join online is available during the Hearing stage.'))
 
         base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
@@ -871,7 +915,7 @@ class BharatLoan(models.Model):
 
     def action_pass_interim_award(self):
         self.ensure_one()
-        if self.workflow_stage != 'hearing':
+        if self._stage_code() != 'hearing':
             raise UserError(_('Pass Interim Award is only available during the Hearing stage.'))
         return {
             'type': 'ir.actions.act_window',
@@ -1137,7 +1181,8 @@ class BharatLoan(models.Model):
             [
                 'loan_number',
                 'customer_name',
-                'workflow_stage',
+                'state_id',
+                'state_code',
                 'branch_id',
                 'product_class_id',
                 'product_classification',
@@ -1203,7 +1248,7 @@ class BharatLoan(models.Model):
             if (row.get('notice_count') or 0) > 0 and not delivered and not row.get('lok_adalat_date'):
                 pending_dispatch += 1
 
-            stage_key = row.get('workflow_stage') or ''
+            stage_key = row.get('state_code') or ''
             if stage_key == 'appointment_of_arbitrator' and not row.get('arbitrator_id'):
                 cases_no_arbitrator += 1
             if stage_key == 'final_award' and not (row.get('award_document_count') or 0):
@@ -1294,23 +1339,16 @@ class BharatLoan(models.Model):
                 'claim_amount': agg['claim_sum'],
             })
 
-        stage_label_map = dict(self.WORKFLOW_STAGES)
-        stage_style = {
-            'commencement': {'color': '#6366f1', 'icon': 'fa-flag-checkered'},
-            'notice': {'color': '#0ea5e9', 'icon': 'fa-envelope-open-o'},
-            'appointment_of_arbitrator': {'color': '#f59e0b', 'icon': 'fa-user-plus'},
-            'arbitrator_appointed': {'color': '#8b5cf6', 'icon': 'fa-user-circle-o'},
-            'hearing': {'color': '#10b981', 'icon': 'fa-video-camera'},
-            'final_award': {'color': '#ef4444', 'icon': 'fa-gavel'},
-            'paid': {'color': '#22c55e', 'icon': 'fa-check-circle-o'},
-        }
+        company_stages = self.env.company._loan_stages_ordered()
         stage_cards = []
-        for stage_key, stage_label in self.WORKFLOW_STAGES:
+        for stage in company_stages:
+            stage_key = stage.code
             cnt = by_stage.get(stage_key, 0)
-            sty = stage_style.get(stage_key, {})
+            sty = self.STAGE_STYLE.get(stage_key, {})
             stage_cards.append({
                 'key': stage_key,
-                'label': stage_label or stage_label_map.get(stage_key) or stage_key,
+                'id': stage.id,
+                'label': stage.name or stage_key,
                 'count': cnt,
                 'percent': round((100.0 * cnt / total), 1) if total else 0.0,
                 'color': sty.get('color', '#64748b'),
@@ -1374,11 +1412,14 @@ class BharatLoan(models.Model):
             from odoo.addons.bharatnyay_core.hooks import (
                 migrate_borrower_state_to_country_state,
                 migrate_collection_manager_to_case_manager,
+                migrate_loan_workflow_stage_to_state_id,
                 repair_loan_arbitrator_id_column,
                 repair_loan_case_manager_id_column,
                 repair_loan_foreign_key_columns,
                 repair_loan_hearing_columns,
                 seed_bharatnyay_demo_users_and_roles,
+                seed_loan_stages_for_all_companies,
+                migrate_per_company_loan_stages_to_master,
             )
         except ImportError:
             return
@@ -1386,47 +1427,11 @@ class BharatLoan(models.Model):
             return
         cr = self.pool.cursor()
         try:
-            # Normalize legacy workflow values to consolidated steps.
-            cr.execute(
-                """
-                UPDATE bharat_loan
-                SET workflow_stage = 'notice',
-                    workflow_phase = 'Notice'
-                WHERE workflow_stage IN ('notice_1', 'notice_2', 'notice_3')
-                """
-            )
-            cr.execute(
-                """
-                UPDATE bharat_loan
-                SET workflow_stage = 'appointment_of_arbitrator',
-                    workflow_phase = 'Appointment of Arbitrator'
-                WHERE workflow_stage IN ('auto_award', 'preference_arbitrator', 'call_for_arbitration')
-                """
-            )
-            cr.execute(
-                """
-                UPDATE bharat_loan
-                SET workflow_stage = 'hearing',
-                    workflow_phase = 'Hearing'
-                WHERE workflow_stage = 'settled'
-                """
-            )
-            cr.execute(
-                """
-                UPDATE bharat_notification_template
-                SET notice_type = 'notice'
-                WHERE notice_type IN ('notice_1', 'notice_2', 'notice_3')
-                """
-            )
-            cr.execute(
-                """
-                UPDATE bharat_notification_template
-                SET notice_type = 'hearing'
-                WHERE notice_type = 'settled'
-                """
-            )
             migrate_borrower_state_to_country_state(cr)
             migrate_collection_manager_to_case_manager(cr)
+            migrate_per_company_loan_stages_to_master(cr)
+            seed_loan_stages_for_all_companies(cr)
+            migrate_loan_workflow_stage_to_state_id(cr)
             repair_loan_foreign_key_columns(cr)
             repair_loan_arbitrator_id_column(cr)
             repair_loan_case_manager_id_column(cr)
@@ -1544,7 +1549,7 @@ class BharatLoanHearingLine(models.Model):
         """Open schedule wizard for this loan while staying in Hearing stage."""
         self.ensure_one()
         loan = self.loan_id
-        if loan.workflow_stage != 'hearing':
+        if loan._stage_code() != 'hearing':
             raise UserError(_('Reschedule from this list only applies to cases in the Hearing stage.'))
         return {
             'type': 'ir.actions.act_window',

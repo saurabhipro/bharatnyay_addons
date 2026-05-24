@@ -125,7 +125,7 @@ class BharatLoanNoticeWizard(models.TransientModel):
             )
             line.write({'notice_pdf': pdf_content, 'notice_pdf_filename': pdf_filename})
 
-        self.loan_id.write({'workflow_stage': self.notice_type})
+        self.loan_id._write_stage_by_code('notice')
 
         post_vals = dict(
             body=(

@@ -60,8 +60,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Alpha</field>
-        <field name="workflow_stage">appointment_of_arbitrator</field>
-        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -76,8 +75,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Bravo</field>
-        <field name="workflow_stage">appointment_of_arbitrator</field>
-        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -92,8 +90,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Charlie</field>
-        <field name="workflow_stage">appointment_of_arbitrator</field>
-        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -115,8 +112,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Delta</field>
-        <field name="workflow_stage">appointment_of_arbitrator</field>
-        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -138,8 +134,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Echo</field>
-        <field name="workflow_stage">appointment_of_arbitrator</field>
-        <field name="workflow_phase">Appointment of Arbitrator</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -170,8 +165,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Foxtrot</field>
-        <field name="workflow_stage">arbitrator_appointed</field>
-        <field name="workflow_phase">Arbitrator Appointed</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_arbitrator_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -205,8 +199,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Golf</field>
-        <field name="workflow_stage">arbitrator_appointed</field>
-        <field name="workflow_phase">Arbitrator Appointed</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_arbitrator_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -244,8 +237,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Hotel</field>
-        <field name="workflow_stage">arbitrator_appointed</field>
-        <field name="workflow_phase">Arbitrator Appointed</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_arbitrator_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -276,8 +268,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower India</field>
-        <field name="workflow_stage">hearing</field>
-        <field name="workflow_phase">Hearing</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_hearing_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -317,8 +308,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Juliet</field>
-        <field name="workflow_stage">hearing</field>
-        <field name="workflow_phase">Hearing</field>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_hearing_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',

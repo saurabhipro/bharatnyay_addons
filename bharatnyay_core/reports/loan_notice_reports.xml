@@ -40,7 +40,7 @@
                             </div>
                             <div style="display: flex; justify-content: space-between;">
                                 <span><strong>Borrower:</strong> <span t-esc="o.customer_name or '-'"/></span>
-                                <span><strong>Stage:</strong> <span t-esc="dict(o._fields['workflow_stage'].selection).get(o.workflow_stage, '-')"/></span>
+                                <span><strong>Stage:</strong> <span t-esc="o.state_id.name or '-'"/></span>
                             </div>
                         </div>
 
@@ -111,7 +111,7 @@
                             </div>
                             <div style="display: flex; justify-content: space-between;">
                                 <span><strong>Borrower:</strong> <span t-esc="loan.customer_name or '-'"/></span>
-                                <span><strong>Stage:</strong> <span t-esc="dict(loan._fields['workflow_stage'].selection).get(loan.workflow_stage, '-')"/></span>
+                                <span><strong>Stage:</strong> <span t-esc="loan.state_id.name or '-'"/></span>
                             </div>
                         </div>
 

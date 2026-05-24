@@ -178,7 +178,7 @@ export class BharatnyayDashboard extends Component {
                 [false, "list"],
                 [false, "form"],
             ],
-            domain: [["workflow_stage", "=", stage]],
+            domain: [["state_code", "=", stage]],
             target: "current",
         });
     }
