@@ -30,6 +30,7 @@
         'views/loan_hearing_wizard_views.xml',
         'views/loan_assign_arbitrator_wizard_views.xml',
         'views/hearing_line_views.xml',
+        'views/interim_order_views.xml',
         'reports/loan_notice_reports.xml',
         'views/loan_views.xml',
         'views/dashboard_action.xml',

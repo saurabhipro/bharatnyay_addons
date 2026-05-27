@@ -56,8 +56,14 @@
                 <group>
                     <field name="loan_id"/>
                     <field name="currency_id" invisible="1"/>
+                    <field name="order_type"/>
+                    <field name="purpose"/>
+                    <field name="typical_loan_type"/>
+                    <field name="passed_by"/>
+                    <field name="common_directions"/>
                     <field name="interim_award_amount"/>
-                    <field name="interim_award_notes" placeholder="Procedural directions, deposit orders, timelines, …"/>
+                    <field name="interim_award_notes"
+                           placeholder="Additional procedural directions, deposit orders, timelines, …"/>
                 </group>
                 <footer>
                     <button string="Record interim award" type="object" name="action_confirm" class="btn-primary"/>

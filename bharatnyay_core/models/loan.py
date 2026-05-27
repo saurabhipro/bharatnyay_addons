@@ -1673,6 +1673,18 @@ class BharatLoanInterimOrder(models.Model):
 
     loan_id = fields.Many2one('bharat.loan', required=True, ondelete='cascade', index=True)
     hearing_line_id = fields.Many2one('bharat.loan.hearing.line', string='Related hearing')
+    order_type = fields.Selection(
+        selection='_interim_order_type_selection',
+        string='Interim order type',
+        index=True,
+    )
+    purpose = fields.Char(string='Purpose')
+    typical_loan_type = fields.Char(string='Typical loan type')
+    passed_by = fields.Selection(
+        selection='_interim_order_passed_by_selection',
+        string='Passed by',
+    )
+    common_directions = fields.Text(string='Common directions')
     order_date = fields.Datetime(string='Order date', default=fields.Datetime.now, required=True)
     amount = fields.Monetary(string='Interim amount', currency_field='currency_id')
     currency_id = fields.Many2one(
@@ -1681,10 +1693,32 @@ class BharatLoanInterimOrder(models.Model):
         default=lambda self: self.env.company.currency_id,
         required=True,
     )
-    notes = fields.Text(string='Order notes')
+    notes = fields.Text(string='Additional notes / rationale')
     order_pdf = fields.Binary(string='Interim order PDF', attachment=True)
     order_pdf_filename = fields.Char(string='Interim PDF filename')
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    @api.model
+    def _interim_order_type_selection(self):
+        from .interim_order_types import INTERIM_ORDER_TYPE_SELECTION
+        return INTERIM_ORDER_TYPE_SELECTION
+
+    @api.model
+    def _interim_order_passed_by_selection(self):
+        from .interim_order_types import INTERIM_ORDER_PASSED_BY_SELECTION
+        return INTERIM_ORDER_PASSED_BY_SELECTION
+
+    @api.onchange('order_type')
+    def _onchange_order_type(self):
+        from .interim_order_types import interim_order_meta
+        for rec in self:
+            if not rec.order_type:
+                continue
+            meta = interim_order_meta(rec.order_type)
+            rec.purpose = meta.get('purpose')
+            rec.typical_loan_type = meta.get('typical_loan_type')
+            rec.passed_by = meta.get('passed_by')
+            rec.common_directions = meta.get('common_directions')
 
 
 class BharatLoanAwardDocument(models.Model):

@@ -508,16 +508,49 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
     _description = 'Record interim arbitration award'
 
     loan_id = fields.Many2one('bharat.loan', required=True, readonly=True)
+    order_type = fields.Selection(
+        selection='_interim_order_type_selection',
+        string='Interim order type',
+        required=True,
+    )
+    purpose = fields.Char(string='Purpose')
+    typical_loan_type = fields.Char(string='Typical loan type')
+    passed_by = fields.Selection(
+        selection='_interim_order_passed_by_selection',
+        string='Passed by',
+    )
+    common_directions = fields.Text(string='Common directions')
     interim_award_amount = fields.Monetary(
         string='Interim amount (optional)',
         currency_field='currency_id',
     )
     currency_id = fields.Many2one('res.currency')
     interim_award_notes = fields.Text(
-        string='Interim directions / rationale',
-        required=True,
-        help='Short summary logged on the chatter and saved on the case.',
+        string='Additional directions / rationale',
+        help='Optional extra notes logged on the chatter and saved on the interim order.',
     )
+
+    @api.model
+    def _interim_order_type_selection(self):
+        from ..models.interim_order_types import INTERIM_ORDER_TYPE_SELECTION
+        return INTERIM_ORDER_TYPE_SELECTION
+
+    @api.model
+    def _interim_order_passed_by_selection(self):
+        from ..models.interim_order_types import INTERIM_ORDER_PASSED_BY_SELECTION
+        return INTERIM_ORDER_PASSED_BY_SELECTION
+
+    @api.onchange('order_type')
+    def _onchange_order_type(self):
+        from ..models.interim_order_types import interim_order_meta
+        for wizard in self:
+            if not wizard.order_type:
+                continue
+            meta = interim_order_meta(wizard.order_type)
+            wizard.purpose = meta.get('purpose')
+            wizard.typical_loan_type = meta.get('typical_loan_type')
+            wizard.passed_by = meta.get('passed_by')
+            wizard.common_directions = meta.get('common_directions')
 
     @api.model
     def default_get(self, fields_list):
@@ -533,38 +566,56 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         loan = self.loan_id
         if loan._stage_code() != 'hearing':
             raise UserError(_('Pass Interim Award is only available during the Hearing stage.'))
-        if not (self.interim_award_notes or '').strip():
-            raise UserError(_('Describe the interim directions or rationale.'))
+        if not self.order_type:
+            raise UserError(_('Select an interim order type.'))
+
+        notes = (self.interim_award_notes or '').strip()
+        summary_bits = [self.purpose, self.common_directions, notes]
+        summary = '\n\n'.join(bit for bit in summary_bits if bit)
 
         loan.write({
             'interim_award_date': fields.Datetime.now(),
-            'interim_award_notes': self.interim_award_notes.strip(),
+            'interim_award_notes': summary or self.common_directions or self.purpose,
             'interim_award_amount': self.interim_award_amount or 0.0,
         })
 
         amt = loan.interim_award_amount or 0.0
         sym = loan.currency_id.symbol or '' if loan.currency_id else ''
+        type_label = dict(self._interim_order_type_selection()).get(self.order_type, self.order_type)
 
-        chunks = [_('<p><b>Interim award recorded</b></p><p>%(sym)s %(amt)s</p>') %
-                  {'sym': escape(sym), 'amt': amt}]
-        chunks.append('<p>%s</p>' % escape(self.interim_award_notes.strip()).replace('\n', '<br/>'))
+        chunks = [
+            _('<p><b>Interim order recorded</b></p><p><b>Type:</b> %(type)s</p><p>%(sym)s %(amt)s</p>') % {
+                'type': escape(type_label),
+                'sym': escape(sym),
+                'amt': amt,
+            },
+        ]
+        if self.common_directions:
+            chunks.append('<p><b>Directions:</b><br/>%s</p>' % escape(self.common_directions).replace('\n', '<br/>'))
+        if notes:
+            chunks.append('<p><b>Notes:</b><br/>%s</p>' % escape(notes).replace('\n', '<br/>'))
         loan.message_post(body=''.join(chunks))
 
         latest_hearing = loan.hearing_line_ids[:1]
         loan.env['bharat.loan.interim.order'].create({
             'loan_id': loan.id,
             'hearing_line_id': latest_hearing.id if latest_hearing else False,
+            'order_type': self.order_type,
+            'purpose': self.purpose,
+            'typical_loan_type': self.typical_loan_type,
+            'passed_by': self.passed_by,
+            'common_directions': self.common_directions,
             'order_date': fields.Datetime.now(),
             'amount': self.interim_award_amount or 0.0,
             'currency_id': loan.currency_id.id if loan.currency_id else self.currency_id.id,
-            'notes': self.interim_award_notes.strip(),
+            'notes': notes,
             'created_by_id': self.env.user.id,
         })
         loan.env['bharat.loan.award.document'].create({
             'loan_id': loan.id,
             'award_type': 'interim',
             'award_date': fields.Datetime.now(),
-            'award_notes': self.interim_award_notes.strip(),
+            'award_notes': summary or type_label,
             'created_by_id': self.env.user.id,
         })
 
