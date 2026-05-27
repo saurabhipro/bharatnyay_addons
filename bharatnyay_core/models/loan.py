@@ -751,6 +751,15 @@ class BharatLoan(models.Model):
         # Fallback before action.path is upgraded in DB
         return '%s/web#id=%s&model=bharat.loan&view_type=form&cids=%s' % (base, self.id, cid)
 
+    def _get_reminder_notice_qr_url_encoded(self):
+        """QR payload for reminder notice PDF (latest microsite token or case URL)."""
+        self.ensure_one()
+        for line in self.notice_line_ids:
+            if line.notice_microsite_url_encoded:
+                return line.notice_microsite_url_encoded
+        case_url = self._hearing_build_odoo_case_url()
+        return werkzeug.urls.url_quote(case_url, safe='') if case_url else ''
+
     @staticmethod
     def _hearing_normalize_external_meeting_url(url):
         u = (url or '').strip()

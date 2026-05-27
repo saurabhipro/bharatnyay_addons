@@ -1,14 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+    <record id="action_report_bharat_loan_written_statement" model="ir.actions.report">
+        <field name="name">Written Statement / Response by Borrower</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_written_statement</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_written_statement</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Written Statement - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_interim_order" model="ir.actions.report">
+        <field name="name">Interim Order / Interim Award</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_interim_order</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_interim_order</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Interim Order - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_hearing_final" model="ir.actions.report">
+        <field name="name">Hearing No. 3 – Final Hearing</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_hearing_final</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_hearing_final</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Final Hearing - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_hearing_proceedings_2" model="ir.actions.report">
+        <field name="name">Hearing No. 2 – Record of Proceedings</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_hearing_proceedings_2</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_hearing_proceedings_2</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Hearing 2 Proceedings - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_hearing_proceedings" model="ir.actions.report">
+        <field name="name">Hearing No. 1 – Record of Proceedings</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_hearing_proceedings</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_hearing_proceedings</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Hearing Proceedings - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_final_notice" model="ir.actions.report">
+        <field name="name">Notice No. 3 – Final Notice</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_final_notice</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_final_notice</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Final Notice - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_reminder_notice" model="ir.actions.report">
+        <field name="name">Notice No. 2 – Reminder Notice</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_reminder_notice</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_reminder_notice</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Reminder Notice - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_commencement_arbitration" model="ir.actions.report">
+        <field name="name">Commencement of Arbitration</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_commencement_arbitration</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_commencement_arbitration</field>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Commencement of Arbitration - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
     <record id="action_report_bharat_loan_notice" model="ir.actions.report">
-        <field name="name">Notice Letter</field>
+        <field name="name">Notice No. 1 – Notice of Arbitration</field>
         <field name="model">bharat.loan</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">bharatnyay_core.report_bharat_loan_notice</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_notice</field>
         <field name="binding_model_id" ref="model_bharat_loan"/>
         <field name="binding_type">report</field>
-        <field name="print_report_name">'Notice - %s' % (object.loan_number or 'Loan')</field>
+        <field name="print_report_name">'Notice of Arbitration - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
 
     <record id="action_report_bharat_loan_envelope" model="ir.actions.report">
@@ -22,61 +110,786 @@
         <field name="print_report_name">'Envelopes - %s' % (object.loan_number or 'Loan')</field>
     </record>
 
+    <template id="report_bharat_loan_commencement_arbitration">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">
+                            1. Commencement of Arbitration
+                        </h2>
+                        <h3 style="margin: 0 0 18px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Before Bharat Nyaya – ODR Arbitration Platform
+                        </h3>
+
+                        <p style="margin: 0 0 14px 0; font-weight: 700;">In the Matter of Arbitration</p>
+
+                        <p style="margin: 0 0 8px 0;">
+                            <strong>Claimant / Lender:</strong>
+                            <span t-esc="o.company_id.name or '—'"/>
+                        </p>
+                        <p style="margin: 0 0 8px 0;">
+                            <strong>Respondent / Borrower:</strong>
+                            <span t-esc="o.customer_name or '—'"/>
+                        </p>
+
+                        <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc;">
+                            <li style="margin-bottom: 6px;">
+                                <strong>Loan Account No.:</strong>
+                                <span t-esc="o.loan_number or '—'"/>
+                            </li>
+                            <li>
+                                <strong>Case ID (Bharat Nyaya ODR):</strong>
+                                <span t-esc="o.case_number or '—'"/>
+                            </li>
+                        </ul>
+
+                        <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Commencement of Arbitration
+                        </h3>
+
+                        <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                            Whereas disputes and differences have arisen between the Claimant and the Respondent
+                            under the Loan Agreement executed between the parties;
+                        </p>
+                        <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                            And whereas the said Loan Agreement contains an Arbitration Clause providing for
+                            resolution of disputes through arbitration;
+                        </p>
+                        <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                            The Claimant hereby invokes the Arbitration Clause under the provisions of the
+                            Arbitration and Conciliation Act, 1996 and initiates arbitration proceedings through
+                            Bharat Nyaya – ODR Arbitration Platform in relation to defaults committed under the
+                            above-mentioned Loan Account.
+                        </p>
+                        <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                            The disputes inter alia relate to recovery of outstanding dues, interest, penal charges,
+                            costs, and other consequential reliefs.
+                        </p>
+                        <p style="margin: 0 0 28px 0; text-align: justify; line-height: 1.55;">
+                            The Respondent is hereby informed that arbitration proceedings stand commenced from
+                            the date of issuance of this Notice.
+                        </p>
+
+                        <t t-set="report_place" t-value="(o.location_id.name if o.location_id else o.location) or (o.branch_id.name if o.branch_id else o.branch) or (o.borrower_state_id.name if o.borrower_state_id else o.borrower_state) or '—'"/>
+
+                        <div style="margin-top: 36px;">
+                            <p style="margin: 0 0 8px 0;">
+                                <strong>Date:</strong>
+                                <t t-if="o.deliver_date">
+                                    <span t-field="o.deliver_date"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                </t>
+                            </p>
+                            <p style="margin: 0 0 24px 0;"><strong>Place:</strong> <span t-esc="report_place"/></p>
+                            <p style="margin: 0 0 6px 0;">Authorized Signatory</p>
+                            <p style="margin: 0;">For <span t-esc="o.company_id.name or 'Claimant'"/></p>
+                        </div>
+
+                        <div style="margin-top: 48px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_reminder_notice">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <div style="border: 3px double #222; padding: 22px 24px;">
+                            <h2 style="margin: 0 0 18px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                                3. Notice No. 2 – Reminder Notice
+                            </h2>
+
+                            <p style="margin: 0 0 6px 0;">To,</p>
+                            <p style="margin: 0 0 14px 0; font-weight: 700;">
+                                <span t-esc="o.customer_name or 'Borrower Name'"/>
+                            </p>
+
+                            <ul style="margin: 0 0 16px 0; padding-left: 22px; list-style-type: disc;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Loan Account No.:</strong>
+                                    <span t-esc="o.loan_number or '—'"/>
+                                </li>
+                                <li>
+                                    <strong>Case ID (Bharat Nyaya ODR):</strong>
+                                    <span t-esc="o.case_number or '—'"/>
+                                </li>
+                            </ul>
+
+                            <p style="margin: 0 0 14px 0;">
+                                <strong>Subject: Reminder for Arbitrator Selection &amp; Participation</strong>
+                            </p>
+
+                            <p style="margin: 0 0 12px 0;">Sir/Madam,</p>
+
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                This is a follow-up to our previous Notice No. 1 regarding initiation of
+                                arbitration proceedings by
+                                <strong><span t-esc="o.company_id.name or 'the Claimant'"/></strong>.
+                            </p>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                We note that no response has been received from your end regarding appointment
+                                of an Arbitrator.
+                            </p>
+                            <p style="margin: 0 0 8px 0; text-align: justify; line-height: 1.55;">
+                                You are once again requested to scan the QR Code given below to access the
+                                <strong>Bharat Nyaya – ODR Platform</strong> for the following:
+                            </p>
+                            <ol style="margin: 0 0 14px 0; padding-left: 22px; line-height: 1.55;">
+                                <li>Selection/confirmation of Sole Arbitrator;</li>
+                                <li>Filing of reply/written response;</li>
+                                <li>Uploading supporting documents;</li>
+                                <li>Participation in the online proceedings.</li>
+                            </ol>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                You are granted a further period of 3 (three) days from the date of receipt
+                                of this notice to select an Arbitrator.
+                            </p>
+                            <p style="margin: 0 0 18px 0; text-align: justify; line-height: 1.55;">
+                                In the event no selection is made within the stipulated time, an Arbitrator
+                                shall be automatically appointed through the platform.
+                            </p>
+
+                            <p style="margin: 0 0 10px 0; font-weight: 700;">Proposed Preliminary Hearing</p>
+                            <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc; line-height: 1.55;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Date:</strong>
+                                    <t t-if="o.hearing_datetime">
+                                        <span t-field="o.hearing_datetime" t-options='{"widget": "date"}'/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </li>
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Time:</strong>
+                                    <t t-if="o.hearing_datetime">
+                                        <span t-field="o.hearing_datetime" t-options='{"widget": "datetime", "format": "HH:mm"}'/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </li>
+                                <li>
+                                    <strong>Mode:</strong> Online via Bharat Nyaya – ODR Platform
+                                </li>
+                            </ul>
+
+                            <p style="margin: 0 0 10px 0; font-weight: 700;">QR Code for Case Access &amp; Arbitrator Selection</p>
+                            <t t-set="qr_encoded" t-value="o._get_reminder_notice_qr_url_encoded()"/>
+                            <div style="margin: 0 0 24px 0;">
+                                <img t-if="qr_encoded"
+                                     style="width: 140px; height: 140px;"
+                                     t-att-src="'/report/barcode/?type=QR&amp;width=180&amp;height=180&amp;value=' + qr_encoded"/>
+                                <p t-if="not qr_encoded" style="font-size: 12px; color: #666; margin: 0;">
+                                    QR code will be available after a notice with microsite access is sent.
+                                </p>
+                            </div>
+
+                            <div style="margin-top: 12px;">
+                                <p style="margin: 0 0 8px 0;">
+                                    <strong>Date:</strong>
+                                    <t t-if="o.deliver_date">
+                                        <span t-field="o.deliver_date"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                    </t>
+                                </p>
+                                <p style="margin: 0 0 6px 0;">Authorized Signatory</p>
+                                <p style="margin: 0;">For <span t-esc="o.company_id.name or 'Claimant'"/></p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_final_notice">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <div style="border: 3px double #222; padding: 22px 24px;">
+                            <h2 style="margin: 0 0 18px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                                4. Notice No. 3 – Final Notice
+                            </h2>
+
+                            <p style="margin: 0 0 6px 0;">To,</p>
+                            <p style="margin: 0 0 14px 0; font-weight: 700;">
+                                <span t-esc="o.customer_name or 'Borrower Name'"/>
+                            </p>
+
+                            <ul style="margin: 0 0 16px 0; padding-left: 22px; list-style-type: disc;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Loan Account No.:</strong>
+                                    <span t-esc="o.loan_number or '—'"/>
+                                </li>
+                                <li>
+                                    <strong>Case ID (Bharat Nyaya ODR):</strong>
+                                    <span t-esc="o.case_number or '—'"/>
+                                </li>
+                            </ul>
+
+                            <p style="margin: 0 0 14px 0;">
+                                <strong>Subject: Final Opportunity Before Appointment of Arbitrator / Ex-Parte Proceedings</strong>
+                            </p>
+
+                            <p style="margin: 0 0 12px 0;">Sir/Madam,</p>
+
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                Reference is invited to earlier notices issued in connection with the
+                                above-mentioned arbitration proceedings.
+                            </p>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                Despite repeated opportunities, no confirmation/selection of Arbitrator has
+                                been received from your end.
+                            </p>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                You are hereby granted a final opportunity to scan the QR Code below and access
+                                the <strong>Bharat Nyaya – ODR Platform</strong> for selection/confirmation of
+                                the Sole Arbitrator.
+                            </p>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                In case no selection is made within the prescribed timeline, the Bharat Nyaya –
+                                ODR Platform shall automatically appoint/generate the Arbitrator in accordance
+                                with applicable rules and system-generated allocation process.
+                            </p>
+                            <p style="margin: 0 0 18px 0; text-align: justify; line-height: 1.55;">
+                                You are further informed that in the event of non-participation in the
+                                proceedings, the learned Arbitrator may proceed ex-parte and pass appropriate
+                                orders/award based upon the documents and records available on record.
+                            </p>
+
+                            <p style="margin: 0 0 10px 0; font-weight: 700;">Hearing Details</p>
+                            <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc; line-height: 1.55;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Date:</strong>
+                                    <t t-if="o.hearing_datetime">
+                                        <span t-field="o.hearing_datetime" t-options='{"widget": "date"}'/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </li>
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Time:</strong>
+                                    <t t-if="o.hearing_datetime">
+                                        <span t-field="o.hearing_datetime" t-options='{"widget": "datetime", "format": "HH:mm"}'/>
+                                    </t>
+                                    <t t-else="">—</t>
+                                </li>
+                                <li>
+                                    <strong>Mode:</strong> Online Hearing through Bharat Nyaya – ODR Platform
+                                </li>
+                            </ul>
+
+                            <p style="margin: 0 0 10px 0; font-weight: 700;">QR Code for Case Access &amp; Arbitrator Selection</p>
+                            <t t-set="qr_encoded" t-value="o._get_reminder_notice_qr_url_encoded()"/>
+                            <div style="margin: 0 0 24px 0;">
+                                <img t-if="qr_encoded"
+                                     style="width: 140px; height: 140px;"
+                                     t-att-src="'/report/barcode/?type=QR&amp;width=180&amp;height=180&amp;value=' + qr_encoded"/>
+                                <p t-if="not qr_encoded" style="font-size: 12px; color: #666; margin: 0;">
+                                    QR code will be available after a notice with microsite access is sent.
+                                </p>
+                            </div>
+
+                            <div style="margin-top: 12px;">
+                                <p style="margin: 0 0 8px 0;">
+                                    <strong>Date:</strong>
+                                    <t t-if="o.deliver_date">
+                                        <span t-field="o.deliver_date"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                    </t>
+                                </p>
+                                <p style="margin: 0 0 6px 0;">Authorized Signatory</p>
+                                <p style="margin: 0;">For <span t-esc="o.company_id.name or 'Claimant'"/></p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_hearing_proceedings">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="hearing_lines" t-value="o.hearing_line_ids.sorted('hearing_datetime')"/>
+                    <t t-set="hearing_no" t-value="len(hearing_lines) or 1"/>
+                    <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                            5. Hearing No. <span t-esc="hearing_no"/> – Record of Proceedings
+                        </h2>
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Before the Learned Sole Arbitrator
+                        </h3>
+                        <p style="margin: 0 0 18px 0;">Bharat Nyaya – ODR Arbitration Platform</p>
+
+                        <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc;">
+                            <li style="margin-bottom: 6px;">
+                                <strong>Loan Account No.:</strong>
+                                <span t-esc="o.loan_number or '—'"/>
+                            </li>
+                            <li>
+                                <strong>Case ID:</strong>
+                                <span t-esc="o.case_number or '—'"/>
+                            </li>
+                        </ul>
+
+                        <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Record of Hearing – Hearing No. <span t-esc="hearing_no"/>
+                        </h3>
+
+                        <p style="margin: 0 0 14px 0;">
+                            <strong>Date:</strong>
+                            <t t-if="hearing_lines">
+                                <span t-field="hearing_lines[-1].hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-elif="o.hearing_datetime">
+                                <span t-field="o.hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-else="">—</t>
+                        </p>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">Present:</p>
+                        <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc; line-height: 1.55;">
+                            <li>Representative of Claimant</li>
+                            <li>Respondent: Present / Absent</li>
+                            <li>Learned Sole Arbitrator</li>
+                        </ul>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">Proceedings:</p>
+                        <ol style="margin: 0 0 18px 0; padding-left: 22px; line-height: 1.55;">
+                            <li>Matter called out through Bharat Nyaya – ODR Platform.</li>
+                            <li>Claimant submitted Statement of Claim and supporting documents.</li>
+                            <li>
+                                Respondent appeared and sought time for filing response / remained absent
+                                despite service of notices.
+                            </li>
+                            <li>Matter adjourned for further proceedings.</li>
+                        </ol>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">Next Date of Hearing</p>
+                        <p style="margin: 0 0 36px 0; padding-left: 12px;">
+                            <t t-if="len(hearing_lines) > 1">
+                                <span t-field="hearing_lines[1].hearing_datetime" t-options='{"widget": "datetime"}'/>
+                            </t>
+                            <t t-else="">—</t>
+                        </p>
+
+                        <div style="margin-top: 24px;">
+                            <p style="margin: 0 0 6px 0;">Sd/-</p>
+                            <p style="margin: 0; font-weight: 700;"><span t-esc="arbitrator_name"/></p>
+                        </div>
+
+                        <div style="margin-top: 48px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_hearing_proceedings_2">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="hearing_lines" t-value="o.hearing_line_ids.sorted('hearing_datetime')"/>
+                    <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                            6. Hearing No. 2 – Record of Proceedings
+                        </h2>
+                        <h3 style="margin: 0 0 18px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Before the Learned Sole Arbitrator
+                        </h3>
+
+                        <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc;">
+                            <li style="margin-bottom: 6px;">
+                                <strong>Loan Account No.:</strong>
+                                <span t-esc="o.loan_number or '—'"/>
+                            </li>
+                            <li>
+                                <strong>Case ID:</strong>
+                                <span t-esc="o.case_number or '—'"/>
+                            </li>
+                        </ul>
+
+                        <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Record of Hearing – Hearing No. 2
+                        </h3>
+
+                        <p style="margin: 0 0 14px 0;">
+                            <strong>Date:</strong>
+                            <t t-if="len(hearing_lines) > 1">
+                                <span t-field="hearing_lines[1].hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-elif="hearing_lines">
+                                <span t-field="hearing_lines[0].hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-elif="o.hearing_datetime">
+                                <span t-field="o.hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-else="">—</t>
+                        </p>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">Proceedings:</p>
+                        <ol style="margin: 0 0 18px 0; padding-left: 22px; line-height: 1.55;">
+                            <li>Respondent filed Written Statement / failed to appear.</li>
+                            <li>Claimant reiterated claims and placed additional documents on record.</li>
+                            <li>Arguments of parties heard.</li>
+                            <li>Matter posted for final arguments/orders.</li>
+                        </ol>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">Next Date of Hearing</p>
+                        <p style="margin: 0 0 36px 0; padding-left: 12px;">
+                            <t t-if="len(hearing_lines) > 2">
+                                <span t-field="hearing_lines[2].hearing_datetime" t-options='{"widget": "datetime"}'/>
+                            </t>
+                            <t t-else="">—</t>
+                        </p>
+
+                        <div style="margin-top: 24px;">
+                            <p style="margin: 0 0 6px 0;">Sd/-</p>
+                            <p style="margin: 0; font-weight: 700;"><span t-esc="arbitrator_name"/></p>
+                        </div>
+
+                        <div style="margin-top: 48px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_hearing_final">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="hearing_lines" t-value="o.hearing_line_ids.sorted('hearing_datetime')"/>
+                    <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                            7. Hearing No. 3 – Final Hearing
+                        </h2>
+                        <h3 style="margin: 0 0 18px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Before the Learned Sole Arbitrator
+                        </h3>
+
+                        <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc;">
+                            <li style="margin-bottom: 6px;">
+                                <strong>Loan Account No.:</strong>
+                                <span t-esc="o.loan_number or '—'"/>
+                            </li>
+                            <li>
+                                <strong>Case ID:</strong>
+                                <span t-esc="o.case_number or '—'"/>
+                            </li>
+                        </ul>
+
+                        <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Record of Final Hearing
+                        </h3>
+
+                        <p style="margin: 0 0 14px 0;">
+                            <strong>Date:</strong>
+                            <t t-if="len(hearing_lines) > 2">
+                                <span t-field="hearing_lines[2].hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-elif="hearing_lines">
+                                <span t-field="hearing_lines[-1].hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-elif="o.hearing_datetime">
+                                <span t-field="o.hearing_datetime" t-options='{"widget": "date"}'/>
+                            </t>
+                            <t t-else="">—</t>
+                        </p>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">Proceedings:</p>
+                        <ol style="margin: 0 0 24px 0; padding-left: 22px; line-height: 1.55;">
+                            <li>Final arguments advanced by the Claimant.</li>
+                            <li>
+                                Respondent remained absent despite repeated opportunities / arguments
+                                concluded.
+                            </li>
+                            <li>Matter reserved for passing of Award.</li>
+                        </ol>
+
+                        <div style="margin-top: 24px;">
+                            <p style="margin: 0 0 6px 0;">Sd/-</p>
+                            <p style="margin: 0; font-weight: 700;"><span t-esc="arbitrator_name"/></p>
+                        </div>
+
+                        <div style="margin-top: 48px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_interim_order">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <div style="border: 1px solid #222; padding: 22px 24px;">
+                            <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                                8. Interim Order / Interim Award
+                            </h2>
+                            <h3 style="margin: 0 0 18px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                                Before the Learned Sole Arbitrator
+                            </h3>
+
+                            <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Loan Account No.:</strong>
+                                    <span t-esc="o.loan_number or '—'"/>
+                                </li>
+                                <li>
+                                    <strong>Case ID:</strong>
+                                    <span t-esc="o.case_number or '—'"/>
+                                </li>
+                            </ul>
+
+                            <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                                Interim Order
+                            </h3>
+
+                            <p style="margin: 0 0 14px 0; text-align: justify; line-height: 1.55;">
+                                Upon consideration of the pleadings, submissions, and documents placed on record,
+                                the Tribunal is satisfied that a prima facie case exists in favour of the Claimant.
+                            </p>
+                            <p style="margin: 0 0 10px 0; text-align: justify; line-height: 1.55;">
+                                Accordingly, it is ordered that:
+                            </p>
+                            <ol style="margin: 0 0 14px 0; padding-left: 22px; line-height: 1.55;">
+                                <li>
+                                    The Respondent shall maintain status quo regarding the secured/hypothecated
+                                    assets;
+                                </li>
+                                <li>
+                                    The Respondent shall not alienate, transfer, or create third-party rights over
+                                    the secured assets;
+                                </li>
+                                <li>
+                                    The Claimant is permitted to take appropriate protective measures permissible
+                                    under law.
+                                </li>
+                            </ol>
+                            <p style="margin: 0 0 24px 0; text-align: justify; line-height: 1.55;">
+                                This Interim Order shall remain in force till final disposal of the arbitration
+                                proceedings.
+                            </p>
+
+                            <p style="margin: 0 0 8px 0;">
+                                <strong>Date:</strong>
+                                <t t-if="o.interim_award_date">
+                                    <span t-field="o.interim_award_date" t-options='{"widget": "date"}'/>
+                                </t>
+                                <t t-elif="o.deliver_date">
+                                    <span t-field="o.deliver_date"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                </t>
+                            </p>
+                            <div style="margin-top: 18px;">
+                                <p style="margin: 0 0 6px 0;">Sd/-</p>
+                                <p style="margin: 0; font-weight: 700;"><span t-esc="arbitrator_name"/></p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_written_statement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="payments_made" t-value="(o.financed_amount or 0) - (o.current_pos or 0) if o.financed_amount and o.current_pos is not None else 0"/>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                            9. Written Statement / Response by Borrower
+                        </h2>
+                        <h3 style="margin: 0 0 18px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Before the Learned Sole Arbitrator
+                        </h3>
+
+                        <p style="margin: 0 0 8px 0; font-weight: 700;">In the matter of:</p>
+                        <p style="margin: 0 0 4px 0;"><span t-esc="o.company_id.name or 'Claimant'"/></p>
+                        <p style="margin: 0 0 4px 0; text-align: center;">Versus</p>
+                        <p style="margin: 0 0 14px 0; font-weight: 700;">
+                            <span t-esc="o.customer_name or 'Borrower Name'"/>
+                        </p>
+
+                        <ul style="margin: 0 0 18px 0; padding-left: 22px; list-style-type: disc;">
+                            <li style="margin-bottom: 6px;">
+                                <strong>Loan Account No.:</strong>
+                                <span t-esc="o.loan_number or '—'"/>
+                            </li>
+                            <li>
+                                <strong>Case ID:</strong>
+                                <span t-esc="o.case_number or '—'"/>
+                            </li>
+                        </ul>
+
+                        <h3 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                            Written Statement / Response
+                        </h3>
+
+                        <p style="margin: 0 0 12px 0;">The Respondent respectfully submits as under:</p>
+                        <ol style="margin: 0 0 18px 0; padding-left: 22px; line-height: 1.55;">
+                            <li>
+                                That the Respondent denies the allegations except those specifically admitted
+                                herein;
+                            </li>
+                            <li>That the alleged outstanding amount is disputed;</li>
+                            <li>
+                                That payments amounting to INR
+                                <t t-if="payments_made &gt; 0">
+                                    <span t-esc="'{:,.2f}'.format(payments_made)"/>
+                                </t>
+                                <t t-else="">—</t>
+                                have already been made;
+                            </li>
+                            <li>That excess interest/penal charges levied are arbitrary and excessive;</li>
+                            <li>That reconciliation of accounts is required.</li>
+                        </ol>
+
+                        <p style="margin: 0 0 24px 0; text-align: justify; line-height: 1.55;">
+                            The Respondent therefore prays that the claim petition be dismissed and/or modified
+                            appropriately.
+                        </p>
+
+                        <p style="margin: 0 0 8px 0;">
+                            <strong>Date:</strong>
+                            <t t-if="o.deliver_date">
+                                <span t-field="o.deliver_date"/>
+                            </t>
+                            <t t-else="">
+                                <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                            </t>
+                        </p>
+                        <p style="margin: 0;">Respondent / Authorized Representative</p>
+
+                        <div style="margin-top: 48px; border-top: 1px solid #ccc; width: 100%;"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
     <template id="report_bharat_loan_notice">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.external_layout">
-                    <div class="page">
-                        <t t-set="notice_title" t-value="(o.notice_hand or '').strip() or 'Notice'"/>
-                        <h2 style="margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
-                            <span t-esc="notice_title"/>
-                        </h2>
-                        <h4 style="margin-top: 0; margin-bottom: 14px; color: #444;">Loan Communication Letter</h4>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; padding-top: 36px; margin-top: 12px;">
+                        <div style="border: 3px double #222; padding: 22px 24px;">
+                            <h2 style="margin: 0 0 18px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                                2. Notice No. 1 – Notice of Arbitration
+                            </h2>
 
-                        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span><strong>Date:</strong> <span t-esc="o.deliver_date or o.create_date.date()"/></span>
-                                <span><strong>Loan Number:</strong> <span t-esc="o.loan_number or '-'"/></span>
+                            <p style="margin: 0 0 6px 0;">To,</p>
+                            <p style="margin: 0 0 4px 0; font-weight: 700;">
+                                <span t-esc="o.customer_name or 'Borrower Name'"/>
+                            </p>
+                            <p t-if="o.borrower_address" style="margin: 0 0 14px 0; white-space: pre-line;">
+                                <span t-esc="o.borrower_address"/>
+                            </p>
+                            <p t-if="not o.borrower_address" style="margin: 0 0 14px 0; color: #666;">
+                                <span t-esc="(o.location_id.name if o.location_id else o.location) or (o.borrower_state_id.name if o.borrower_state_id else o.borrower_state) or ''"/>
+                            </p>
+
+                            <ul style="margin: 0 0 16px 0; padding-left: 22px; list-style-type: disc;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Loan Account No.:</strong>
+                                    <span t-esc="o.loan_number or '—'"/>
+                                </li>
+                                <li>
+                                    <strong>Case ID (Bharat Nyaya ODR):</strong>
+                                    <span t-esc="o.case_number or '—'"/>
+                                </li>
+                            </ul>
+
+                            <p style="margin: 0 0 14px 0;">
+                                <strong>Subject: Initiation of Arbitration Proceedings</strong>
+                            </p>
+
+                            <p style="margin: 0 0 12px 0;">Sir/Madam,</p>
+
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                Arbitration proceedings have been initiated by
+                                <strong><span t-esc="o.company_id.name or 'the Claimant'"/></strong>
+                                against you on account of default in the above-mentioned Loan Account.
+                            </p>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                Under the Arbitration Clause and applicable legal provisions, both parties are
+                                entitled to mutually select a Sole Arbitrator through the
+                                <strong>Bharat Nyaya – ODR Arbitration Platform</strong>.
+                            </p>
+                            <p style="margin: 0 0 8px 0; text-align: justify; line-height: 1.55;">
+                                You are requested to scan the QR Code given below to access the platform for the
+                                following:
+                            </p>
+                            <ol style="margin: 0 0 14px 0; padding-left: 22px; line-height: 1.55;">
+                                <li>Access the arbitration case details;</li>
+                                <li>View the panel/list of Arbitrators;</li>
+                                <li>Select/confirm any one Arbitrator;</li>
+                                <li>Upload your response and supporting documents.</li>
+                            </ol>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                You are requested to select/confirm an Arbitrator within
+                                <strong>7 (seven) days</strong> from the date of receipt of this notice.
+                            </p>
+                            <p style="margin: 0 0 12px 0; text-align: justify; line-height: 1.55;">
+                                In case no selection is made within the stipulated timeline, an Arbitrator shall
+                                be automatically appointed through the platform's automated allocation mechanism.
+                            </p>
+                            <p style="margin: 0 0 18px 0; text-align: justify; line-height: 1.55;">
+                                Failure to participate may result in ex-parte proceedings being conducted against
+                                you.
+                            </p>
+
+                            <p style="margin: 0 0 10px 0; font-weight: 700;">QR Code for Case Access &amp; Arbitrator Selection</p>
+                            <t t-set="qr_encoded" t-value="o._get_reminder_notice_qr_url_encoded()"/>
+                            <div style="margin: 0 0 24px 0;">
+                                <img t-if="qr_encoded"
+                                     style="width: 140px; height: 140px;"
+                                     t-att-src="'/report/barcode/?type=QR&amp;width=180&amp;height=180&amp;value=' + qr_encoded"/>
+                                <p t-if="not qr_encoded" style="font-size: 12px; color: #666; margin: 0;">
+                                    QR code will be available after a notice with microsite access is sent.
+                                </p>
                             </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span><strong>Borrower:</strong> <span t-esc="o.customer_name or '-'"/></span>
-                                <span><strong>Stage:</strong> <span t-esc="o.state_id.name or '-'"/></span>
+
+                            <div style="margin-top: 12px;">
+                                <p style="margin: 0 0 8px 0;">
+                                    <strong>Date:</strong>
+                                    <t t-if="o.deliver_date">
+                                        <span t-field="o.deliver_date"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                    </t>
+                                </p>
+                                <p style="margin: 0 0 6px 0;">Authorized Signatory</p>
+                                <p style="margin: 0;">For <span t-esc="o.company_id.name or 'Claimant'"/></p>
                             </div>
                         </div>
 
-                        <p><strong>Branch:</strong> <span t-esc="(o.branch_id.name or o.branch or '-')"/></p>
-                        <p><strong>State / Region:</strong> <span t-esc="' / '.join([x for x in [o.borrower_state_id.name if o.borrower_state_id else o.borrower_state, o.region_id.name if o.region_id else o.region] if x]) or '-'"/></p>
-                        <p><strong>Product:</strong> <span t-esc="o.product or (o.product_class_id.name if o.product_class_id else o.product_classification) or '-'"/></p>
-                        <p>
-                            <strong>Current POS:</strong>
-                            <span t-field="o.current_pos" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                        </p>
-                        <p>
-                            <strong>Claim Amount:</strong>
-                            <span t-field="o.claim_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
-                        </p>
-
-                        <div style="margin-top: 18px;">
-                            <p>Dear <span t-esc="o.customer_name or 'Borrower'"/>,</p>
-                            <p style="text-align: justify;">
-                                This communication is issued in relation to the above loan account under the
-                                applicable provisions of the Arbitration and Conciliation Act, 1996 and the
-                                governing loan and contractual documents. You are hereby called upon to respond
-                                within the stipulated period and to participate in the arbitration process.
-                            </p>
-                            <p style="text-align: justify;">
-                                You may select an arbitrator from the panel list provided below / shared by the
-                                case team. Upon such selection, online hearing proceedings will be scheduled,
-                                and the selected arbitrator shall conduct the hearing and pass the arbitral
-                                award in accordance with law.
-                            </p>
-                            <p style="text-align: justify;">
-                                In case of non-response or non-participation, further action may be taken as
-                                permissible under law, including continuation of ex-parte proceedings.
-                            </p>
-                        </div>
-
-                        <p style="margin-top: 24px;">Regards,<br/>BharatNyay Legal Operations</p>
+                        <div style="margin-top: 24px; border-top: 1px solid #ccc; width: 100%;"/>
                     </div>
                 </t>
             </t>

@@ -522,11 +522,75 @@
         <field name="domain">[('state_code', '=', 'paid')]</field>
     </record>
 
-    <record id="action_bharat_loan_bulk_notice_pdf" model="ir.actions.server">
-        <field name="name">Generate notice PDF (selected)</field>
+    <record id="action_bharat_loan_bulk_written_statement_pdf" model="ir.actions.server">
+        <field name="name">Written Statement / Response by Borrower</field>
         <field name="model_id" ref="model_bharat_loan"/>
         <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list</field>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_written_statement').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_interim_order_pdf" model="ir.actions.server">
+        <field name="name">Interim Order / Interim Award</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_interim_order').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_hearing_final_pdf" model="ir.actions.server">
+        <field name="name">Hearing No. 3 – Final Hearing</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_hearing_final').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_hearing_proceedings_2_pdf" model="ir.actions.server">
+        <field name="name">Hearing No. 2 – Record of Proceedings</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_hearing_proceedings_2').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_hearing_proceedings_pdf" model="ir.actions.server">
+        <field name="name">Hearing No. 1 – Record of Proceedings</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_hearing_proceedings').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_final_notice_pdf" model="ir.actions.server">
+        <field name="name">Notice No. 3 – Final Notice</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_final_notice').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_reminder_notice_pdf" model="ir.actions.server">
+        <field name="name">Notice No. 2 – Reminder Notice</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_reminder_notice').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_commencement_arbitration_pdf" model="ir.actions.server">
+        <field name="name">Commencement of Arbitration</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_commencement_arbitration').report_action(records)</field>
+    </record>
+    <record id="action_bharat_loan_bulk_notice_pdf" model="ir.actions.server">
+        <field name="name">Notice No. 1 – Notice of Arbitration</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
         <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_notice').report_action(records)</field>
     </record>
