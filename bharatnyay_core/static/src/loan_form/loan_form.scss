@@ -346,6 +346,201 @@
         }
     }
 
+    // ── Imported (read-only) band + case management row ───────────────────
+    .bn-loan-fields-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .bn-band-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+
+        &__icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.9rem;
+        }
+
+        &__title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #475569;
+        }
+
+        &__badge {
+            margin-left: auto;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #0369a1;
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            padding: 3px 10px;
+            border-radius: 999px;
+        }
+
+        &--edit .bn-band-head__icon {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+    }
+
+    .bn-imported-band {
+        background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 16px 16px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+        .bn-imported-grid {
+            display: block !important;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+
+            // Odoo 17/18: row of sibling inner groups → 3 cards
+            > .o_group,
+            > tbody > tr > td > .o_group {
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+                width: 100%;
+
+                @media (max-width: 1100px) {
+                    grid-template-columns: 1fr;
+                }
+            }
+        }
+
+        .bn-imported-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px 12px !important;
+            margin: 0 !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+            min-width: 0;
+
+            .o_horizontal_separator,
+            > .o_td_label,
+            .o_group_label {
+                display: block;
+                font-size: 0.68rem !important;
+                font-weight: 700 !important;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #0f766e !important;
+                margin: 0 0 10px !important;
+                padding: 0 0 8px !important;
+                border-bottom: 1px solid #e2e8f0;
+                width: 100%;
+            }
+
+            .o_wrap_field,
+            .o_cell {
+                display: block !important;
+                margin-bottom: 8px;
+            }
+
+            .o_form_label {
+                display: block;
+                font-size: 0.68rem;
+                font-weight: 500;
+                color: #94a3b8;
+                margin-bottom: 2px;
+                line-height: 1.2;
+            }
+
+            .o_field_widget {
+                font-size: 0.88rem;
+                font-weight: 600;
+                color: #0f172a;
+                line-height: 1.35;
+                word-break: break-word;
+            }
+
+            .o_field_widget.o_readonly_modifier .o_input,
+            .o_field_widget[readonly] .o_input,
+            .o_field_widget.o_readonly_modifier input,
+            .o_field_widget[readonly] input {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                min-height: 0;
+            }
+        }
+
+        .bn-imported-address {
+            margin-top: 12px !important;
+            padding: 10px 12px !important;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+
+            .o_form_label {
+                font-size: 0.68rem;
+                font-weight: 600;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .o_field_widget {
+                font-size: 0.88rem;
+                color: #334155;
+                line-height: 1.45;
+            }
+        }
+    }
+
+    .bn-editable-band {
+        background: #ffffff;
+        border: 1px solid #c7d2fe;
+        border-radius: 14px;
+        padding: 14px 16px 16px;
+        box-shadow:
+            0 1px 2px rgba(79, 70, 229, 0.06),
+            0 4px 14px rgba(79, 70, 229, 0.05);
+
+        .bn-loan-editable {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+
+            > .o_group,
+            .o_inner_group {
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px 20px;
+
+                @media (max-width: 900px) {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .o_form_label {
+                font-size: 0.72rem;
+                font-weight: 600;
+                color: #4338ca;
+            }
+        }
+    }
+
     // ── X2many tables: cleaner header row ───────────────────────────────
     .o_field_x2many .o_list_renderer thead th {
         background: #f8fafc;

@@ -22,10 +22,12 @@
                 <button name="action_join_meeting" type="object" string="Join" class="btn-link" title="Open meeting link"/>
                 <button name="action_reschedule_hearing" type="object" string="Reschedule" class="btn-link"/>
                 <field name="hearing_datetime"/>
+                <field name="minutes_remaining" optional="show"/>
                 <field name="loan_id"/>
                 <field name="link_type"/>
                 <field name="meeting_link" widget="url"/>
                 <field name="invitees" optional="hide"/>
+                <field name="status"/>
             </list>
         </field>
     </record>
@@ -59,11 +61,13 @@
                     <group>
                         <field name="loan_id" readonly="1"/>
                         <field name="hearing_datetime"/>
+                        <field name="minutes_remaining" readonly="1"/>
                         <field name="link_type"/>
                         <field name="meeting_link" widget="url"/>
                         <field name="invitees"/>
                         <field name="notes"/>
                         <field name="created_by_id" readonly="1"/>
+                        <field name="status"/>
                     </group>
                 </sheet>
             </form>

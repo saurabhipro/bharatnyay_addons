@@ -32,23 +32,23 @@ class BharatLoan(models.Model):
             'Loan number must be unique. A loan with this number already exists.',
         ),
     ]
-    case_number = fields.Char(string='BharatNyay Case Number', copy=False, index=True, readonly=True, tracking=True)
-    batch_number = fields.Char(string='Batch Number', copy=False, index=True, tracking=True)
-    customer_name = fields.Char(string='Customer Name')
+    case_number = fields.Char(string='Case No.', copy=False, index=True, readonly=True, tracking=True)
+    batch_number = fields.Char(string='Batch', copy=False, index=True, tracking=True)
+    customer_name = fields.Char(string='Customer')
 
     # Keep master links for normalized future usage.
-    region_id = fields.Many2one('bharat.region', string='Region (master)', index=True)
+    region_id = fields.Many2one('bharat.region', string='Region', index=True)
     borrower_state_id = fields.Many2one(
         'res.country.state',
         string='State',
         domain="[('country_id.code', '=', 'IN')]",
         index=True,
     )
-    branch_id = fields.Many2one('bharat.branch', string='Branch (master)', index=True)
-    location_id = fields.Many2one('bharat.loan_location', string='Location (master)')
-    product_class_id = fields.Many2one('bharat.product_class', string='Product class (master)', index=True)
-    writeoff_id = fields.Many2one('bharat.writeoff', string='Write off (master)', index=True)
-    law_firm_id = fields.Many2one('bharat.law_firm', string='Law firm (master)')
+    branch_id = fields.Many2one('bharat.branch', string='Branch', index=True)
+    location_id = fields.Many2one('bharat.loan_location', string='Location')
+    product_class_id = fields.Many2one('bharat.product_class', string='Product', index=True)
+    writeoff_id = fields.Many2one('bharat.writeoff', string='Write off', index=True)
+    law_firm_id = fields.Many2one('bharat.law_firm', string='Law firm')
 
     # Legacy text columns are kept as primary fields for compatibility with existing DB rows.
     branch = fields.Char(string='Branch')
@@ -180,6 +180,12 @@ class BharatLoan(models.Model):
         compute='_compute_state_is_arbitrator',
         store=True,
     )
+    is_case_locked = fields.Boolean(
+        string='Case locked (final award)',
+        compute='_compute_is_case_locked',
+        store=True,
+        help='When set, the case form and related records are read-only.',
+    )
     state_display = fields.Char(
         string='Stage display',
         compute='_compute_state_display',
@@ -205,6 +211,11 @@ class BharatLoan(models.Model):
         'bharat.loan.hearing.line',
         'loan_id',
         string='Hearing log',
+    )
+    hearing_minutes_remaining = fields.Integer(
+        string='Minutes to next hearing',
+        compute='_compute_hearing_minutes_remaining',
+        help='Minimum minutes until any scheduled hearing on this case; 0 means a hearing is due now.',
     )
     interim_order_ids = fields.One2many(
         'bharat.loan.interim.order',
@@ -426,6 +437,11 @@ class BharatLoan(models.Model):
             )[:1]
             rec.state_is_arbitrator = bool(line.is_arbitrator)
 
+    @api.depends('state_code')
+    def _compute_is_case_locked(self):
+        for rec in self:
+            rec.is_case_locked = rec.state_code == 'final_award'
+
     @staticmethod
     def _format_amount_compact(amount):
         """Format monetary value without symbol: 150000 -> 150K (for narrow hero tiles)."""
@@ -501,13 +517,13 @@ class BharatLoan(models.Model):
     # Hearing log offsets (days) when an arbitrator is assigned.
     _ARBITRATOR_HEARING_OFFSET_DAYS = (1, 10, 30)
 
-    def _sync_hearing_stage_on_arbitrator_assign(self):
-        """Move to Hearing and provision three hearing log rows when an arbitrator is set."""
+    def _sync_arbitrator_appointed_on_assign(self):
+        """Move to Arbitrator Appointed and provision three hearing log rows."""
         for rec in self:
             if not rec.arbitrator_id:
                 continue
-            if rec._stage_code() != 'hearing':
-                rec._write_stage_by_code('hearing')
+            if rec._stage_code() != 'arbitrator_appointed':
+                rec._write_stage_by_code('arbitrator_appointed')
             rec._provision_hearing_lines_on_arbitrator_assign()
 
     def _provision_hearing_lines_on_arbitrator_assign(self):
@@ -527,11 +543,13 @@ class BharatLoan(models.Model):
                     'hearing_datetime': base + timedelta(days=days),
                     'link_type': 'external',
                     'created_by_id': self.env.user.id,
+                    'status': 'scheduled',
                 })
             if not rec.hearing_datetime:
                 rec.hearing_datetime = first_dt
         if to_create:
             HearingLine.create(to_create)
+        self._check_hearing_countdown_and_promote()
 
     @api.depends('branch_id', 'location_id', 'branch_id.location_id', 'case_manager_manual')
     def _compute_case_manager_id(self):
@@ -567,7 +585,7 @@ class BharatLoan(models.Model):
                 continue
             rec.arbitrator_name = rec.arbitrator_id.name
             rec.arbitrator_email = rec.arbitrator_id.email or ''
-            stage = rec._get_company_stage('hearing', rec.company_id)
+            stage = rec._get_company_stage('arbitrator_appointed', rec.company_id)
             if stage:
                 rec.state_id = stage
                 if stage.section:
@@ -677,6 +695,56 @@ class BharatLoan(models.Model):
             rec.interim_order_count = len(rec.interim_order_ids)
             rec.award_document_count = len(rec.award_document_ids)
 
+    @api.depends('hearing_line_ids.hearing_datetime')
+    def _compute_hearing_minutes_remaining(self):
+        now = fields.Datetime.now()
+        for loan in self:
+            mins = []
+            for line in loan.hearing_line_ids:
+                if not line.hearing_datetime:
+                    continue
+                delta = line.hearing_datetime - now
+                mins.append(max(0, int(delta.total_seconds() // 60)))
+            loan.hearing_minutes_remaining = min(mins) if mins else -1
+
+    def _check_hearing_countdown_and_promote(self):
+        """Recompute minutes from current time and move to Hearing when min reaches 0."""
+        if self.env.context.get('skip_hearing_countdown'):
+            return self
+        loans = self.with_context(skip_hearing_countdown=True).filtered(
+            lambda l: l._stage_code() != 'hearing' and l.hearing_line_ids
+        )
+        for loan in loans:
+            if loan.hearing_minutes_remaining != 0:
+                continue
+            loan._promote_to_hearing_stage()
+
+    def _promote_to_hearing_stage(self):
+        """Move case to Hearing when countdown reaches zero (next hearing is due)."""
+        now = fields.Datetime.now()
+        for loan in self.with_context(skip_hearing_countdown=True):
+            if loan._stage_code() == 'hearing':
+                continue
+            due_lines = loan.hearing_line_ids.filtered(
+                lambda l: l.hearing_datetime and l.hearing_datetime <= now
+            )
+            if not due_lines:
+                continue
+            line = due_lines.sorted('hearing_datetime')[-1]
+            loan._write_stage_by_code('hearing')
+            loan.write({
+                'hearing_datetime': line.hearing_datetime,
+                'hearing_link_type': line.link_type,
+                'hearing_video_url': line.meeting_link or False,
+            })
+
+    def web_read(self, specification):
+        """Promote to Hearing after load — never during read (breaks web_read cache)."""
+        result = super().web_read(specification)
+        if not self.env.context.get('skip_hearing_countdown'):
+            self._check_hearing_countdown_and_promote()
+        return result
+
     def bharat_arbitration_bill_stage(self):
         """Map case workflow + activity to arbitration billing SKU (product.template stage)."""
         self.ensure_one()
@@ -706,6 +774,7 @@ class BharatLoan(models.Model):
 
     def action_open_hearing_lines(self):
         self.ensure_one()
+        self._check_hearing_countdown_and_promote()
         return {
             'type': 'ir.actions.act_window',
             'name': _('Hearings'),
@@ -818,22 +887,13 @@ class BharatLoan(models.Model):
             },
         }
 
-    def action_appoint_arbitrator(self):
+    def action_move_to_hearing(self):
+        """Set workflow stage to Hearing without opening the schedule wizard."""
         for rec in self:
-            if not rec.arbitrator_id and not (rec.arbitrator_name or '').strip():
-                raise UserError(_("Please select an arbitrator user (or enter a name)."))
-            arb_label = (
-                rec.arbitrator_id.name
-                if rec.arbitrator_id
-                else (rec.arbitrator_name or '').strip()
-            )
-            if rec.arbitrator_id:
-                rec._sync_hearing_stage_on_arbitrator_assign()
-            else:
-                rec._write_stage_by_code('arbitrator_appointed')
-            rec.message_post(
-                body=_("Arbitrator appointed: <b>%s</b>") % (arb_label,),
-            )
+            if rec._stage_code() == 'hearing':
+                raise UserError(_('This case is already in the Hearing stage.'))
+            rec._write_stage_by_code('hearing')
+            rec.message_post(body=_('<p><b>Moved to Hearing stage</b></p>'))
         return True
 
     def action_schedule_hearing(self):
@@ -842,9 +902,9 @@ class BharatLoan(models.Model):
             raise UserError(
                 _('This case is already at Hearing. Use “Reschedule hearing” or the Hearing tab.')
             )
-        if self._stage_code() not in ('arbitrator_appointed',) and not self.arbitrator_id:
+        if self._stage_code() != 'arbitrator_appointed':
             raise UserError(
-                _('Schedule Hearing requires an appointed arbitrator.')
+                _('Schedule Hearing is only available when the arbitrator has been appointed.')
                 + ' '
                 + _('Current workflow stage is: %s')
                 % (self.state_id.name or '?')
@@ -1228,10 +1288,15 @@ class BharatLoan(models.Model):
                 values['company_id'] = self.env.company.id
             normalized.append(values)
         records = super().create(normalized)
-        records.filtered('arbitrator_id')._sync_hearing_stage_on_arbitrator_assign()
+        records.filtered('arbitrator_id')._sync_arbitrator_appointed_on_assign()
         return records
 
     def write(self, vals):
+        locked = self.filtered('is_case_locked')
+        if locked and not self.env.context.get('bharat_allow_locked_case_write'):
+            raise UserError(
+                _('This case is at Final Award stage and cannot be modified.')
+            )
         values = dict(vals)
         self._normalize_loan_number_in_vals(values)
         self._apply_arbitrator_user_to_vals(self.env, values)
@@ -1242,7 +1307,7 @@ class BharatLoan(models.Model):
         self._populate_text_from_master_links(values)
         res = super().write(values)
         if arbitrator_assigned:
-            self._sync_hearing_stage_on_arbitrator_assign()
+            self._sync_arbitrator_appointed_on_assign()
         return res
 
     @api.onchange('branch_id')
@@ -1671,6 +1736,16 @@ class BharatLoanHearingLine(models.Model):
         readonly=True,
     )
     hearing_datetime = fields.Datetime(string='Hearing date/time', required=True)
+    minutes_remaining = fields.Integer(
+        string='Minutes until hearing',
+        compute='_compute_minutes_remaining',
+        help='Countdown in minutes; at 0 the case moves to the Hearing stage.',
+    )
+    status = fields.Selection(
+        [('scheduled', 'Scheduled'), ('conducted', 'Conducted')],
+        default='scheduled',
+        required=True,
+    )
     link_type = fields.Selection(
         [('external', 'External conferencing'), ('odoo', 'Odoo case link')],
         default='external',
@@ -1680,7 +1755,7 @@ class BharatLoanHearingLine(models.Model):
     notes = fields.Text(string='Hearing instructions')
     invitees = fields.Char(string='Invitees')
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
-
+    
     @api.constrains('hearing_datetime')
     def _check_hearing_datetime_not_past(self):
         now = fields.Datetime.now()
@@ -1688,11 +1763,42 @@ class BharatLoanHearingLine(models.Model):
             if rec.hearing_datetime and rec.hearing_datetime < now:
                 raise ValidationError(_('Hearing date/time cannot be in the past.'))
 
+    @api.depends('hearing_datetime')
+    def _compute_minutes_remaining(self):
+        now = fields.Datetime.now()
+        for line in self:
+            if not line.hearing_datetime:
+                line.minutes_remaining = -1
+                continue
+            delta = line.hearing_datetime - now
+            line.minutes_remaining = max(0, int(delta.total_seconds() // 60))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records.mapped('loan_id')._check_hearing_countdown_and_promote()
+        return records
+
     def write(self, vals):
+        locked_loans = self.mapped('loan_id').filtered('is_case_locked')
+        if locked_loans and not self.env.context.get('bharat_allow_locked_case_write'):
+            raise UserError(
+                _('Case %(cases)s is at Final Award stage and cannot be modified.')
+                % {'cases': ', '.join(locked_loans.mapped('loan_number'))}
+            )
         if 'loan_id' in vals:
             vals = dict(vals)
             vals.pop('loan_id')
-        return super().write(vals)
+        res = super().write(vals)
+        if 'hearing_datetime' in vals:
+            self.mapped('loan_id')._check_hearing_countdown_and_promote()
+        return res
+
+    def web_read(self, specification):
+        result = super().web_read(specification)
+        if not self.env.context.get('skip_hearing_countdown'):
+            self.mapped('loan_id')._check_hearing_countdown_and_promote()
+        return result
 
     def action_join_meeting(self):
         """Open video URL or Odoo loan link in a browser tab."""

@@ -37,9 +37,15 @@
                            options="{'no_create': True}"
                            placeholder="Internal users to notify…"/>
                 </group>
+                <group string="Outcome" invisible="hearing_reschedule">
+                    <field name="was_user_present"/>
+                    <field name="is_final_award"/>
+                </group>
                 <footer>
+                    <button string="Schedule &amp; Move to Final Award" type="object" name="action_schedule"
+                            class="btn-primary" invisible="hearing_reschedule or not is_final_award"/>
                     <button string="Schedule &amp; Move to Hearing" type="object" name="action_schedule"
-                            class="btn-primary" invisible="hearing_reschedule"/>
+                            class="btn-primary" invisible="hearing_reschedule or is_final_award"/>
                     <button string="Save new time" type="object" name="action_schedule"
                             class="btn-primary" invisible="not hearing_reschedule"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
@@ -64,9 +70,14 @@
                     <field name="interim_award_amount"/>
                     <field name="interim_award_notes"
                            placeholder="Additional procedural directions, deposit orders, timelines, …"/>
+                    <field name="was_user_present"/>
+                    <field name="is_final_award"/>
                 </group>
                 <footer>
-                    <button string="Record interim award" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Record final award" type="object" name="action_confirm"
+                            class="btn-primary" invisible="not is_final_award"/>
+                    <button string="Record interim &amp; stay in Hearing" type="object" name="action_confirm"
+                            class="btn-primary" invisible="is_final_award"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

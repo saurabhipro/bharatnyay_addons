@@ -136,27 +136,30 @@
                     <field name="allowed_stage_ids" invisible="1"/>
                     <field name="state_code" invisible="1"/>
                     <field name="state_is_arbitrator" invisible="1"/>
+                    <field name="is_case_locked" invisible="1"/>
                     <field name="state_id" widget="statusbar"
                            domain="[('id', 'in', allowed_stage_ids)]"
+                           readonly="is_case_locked"
                            options="{'clickable': '1'}"/>
-                    <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"/>
+                    <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"
+                            invisible="is_case_locked"/>
                     <button name="action_assign_arbitrator" type="object" string="Assign Arbitrator"
-                            class="btn-primary" invisible="not state_is_arbitrator"/>
-                    <button name="action_appoint_arbitrator" type="object" string="Appoint Arbitrator"
-                            invisible="state_is_arbitrator"/>
+                            class="btn-primary" invisible="is_case_locked or not state_is_arbitrator"/>
+                    <button name="action_move_to_hearing" type="object" string="Move to Hearing"
+                            class="btn-primary" invisible="is_case_locked or state_code == 'hearing'"/>
                     <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"
-                            invisible="state_code == 'hearing'"/>
+                            invisible="is_case_locked or state_code == 'hearing'"/>
                     <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"
-                            invisible="state_code != 'hearing'"/>
+                            invisible="is_case_locked or state_code != 'hearing'"/>
                     <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
-                            invisible="state_code != 'hearing'"/>
+                            invisible="is_case_locked or state_code != 'hearing'"/>
                     <button name="action_join_hearing_meeting" type="object" string="Join Meeting Online"
-                            invisible="state_code != 'hearing'"/>
+                            invisible="is_case_locked or state_code != 'hearing'"/>
                     <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
-                            invisible="state_code != 'hearing'"/>
+                            invisible="is_case_locked or state_code != 'hearing'"/>
                 </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
+                    <div class="oe_button_box" name="button_box" invisible="is_case_locked">
                         <button name="action_open_notice_lines" type="object" class="oe_stat_button" icon="fa-envelope-o">
                             <field name="notice_count" widget="statinfo" string="Notices"/>
                         </button>
@@ -245,24 +248,55 @@
                         </div>
                     </div>
 
-                    <group>
-                        <group string="Borrower (imported)">
-                            <field name="company_id"/>
-                            <field name="currency_id" invisible="1"/>
-                            <field name="borrower_email" readonly="1" widget="email"/>
-                            <field name="borrower_phone" readonly="1" widget="phone"/>
-                            <field name="case_manager_manual" invisible="1"/>
-                            <field name="case_manager_id" options="{'no_create': True}"/>
-                            <field name="borrower_state_id" readonly="1"/>
-                            <field name="arbitrator_id" options="{'no_create': True}"/>
-                        </group>
-                    </group>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="case_manager_manual" invisible="1"/>
+                    <div class="bn-loan-fields-stack">
+                        <div class="bn-imported-band">
+                            <div class="bn-band-head">
+                                <span class="bn-band-head__icon" aria-hidden="true"><i class="fa fa-file-text-o"/></span>
+                                <span class="bn-band-head__title">Imported loan sheet</span>
+                                <span class="bn-band-head__badge">Read-only</span>
+                            </div>
+                            <group class="bn-imported-grid">
+                                <group string="Contact" class="bn-imported-card">
+                                    <field name="borrower_email" readonly="1" widget="email"/>
+                                    <field name="borrower_phone" readonly="1" widget="phone"/>
+                                    <field name="borrower_state_id" readonly="1" string="State"/>
+                                </group>
+                                <group string="Geography" class="bn-imported-card">
+                                    <field name="region_id" readonly="1"/>
+                                    <field name="location_id" readonly="1"/>
+                                    <field name="branch_id" readonly="1"/>
+                                </group>
+                                <group string="Product &amp; legal" class="bn-imported-card">
+                                    <field name="product_class_id" readonly="1" string="Product class"/>
+                                    <field name="product" readonly="1" string="Product code"/>
+                                    <field name="writeoff_id" readonly="1"/>
+                                    <field name="law_firm_id" readonly="1"/>
+                                </group>
+                            </group>
+                            <group class="bn-imported-address" invisible="not borrower_address">
+                                <field name="borrower_address" readonly="1" string="Borrower address"/>
+                            </group>
+                        </div>
+                        <div class="bn-editable-band">
+                            <div class="bn-band-head bn-band-head--edit">
+                                <span class="bn-band-head__icon" aria-hidden="true"><i class="fa fa-pencil-square-o"/></span>
+                                <span class="bn-band-head__title">Case management</span>
+                            </div>
+                            <group class="bn-loan-editable" col="3" readonly="is_case_locked">
+                                <field name="company_id" string="Lender / company"/>
+                                <field name="case_manager_id" options="{'no_create': True}"/>
+                                <field name="arbitrator_id" options="{'no_create': True}"/>
+                            </group>
+                        </div>
+                    </div>
 
-                    <notebook>
+                    <notebook readonly="is_case_locked">
                         <page string="🔔 Notices">
                             <group string="All notices sent / responses">
-                                <field name="notice_line_ids" nolabel="1">
-                                    <list create="0" delete="0" multi_edit="0">
+                                <field name="notice_line_ids" nolabel="1" readonly="is_case_locked">
+                                    <list create="0" delete="0" edit="0" multi_edit="0">
                                         <field name="notice_number"/>
                                         <field name="notice_label" readonly="1"/>
                                         <field name="sent_on"/>
@@ -274,12 +308,14 @@
                                         <field name="response_received_on" readonly="1"/>
                                         <field name="response_pdf_filename" readonly="1"/>
                                         <button name="action_record_response" type="object" string="Record reply"
-                                                class="btn-link" icon="fa-inbox"/>
+                                                class="btn-link" icon="fa-inbox"
+                                                invisible="parent.is_case_locked"/>
                                     </list>
-                                    <form string="Notice detail">
+                                    <form string="Notice detail" create="0" edit="0" delete="0">
                                             <header>
                                                 <button name="action_record_response" type="object"
-                                                        string="Record respondent reply" class="btn-primary"/>
+                                                        string="Record respondent reply" class="btn-primary"
+                                                        invisible="parent.is_case_locked"/>
                                             </header>
                                             <group>
                                                 <group>
@@ -326,15 +362,15 @@
                                 </group>
                             </group>
                             <separator string="Hearing log"/>
-                            <field name="hearing_line_ids" nolabel="1">
-                                <list create="0" delete="0">
+                            <field name="hearing_line_ids" nolabel="1" readonly="is_case_locked">
+                                <list create="0" delete="0" edit="0">
                                     <field name="hearing_datetime"/>
                                     <field name="link_type"/>
                                     <field name="meeting_link" widget="url"/>
                                     <field name="invitees"/>
                                     <field name="created_by_id"/>
                                 </list>
-                                <form string="Hearing detail">
+                                <form string="Hearing detail" create="0" edit="0" delete="0">
                                     <group>
                                         <group>
                                             <field name="hearing_datetime"/>
@@ -350,8 +386,8 @@
                                 </form>
                             </field>
                             <separator string="Interim orders"/>
-                            <field name="interim_order_ids" nolabel="1">
-                                <list create="0" delete="0">
+                            <field name="interim_order_ids" nolabel="1" readonly="is_case_locked">
+                                <list create="0" delete="0" edit="0">
                                     <field name="order_date"/>
                                     <field name="order_type"/>
                                     <field name="purpose" optional="show"/>
@@ -361,7 +397,7 @@
                                     <field name="notes" optional="hide"/>
                                     <field name="order_pdf_filename" optional="hide"/>
                                 </list>
-                                <form string="Interim order">
+                                <form string="Interim order" create="0" edit="0" delete="0">
                                     <group>
                                         <group>
                                             <field name="order_date"/>
@@ -384,15 +420,15 @@
                             </field>
                         </page>
                         <page string="🏆 Awards" name="page_awards">
-                            <field name="award_document_ids" nolabel="1">
-                                <list create="0" delete="0">
+                            <field name="award_document_ids" nolabel="1" readonly="is_case_locked">
+                                <list create="0" delete="0" edit="0">
                                     <field name="award_type"/>
                                     <field name="award_date"/>
                                     <field name="created_by_id"/>
                                     <field name="award_pdf_filename"/>
                                     <field name="award_notes"/>
                                 </list>
-                                <form string="Award document">
+                                <form string="Award document" create="0" edit="0" delete="0">
                                     <group>
                                         <group>
                                             <field name="award_type"/>
@@ -409,28 +445,10 @@
                             </field>
                         </page>
 
-                        <page string="📚 Reference" name="page_reference">
-                            <group>
-                                <group string="Geography (imported)">
-                                    <field name="region_id" readonly="1"/>
-                                    <field name="borrower_state_id" readonly="1"/>
-                                    <field name="location_id" readonly="1"/>
-                                    <field name="branch_id" readonly="1"/>
-                                </group>
-                                <group string="Product &amp; legal (imported)">
-                                    <field name="product_class_id" readonly="1"/>
-                                    <field name="product" readonly="1"/>
-                                    <field name="writeoff_id" readonly="1"/>
-                                    <field name="law_firm_id" readonly="1"/>
-                                </group>
-                            </group>
-                            <group string="Borrower address">
-                                <field name="borrower_address" readonly="1" nolabel="1"/>
-                            </group>
-                        </page>
+                        
                     </notebook>
                 </sheet>
-                <chatter open_attachments="True"/>
+                <chatter open_attachments="True" hide_composer="is_case_locked"/>
             </form>
         </field>
     </record>

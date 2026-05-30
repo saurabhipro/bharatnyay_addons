@@ -33,6 +33,7 @@
         'views/interim_order_views.xml',
         'reports/loan_notice_reports.xml',
         'views/loan_views.xml',
+        'views/notice_line_views.xml',
         'views/dashboard_action.xml',
         'views/menus.xml',
     ],

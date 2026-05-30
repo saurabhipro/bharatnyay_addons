@@ -1,0 +1,23 @@
+<odoo>
+<data>
+    <record id="view_bharat_loan_notice_line_tree" model="ir.ui.view">
+        <field name="name">bharat.loan.notice.line.list</field>
+        <field name="model">bharat.loan.notice.line</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" edit="0" multi_edit="0">
+                <field name="notice_number"/>
+                <field name="notice_label" readonly="1"/>
+                <field name="sent_on"/>
+                <field name="sent_by_id"/>
+                <field name="recipient_partner_id"/>
+                <field name="sent_to"/>
+                <field name="subject"/>
+                <field name="notice_pdf_filename"/>
+                <field name="response_received_on" readonly="1"/>
+                <field name="response_pdf_filename" readonly="1"/>
+                <button name="action_record_response" type="object" string="Record reply" class="btn-link" icon="fa-inbox"/>
+            </list>
+        </field>
+    </record>
+</data>
+</odoo>

@@ -122,6 +122,8 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         help='Odoo internal users whose email addresses should receive hearing invitations '
         '(in addition to borrower email and arbitrator).',
     )
+    is_final_award = fields.Boolean(string='Is final award', default=False)
+    was_user_present = fields.Boolean(string='Was user present', default=False)
 
     # Grid uses slot_board_json only. Never persist slot_line_ids: without a nested list view
     # the web client POSTs empty rows and violates slot_start NOT NULL on save.
@@ -460,10 +462,13 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             'hearing_invite_user_ids': [(6, 0, self.invite_user_ids.ids)],
         }
         if not self.hearing_reschedule:
-            hearing_stage = loan._get_company_stage('hearing', loan.company_id)
-            if hearing_stage:
-                vals_loan['state_id'] = hearing_stage.id
-                vals_loan['workflow_phase'] = hearing_stage.phase or 'Hearing'
+            stage_code = 'final_award' if self.is_final_award else 'hearing'
+            stage = loan._get_company_stage(stage_code, loan.company_id)
+            if stage:
+                vals_loan['state_id'] = stage.id
+                vals_loan['workflow_phase'] = stage.phase or (
+                    'Award' if stage_code == 'final_award' else 'Hearing'
+                )
 
         loan.write(vals_loan)
 
@@ -471,9 +476,12 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         dt_human = escape(str(local))
 
         link_disp = escape((loan.hearing_video_url or '').strip() or _('(not set)'))
-        header = _('<p><b>Hearing scheduled</b></p>')
-        if self.hearing_reschedule:
+        if self.is_final_award and not self.hearing_reschedule:
+            header = _('<p><b>Final award — hearing logged</b></p>')
+        elif self.hearing_reschedule:
             header = _('<p><b>Hearing rescheduled</b></p>')
+        else:
+            header = _('<p><b>Hearing scheduled</b></p>')
         chunks = [header + _('<p>When (your timezone): %s</p>') % dt_human]
         if link_type == 'odoo':
             chunks.append(_('<p>Odoo case link: %s</p>') % link_disp)
@@ -497,6 +505,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             'meeting_link': loan.hearing_video_url or '',
             'notes': '',
             'invitees': invitees,
+            'status': 'conducted' if self.was_user_present else 'scheduled',
             'created_by_id': self.env.user.id,
         })
 
@@ -529,6 +538,8 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         string='Additional directions / rationale',
         help='Optional extra notes logged on the chatter and saved on the interim order.',
     )
+    is_final_award = fields.Boolean(string='Is final award', default=False)
+    was_user_present = fields.Boolean(string='Was user present', default=False)
 
     @api.model
     def _interim_order_type_selection(self):
@@ -573,23 +584,38 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         summary_bits = [self.purpose, self.common_directions, notes]
         summary = '\n\n'.join(bit for bit in summary_bits if bit)
 
-        loan.write({
+        stage_code = 'final_award' if self.is_final_award else 'hearing'
+        stage = loan._get_company_stage(stage_code, loan.company_id)
+        if not stage:
+            raise UserError(
+                _('Workflow stage “%s” is not configured for this company.') % stage_code
+            )
+        loan_vals = {
             'interim_award_date': fields.Datetime.now(),
             'interim_award_notes': summary or self.common_directions or self.purpose,
             'interim_award_amount': self.interim_award_amount or 0.0,
-        })
+            'state_id': stage.id,
+        }
+        if stage.phase:
+            loan_vals['workflow_phase'] = stage.phase
+        loan.write(loan_vals)
 
         amt = loan.interim_award_amount or 0.0
         sym = loan.currency_id.symbol or '' if loan.currency_id else ''
         type_label = dict(self._interim_order_type_selection()).get(self.order_type, self.order_type)
 
+        header = _('<p><b>Final award recorded</b></p>') if self.is_final_award else _(
+            '<p><b>Interim order recorded</b></p>'
+        )
         chunks = [
-            _('<p><b>Interim order recorded</b></p><p><b>Type:</b> %(type)s</p><p>%(sym)s %(amt)s</p>') % {
+            header + '<p><b>Type:</b> %(type)s</p><p>%(sym)s %(amt)s</p>' % {
                 'type': escape(type_label),
                 'sym': escape(sym),
                 'amt': amt,
             },
         ]
+        if self.was_user_present:
+            chunks.append('<p><b>%s</b></p>' % escape(_('Borrower/respondent was present.')))
         if self.common_directions:
             chunks.append('<p><b>Directions:</b><br/>%s</p>' % escape(self.common_directions).replace('\n', '<br/>'))
         if notes:
@@ -611,12 +637,21 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             'notes': notes,
             'created_by_id': self.env.user.id,
         })
-        loan.env['bharat.loan.award.document'].create({
-            'loan_id': loan.id,
-            'award_type': 'interim',
-            'award_date': fields.Datetime.now(),
-            'award_notes': summary or type_label,
-            'created_by_id': self.env.user.id,
-        })
+        if self.is_final_award:
+            loan.env['bharat.loan.award.document'].create({
+                'loan_id': loan.id,
+                'award_type': 'final',
+                'award_date': fields.Datetime.now(),
+                'award_notes': summary or type_label,
+                'created_by_id': self.env.user.id,
+            })
+        else:
+            loan.env['bharat.loan.award.document'].create({
+                'loan_id': loan.id,
+                'award_type': 'interim',
+                'award_date': fields.Datetime.now(),
+                'award_notes': summary or type_label,
+                'created_by_id': self.env.user.id,
+            })
 
         return {'type': 'ir.actions.act_window_close'}
