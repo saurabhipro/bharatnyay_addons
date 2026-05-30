@@ -484,7 +484,40 @@ def repair_ir_act_report_null_binding_type(cr):
         )
 
 
+def reset_bharatnyay_view_arch_db(cr):
+    """Clear stored view arch so upgrade reloads XML without broken translation terms.
+
+    Odoo 18 merges old ``arch_db`` translation terms when a view is updated. Terms that
+    were saved with a decoded ``&`` (e.g. from ``Borrower &amp; Loan``) make
+    ``translate.py`` fail with ``xmlParseEntityRef`` on the next ``-u``.
+    """
+    if not _table_exists(cr, 'ir_ui_view'):
+        return
+
+    cr.execute("""
+        SELECT v.id
+          FROM ir_ui_view v
+          JOIN ir_model_data d
+            ON d.res_id = v.id AND d.model = 'ir.ui.view'
+         WHERE d.module = 'bharatnyay_core'
+           AND v.arch_db IS NOT NULL
+    """)
+    view_ids = [row[0] for row in cr.fetchall()]
+    if not view_ids:
+        return
+
+    cr.execute(
+        "UPDATE ir_ui_view SET arch_db = NULL, arch_prev = NULL WHERE id = ANY(%s)",
+        (view_ids,),
+    )
+    _logger.warning(
+        'bharatnyay_core: reset arch_db on %s view(s) before module reload',
+        len(view_ids),
+    )
+
+
 def pre_init_hook(cr):
+    reset_bharatnyay_view_arch_db(cr)
     repair_ir_act_report_null_binding_type(cr)
 
 
@@ -504,12 +537,50 @@ def repair_unbound_loan_reports(env):
         })
 
 
+def migrate_loan_workflow_award_final_stage(env):
+    """Rename final stage to Award, remove Paid from workflow and company stage lines."""
+    Stage = env['bharat.loan.stage'].sudo()
+    Line = env['bharat.company.loan.stage'].sudo()
+    Loan = env['bharat.loan'].sudo()
+
+    award = Stage.search([('code', '=', 'final_award')], limit=1)
+    paid = Stage.search([('code', '=', 'paid')], limit=1)
+
+    if award:
+        award.write({'name': 'Award', 'phase': 'Award', 'active': True})
+
+    if not paid:
+        return
+
+    if award:
+        Loan.search([('state_id', '=', paid.id)]).write({
+            'state_id': award.id,
+            'workflow_phase': 'Award',
+            'workflow_section': award.section or 31,
+        })
+
+    Line.search([('stage_id', '=', paid.id)]).unlink()
+
+    paid.write({'active': False})
+
+    menu = env.ref('bharatnyay_core.menu_bharatnyay_paid', raise_if_not_found=False)
+    if menu:
+        menu.unlink()
+
+    action = env.ref('bharatnyay_core.action_bharat_loan_paid', raise_if_not_found=False)
+    if action:
+        action.unlink()
+
+    _logger.info('bharatnyay_core: removed Paid workflow stage; Award is the final stage')
+
+
 def post_init_hook(cr, registry):
     """After install/upgrade: draft demo invoice for batch BN-DEMO-BILL when sample data exists."""
     from odoo import api, SUPERUSER_ID
 
     raise_file_descriptor_limit()
     env = api.Environment(cr, SUPERUSER_ID, {})
+    migrate_loan_workflow_award_final_stage(env)
     repair_unbound_loan_reports(env)
     refresh_demo_hearing_datetimes(env)
     env['account.move'].sudo()._bharat_demo_seed_batch_invoice()
@@ -517,6 +588,7 @@ def post_init_hook(cr, registry):
 
 __all__ = [
     'pre_init_hook',
+    'reset_bharatnyay_view_arch_db',
     'repair_ir_act_report_null_binding_type',
     'repair_loan_foreign_key_columns',
     'repair_loan_arbitrator_id_column',
@@ -527,4 +599,5 @@ __all__ = [
     'refresh_demo_hearing_datetimes',
     'raise_file_descriptor_limit',
     'repair_unbound_loan_reports',
+    'migrate_loan_workflow_award_final_stage',
 ]

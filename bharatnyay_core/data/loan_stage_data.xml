@@ -30,16 +30,9 @@
     </record>
     <record id="loan_stage_final_award_main" model="bharat.loan.stage">
         <field name="code">final_award</field>
-        <field name="name">Final Arbitration Award</field>
+        <field name="name">Award</field>
         <field name="sequence">5</field>
         <field name="section">31</field>
-        <field name="phase">Final Arbitration Award</field>
-    </record>
-    <record id="loan_stage_paid_main" model="bharat.loan.stage">
-        <field name="code">paid</field>
-        <field name="name">Paid</field>
-        <field name="sequence">6</field>
-        <field name="section">31</field>
-        <field name="phase">Paid</field>
+        <field name="phase">Award</field>
     </record>
 </odoo>

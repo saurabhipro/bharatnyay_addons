@@ -58,15 +58,10 @@
               action="action_bharat_loan_arbitrator_appointed"
               sequence="50"/>
     <menuitem id="menu_bharatnyay_final_award"
-              name="Final award"
+              name="Award"
               parent="menu_bharatnyay_workflow"
               action="action_bharat_loan_final_award"
               sequence="60"/>
-    <menuitem id="menu_bharatnyay_paid"
-              name="Paid"
-              parent="menu_bharatnyay_workflow"
-              action="action_bharat_loan_paid"
-              sequence="70"/>
 
     <menuitem id="menu_bharatnyay_masters"
               name="Masters"

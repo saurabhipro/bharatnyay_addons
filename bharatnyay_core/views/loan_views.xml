@@ -37,8 +37,7 @@
                 <filter string="Notice" name="wf_notice" domain="[('state_code','=','notice')]"/>
                 <filter string="Arbitrator Appointed" name="wf_arb_appointed" domain="[('state_code','=','arbitrator_appointed')]"/>
                 <filter string="Hearing" name="wf_hearing" domain="[('state_code','=','hearing')]"/>
-                <filter string="Final award" name="wf_final_award" domain="[('state_code','=','final_award')]"/>
-                <filter string="Paid" name="wf_paid" domain="[('state_code','=','paid')]"/>
+                <filter string="Award" name="wf_final_award" domain="[('state_code','=','final_award')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Region" name="grp_region" context="{'group_by': 'region_id'}"/>
@@ -159,7 +158,7 @@
                             invisible="is_case_locked or state_code != 'hearing'"/>
                 </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box" invisible="is_case_locked">
+                    <div class="oe_button_box" name="button_box">
                         <button name="action_open_notice_lines" type="object" class="oe_stat_button" icon="fa-envelope-o">
                             <field name="notice_count" widget="statinfo" string="Notices"/>
                         </button>
@@ -175,9 +174,7 @@
                     </div>
                    
                     <field name="workflow_section" invisible="1"/>
-                    <widget name="web_ribbon" title="Paid" bg_color="text-bg-success"
-                            invisible="state_code != 'paid'"/>
-                    <widget name="web_ribbon" title="Final award" bg_color="text-bg-info"
+                    <widget name="web_ribbon" title="Award" bg_color="text-bg-info"
                             invisible="state_code != 'final_award'"/>
 
                     <div class="bn-loan-hero">
@@ -242,86 +239,127 @@
 
                     <field name="currency_id" invisible="1"/>
                     <field name="case_manager_manual" invisible="1"/>
-                    <div class="bn-loan-fields-stack">
-                        <div class="bn-panel bn-panel--imported">
-                            <div class="bn-panel__head">
-                                <div class="bn-panel__title-wrap">
-                                    <span class="bn-panel__icon"><i class="fa fa-database" aria-hidden="true"/></span>
-                                    <span class="bn-panel__title">Imported loan sheet</span>
-                                </div>
-                                <span class="bn-panel__tag">Read-only</span>
+                    <div class="bn-form-body">
+
+                        <!-- Imported data (read-only) — 3 columns, no Amounts (shown in hero) -->
+                        <div class="bn-section">
+                            <div class="bn-section__head">
+                                <span class="bn-section__title">Loan data</span>
+                                <span class="bn-section__badge">Imported (read-only)</span>
                             </div>
-                            <div class="bn-detail-grid">
-                                <div class="bn-detail-card">
-                                    <div class="bn-detail-card__title"><i class="fa fa-user" aria-hidden="true" title="Borrower"/> Borrower</div>
-                                    <div class="bn-detail-row" invisible="not borrower_email">
-                                        <span class="bn-detail-row__label">Email</span>
-                                        <field name="borrower_email" readonly="1" nolabel="1" widget="email" class="bn-detail-row__value"/>
+                            <div class="bn-section__body">
+                                <div class="bn-import-grid">
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-user-o"/> Borrower</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Email</span>
+                                            <field name="borrower_email" readonly="1" nolabel="1" widget="email" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Phone</span>
+                                            <field name="borrower_phone" readonly="1" nolabel="1" widget="phone" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">State</span>
+                                            <field name="borrower_state_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row" invisible="not borrower_address">
+                                            <span class="bn-import-row__k">Address</span>
+                                            <field name="borrower_address" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
                                     </div>
-                                    <div class="bn-detail-row" invisible="not borrower_phone">
-                                        <span class="bn-detail-row__label">Phone</span>
-                                        <field name="borrower_phone" readonly="1" nolabel="1" widget="phone" class="bn-detail-row__value"/>
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-map-marker"/> Geography</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Region</span>
+                                            <field name="region_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Location</span>
+                                            <field name="location_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Branch</span>
+                                            <field name="branch_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
                                     </div>
-                                    <div class="bn-detail-row" invisible="not borrower_state_id">
-                                        <span class="bn-detail-row__label">State</span>
-                                        <field name="borrower_state_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                    <div class="bn-detail-empty" invisible="borrower_email or borrower_phone or borrower_state_id">
-                                        No contact details on import
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-briefcase"/> Product / Legal</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Product class</span>
+                                            <field name="product_class_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Product code</span>
+                                            <field name="product" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Write-off</span>
+                                            <field name="writeoff_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Law firm</span>
+                                            <field name="law_firm_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="bn-detail-card">
-                                    <div class="bn-detail-card__title"><i class="fa fa-globe" aria-hidden="true" title="Geography"/> Geography</div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Region</span>
-                                        <field name="region_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Location</span>
-                                        <field name="location_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Branch</span>
-                                        <field name="branch_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                </div>
-                                <div class="bn-detail-card">
-                                    <div class="bn-detail-card__title"><i class="fa fa-briefcase" aria-hidden="true" title="Product and legal"/> Product and legal</div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Product class</span>
-                                        <field name="product_class_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Product code</span>
-                                        <field name="product" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Write off</span>
-                                        <field name="writeoff_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                    <div class="bn-detail-row">
-                                        <span class="bn-detail-row__label">Law firm</span>
-                                        <field name="law_firm_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bn-detail-address" invisible="not borrower_address">
-                                <span class="bn-detail-row__label">Borrower address</span>
-                                <field name="borrower_address" readonly="1" nolabel="1" class="bn-detail-row__value"/>
                             </div>
                         </div>
-                        <div class="bn-panel bn-panel--edit">
-                            <div class="bn-panel__head">
-                                <div class="bn-panel__title-wrap">
-                                    <span class="bn-panel__icon bn-panel__icon--edit"><i class="fa fa-sliders" aria-hidden="true"/></span>
-                                    <span class="bn-panel__title">Case management</span>
+
+                        <!-- Case management (editable) -->
+                        <div class="bn-section bn-section--edit">
+                            <div class="bn-section__head">
+                                <span class="bn-section__title">Case management</span>
+                            </div>
+                            <div class="bn-section__body">
+                                <div class="bn-import-grid">
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-building-o"/> Assignment</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Lender / company</span>
+                                            <field name="company_id" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Case manager</span>
+                                            <field name="case_manager_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Arbitrator</span>
+                                            <field name="arbitrator_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                    </div>
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-calendar"/> Dates</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Deliver date</span>
+                                            <field name="deliver_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Lok Adalat date</span>
+                                            <field name="lok_adalat_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Deliver status</span>
+                                            <field name="deliver_status" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                    </div>
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-info-circle"/> Details</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Current stage</span>
+                                            <field name="state_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Notice hand</span>
+                                            <field name="notice_hand" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Respondent ref.</span>
+                                            <field name="respondent_loan_reference" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <group class="bn-loan-editable" col="3">
-                                <field name="company_id" string="Lender / company" readonly="is_case_locked"/>
-                                <field name="case_manager_id" options="{'no_create': True}" readonly="is_case_locked"/>
-                                <field name="arbitrator_id" options="{'no_create': True}" readonly="is_case_locked"/>
-                            </group>
                         </div>
                     </div>
 
@@ -344,35 +382,51 @@
                                                 class="btn-link" icon="fa-inbox"
                                                 invisible="parent.is_case_locked"/>
                                     </list>
-                                    <form string="Notice detail" create="0" edit="0" delete="0">
-                                            <header>
-                                                <button name="action_record_response" type="object"
-                                                        string="Record respondent reply" class="btn-primary"
-                                                        invisible="parent.is_case_locked"/>
-                                            </header>
-                                            <group>
-                                                <group>
-                                                    <field name="notice_number"/>
-                                                    <field name="notice_label" readonly="1"/>
-                                                    <field name="notice_type"/>
-                                                    <field name="sent_on"/>
-                                                    <field name="sent_by_id"/>
-                                                    <field name="recipient_partner_id"/>
-                                                    <field name="sent_to"/>
-                                                    <field name="subject"/>
-                                                </group>
-                                                <group>
-                                                    <field name="notice_pdf" filename="notice_pdf_filename" widget="pdf_viewer"/>
+                                    <form string="Notice" create="0" edit="0" delete="0">
+                                        <header>
+                                            <button name="action_record_response" type="object"
+                                                    string="Record respondent reply" class="btn-primary"
+                                                    invisible="parent.is_case_locked"/>
+                                        </header>
+                                        <sheet>
+                                            <!-- compact meta strip -->
+                                            <div class="bn-notice-meta">
+                                                <span class="bn-notice-meta__item">
+                                                    <span class="bn-notice-meta__k">Notice</span>
+                                                    <field name="notice_label" readonly="1" nolabel="1"/>
+                                                </span>
+                                                <span class="bn-notice-meta__sep">·</span>
+                                                <span class="bn-notice-meta__item">
+                                                    <span class="bn-notice-meta__k">Sent</span>
+                                                    <field name="sent_on" readonly="1" nolabel="1"/>
+                                                </span>
+                                                <span class="bn-notice-meta__sep">·</span>
+                                                <span class="bn-notice-meta__item">
+                                                    <span class="bn-notice-meta__k">To</span>
+                                                    <field name="sent_to" readonly="1" nolabel="1"/>
+                                                </span>
+                                                <span class="bn-notice-meta__sep" invisible="not response_received_on">·</span>
+                                                <span class="bn-notice-meta__item bn-notice-meta__item--replied" invisible="not response_received_on">
+                                                    <i class="fa fa-check-circle"/>
+                                                    <span class="bn-notice-meta__k">Replied</span>
+                                                    <field name="response_received_on" readonly="1" nolabel="1"/>
+                                                </span>
+                                            </div>
+
+                                            <!-- PDFs side by side -->
+                                            <div class="bn-notice-pdfs">
+                                                <div class="bn-notice-pdf-col">
+                                                    <div class="bn-notice-pdf-col__label">Notice PDF</div>
+                                                    <field name="notice_pdf" filename="notice_pdf_filename" widget="pdf_viewer" nolabel="1"/>
                                                     <field name="notice_pdf_filename" invisible="1"/>
-                                                    <field name="response_pdf" filename="response_pdf_filename" widget="pdf_viewer" readonly="1"/>
+                                                </div>
+                                                <div class="bn-notice-pdf-col" invisible="not response_pdf">
+                                                    <div class="bn-notice-pdf-col__label">Response PDF</div>
+                                                    <field name="response_pdf" filename="response_pdf_filename" widget="pdf_viewer" readonly="1" nolabel="1"/>
                                                     <field name="response_pdf_filename" invisible="1"/>
-                                                    <field name="response_received_on" readonly="1"/>
-                                                </group>
-                                            </group>
-                                            <group string="Mail body / response notes">
-                                                <field name="body_html" widget="html"/>
-                                                <field name="response_notes"/>
-                                            </group>
+                                                </div>
+                                            </div>
+                                        </sheet>
                                     </form>
                                 </field>
                             </group>
@@ -481,7 +535,7 @@
                         
                     </notebook>
                 </sheet>
-                <chatter open_attachments="True" hide_composer="is_case_locked"/>
+                <chatter open_attachments="True"/>
             </form>
         </field>
     </record>
@@ -545,18 +599,11 @@
         <field name="domain">[('state_code', '=', 'hearing')]</field>
     </record>
     <record id="action_bharat_loan_final_award" model="ir.actions.act_window">
-        <field name="name">Final award</field>
+        <field name="name">Award</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
         <field name="domain">[('state_code', '=', 'final_award')]</field>
-    </record>
-    <record id="action_bharat_loan_paid" model="ir.actions.act_window">
-        <field name="name">Paid</field>
-        <field name="res_model">bharat.loan</field>
-        <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('state_code', '=', 'paid')]</field>
     </record>
 
     <record id="action_bharat_loan_bulk_written_statement_pdf" model="ir.actions.server">

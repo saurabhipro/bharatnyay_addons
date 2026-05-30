@@ -143,8 +143,7 @@ class BharatLoan(models.Model):
         'notice': '📩',
         'arbitrator_appointed': '✅',
         'hearing': '🎥',
-        'final_award': '⚖️',
-        'paid': '💰',
+        'final_award': 'Award',
     }
     STAGE_STYLE = {
         'commencement': {'color': '#6366f1', 'icon': 'fa-flag-checkered'},
@@ -152,7 +151,6 @@ class BharatLoan(models.Model):
         'arbitrator_appointed': {'color': '#8b5cf6', 'icon': 'fa-user-circle-o'},
         'hearing': {'color': '#10b981', 'icon': 'fa-video-camera'},
         'final_award': {'color': '#ef4444', 'icon': 'fa-gavel'},
-        'paid': {'color': '#22c55e', 'icon': 'fa-check-circle-o'},
     }
 
     # ── Dispute playbook / workflow ──────────────────────────────────────
@@ -1673,6 +1671,12 @@ class BharatLoanNoticeLine(models.Model):
     _order = 'sent_on desc, id desc'
 
     loan_id = fields.Many2one('bharat.loan', required=True, ondelete='cascade', index=True)
+    company_id = fields.Many2one(
+        'res.company',
+        related='loan_id.company_id',
+        store=True,
+        readonly=True,
+    )
     qr_access_token = fields.Char(
         string='QR token',
         copy=False,

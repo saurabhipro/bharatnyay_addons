@@ -232,7 +232,7 @@
                             </ul>
 
                             <p style="margin: 0 0 6px 0;">
-                                <strong>Subject: Reminder for Arbitrator Selection &amp; Participation</strong>
+                                <strong>Subject: Reminder for Arbitrator Selection and Participation</strong>
                             </p>
 
                             <p style="margin: 0 0 6px 0;">Sir/Madam,</p>
@@ -844,9 +844,10 @@
     <template id="report_bharat_notice_line_notice_doc">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
+                <t t-set="loan" t-value="o.loan_id"/>
+                <t t-set="company" t-value="loan.company_id or env.company"/>
                 <t t-call="bharatnyay_core.bharat_report_external_layout">
                     <div class="page">
-                        <t t-set="loan" t-value="o.loan_id"/>
                         <t t-set="notice_title" t-value="(loan.notice_hand or '').strip() or 'Notice'"/>
                         <h2 style="margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
                             <span t-esc="notice_title"/>

@@ -6,7 +6,11 @@
     -->
     <template id="bharat_report_external_layout">
         <t t-if="not o" t-set="o" t-value="doc"/>
-        <t t-set="company" t-value="company or (o and o.company_id) or env.company"/>
+        <t t-if="not company and o">
+            <t t-if="o._name == 'bharat.loan.notice.line'" t-set="company" t-value="o.loan_id.company_id"/>
+            <t t-elif="o._name == 'bharat.loan'" t-set="company" t-value="o.company_id"/>
+        </t>
+        <t t-set="company" t-value="company or env.company"/>
         <div class="bn-report-top" style="font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #334155; padding-bottom: 4px; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0;">
             <strong t-esc="company.name or 'BharatNyay'"/>
         </div>

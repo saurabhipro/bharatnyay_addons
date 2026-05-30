@@ -9,8 +9,7 @@ const STAGES = [
     { key: "notice", label: "Notice", section: "Section 21" },
     { key: "arbitrator_appointed", label: "Arbitrator Appointed", section: "Section 11" },
     { key: "hearing", label: "Hearing", section: "Section 24" },
-    { key: "final_award", label: "Final Arbitration Award", section: "Section 31" },
-    { key: "paid", label: "Paid", section: "Section 31" },
+    { key: "final_award", label: "Award", section: "Section 31" },
 ];
 
 export class WorkflowTimelineField extends Component {

@@ -17,6 +17,7 @@
         'data/demo_case_manager_user.xml',
         'data/loan_sequence_data.xml',
         'data/loan_stage_data.xml',
+        'data/loan_stage_award_update.xml',
         'data/bharat_billing_sample_data.xml',
         'data/notification_template_data.xml',
         'views/master_views.xml',

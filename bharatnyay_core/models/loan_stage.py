@@ -32,17 +32,10 @@ DEFAULT_LOAN_STAGES = (
     },
     {
         'code': 'final_award',
-        'name': 'Final Arbitration Award',
+        'name': 'Award',
         'sequence': 5,
         'section': 31,
-        'phase': 'Final Arbitration Award',
-    },
-    {
-        'code': 'paid',
-        'name': 'Paid',
-        'sequence': 6,
-        'section': 31,
-        'phase': 'Paid',
+        'phase': 'Award',
     },
 )
 
