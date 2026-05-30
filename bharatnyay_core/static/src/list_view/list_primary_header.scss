@@ -1,5 +1,4 @@
-// Primary-colored header row for all backend list views.
-// Loaded after Spiffy theme list SCSS so these rules win over secondary/transparent overrides.
+// Primary-colored header row for all backend list views (!important overrides theme list SCSS).
 body.o_web_client {
     .o_list_view .o_content .o_list_renderer .o_list_table,
     .o_content .o_list_renderer .o_list_table {

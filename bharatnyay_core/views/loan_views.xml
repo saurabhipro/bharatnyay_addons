@@ -181,69 +181,61 @@
                             invisible="state_code != 'final_award'"/>
 
                     <div class="bn-loan-hero">
-                        <div class="bn-hero-left">
-                            <div class="bn-hero-eyebrow">
-                                <span class="bn-eyebrow-label">Case</span>
-                                <field name="case_number" readonly="1" nolabel="1"/>
-                                <span class="bn-sep">·</span>
-                                <span class="bn-eyebrow-label">Batch</span>
-                                <field name="batch_number" readonly="1" nolabel="1"/>
-                            </div>
-                            <h1 class="bn-customer">
-                                <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name"/>
-                            </h1>
-                            <div class="bn-hero-meta">
-                                <span class="bn-meta-chip">
-                                    <i class="fa fa-file-text-o" role="img" aria-label="Loan"/>
-                                    <span class="bn-meta-label">Loan</span>
-                                    <field name="loan_number" readonly="1" nolabel="1"/>
-                                </span>
-                                <span class="bn-meta-chip">
-                                    <i class="fa fa-building-o" role="img" aria-label="Branch"/>
-                                    <field name="branch_id" readonly="1" nolabel="1"/>
-                                </span>
-                                <span class="bn-meta-chip">
-                                    <i class="fa fa-map-marker" role="img" aria-label="Location"/>
-                                    <field name="location_id" readonly="1" nolabel="1"/>
-                                </span>
-                                <span class="bn-meta-chip">
-                                    <i class="fa fa-tag" role="img" aria-label="Product class"/>
-                                    <field name="product_class_id" readonly="1" nolabel="1"/>
-                                </span>
-                                <span class="bn-meta-chip bn-meta-chip-soft">
-                                    <i class="fa fa-flag-checkered" role="img" aria-label="Stage"/>
+                        <div class="bn-hero-accent" aria-hidden="true"/>
+                        <div class="bn-hero-inner">
+                            <div class="bn-hero-head">
+                                <div class="bn-hero-ids">
+                                    <span class="bn-id-pill">
+                                        <span class="bn-id-pill__k">Case</span>
+                                        <field name="case_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-id-pill">
+                                        <span class="bn-id-pill__k">Batch</span>
+                                        <field name="batch_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                </div>
+                                <span class="bn-stage-pill">
                                     <field name="state_display" readonly="1" nolabel="1"/>
                                 </span>
                             </div>
-                        </div>
-                        <div class="bn-hero-right">
-                            <div class="bn-kpi bn-kpi-financed">
-                                <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-money" title="Financed"/></span>
-                                    <span class="bn-kpi-label">Financed</span>
+                            <div class="bn-hero-main">
+                                <div class="bn-customer">
+                                    <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name"/>
                                 </div>
-                                <field name="hero_financed_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
+                                <div class="bn-hero-sub">
+                                    <span class="bn-hero-sub__item">
+                                        <i class="fa fa-file-text-o" aria-hidden="true"/>
+                                        <field name="loan_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-hero-sub__dot" aria-hidden="true">·</span>
+                                    <span class="bn-hero-sub__item">
+                                        <i class="fa fa-map-marker" aria-hidden="true"/>
+                                        <field name="location_id" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-hero-sub__dot" aria-hidden="true">·</span>
+                                    <span class="bn-hero-sub__item">
+                                        <i class="fa fa-tag" aria-hidden="true"/>
+                                        <field name="product_class_id" readonly="1" nolabel="1"/>
+                                    </span>
+                                </div>
                             </div>
-                            <div class="bn-kpi bn-kpi-pos">
-                                <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-line-chart" title="Current POS"/></span>
-                                    <span class="bn-kpi-label">Current POS</span>
+                            <div class="bn-hero-metrics">
+                                <div class="bn-metric bn-metric--financed">
+                                    <span class="bn-metric__label">Financed</span>
+                                    <field name="hero_financed_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
-                                <field name="hero_pos_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
-                            </div>
-                            <div class="bn-kpi bn-kpi-claim">
-                                <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-balance-scale" title="Claim"/></span>
-                                    <span class="bn-kpi-label">Claim</span>
+                                <div class="bn-metric bn-metric--pos">
+                                    <span class="bn-metric__label">Current POS</span>
+                                    <field name="hero_pos_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
-                                <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
-                            </div>
-                            <div class="bn-kpi bn-kpi-disbursed">
-                                <div class="bn-kpi-head">
-                                    <span class="bn-kpi-icon" aria-hidden="true"><i class="fa fa-calendar" title="Disbursed"/></span>
-                                    <span class="bn-kpi-label">Disbursed</span>
+                                <div class="bn-metric bn-metric--claim">
+                                    <span class="bn-metric__label">Claim</span>
+                                    <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
-                                <field name="hero_disburse_display" readonly="1" nolabel="1" class="bn-kpi-val"/>
+                                <div class="bn-metric bn-metric--disbursed">
+                                    <span class="bn-metric__label">Disbursed</span>
+                                    <field name="hero_disburse_display" readonly="1" nolabel="1" class="bn-metric__value"/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -251,43 +243,84 @@
                     <field name="currency_id" invisible="1"/>
                     <field name="case_manager_manual" invisible="1"/>
                     <div class="bn-loan-fields-stack">
-                        <div class="bn-imported-band">
-                            <div class="bn-band-head">
-                                <span class="bn-band-head__icon" aria-hidden="true"><i class="fa fa-file-text-o"/></span>
-                                <span class="bn-band-head__title">Imported loan sheet</span>
-                                <span class="bn-band-head__badge">Read-only</span>
+                        <div class="bn-panel bn-panel--imported">
+                            <div class="bn-panel__head">
+                                <div class="bn-panel__title-wrap">
+                                    <span class="bn-panel__icon"><i class="fa fa-database" aria-hidden="true"/></span>
+                                    <span class="bn-panel__title">Imported loan sheet</span>
+                                </div>
+                                <span class="bn-panel__tag">Read-only</span>
                             </div>
-                            <group class="bn-imported-grid">
-                                <group string="Contact" class="bn-imported-card">
-                                    <field name="borrower_email" readonly="1" widget="email"/>
-                                    <field name="borrower_phone" readonly="1" widget="phone"/>
-                                    <field name="borrower_state_id" readonly="1" string="State"/>
-                                </group>
-                                <group string="Geography" class="bn-imported-card">
-                                    <field name="region_id" readonly="1"/>
-                                    <field name="location_id" readonly="1"/>
-                                    <field name="branch_id" readonly="1"/>
-                                </group>
-                                <group string="Product &amp; legal" class="bn-imported-card">
-                                    <field name="product_class_id" readonly="1" string="Product class"/>
-                                    <field name="product" readonly="1" string="Product code"/>
-                                    <field name="writeoff_id" readonly="1"/>
-                                    <field name="law_firm_id" readonly="1"/>
-                                </group>
-                            </group>
-                            <group class="bn-imported-address" invisible="not borrower_address">
-                                <field name="borrower_address" readonly="1" string="Borrower address"/>
-                            </group>
+                            <div class="bn-detail-grid">
+                                <div class="bn-detail-card">
+                                    <div class="bn-detail-card__title"><i class="fa fa-user" aria-hidden="true" title="Borrower"/> Borrower</div>
+                                    <div class="bn-detail-row" invisible="not borrower_email">
+                                        <span class="bn-detail-row__label">Email</span>
+                                        <field name="borrower_email" readonly="1" nolabel="1" widget="email" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row" invisible="not borrower_phone">
+                                        <span class="bn-detail-row__label">Phone</span>
+                                        <field name="borrower_phone" readonly="1" nolabel="1" widget="phone" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row" invisible="not borrower_state_id">
+                                        <span class="bn-detail-row__label">State</span>
+                                        <field name="borrower_state_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-empty" invisible="borrower_email or borrower_phone or borrower_state_id">
+                                        No contact details on import
+                                    </div>
+                                </div>
+                                <div class="bn-detail-card">
+                                    <div class="bn-detail-card__title"><i class="fa fa-globe" aria-hidden="true" title="Geography"/> Geography</div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Region</span>
+                                        <field name="region_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Location</span>
+                                        <field name="location_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Branch</span>
+                                        <field name="branch_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                </div>
+                                <div class="bn-detail-card">
+                                    <div class="bn-detail-card__title"><i class="fa fa-briefcase" aria-hidden="true" title="Product and legal"/> Product and legal</div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Product class</span>
+                                        <field name="product_class_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Product code</span>
+                                        <field name="product" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Write off</span>
+                                        <field name="writeoff_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                    <div class="bn-detail-row">
+                                        <span class="bn-detail-row__label">Law firm</span>
+                                        <field name="law_firm_id" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bn-detail-address" invisible="not borrower_address">
+                                <span class="bn-detail-row__label">Borrower address</span>
+                                <field name="borrower_address" readonly="1" nolabel="1" class="bn-detail-row__value"/>
+                            </div>
                         </div>
-                        <div class="bn-editable-band">
-                            <div class="bn-band-head bn-band-head--edit">
-                                <span class="bn-band-head__icon" aria-hidden="true"><i class="fa fa-pencil-square-o"/></span>
-                                <span class="bn-band-head__title">Case management</span>
+                        <div class="bn-panel bn-panel--edit">
+                            <div class="bn-panel__head">
+                                <div class="bn-panel__title-wrap">
+                                    <span class="bn-panel__icon bn-panel__icon--edit"><i class="fa fa-sliders" aria-hidden="true"/></span>
+                                    <span class="bn-panel__title">Case management</span>
+                                </div>
                             </div>
-                            <group class="bn-loan-editable" col="3" readonly="is_case_locked">
-                                <field name="company_id" string="Lender / company"/>
-                                <field name="case_manager_id" options="{'no_create': True}"/>
-                                <field name="arbitrator_id" options="{'no_create': True}"/>
+                            <group class="bn-loan-editable" col="3">
+                                <field name="company_id" string="Lender / company" readonly="is_case_locked"/>
+                                <field name="case_manager_id" options="{'no_create': True}" readonly="is_case_locked"/>
+                                <field name="arbitrator_id" options="{'no_create': True}" readonly="is_case_locked"/>
                             </group>
                         </div>
                     </div>

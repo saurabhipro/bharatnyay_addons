@@ -2,6 +2,7 @@
 """Idempotent PostgreSQL fixes for partially upgraded ``bharat.loan`` tables."""
 
 import logging
+import resource
 
 from odoo import SUPERUSER_ID, api
 
@@ -413,19 +414,117 @@ def seed_bharatnyay_demo_users_and_roles(cr):
     env.invalidate_all()
 
 
+def refresh_demo_hearing_datetimes(env):
+    """Keep BN-DEMO-BILL sample hearing lines in the future (idempotent).
+
+    Demo XML uses fixed datetimes; ``noupdate`` prevents them from refreshing on upgrade.
+    """
+    from datetime import timedelta
+
+    from odoo import fields
+
+    loans = env['bharat.loan'].sudo().search([
+        ('batch_number', '=', 'BN-DEMO-BILL'),
+        ('loan_number', '=like', 'LO-BNDEMO-%'),
+    ])
+    if not loans:
+        return
+
+    now = fields.Datetime.now()
+    for loan in loans:
+        lines = loan.hearing_line_ids.sorted('hearing_datetime')
+        for index, line in enumerate(lines):
+            if not line.hearing_datetime or line.hearing_datetime >= now:
+                continue
+            line.hearing_datetime = now + timedelta(days=7 + index * 7, hours=10 + index)
+
+
+def raise_file_descriptor_limit(min_soft=65536):
+    """Raise RLIMIT_NOFILE so wkhtmltopdf/Qt does not fail with 'Too many open files'."""
+    soft = None
+    try:
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        if soft >= min_soft:
+            return soft
+        target = min_soft
+        if hard != resource.RLIM_INFINITY:
+            target = min(target, hard)
+        if target > soft:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (target, hard))
+            _logger.info('bharatnyay_core: raised open-file limit %s → %s', soft, target)
+            return target
+    except Exception:
+        _logger.warning(
+            'bharatnyay_core: could not raise open-file limit (wkhtmltopdf may fail); '
+            'set ulimit -n %s before starting Odoo',
+            min_soft,
+            exc_info=True,
+        )
+    return soft
+
+
+def repair_ir_act_report_null_binding_type(cr):
+    """Recover from a failed upgrade that wrote NULL binding_type on loan reports."""
+    if not _table_exists(cr, 'ir_act_report_xml'):
+        return
+    cr.execute("""
+        UPDATE ir_act_report_xml
+           SET binding_type = 'report'
+         WHERE binding_type IS NULL
+           AND model = 'bharat.loan'
+           AND report_name IN (
+               'bharatnyay_core.report_bharat_loan_written_statement',
+               'bharatnyay_core.report_bharat_loan_commencement_arbitration'
+           )
+    """)
+    if cr.rowcount:
+        _logger.warning(
+            'bharatnyay_core: repaired NULL binding_type on %s loan report(s)',
+            cr.rowcount,
+        )
+
+
+def pre_init_hook(cr):
+    repair_ir_act_report_null_binding_type(cr)
+
+
+def repair_unbound_loan_reports(env):
+    """Ensure hidden loan reports keep binding_type=report but no binding_model_id."""
+    Report = env['ir.actions.report'].sudo()
+    for xmlid in (
+        'bharatnyay_core.action_report_bharat_loan_written_statement',
+        'bharatnyay_core.action_report_bharat_loan_commencement_arbitration',
+    ):
+        report = env.ref(xmlid, raise_if_not_found=False)
+        if not report:
+            continue
+        report.write({
+            'binding_model_id': False,
+            'binding_type': 'report',
+        })
+
+
 def post_init_hook(cr, registry):
     """After install/upgrade: draft demo invoice for batch BN-DEMO-BILL when sample data exists."""
     from odoo import api, SUPERUSER_ID
 
+    raise_file_descriptor_limit()
     env = api.Environment(cr, SUPERUSER_ID, {})
+    repair_unbound_loan_reports(env)
+    refresh_demo_hearing_datetimes(env)
     env['account.move'].sudo()._bharat_demo_seed_batch_invoice()
 
 
 __all__ = [
+    'pre_init_hook',
+    'repair_ir_act_report_null_binding_type',
     'repair_loan_foreign_key_columns',
     'repair_loan_arbitrator_id_column',
     'repair_loan_hearing_columns',
     'migrate_borrower_state_to_country_state',
     'migrate_user_role_assignments_to_res_users',
     'seed_bharatnyay_demo_users_and_roles',
+    'refresh_demo_hearing_datetimes',
+    'raise_file_descriptor_limit',
+    'repair_unbound_loan_reports',
 ]

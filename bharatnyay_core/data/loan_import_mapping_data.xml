@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <!-- Spreadsheet column names → bharat.loan fields (keys are lower-case for base_import lookup). -->
+    <record id="import_map_loan_state" model="base_import.mapping">
+        <field name="res_model">bharat.loan</field>
+        <field name="column_name">state</field>
+        <field name="field_name">borrower_state</field>
+    </record>
+    <record id="import_map_loan_region" model="base_import.mapping">
+        <field name="res_model">bharat.loan</field>
+        <field name="column_name">region</field>
+        <field name="field_name">region</field>
+    </record>
+    <record id="import_map_loan_branch" model="base_import.mapping">
+        <field name="res_model">bharat.loan</field>
+        <field name="column_name">branch</field>
+        <field name="field_name">branch</field>
+    </record>
+    <record id="import_map_loan_location" model="base_import.mapping">
+        <field name="res_model">bharat.loan</field>
+        <field name="column_name">location</field>
+        <field name="field_name">location</field>
+    </record>
+    <record id="import_map_loan_product_class" model="base_import.mapping">
+        <field name="res_model">bharat.loan</field>
+        <field name="column_name">product_classi</field>
+        <field name="field_name">product_classification</field>
+    </record>
+    <record id="import_map_loan_write_off" model="base_import.mapping">
+        <field name="res_model">bharat.loan</field>
+        <field name="column_name">write off</field>
+        <field name="field_name">write_off</field>
+    </record>
+</odoo>

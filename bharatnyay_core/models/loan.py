@@ -849,14 +849,27 @@ class BharatLoan(models.Model):
         # Fallback before action.path is upgraded in DB
         return '%s/web#id=%s&model=bharat.loan&view_type=form&cids=%s' % (base, self.id, cid)
 
-    def _get_reminder_notice_qr_url_encoded(self):
-        """QR payload for reminder notice PDF (latest microsite token or case URL)."""
+    def _get_reminder_notice_qr_payload(self):
+        """Raw URL encoded in notice QR codes (microsite or Odoo case link)."""
         self.ensure_one()
-        for line in self.notice_line_ids:
-            if line.notice_microsite_url_encoded:
-                return line.notice_microsite_url_encoded
-        case_url = self._hearing_build_odoo_case_url()
-        return werkzeug.urls.url_quote(case_url, safe='') if case_url else ''
+        for line in self.notice_line_ids.sorted('sent_on', reverse=True):
+            if line.notice_microsite_url:
+                return line.notice_microsite_url
+        return self._hearing_build_odoo_case_url() or ''
+
+    def _get_reminder_notice_qr_url_encoded(self):
+        """URL-encoded payload for legacy /report/barcode links."""
+        payload = self._get_reminder_notice_qr_payload()
+        return werkzeug.urls.url_quote(payload, safe='') if payload else ''
+
+    def _get_reminder_notice_qr_image_data_uri(self, width=96, height=96):
+        """Inline QR for PDF reports (embedded SVG; no /report/barcode fetch)."""
+        self.ensure_one()
+        return self.env['ir.actions.report'].bharat_qr_to_data_uri(
+            self._get_reminder_notice_qr_payload(),
+            width=width,
+            height=height,
+        )
 
     @staticmethod
     def _hearing_normalize_external_meeting_url(url):
@@ -1709,6 +1722,16 @@ class BharatLoanNoticeLine(models.Model):
         for rec in self:
             rec.notice_label = 'Notice %s' % (rec.notice_number or 1)
 
+    def _get_notice_qr_image_data_uri(self, width=120, height=120):
+        """Inline QR for notice-line PDFs."""
+        self.ensure_one()
+        payload = self.notice_microsite_url or self.loan_id._get_reminder_notice_qr_payload()
+        return self.env['ir.actions.report'].bharat_qr_to_data_uri(
+            payload,
+            width=width,
+            height=height,
+        )
+
     def action_record_response(self):
         self.ensure_one()
         return {
@@ -1755,13 +1778,6 @@ class BharatLoanHearingLine(models.Model):
     notes = fields.Text(string='Hearing instructions')
     invitees = fields.Char(string='Invitees')
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
-    
-    @api.constrains('hearing_datetime')
-    def _check_hearing_datetime_not_past(self):
-        now = fields.Datetime.now()
-        for rec in self:
-            if rec.hearing_datetime and rec.hearing_datetime < now:
-                raise ValidationError(_('Hearing date/time cannot be in the past.'))
 
     @api.depends('hearing_datetime')
     def _compute_minutes_remaining(self):

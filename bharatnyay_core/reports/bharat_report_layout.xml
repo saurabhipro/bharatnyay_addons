@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+      Do NOT use CSS class names "header" or "footer" here — Odoo/wkhtmltopdf repeats them on
+      every PDF page and wastes space. Use bn-report-* instead.
+    -->
+    <template id="bharat_report_external_layout">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+        <t t-set="company" t-value="company or (o and o.company_id) or env.company"/>
+        <div class="bn-report-top" style="font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #334155; padding-bottom: 4px; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0;">
+            <strong t-esc="company.name or 'BharatNyay'"/>
+        </div>
+        <div class="article o_bharat_report_article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+            <t t-out="0"/>
+        </div>
+    </template>
+
+    <!-- Shared compact QR + signature row (keeps closing block on same page as body) -->
+    <template id="bharat_notice_qr_sign_block">
+        <t t-set="qr_data_uri" t-value="o._get_reminder_notice_qr_image_data_uri(96, 96)"/>
+        <table style="width: 100%; margin-top: 6px; border-collapse: collapse; page-break-inside: avoid;">
+            <tr>
+                <td style="width: 96px; vertical-align: top; padding: 0;">
+                    <div style="font-size: 9px; font-weight: 700; margin-bottom: 3px; line-height: 1.2;">
+                        QR — case access
+                    </div>
+                    <img t-if="qr_data_uri"
+                         style="width: 88px; height: 88px; display: block;"
+                         t-att-src="qr_data_uri"/>
+                    <span t-if="not qr_data_uri" style="font-size: 9px; color: #666;">Set web.base.url in system parameters</span>
+                </td>
+                <td style="vertical-align: bottom; text-align: right; padding-left: 10px; font-size: 11px; line-height: 1.35;">
+                    <p style="margin: 0 0 4px 0;">
+                        <strong>Date:</strong>
+                        <t t-if="o.deliver_date">
+                            <span t-field="o.deliver_date"/>
+                        </t>
+                        <t t-else="">
+                            <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                        </t>
+                    </p>
+                    <p style="margin: 0 0 2px 0;">Authorized Signatory</p>
+                    <p style="margin: 0;">For <span t-esc="o.company_id.name or 'Claimant'"/></p>
+                </td>
+            </tr>
+        </table>
+    </template>
+</odoo>
