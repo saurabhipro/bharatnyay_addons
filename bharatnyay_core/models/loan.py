@@ -3,7 +3,7 @@
 
 from collections import defaultdict
 import logging
-from datetime import datetime, time as dt_time
+from datetime import datetime, time as dt_time, timedelta
 
 import pytz
 import werkzeug.urls
@@ -498,6 +498,41 @@ class BharatLoan(models.Model):
             vals['arbitrator_name'] = user.name
             vals['arbitrator_email'] = user.email or ''
 
+    # Hearing log offsets (days) when an arbitrator is assigned.
+    _ARBITRATOR_HEARING_OFFSET_DAYS = (1, 10, 30)
+
+    def _sync_hearing_stage_on_arbitrator_assign(self):
+        """Move to Hearing and provision three hearing log rows when an arbitrator is set."""
+        for rec in self:
+            if not rec.arbitrator_id:
+                continue
+            if rec._stage_code() != 'hearing':
+                rec._write_stage_by_code('hearing')
+            rec._provision_hearing_lines_on_arbitrator_assign()
+
+    def _provision_hearing_lines_on_arbitrator_assign(self):
+        """Create three hearing log rows (+1, +10, +30 days) if none exist yet."""
+        HearingLine = self.env['bharat.loan.hearing.line']
+        base = fields.Datetime.now()
+        if isinstance(base, str):
+            base = fields.Datetime.from_string(base)
+        to_create = []
+        for rec in self:
+            if not rec.arbitrator_id or rec.hearing_line_ids:
+                continue
+            first_dt = base + timedelta(days=self._ARBITRATOR_HEARING_OFFSET_DAYS[0])
+            for days in self._ARBITRATOR_HEARING_OFFSET_DAYS:
+                to_create.append({
+                    'loan_id': rec.id,
+                    'hearing_datetime': base + timedelta(days=days),
+                    'link_type': 'external',
+                    'created_by_id': self.env.user.id,
+                })
+            if not rec.hearing_datetime:
+                rec.hearing_datetime = first_dt
+        if to_create:
+            HearingLine.create(to_create)
+
     @api.depends('branch_id', 'location_id', 'branch_id.location_id', 'case_manager_manual')
     def _compute_case_manager_id(self):
         print("compute_case_manager_id")
@@ -528,9 +563,17 @@ class BharatLoan(models.Model):
     @api.onchange('arbitrator_id')
     def _onchange_arbitrator_id(self):
         for rec in self:
-            if rec.arbitrator_id:
-                rec.arbitrator_name = rec.arbitrator_id.name
-                rec.arbitrator_email = rec.arbitrator_id.email or ''
+            if not rec.arbitrator_id:
+                continue
+            rec.arbitrator_name = rec.arbitrator_id.name
+            rec.arbitrator_email = rec.arbitrator_id.email or ''
+            stage = rec._get_company_stage('hearing', rec.company_id)
+            if stage:
+                rec.state_id = stage
+                if stage.section:
+                    rec.workflow_section = stage.section
+                if stage.phase:
+                    rec.workflow_phase = stage.phase
 
     @api.constrains('loan_number')
     def _check_loan_number_unique(self):
@@ -784,7 +827,10 @@ class BharatLoan(models.Model):
                 if rec.arbitrator_id
                 else (rec.arbitrator_name or '').strip()
             )
-            rec._write_stage_by_code('arbitrator_appointed')
+            if rec.arbitrator_id:
+                rec._sync_hearing_stage_on_arbitrator_assign()
+            else:
+                rec._write_stage_by_code('arbitrator_appointed')
             rec.message_post(
                 body=_("Arbitrator appointed: <b>%s</b>") % (arb_label,),
             )
@@ -794,11 +840,11 @@ class BharatLoan(models.Model):
         self.ensure_one()
         if self._stage_code() == 'hearing':
             raise UserError(
-                _('This case is already at Hearing. Use the Hearing tab to change date, link, or notes.')
+                _('This case is already at Hearing. Use “Reschedule hearing” or the Hearing tab.')
             )
-        if self._stage_code() != 'arbitrator_appointed':
+        if self._stage_code() not in ('arbitrator_appointed',) and not self.arbitrator_id:
             raise UserError(
-                _('Schedule Hearing is only available when the arbitrator has been appointed.')
+                _('Schedule Hearing requires an appointed arbitrator.')
                 + ' '
                 + _('Current workflow stage is: %s')
                 % (self.state_id.name or '?')
@@ -1169,6 +1215,7 @@ class BharatLoan(models.Model):
             values = dict(vals)
             self._normalize_loan_number_in_vals(values)
             self._apply_arbitrator_user_to_vals(self.env, values)
+
             if not values.get('case_number'):
                 values['case_number'] = self.env['ir.sequence'].next_by_code('bharat.loan.case.number') or '/'
             if shared_batch_number and not values.get('batch_number'):
@@ -1180,17 +1227,23 @@ class BharatLoan(models.Model):
             if not values.get('company_id'):
                 values['company_id'] = self.env.company.id
             normalized.append(values)
-        return super().create(normalized)
+        records = super().create(normalized)
+        records.filtered('arbitrator_id')._sync_hearing_stage_on_arbitrator_assign()
+        return records
 
     def write(self, vals):
         values = dict(vals)
         self._normalize_loan_number_in_vals(values)
         self._apply_arbitrator_user_to_vals(self.env, values)
+        arbitrator_assigned = bool(values.get('arbitrator_id'))
         self._normalize_workflow_values(values)
         self._coerce_many2one_name_strings(values)
         self._populate_master_links_from_text(values)
         self._populate_text_from_master_links(values)
-        return super().write(values)
+        res = super().write(values)
+        if arbitrator_assigned:
+            self._sync_hearing_stage_on_arbitrator_assign()
+        return res
 
     @api.onchange('branch_id')
     def _onchange_branch(self):
@@ -1607,8 +1660,16 @@ class BharatLoanHearingLine(models.Model):
     _name = 'bharat.loan.hearing.line'
     _description = 'Loan hearing schedule history'
     _order = 'hearing_datetime desc, id desc'
+    _rec_name = 'loan_id'
 
-    loan_id = fields.Many2one('bharat.loan', required=True, ondelete='cascade', index=True)
+    loan_id = fields.Many2one(
+        'bharat.loan',
+        string='Case',
+        required=True,
+        ondelete='cascade',
+        index=True,
+        readonly=True,
+    )
     hearing_datetime = fields.Datetime(string='Hearing date/time', required=True)
     link_type = fields.Selection(
         [('external', 'External conferencing'), ('odoo', 'Odoo case link')],
@@ -1619,6 +1680,19 @@ class BharatLoanHearingLine(models.Model):
     notes = fields.Text(string='Hearing instructions')
     invitees = fields.Char(string='Invitees')
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    @api.constrains('hearing_datetime')
+    def _check_hearing_datetime_not_past(self):
+        now = fields.Datetime.now()
+        for rec in self:
+            if rec.hearing_datetime and rec.hearing_datetime < now:
+                raise ValidationError(_('Hearing date/time cannot be in the past.'))
+
+    def write(self, vals):
+        if 'loan_id' in vals:
+            vals = dict(vals)
+            vals.pop('loan_id')
+        return super().write(vals)
 
     def action_join_meeting(self):
         """Open video URL or Odoo loan link in a browser tab."""

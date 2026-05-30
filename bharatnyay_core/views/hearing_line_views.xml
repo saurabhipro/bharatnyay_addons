@@ -57,7 +57,7 @@
                 </header>
                 <sheet>
                     <group>
-                        <field name="loan_id"/>
+                        <field name="loan_id" readonly="1"/>
                         <field name="hearing_datetime"/>
                         <field name="link_type"/>
                         <field name="meeting_link" widget="url"/>

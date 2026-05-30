@@ -254,6 +254,7 @@
                             <field name="case_manager_manual" invisible="1"/>
                             <field name="case_manager_id" options="{'no_create': True}"/>
                             <field name="borrower_state_id" readonly="1"/>
+                            <field name="arbitrator_id" options="{'no_create': True}"/>
                         </group>
                     </group>
 
