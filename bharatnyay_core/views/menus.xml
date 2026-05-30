@@ -35,11 +35,6 @@
               parent="menu_bharatnyay_workflow"
               action="action_bharat_loan_notice"
               sequence="10"/>
-    <menuitem id="menu_bharatnyay_notice_2"
-              name="Appointment of Arbitrator"
-              parent="menu_bharatnyay_workflow"
-              action="action_bharat_loan_appointment_arbitrator"
-              sequence="20"/>
     <menuitem id="menu_bharatnyay_notice_3"
               name="Legacy Notice 3"
               parent="menu_bharatnyay_workflow"

@@ -12,7 +12,6 @@ class BharatNotificationTemplate(models.Model):
     notice_type = fields.Selection(
         [
             ('notice', 'Notice'),
-            ('appointment_of_arbitrator', 'Appointment of Arbitrator'),
             ('arbitrator_appointed', 'Arbitrator Appointed'),
             ('hearing', 'Hearing'),
             ('final_award', 'Final Award'),

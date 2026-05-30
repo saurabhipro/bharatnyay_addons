@@ -7,7 +7,6 @@ import { standardFieldProps } from "@web/views/fields/standard_field_props";
 const STAGES = [
     { key: "commencement", label: "Commencement", section: "Section 1" },
     { key: "notice", label: "Notice", section: "Section 21" },
-    { key: "appointment_of_arbitrator", label: "Appointment of Arbitrator", section: "Section 11" },
     { key: "arbitrator_appointed", label: "Arbitrator Appointed", section: "Section 11" },
     { key: "hearing", label: "Hearing", section: "Section 24" },
     { key: "final_award", label: "Final Arbitration Award", section: "Section 31" },

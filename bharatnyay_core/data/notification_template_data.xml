@@ -15,16 +15,4 @@ Please contact the assigned team to proceed.
 Regards,
 BharatNyay Team</field>
     </record>
-    <record id="notif_template_appointment_arbitrator" model="bharat.notification.template">
-        <field name="name">Appointment of Arbitrator - Default</field>
-        <field name="notice_type">appointment_of_arbitrator</field>
-        <field name="subject_template">Appointment of Arbitrator | Loan {loan_number}</field>
-        <field name="body_template">Dear {customer_name},
-
-Your case for loan {loan_number} has moved to Appointment of Arbitrator stage.
-Please cooperate with process updates.
-
-Regards,
-BharatNyay Team</field>
-    </record>
 </odoo>

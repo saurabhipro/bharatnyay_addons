@@ -3,7 +3,7 @@
     <!--
       Demo stack (USD): billing partner + milestone products + 10 loans in batch BN-DEMO-BILL (lender = main company).
       Post-init hook creates one draft customer invoice (USD) with aggregated milestone lines.
-      Distribution: 5 × Notice 3 (appointment), 3 × Hearing 1 (arbitrator appointed), 1 × Hearing 2, 1 × Hearing 3.
+      Distribution: 5 × Notice 3, 3 × Hearing 1 (arbitrator appointed), 1 × Hearing 2, 1 × Hearing 3.
       Notice history varies (1 / 2 / 3 notices per case); arbitrator-appointed rows include dummy hearings (0–2 lines).
     -->
     <record id="sample_partner_nbfc_billing" model="res.partner">
@@ -54,13 +54,13 @@
         <field name="bharat_arbitration_stage">award</field>
     </record>
 
-    <!-- 5 cases → milestone Notice 3 (awaiting arbitrator appointment) -->
+    <!-- 5 cases → milestone Notice 3 -->
     <record id="sample_loan_bn_d01" model="bharat.loan">
         <field name="loan_number">LO-BNDEMO-01</field>
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Alpha</field>
-        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_notice_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -75,7 +75,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Bravo</field>
-        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_notice_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -90,7 +90,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Charlie</field>
-        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_notice_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -112,7 +112,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Delta</field>
-        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_notice_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',
@@ -134,7 +134,7 @@
         <field name="company_id" ref="base.main_company"/>
         <field name="batch_number">BN-DEMO-BILL</field>
         <field name="customer_name">Borrower Echo</field>
-        <field name="state_id" ref="bharatnyay_core.loan_stage_appointment_main"/>
+        <field name="state_id" ref="bharatnyay_core.loan_stage_notice_main"/>
         <field name="notice_line_ids" eval="[(0, 0, {
             'notice_number': 1,
             'notice_type': 'notice',

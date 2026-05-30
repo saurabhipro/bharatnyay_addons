@@ -106,6 +106,7 @@ class BharatLoan(models.Model):
         index=True,
         tracking=True,
         help='Internal user with Case Manager operational role. Auto-assigned from branch/location scope.',
+        domain="[('bharat_role', '=', 'case_manager')]",
     )
 
     acm_name = fields.Char(string='ACM name')
@@ -140,7 +141,6 @@ class BharatLoan(models.Model):
     STAGE_ICONS = {
         'commencement': '🚀',
         'notice': '📩',
-        'appointment_of_arbitrator': '👤',
         'arbitrator_appointed': '✅',
         'hearing': '🎥',
         'final_award': '⚖️',
@@ -149,7 +149,6 @@ class BharatLoan(models.Model):
     STAGE_STYLE = {
         'commencement': {'color': '#6366f1', 'icon': 'fa-flag-checkered'},
         'notice': {'color': '#0ea5e9', 'icon': 'fa-envelope-open-o'},
-        'appointment_of_arbitrator': {'color': '#f59e0b', 'icon': 'fa-user-plus'},
         'arbitrator_appointed': {'color': '#8b5cf6', 'icon': 'fa-user-circle-o'},
         'hearing': {'color': '#10b981', 'icon': 'fa-video-camera'},
         'final_award': {'color': '#ef4444', 'icon': 'fa-gavel'},
@@ -163,8 +162,7 @@ class BharatLoan(models.Model):
         tracking=True,
         index=True,
         domain="[('id', 'in', allowed_stage_ids)]",
-        group_expand='_group_expand_state_id',
-        default=lambda self: self._default_state_id(),
+        # default=lambda self: self._default_state_id(),
     )
     allowed_stage_ids = fields.Many2many(
         'bharat.loan.stage',
@@ -288,7 +286,6 @@ class BharatLoan(models.Model):
         copy=False,
     )
 
-    case_dispute_notes = fields.Text(string='Dispute narrative')
     ai_classification_hint = fields.Char(string='Classification hint')
     ai_confidence_percent = fields.Float(
         string='Classification confidence %',
@@ -379,11 +376,11 @@ class BharatLoan(models.Model):
             else:
                 rec.allowed_stage_ids = self.env['bharat.loan.stage'].search([])
 
-    @api.model
-    def _default_state_id(self):
-        company = self.env.company
-        stage = company._get_loan_stage_by_code('notice') if company else self.env['bharat.loan.stage']
-        return stage.id if stage else False
+    # @api.model
+    # def _default_state_id(self):
+    #     company = self.env.company
+    #     stage = company._get_loan_stage_by_code('notice') if company else self.env['bharat.loan.stage']
+    #     return stage.id if stage else False
 
     @api.model
     def _get_company_stage(self, code, company=None):
@@ -473,15 +470,6 @@ class BharatLoan(models.Model):
             else:
                 rec.hero_disburse_display = d.strftime('%d %b %y')
 
-    @api.model
-    def _group_expand_state_id(self, stages, domain):
-        """Kanban/read_group: show every assigned company stage column even when empty."""
-        company = self.env.company
-        for leaf in domain:
-            if isinstance(leaf, (list, tuple)) and leaf[0] == 'company_id' and leaf[1] == '=':
-                company = self.env['res.company'].browse(leaf[2])
-                break
-        return company._loan_stages_ordered() if company else self.env['bharat.loan.stage']
 
     @api.model
     def _domain_arbitrator_users(self):
@@ -659,8 +647,6 @@ class BharatLoan(models.Model):
             return 'hearing_%s' % idx
         if ws == 'arbitrator_appointed':
             return 'hearing_1'
-        if ws == 'appointment_of_arbitrator':
-            return 'notice_3'
         idx = min(max(n_notice, 1), 3)
         return 'notice_%s' % idx
 
@@ -1350,7 +1336,11 @@ class BharatLoan(models.Model):
                 pending_dispatch += 1
 
             stage_key = row.get('state_code') or ''
-            if stage_key == 'appointment_of_arbitrator' and not row.get('arbitrator_id'):
+            if (
+                stage_key == 'notice'
+                and not row.get('arbitrator_id')
+                and (row.get('notice_count') or 0) >= 3
+            ):
                 cases_no_arbitrator += 1
             if stage_key == 'final_award' and not (row.get('award_document_count') or 0):
                 pending_award_upload += 1
