@@ -12,7 +12,7 @@
                             t-att-class="cellClass(slot)"
                             t-att-disabled="isDisabled(slot)"
                             t-att-title="slotTitle(slot)"
-                            t-on-click.stop="() => this.onSelect(slot)">
+                            t-on-click.stop="onSelectClick(slot)">
                         <i t-att-class="slotIconClass(slot)" aria-hidden="true"/>
                         <span class="bn-slot-num" t-esc="slot.index"/>
                         <span class="bn-slot-time" t-esc="slot.label"/>

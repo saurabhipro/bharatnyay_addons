@@ -551,7 +551,6 @@ class BharatLoan(models.Model):
 
     @api.depends('branch_id', 'location_id', 'branch_id.location_id', 'case_manager_manual')
     def _compute_case_manager_id(self):
-        print("compute_case_manager_id")
         Users = self.env['res.users']
         for rec in self:
             if rec.case_manager_manual:
@@ -1624,6 +1623,245 @@ class BharatLoan(models.Model):
             'product_mix': pie,
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
+        }
+
+    # ── Role dashboards (Case Manager / Arbitrator) ───────────────────────
+
+    PROGRESS_BUCKET_SPECS = (
+        ('commencement', 'Commencement', '#64748b', 'fa-flag-o'),
+        ('notice_1', 'Notice 1', '#3b82f6', 'fa-envelope-o'),
+        ('notice_2', 'Notice 2', '#2563eb', 'fa-envelope-open-o'),
+        ('notice_3', 'Notice 3', '#1d4ed8', 'fa-envelope'),
+        ('hearing_1', 'Hearing 1', '#8b5cf6', 'fa-video-camera'),
+        ('hearing_2', 'Hearing 2', '#7c3aed', 'fa-gavel'),
+        ('hearing_3', 'Hearing 3', '#6d28d9', 'fa-gavel'),
+        ('award', 'Award', '#ef4444', 'fa-trophy'),
+    )
+
+    @api.model
+    def _dashboard_parse_dates(self, date_from=None, date_to=None):
+        def _to_date(val):
+            if not val:
+                return None
+            if isinstance(val, str):
+                return fields.Date.from_string(val[:10])
+            return val
+        return _to_date(date_from), _to_date(date_to)
+
+    def _case_progress_bucket_code(self):
+        """Pipeline bucket for dashboards (commencement + billing milestones)."""
+        self.ensure_one()
+        if (self.state_code or '') == 'commencement':
+            return 'commencement'
+        return self.bharat_arbitration_bill_stage()
+
+    @api.model
+    def _case_manager_dashboard_domain(self):
+        user = self.env.user
+        if user.bharat_role == 'case_manager':
+            return [('case_manager_id', '=', user.id)]
+        return []
+
+    @api.model
+    def _arbitrator_dashboard_domain(self):
+        return [('arbitrator_id', '=', self.env.user.id)]
+
+    @api.model
+    def _billing_stats_for_loans(self, loans, date_from=None, date_to=None):
+        """Arbitration invoice KPIs (optionally scoped to loans via line text)."""
+        Move = self.env['account.move'].sudo()
+        date_from, date_to = self._dashboard_parse_dates(date_from, date_to)
+
+        loan_numbers = {n for n in loans.mapped('loan_number') if n}
+
+        def _move_matches_loans(move):
+            if not loan_numbers:
+                return False
+            blob = ' '.join(move.invoice_line_ids.mapped('name') or [])
+            return any(num in blob for num in loan_numbers)
+
+        inv_domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ]
+        if date_from:
+            inv_domain.append(('invoice_date', '>=', date_from))
+        if date_to:
+            inv_domain.append(('invoice_date', '<=', date_to))
+
+        moves = Move.search(inv_domain)
+        if loan_numbers:
+            moves = moves.filtered(_move_matches_loans)
+
+        draft = moves.filtered(lambda m: m.state == 'draft')
+        posted = moves.filtered(lambda m: m.state == 'posted')
+        paid = posted.filtered(lambda m: m.payment_state in ('paid', 'in_payment'))
+        unpaid = posted.filtered(
+            lambda m: m.payment_state not in ('paid', 'in_payment')
+            and (m.amount_residual or 0) > 0
+        )
+
+        all_invoices = Move.search([
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ])
+        cases_due = 0
+        for loan in loans:
+            if loan._case_progress_bucket_code() == 'commencement':
+                continue
+            if not any(_move_matches_loans(m) for m in all_invoices):
+                cases_due += 1
+
+        return {
+            'cases_due_for_invoice': cases_due,
+            'draft_invoices': len(draft),
+            'paid_invoices': len(paid),
+            'posted_unpaid_invoices': len(unpaid),
+            'total_due_amount': round(sum(unpaid.mapped('amount_residual')), 2),
+            'total_received_amount': round(
+                sum(paid.mapped(lambda m: (m.amount_total or 0) - (m.amount_residual or 0))),
+                2,
+            ),
+            'total_invoiced_amount': round(sum(posted.mapped('amount_total')), 2),
+        }
+
+    @api.model
+    def _bucket_cards_from_loans(self, loans):
+        total = len(loans)
+        counts = defaultdict(int)
+        for loan in loans:
+            counts[loan._case_progress_bucket_code()] += 1
+
+        cards = []
+        for key, label, color, icon in self.PROGRESS_BUCKET_SPECS:
+            cnt = counts.get(key, 0)
+            cards.append({
+                'key': key,
+                'label': label,
+                'count': cnt,
+                'percent': round(100.0 * cnt / total, 1) if total else 0.0,
+                'color': color,
+                'icon': icon,
+            })
+        return cards, total
+
+    @api.model
+    def _hearings_today_count(self, loan_domain):
+        tzname = self.env.user.tz or 'UTC'
+        tz = pytz.timezone(tzname)
+        today = fields.Date.context_today(self)
+        start_local = tz.localize(datetime.combine(today, dt_time.min))
+        end_local = tz.localize(datetime.combine(today, dt_time.max))
+        start_s = fields.Datetime.to_string(start_local.astimezone(pytz.UTC).replace(tzinfo=None))
+        end_s = fields.Datetime.to_string(end_local.astimezone(pytz.UTC).replace(tzinfo=None))
+        loans = self.search(loan_domain)
+        if not loans:
+            return 0
+        return self.env['bharat.loan.hearing.line'].sudo().search_count([
+            ('loan_id', 'in', loans.ids),
+            ('hearing_datetime', '>=', start_s),
+            ('hearing_datetime', '<=', end_s),
+        ])
+
+    @api.model
+    def _upcoming_hearings(self, loan_domain, limit=8):
+        now = fields.Datetime.now()
+        loans = self.search(loan_domain)
+        if not loans:
+            return []
+        lines = self.env['bharat.loan.hearing.line'].sudo().search(
+            [
+                ('loan_id', 'in', loans.ids),
+                ('hearing_datetime', '>=', now),
+            ],
+            order='hearing_datetime asc',
+            limit=limit,
+        )
+        rows = []
+        for line in lines:
+            loan = line.loan_id
+            rows.append({
+                'id': line.id,
+                'loan_id': loan.id,
+                'loan_number': loan.loan_number or '',
+                'customer_name': loan.customer_name or '',
+                'hearing_datetime': fields.Datetime.to_string(line.hearing_datetime),
+                'meeting_link': line.meeting_link or '',
+            })
+        return rows
+
+    @api.model
+    def get_progress_bucket_domain(self, bucket_key, base_domain=None):
+        """Domain for opening cases in one progress bucket."""
+        domain = list(base_domain or [])
+        loans = self.search(domain)
+        ids = loans.filtered(
+            lambda l: l._case_progress_bucket_code() == bucket_key
+        ).ids
+        return domain + [('id', 'in', ids or [0])]
+
+    @api.model
+    def get_case_manager_dashboard_statistics(self, date_from=None, date_to=None):
+        """OWL dashboard: case buckets + billing KPIs for case managers."""
+        self.check_access('read')
+        domain = self._case_manager_dashboard_domain()
+        loans = self.search(domain)
+        bucket_cards, total_cases = self._bucket_cards_from_loans(loans)
+        billing = self._billing_stats_for_loans(loans, date_from, date_to)
+        Currency = self.env.company.currency_id
+
+        return {
+            'currency_id': Currency.id,
+            'currency_symbol': Currency.symbol or '₹',
+            'decimals': Currency.decimal_places,
+            'date_from': date_from,
+            'date_to': date_to,
+            'scope_label': (
+                'My assigned cases'
+                if self.env.user.bharat_role == 'case_manager'
+                else 'All cases'
+            ),
+            'kpis': {
+                'total_cases': total_cases,
+                'hearings_today': self._hearings_today_count(domain),
+                **billing,
+            },
+            'bucket_cards': bucket_cards,
+            'loan_domain': domain,
+        }
+
+    @api.model
+    def get_arbitrator_dashboard_statistics(self, date_from=None, date_to=None):
+        """OWL dashboard: arbitrator caseload, hearings, billing, awards."""
+        self.check_access('read')
+        domain = self._arbitrator_dashboard_domain()
+        loans = self.search(domain)
+        bucket_cards, total_cases = self._bucket_cards_from_loans(loans)
+        billing = self._billing_stats_for_loans(loans, date_from, date_to)
+        awards = sum(len(loan.award_document_ids) for loan in loans)
+        Currency = self.env.company.currency_id
+
+        return {
+            'currency_id': Currency.id,
+            'currency_symbol': Currency.symbol or '₹',
+            'decimals': Currency.decimal_places,
+            'date_from': date_from,
+            'date_to': date_to,
+            'scope_label': 'My arbitrator cases',
+            'kpis': {
+                'total_cases': total_cases,
+                'hearings_today': self._hearings_today_count(domain),
+                'awards_uploaded': awards,
+                'awards_pending': len(
+                    loans.filtered(
+                        lambda l: l.state_code == 'final_award' and not l.award_document_ids
+                    )
+                ),
+                **billing,
+            },
+            'bucket_cards': bucket_cards,
+            'upcoming_hearings': self._upcoming_hearings(domain),
+            'loan_domain': domain,
         }
 
     def _register_hook(self):

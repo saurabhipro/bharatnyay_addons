@@ -519,6 +519,7 @@ def reset_bharatnyay_view_arch_db(cr):
 def pre_init_hook(cr):
     reset_bharatnyay_view_arch_db(cr)
     repair_ir_act_report_null_binding_type(cr)
+    migrate_loan_workflow_award_final_stage_sql(cr)
 
 
 def repair_unbound_loan_reports(env):
@@ -537,31 +538,67 @@ def repair_unbound_loan_reports(env):
         })
 
 
+def _loan_stage_translation_map(env):
+    langs = [code for code, _ in env['res.lang'].get_installed()]
+    return {lang: 'Award' for lang in langs}
+
+
 def migrate_loan_workflow_award_final_stage(env):
     """Rename final stage to Award, remove Paid from workflow and company stage lines."""
     Stage = env['bharat.loan.stage'].sudo()
     Line = env['bharat.company.loan.stage'].sudo()
     Loan = env['bharat.loan'].sudo()
 
-    award = Stage.search([('code', '=', 'final_award')], limit=1)
-    paid = Stage.search([('code', '=', 'paid')], limit=1)
+    StageAll = Stage.with_context(active_test=False)
+    award = StageAll.search([('code', '=', 'final_award')], order='sequence, id', limit=1)
+    if not award:
+        award = StageAll.search([
+            '|',
+            ('name', 'ilike', 'Final Arbitration Award'),
+            ('name', 'ilike', 'Final arbitration award'),
+        ], order='sequence, id', limit=1)
+    paid = StageAll.search([('code', '=', 'paid')], limit=1)
 
+    award_label_map = _loan_stage_translation_map(env)
     if award:
-        award.write({'name': 'Award', 'phase': 'Award', 'active': True})
+        award.write({
+            'code': 'final_award',
+            'name': 'Award',
+            'phase': 'Award',
+            'sequence': 5,
+            'section': award.section or 31,
+            'active': True,
+        })
+        if hasattr(award, 'update_field_translations'):
+            award.update_field_translations('name', award_label_map)
+            award.update_field_translations('phase', award_label_map)
 
-    if not paid:
-        return
-
-    if award:
-        Loan.search([('state_id', '=', paid.id)]).write({
+    legacy_dupes = StageAll.search([
+        ('id', '!=', award.id if award else 0),
+        ('code', '!=', 'paid'),
+        '|',
+        ('name', 'ilike', 'Final Arbitration Award'),
+        ('name', 'ilike', 'Final arbitration award'),
+        ('phase', 'ilike', 'Final Arbitration Award'),
+    ])
+    if legacy_dupes and award:
+        Loan.search([('state_id', 'in', legacy_dupes.ids)]).write({
             'state_id': award.id,
             'workflow_phase': 'Award',
             'workflow_section': award.section or 31,
         })
+        Line.search([('stage_id', 'in', legacy_dupes.ids)]).unlink()
+        legacy_dupes.write({'active': False})
 
-    Line.search([('stage_id', '=', paid.id)]).unlink()
-
-    paid.write({'active': False})
+    if paid:
+        if award:
+            Loan.search([('state_id', '=', paid.id)]).write({
+                'state_id': award.id,
+                'workflow_phase': 'Award',
+                'workflow_section': award.section or 31,
+            })
+        Line.search([('stage_id', '=', paid.id)]).unlink()
+        paid.write({'active': False})
 
     menu = env.ref('bharatnyay_core.menu_bharatnyay_paid', raise_if_not_found=False)
     if menu:
@@ -571,7 +608,50 @@ def migrate_loan_workflow_award_final_stage(env):
     if action:
         action.unlink()
 
-    _logger.info('bharatnyay_core: removed Paid workflow stage; Award is the final stage')
+    _logger.info(
+        'bharatnyay_core: workflow final stage label is Award; Paid stage removed from statusbar'
+    )
+
+
+def migrate_loan_workflow_award_final_stage_sql(cr):
+    """SQL fallback before ORM models reload (code/active only; name/phase are JSONB)."""
+    cr.execute("SELECT to_regclass('public.bharat_loan_stage')")
+    if not cr.fetchone()[0]:
+        return
+    # Translated name/phase are jsonb in Odoo 18 — rename via ORM, not raw SQL.
+    cr.execute("""
+        UPDATE bharat_loan_stage
+           SET code = 'final_award',
+               active = true,
+               sequence = 5
+         WHERE code = 'final_award'
+            OR (
+                code IS DISTINCT FROM 'paid'
+                AND name::text ILIKE '%%Final%%Arbitration%%Award%%'
+            )
+    """)
+    cr.execute("""
+        UPDATE bharat_loan_stage
+           SET active = false
+         WHERE code = 'paid'
+    """)
+    cr.execute("""
+        DELETE FROM bharat_company_loan_stage cls
+         USING bharat_loan_stage st
+         WHERE cls.stage_id = st.id
+           AND st.code = 'paid'
+    """)
+    cr.execute("""
+        UPDATE bharat_loan loan
+           SET state_id = st_award.id,
+               workflow_phase = 'Award',
+               workflow_section = COALESCE(st_award.section, 31)
+          FROM bharat_loan_stage st_paid,
+               bharat_loan_stage st_award
+         WHERE loan.state_id = st_paid.id
+           AND st_paid.code = 'paid'
+           AND st_award.code = 'final_award'
+    """)
 
 
 def post_init_hook(cr, registry):
@@ -600,4 +680,5 @@ __all__ = [
     'raise_file_descriptor_limit',
     'repair_unbound_loan_reports',
     'migrate_loan_workflow_award_final_stage',
+    'migrate_loan_workflow_award_final_stage_sql',
 ]

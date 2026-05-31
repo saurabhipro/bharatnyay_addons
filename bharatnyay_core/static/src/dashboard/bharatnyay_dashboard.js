@@ -6,61 +6,6 @@ import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { formatMonetary } from "@web/views/fields/formatters";
 
-const LINE_W = 800;
-const LINE_H = 180;
-const PAD = 28;
-
-function computeLineChart(series) {
-    const empty = {
-        lineW: LINE_W,
-        lineH: LINE_H,
-        linePoints1: "",
-        linePoints2: "",
-        areaPoints1: "",
-        areaPoints2: "",
-        lineDots1: [],
-        lineDots2: [],
-    };
-    if (!series.length) {
-        return empty;
-    }
-    const innerW = LINE_W - PAD * 2;
-    const innerH = LINE_H - PAD * 2;
-    const counts = series.map((s) => s.count || 0);
-    const claims = series.map((s) => s.claim_sum || 0);
-    const maxC = Math.max(...counts, 1);
-    const maxCl = Math.max(...claims, 1);
-    const n = series.length;
-    const step = innerW / Math.max(n - 1, 1);
-    const baselineY = PAD + innerH;
-
-    const ptsCount = counts.map((c, i) => {
-        const x = PAD + i * step;
-        const y = PAD + innerH * (1 - c / maxC);
-        return { x, y, str: `${x},${y}` };
-    });
-    const ptsClaim = claims.map((cl, i) => {
-        const x = PAD + i * step;
-        const y = PAD + innerH * (1 - cl / maxCl);
-        return { x, y, str: `${x},${y}` };
-    });
-
-    const linePoints1 = ptsCount.map((p) => p.str).join(" ");
-    const linePoints2 = ptsClaim.map((p) => p.str).join(" ");
-    const areaPoints1 = `${PAD},${baselineY} ${linePoints1} ${PAD + innerW},${baselineY}`;
-    const areaPoints2 = `${PAD},${baselineY} ${linePoints2} ${PAD + innerW},${baselineY}`;
-    return {
-        lineW: LINE_W,
-        lineH: LINE_H,
-        linePoints1,
-        linePoints2,
-        areaPoints1,
-        areaPoints2,
-        lineDots1: ptsCount,
-        lineDots2: ptsClaim,
-    };
-}
-
 function pieGradient(productMix) {
     if (!productMix?.length) {
         return "conic-gradient(#e2e8f0 0% 100%)";
@@ -87,7 +32,6 @@ export class BharatnyayDashboard extends Component {
             loading: true,
             error: null,
             data: null,
-            chart: computeLineChart([]),
             pieStyle: pieGradient([]),
             search: "",
         });
@@ -101,7 +45,6 @@ export class BharatnyayDashboard extends Component {
         try {
             const data = await this.orm.call("bharat.loan", "get_dashboard_statistics", []);
             this.state.data = data;
-            this.state.chart = computeLineChart(data.monthly_created || []);
             this.state.pieStyle = pieGradient(data.product_mix || []);
         } catch (e) {
             this.state.data = null;

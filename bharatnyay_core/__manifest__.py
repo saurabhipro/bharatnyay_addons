@@ -1,6 +1,6 @@
 {
     'name': 'BharatNyay Core',
-    'version': '18.0.31.0.1',
+    'version': '18.0.31.0.4',
     'icon': '/bharatnyay_core/static/description/icon.png',
     'summary': 'Loan portfolio aligned to Excel import template',
     'description': """
@@ -49,6 +49,8 @@
             'bharatnyay_core/static/src/loan_form/loan_form.scss',
             'bharatnyay_core/static/src/dashboard/bharatnyay_dashboard.xml',
             'bharatnyay_core/static/src/dashboard/bharatnyay_dashboard.js',
+            'bharatnyay_core/static/src/dashboard/case_manager_dashboard.js',
+            'bharatnyay_core/static/src/dashboard/arbitrator_dashboard.js',
             'bharatnyay_core/static/src/js/user_menus.js',
             'bharatnyay_core/static/src/list_view/list_primary_header.scss',
         ],

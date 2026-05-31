@@ -175,32 +175,6 @@
                         </div>
                     </div>
 
-                    <div class="bn-panel mb-3">
-                        <div class="bn-panel-head">
-                            <h2>Volume vs claim (trend)</h2>
-                            <span class="hint">Rows created vs claim booked (same calendar month)</span>
-                        </div>
-                        <div class="bn-legend-mini mb-2">
-                            <span class="l1"><i/>Volume (count)</span>
-                            <span class="l2"><i/>Claim sum</span>
-                        </div>
-                        <div class="bn-line-panel" t-if="state.data.monthly_created.length">
-                            <svg t-attf-viewBox="0 0 {{ state.chart.lineW }} {{ state.chart.lineH }}" preserveAspectRatio="none">
-                                <polygon t-attf-points="{{ state.chart.areaPoints1 }}" fill="#4361ee" fill-opacity="0.14"/>
-                                <polygon t-attf-points="{{ state.chart.areaPoints2 }}" fill="#16a34a" fill-opacity="0.12"/>
-                                <polyline t-attf-points="{{ state.chart.linePoints1 }}" stroke="#4361ee" stroke-width="2.5"/>
-                                <polyline t-attf-points="{{ state.chart.linePoints2 }}" stroke="#16a34a" stroke-width="2.5"/>
-                                <t t-foreach="state.chart.lineDots1" t-as="pt" t-key="pt_index">
-                                    <circle t-att-cx="pt.x" t-att-cy="pt.y" r="4" stroke="#4361ee"/>
-                                </t>
-                                <t t-foreach="state.chart.lineDots2" t-as="pt" t-key="pt_index">
-                                    <circle t-att-cx="pt.x" t-att-cy="pt.y" r="4" stroke="#16a34a"/>
-                                </t>
-                            </svg>
-                        </div>
-                        <div t-else="" class="bn-muted-empty">Add rows with create dates to see trends.</div>
-                    </div>
-
                     <div class="bn-panel">
                         <div class="bn-panel-head">
                             <h2>Branch snapshot</h2>
@@ -243,6 +217,209 @@
 
                 <t t-else="">
                     <div class="bn-muted-empty">No dashboard data.</div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.CaseManagerDashboard">
+        <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
+            <div class="bn-wrap">
+                <div class="bn-header">
+                    <div class="bn-title-block">
+                        <h1>Case Manager dashboard</h1>
+                        <p>Case pipeline and arbitration billing</p>
+                    </div>
+                    <div class="bn-header-actions bn-date-filter">
+                        <label class="bn-date-label">From</label>
+                        <input type="date" class="bn-date-input" t-att-value="state.date_from" t-on-change="onDateFrom"/>
+                        <label class="bn-date-label">To</label>
+                        <input type="date" class="bn-date-input" t-att-value="state.date_to" t-on-change="onDateTo"/>
+                        <button type="button" class="btn btn-primary btn-sm" t-on-click="applyDateFilter">Apply</button>
+                        <button type="button" class="bn-icon-btn" title="Refresh" t-on-click="onRefresh">
+                            <i class="fa fa-refresh"/>
+                        </button>
+                    </div>
+                </div>
+                <t t-if="state.loading">
+                    <div class="bn-muted-empty"><i class="fa fa-spinner fa-spin fa-2x mb-2"/><div>Loading...</div></div>
+                </t>
+                <t t-elif="state.error">
+                    <div class="bn-muted-empty bn-error"><span t-out="state.error"/></div>
+                </t>
+                <t t-elif="state.data">
+                    <div class="bn-section-title">Case pipeline</div>
+                    <div class="bn-bucket-strip">
+                        <t t-foreach="state.data.bucket_cards || []" t-as="b" t-key="b.key">
+                            <button type="button" class="bn-stage-card"
+                                    t-att-data-bucket="b.key"
+                                    t-attf-style="--stg: {{ b.color }};"
+                                    t-on-click="openBucket">
+                                <div class="bn-stage-top">
+                                    <span class="bn-stage-ico"><i t-attf-class="fa {{ b.icon }}"/></span>
+                                    <span class="bn-stage-name" t-out="b.label"/>
+                                </div>
+                                <div class="bn-stage-value">
+                                    <span class="n" t-out="fmtInt(b.count)"/>
+                                    <span class="p" t-out="percentLabel(b.percent)"/>
+                                </div>
+                                <div class="bn-stage-meter">
+                                    <span t-attf-style="width: {{ b.percent }}%"/>
+                                </div>
+                            </button>
+                        </t>
+                    </div>
+                    <div class="bn-section-title mt-3">Payments and invoices</div>
+                    <div class="bn-kpi-grid bn-kpi-grid--4">
+                        <div class="bn-kpi-card bn-kpi-card--click" data-filter="due" t-on-click="openInvoices">
+                            <div class="bn-kpi-label">Cases due for invoice</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.cases_due_for_invoice)"/>
+                            <div class="bn-kpi-trend">Milestone reached, not invoiced</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click" data-filter="draft" t-on-click="openInvoices">
+                            <div class="bn-kpi-label">Draft invoices</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.draft_invoices)"/>
+                            <div class="bn-kpi-trend">In date range</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click" data-filter="paid" t-on-click="openInvoices">
+                            <div class="bn-kpi-label">Invoices paid</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.paid_invoices)"/>
+                            <div class="bn-kpi-trend">Posted and paid</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--accent">
+                            <div class="bn-kpi-label">Total due amount</div>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.total_due_amount)"/>
+                            <div class="bn-kpi-trend">Outstanding residual</div>
+                        </div>
+                    </div>
+                    <div class="bn-kpi-grid bn-kpi-grid--3 bn-kpi-phase mt-2">
+                        <div class="bn-kpi-card bn-kpi-card--success">
+                            <div class="bn-kpi-label">Total received</div>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.total_received_amount)"/>
+                            <div class="bn-kpi-trend">Paid in selected period</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Total cases</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_cases)"/>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Hearings today</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.ArbitratorDashboard">
+        <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
+            <div class="bn-wrap">
+                <div class="bn-header">
+                    <div class="bn-title-block">
+                        <h1>Arbitrator dashboard</h1>
+                        <p>My cases, hearings, and awards</p>
+                    </div>
+                    <div class="bn-header-actions bn-date-filter">
+                        <label class="bn-date-label">From</label>
+                        <input type="date" class="bn-date-input" t-att-value="state.date_from" t-on-change="onDateFrom"/>
+                        <label class="bn-date-label">To</label>
+                        <input type="date" class="bn-date-input" t-att-value="state.date_to" t-on-change="onDateTo"/>
+                        <button type="button" class="btn btn-primary btn-sm" t-on-click="applyDateFilter">Apply</button>
+                        <button type="button" class="bn-icon-btn" title="Refresh" t-on-click="onRefresh">
+                            <i class="fa fa-refresh"/>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" t-on-click="openMyCases">All my cases</button>
+                    </div>
+                </div>
+                <t t-if="state.loading">
+                    <div class="bn-muted-empty"><i class="fa fa-spinner fa-spin fa-2x mb-2"/><div>Loading...</div></div>
+                </t>
+                <t t-elif="state.error">
+                    <div class="bn-muted-empty bn-error"><span t-out="state.error"/></div>
+                </t>
+                <t t-elif="state.data">
+                    <div class="bn-kpi-grid bn-kpi-grid--4 bn-kpi-phase mb-3">
+                        <div class="bn-kpi-card bn-kpi-card--accent">
+                            <div class="bn-kpi-label">My cases</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_cases)"/>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Hearings today</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today)"/>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Awards uploaded</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_uploaded)"/>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Award pending</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_pending)"/>
+                        </div>
+                    </div>
+                    <div class="bn-section-title">My case pipeline</div>
+                    <div class="bn-bucket-strip">
+                        <t t-foreach="state.data.bucket_cards || []" t-as="b" t-key="b.key">
+                            <button type="button" class="bn-stage-card"
+                                    t-att-data-bucket="b.key"
+                                    t-attf-style="--stg: {{ b.color }};"
+                                    t-on-click="openBucket">
+                                <div class="bn-stage-top">
+                                    <span class="bn-stage-ico"><i t-attf-class="fa {{ b.icon }}"/></span>
+                                    <span class="bn-stage-name" t-out="b.label"/>
+                                </div>
+                                <div class="bn-stage-value">
+                                    <span class="n" t-out="fmtInt(b.count)"/>
+                                    <span class="p" t-out="percentLabel(b.percent)"/>
+                                </div>
+                                <div class="bn-stage-meter">
+                                    <span t-attf-style="width: {{ b.percent }}%"/>
+                                </div>
+                            </button>
+                        </t>
+                    </div>
+                    <div class="bn-row-panels mt-3">
+                        <div class="bn-panel-card">
+                            <div class="bn-section-title">Upcoming hearings</div>
+                            <t t-if="state.data.upcoming_hearings.length === 0">
+                                <div class="bn-muted-empty bn-muted-empty--sm">No upcoming hearings scheduled.</div>
+                            </t>
+                            <t t-else="">
+                                <t t-foreach="state.data.upcoming_hearings" t-as="h" t-key="h.id">
+                                    <button type="button" class="bn-hearing-row"
+                                            t-att-data-loan-id="h.loan_id"
+                                            t-on-click="openLoan">
+                                        <div class="bn-hearing-row__main">
+                                            <strong t-out="h.loan_number"/>
+                                            <span t-out="h.customer_name"/>
+                                        </div>
+                                        <div class="bn-hearing-row__dt" t-out="hearingDtLabel(h.hearing_datetime)"/>
+                                    </button>
+                                </t>
+                            </t>
+                        </div>
+                        <div class="bn-panel-card bn-panel-card--payments">
+                            <div class="bn-section-title">Payments (my cases)</div>
+                            <div class="bn-kpi-grid bn-kpi-grid--4 bn-kpi-grid--compact">
+                                <div class="bn-kpi-card bn-kpi-card--click" data-filter="due" t-on-click="openInvoices">
+                                    <div class="bn-kpi-label">Payment due</div>
+                                    <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.total_due_amount)"/>
+                                </div>
+                                <div class="bn-kpi-card bn-kpi-card--success bn-kpi-card--click" data-filter="paid" t-on-click="openInvoices">
+                                    <div class="bn-kpi-label">Payment received</div>
+                                    <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.total_received_amount)"/>
+                                </div>
+                                <div class="bn-kpi-card bn-kpi-card--click" data-filter="draft" t-on-click="openInvoices">
+                                    <div class="bn-kpi-label">Draft invoices</div>
+                                    <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.draft_invoices)"/>
+                                </div>
+                                <div class="bn-kpi-card">
+                                    <div class="bn-kpi-label">Cases not invoiced</div>
+                                    <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.cases_due_for_invoice)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </t>
             </div>
         </div>

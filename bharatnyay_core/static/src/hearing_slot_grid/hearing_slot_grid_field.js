@@ -81,6 +81,10 @@ export class HearingSlotGridField extends Component {
         return `Slot ${slot.index} (${slot.label}) — free`;
     }
 
+    onSelectClick(slot) {
+        return this.onSelect(slot);
+    }
+
     async onSelect(slot) {
         if (!this.isFree(slot) || this.readonly) {
             return;

@@ -13,10 +13,24 @@
               action="action_bharatnyay_dashboard"/>
 
     <menuitem id="menu_bharatnyay_dashboard_menu"
-              name="Dashboard"
+              name="Portfolio"
               parent="menu_bharatnyay_root"
               action="action_bharatnyay_dashboard"
               sequence="1"/>
+
+    <menuitem id="menu_bharatnyay_case_manager_dashboard"
+              name="Case Manager"
+              parent="menu_bharatnyay_root"
+              action="action_bharatnyay_case_manager_dashboard"
+              groups="bharatnyay_core.group_bharat_case_manager,bharatnyay_core.group_bharat_admin,base.group_system"
+              sequence="2"/>
+
+    <menuitem id="menu_bharatnyay_arbitrator_dashboard"
+              name="Arbitrator"
+              parent="menu_bharatnyay_root"
+              action="action_bharatnyay_arbitrator_dashboard"
+              groups="bharatnyay_core.group_bharat_arbitrator,bharatnyay_core.group_bharat_admin,base.group_system"
+              sequence="3"/>
 
     <menuitem id="menu_bharatnyay_loans"
               name="Cases"
@@ -27,7 +41,7 @@
     <menuitem id="menu_bharatnyay_workflow"
               name="Workflow queues"
               parent="menu_bharatnyay_root"
-              groups="bharatnyay_core.group_bharat_admin,base.group_system,bharatnyay_core.group_bharat_arbitrator"
+              groups="base.group_no_one"
               sequence="25"/>
     
     <menuitem id="menu_bharatnyay_notice_1"
@@ -111,7 +125,7 @@
     <menuitem id="menu_bharatnyay_billing_root"
               name="Billing &amp; ops"
               parent="menu_bharatnyay_root"
-              groups="bharatnyay_core.group_bharat_admin,base.group_system"
+              groups="base.group_no_one"
               sequence="18"/>
 
     <menuitem id="menu_bharatnyay_arbitration_products"

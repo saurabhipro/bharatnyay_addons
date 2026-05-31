@@ -201,17 +201,17 @@
                                 </div>
                                 <div class="bn-hero-sub">
                                     <span class="bn-hero-sub__item">
-                                        <i class="fa fa-file-text-o" aria-hidden="true"/>
+                                        <i class="fa fa-file-text-o" title="Loan number" aria-hidden="true"/>
                                         <field name="loan_number" readonly="1" nolabel="1"/>
                                     </span>
                                     <span class="bn-hero-sub__dot" aria-hidden="true">·</span>
                                     <span class="bn-hero-sub__item">
-                                        <i class="fa fa-map-marker" aria-hidden="true"/>
+                                        <i class="fa fa-map-marker" title="Location" aria-hidden="true"/>
                                         <field name="location_id" readonly="1" nolabel="1"/>
                                     </span>
                                     <span class="bn-hero-sub__dot" aria-hidden="true">·</span>
                                     <span class="bn-hero-sub__item">
-                                        <i class="fa fa-tag" aria-hidden="true"/>
+                                        <i class="fa fa-tag" title="Product class" aria-hidden="true"/>
                                         <field name="product_class_id" readonly="1" nolabel="1"/>
                                     </span>
                                 </div>
@@ -345,10 +345,6 @@
                                     </div>
                                     <div class="bn-import-col">
                                         <div class="bn-import-col__heading"><i class="fa fa-info-circle"/> Details</div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Current stage</span>
-                                            <field name="state_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
                                         <div class="bn-import-row">
                                             <span class="bn-import-row__k">Notice hand</span>
                                             <field name="notice_hand" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>

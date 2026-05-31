@@ -7,4 +7,18 @@
         <field name="path">bharatnyay</field>
         <field name="target">current</field>
     </record>
+
+    <record id="action_bharatnyay_case_manager_dashboard" model="ir.actions.client">
+        <field name="name">Case Manager</field>
+        <field name="tag">bharatnyay_case_manager_dashboard</field>
+        <field name="path">bharatnyay-case-manager</field>
+        <field name="target">current</field>
+    </record>
+
+    <record id="action_bharatnyay_arbitrator_dashboard" model="ir.actions.client">
+        <field name="name">Arbitrator</field>
+        <field name="tag">bharatnyay_arbitrator_dashboard</field>
+        <field name="path">bharatnyay-arbitrator</field>
+        <field name="target">current</field>
+    </record>
 </odoo>
