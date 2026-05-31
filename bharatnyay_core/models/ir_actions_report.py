@@ -14,6 +14,17 @@ _logger = logging.getLogger(__name__)
 _BHARAT_PDF_MERGE_CHUNK = 25
 
 
+def _raise_file_descriptor_limit(min_limit=4096):
+    """Best-effort raise of soft RLIMIT_NOFILE before bulk wkhtmltopdf runs."""
+    try:
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        target = min(max(min_limit, soft), hard)
+        if target > soft:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (target, hard))
+    except (ValueError, OSError):
+        pass
+
+
 class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'
 
