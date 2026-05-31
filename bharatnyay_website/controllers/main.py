@@ -1,3 +1,4 @@
+import json
 import logging
 
 from odoo import _, fields, http
@@ -82,6 +83,39 @@ class BharatWebsite(http.Controller):
         methods=['GET', 'POST'],
         csrf=True,
     )
+    def _bn_notice_default_scheduler_date(self, loan):
+        Wiz = request.env['bharat.loan.hearing.schedule.wizard'].sudo()
+        return Wiz._default_scheduler_date_for_loan(loan)
+
+    @http.route(
+        ['/bn/respond/<string:token>/slots'],
+        type='http',
+        auth='public',
+        methods=['GET'],
+        csrf=False,
+    )
+    def bn_notice_respond_slots(self, token, arbitrator_id=None, scheduler_date=None, **kw):
+        NoticeLine = request.env['bharat.loan.notice.line'].sudo()
+        line = NoticeLine.search([('qr_access_token', '=', token)], limit=1)
+        if not line:
+            return request.make_response('{}', status=404)
+
+        try:
+            arb_id = int(arbitrator_id or 0)
+        except (TypeError, ValueError):
+            arb_id = 0
+
+        Wiz = request.env['bharat.loan.hearing.schedule.wizard'].sudo()
+        payload = Wiz.public_slot_board_payload(
+            line.loan_id.id,
+            arb_id,
+            scheduler_date,
+        )
+        return request.make_response(
+            json.dumps(payload),
+            headers=[('Content-Type', 'application/json')],
+        )
+
     def bn_notice_respond(self, token, **post):
         NoticeLine = request.env['bharat.loan.notice.line'].sudo()
         line = NoticeLine.search([('qr_access_token', '=', token)], limit=1)
@@ -91,6 +125,8 @@ class BharatWebsite(http.Controller):
         loan = line.loan_id.sudo()
         thanks_flag = bool(request.params.get('thanks'))
         error = False
+        Wiz = request.env['bharat.loan.hearing.schedule.wizard'].sudo()
+        default_scheduler_date = self._bn_notice_default_scheduler_date(loan)
 
         arbitrators = request.env['res.users'].sudo().search([
             ('bharat_role', '=', 'arbitrator'),
@@ -101,12 +137,18 @@ class BharatWebsite(http.Controller):
         if request.httprequest.method == 'POST':
             otp = (post.get('otp') or '').strip()
             arb_raw = post.get('arbitrator_id')
-            pref = (post.get('preferred_slot') or '').strip()
+            scheduler_date = (post.get('scheduler_date') or '').strip()
+            grid_raw = post.get('grid_selected_index') or '0'
+            notes = (post.get('preferred_slot_notes') or '').strip()
             consent = post.get('consent')
             try:
                 arb_id = int(arb_raw or 0)
             except (TypeError, ValueError):
                 arb_id = 0
+            try:
+                grid_index = int(grid_raw or 0)
+            except (TypeError, ValueError):
+                grid_index = 0
 
             if otp != (line.microsite_otp_code or ''):
                 error = _('Invalid OTP. Use the 6-digit code from your notice correspondence.')
@@ -114,19 +156,37 @@ class BharatWebsite(http.Controller):
                 error = _('Please choose an arbitrator from the approved list.')
             elif not consent:
                 error = _('Please tick consent to proceed.')
+            elif not scheduler_date:
+                error = _('Please choose a hearing day.')
+            elif not grid_index:
+                error = _('Please pick an available time slot from the grid.')
             else:
-                loan.write({'arbitrator_id': arb_id})
-                line.write({
-                    'borrower_slot_preference': pref,
-                    'microsite_last_submit_at': fields.Datetime.now(),
-                })
-                loan.message_post(
-                    body=_(
-                        'Borrower submitted arbitrator preference via QR microsite (notice %s).'
-                    )
-                    % (line.notice_label or ''),
+                slot = Wiz.public_slot_entry(
+                    loan.id, arb_id, scheduler_date, grid_index
                 )
-                return request.redirect('/bn/respond/%s?thanks=1' % token)
+                if not slot:
+                    error = _(
+                        'That time slot is no longer available. Pick another slot and try again.'
+                    )
+                else:
+                    pref_parts = [
+                        '%s %s' % (scheduler_date, slot.get('label') or ''),
+                    ]
+                    if notes:
+                        pref_parts.append(notes)
+                    pref = ' · '.join(pref_parts)
+                    loan.write({'arbitrator_id': arb_id})
+                    line.write({
+                        'borrower_slot_preference': pref,
+                        'microsite_last_submit_at': fields.Datetime.now(),
+                    })
+                    loan.message_post(
+                        body=_(
+                            'Borrower submitted arbitrator and hearing slot preference via QR microsite (notice %s): %s'
+                        )
+                        % (line.notice_label or '', pref),
+                    )
+                    return request.redirect('/bn/respond/%s?thanks=1' % token)
 
         return request.render(
             'bharatnyay_website.bn_notice_microsite_page',
@@ -136,5 +196,6 @@ class BharatWebsite(http.Controller):
                 'arbitrators': arbitrators,
                 'thanks': thanks_flag,
                 'error': error,
+                'default_scheduler_date': default_scheduler_date,
             },
         )

@@ -41,7 +41,7 @@
     <menuitem id="menu_bharatnyay_workflow"
               name="Workflow queues"
               parent="menu_bharatnyay_root"
-              groups="base.group_no_one"
+              active="False"
               sequence="25"/>
     
     <menuitem id="menu_bharatnyay_notice_1"
@@ -125,7 +125,7 @@
     <menuitem id="menu_bharatnyay_billing_root"
               name="Billing &amp; ops"
               parent="menu_bharatnyay_root"
-              groups="base.group_no_one"
+              active="False"
               sequence="18"/>
 
     <menuitem id="menu_bharatnyay_arbitration_products"

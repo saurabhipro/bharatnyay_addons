@@ -242,12 +242,48 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 return idx
         return 0
 
+    def _arbitrator_for_slot_board(self):
+        self.ensure_one()
+        arb_id = self.env.context.get('slot_board_arbitrator_id')
+        if arb_id:
+            return self.env['res.users'].browse(arb_id)
+        return self.loan_id.arbitrator_id if self.loan_id else self.env['res.users']
+
+    @api.model
+    def public_slot_board_payload(self, loan_id, arbitrator_id, scheduler_date):
+        """Slot grid for public notice microsite (arbitrator may not be on loan yet)."""
+        loan = self.env['bharat.loan'].sudo().browse(loan_id)
+        if not loan.exists() or not arbitrator_id or not scheduler_date:
+            return {'slots': []}
+        if isinstance(scheduler_date, str):
+            scheduler_date = fields.Date.from_string(scheduler_date)
+        wiz = self.with_context(slot_board_arbitrator_id=int(arbitrator_id)).new({
+            'loan_id': loan.id,
+            'scheduler_date': scheduler_date,
+        })
+        return wiz._slot_board_dict()
+
+    @api.model
+    def public_slot_entry(self, loan_id, arbitrator_id, scheduler_date, grid_index):
+        """Return the slot dict if index is a free slot, else None."""
+        try:
+            grid_index = int(grid_index)
+        except (TypeError, ValueError):
+            return None
+        if not grid_index:
+            return None
+        board = self.public_slot_board_payload(loan_id, arbitrator_id, scheduler_date)
+        for slot in board.get('slots', []):
+            if slot.get('index') == grid_index and slot.get('status') == 'free':
+                return slot
+        return None
+
     def _slot_board_dict(self):
         self.ensure_one()
-        if not self.loan_id or not self.scheduler_date or not self.loan_id.arbitrator_id:
+        au = self._arbitrator_for_slot_board()
+        if not self.scheduler_date or not au:
             return {'slots': []}
         Block = self.env['bharat.arbitrator.blockout'].sudo()
-        au = self.loan_id.arbitrator_id
         day = self.scheduler_date
         if Block.search(
             [
@@ -271,7 +307,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'utc': utc_str,
                 })
             return {'slots': slots}
-        busy = self._busy_hearing_starts_utc(self.loan_id.arbitrator_id, exclude_loan=self.loan_id)
+        busy = self._busy_hearing_starts_utc(au, exclude_loan=self.loan_id)
         tz = self._user_timezone()
         slots = []
         now_local = datetime.now(tz)

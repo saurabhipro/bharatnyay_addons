@@ -174,11 +174,8 @@
                     </div>
                    
                     <field name="workflow_section" invisible="1"/>
-                    <widget name="web_ribbon" title="Award" bg_color="text-bg-info"
-                            invisible="state_code != 'final_award'"/>
 
                     <div class="bn-loan-hero">
-                        <div class="bn-hero-accent" aria-hidden="true"/>
                         <div class="bn-hero-inner">
                             <div class="bn-hero-head">
                                 <div class="bn-hero-ids">

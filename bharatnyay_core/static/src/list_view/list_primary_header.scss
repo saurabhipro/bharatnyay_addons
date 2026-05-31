@@ -1,66 +1,71 @@
-// Primary-colored header row for all backend list views (!important overrides theme list SCSS).
+// BharatNyay primary (#4361ee) column headers — all backend list / x2many tables.
+$o-bn-primary: #4361ee;
+$o-bn-primary-dark: #354fd4;
+$o-bn-primary-text: #ffffff;
+
 body.o_web_client {
-    .o_list_view .o_content .o_list_renderer .o_list_table,
-    .o_content .o_list_renderer .o_list_table {
-        thead,
-        thead tr:nth-child(1) th {
-            background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
-            color: var(--biz-theme-primary-text-color, #fff) !important;
+    .o_list_renderer .o_list_table thead,
+    .o_list_renderer .o_list_table thead tr,
+    .o_list_renderer .o_list_table thead th,
+    .o_list_view .o_list_renderer .o_list_table thead th,
+    .o_content .o_list_renderer .o_list_table thead th,
+    .o_field_x2many .o_list_renderer .o_list_table thead th,
+    .o_field_x2many_list .o_list_renderer .o_list_table thead th,
+    table.o_list_table thead th {
+        background-color: $o-bn-primary !important;
+        color: $o-bn-primary-text !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        font-weight: 600;
+    }
+
+    .o_list_renderer .o_list_table thead th.table-active,
+    .o_list_renderer .o_list_table thead th:focus,
+    .o_list_renderer .o_list_table thead th:hover {
+        background-color: $o-bn-primary-dark !important;
+        color: $o-bn-primary-text !important;
+    }
+
+    .o_list_renderer .o_list_table thead {
+        .o_list_sortable_caret,
+        .fa,
+        .oi,
+        .dropdown-toggle,
+        .o_optional_columns_dropdown_toggle,
+        button,
+        a {
+            color: $o-bn-primary-text !important;
         }
 
-        thead {
-            tr {
-                th {
-                    background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
-                    color: var(--biz-theme-primary-text-color, #fff) !important;
-                    border-color: rgba(255, 255, 255, 0.12) !important;
-
-                    &.table-active {
-                        background-color: var(--biz-theme-primary-color, #{darken($o-brand-primary, 10%)}) !important;
-                        color: var(--biz-theme-primary-text-color, #fff) !important;
-                    }
-
-                    .o_list_sortable_caret,
-                    .fa,
-                    .oi,
-                    .dropdown-toggle {
-                        color: var(--biz-theme-primary-text-color, #fff) !important;
-                    }
-                }
-            }
-
-            .o_column_sortable .o_list_sortable_caret {
-                background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
-            }
-
-            .o_column_sortable.table-active .o_list_sortable_caret {
-                background-color: var(--biz-theme-primary-color, #{darken($o-brand-primary, 10%)}) !important;
-            }
-
-            .o_list_actions_header,
-            .o_list_record_selector {
-                background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
-            }
+        .o_list_actions_header,
+        .o_list_record_selector,
+        .o_list_record_selector_header {
+            background-color: $o-bn-primary !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
         }
     }
 
+    // Sticky header clone (Odoo 18)
+    .o_list_renderer .o_list_table thead.table-light,
+    .o_list_renderer .o_list_table thead.table-light th {
+        background-color: $o-bn-primary !important;
+        color: $o-bn-primary-text !important;
+        --table-bg: #{$o-bn-primary};
+        --bs-table-bg: #{$o-bn-primary};
+        --bs-table-color: #{$o-bn-primary-text};
+    }
+
+    // Pivot / graph table headers where applicable
+    .o_pivot table thead th,
+    .o_graph .table thead th {
+        background-color: $o-bn-primary !important;
+        color: $o-bn-primary-text !important;
+    }
+
     &.dark_mode {
-        .o_content .o_list_renderer .o_list_table {
-            thead,
-            thead tr:nth-child(1) th,
-            thead tr th {
-                background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
-                color: var(--biz-theme-primary-text-color, #fff) !important;
-            }
-
-            thead {
-                background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
-            }
-        }
-
-        .o_list_renderer .o_list_table thead .o_column_sortable .o_list_sortable_caret,
-        .o_list_renderer .o_list_table thead .o_column_sortable.table-active .o_list_sortable_caret {
-            background-color: var(--biz-theme-primary-color, #{$o-brand-primary}) !important;
+        .o_list_renderer .o_list_table thead th,
+        .o_field_x2many .o_list_renderer .o_list_table thead th {
+            background-color: $o-bn-primary !important;
+            color: $o-bn-primary-text !important;
         }
     }
 }

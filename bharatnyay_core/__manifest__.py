@@ -39,6 +39,7 @@
         'views/notice_line_views.xml',
         'views/dashboard_action.xml',
         'views/menus.xml',
+        'data/hide_legacy_menus.xml',
     ],
     'assets': {
         'web.assets_backend': [

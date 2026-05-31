@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Force-hide top-level menus (Spiffy theme ignores group_no_one). -->
+    <record id="menu_bharatnyay_workflow" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="menu_bharatnyay_billing_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

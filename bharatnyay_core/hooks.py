@@ -654,6 +654,19 @@ def migrate_loan_workflow_award_final_stage_sql(cr):
     """)
 
 
+def hide_legacy_top_menus(env):
+    """Deactivate Workflow queues and Billing & ops (and children) in the menu tree."""
+    Menu = env['ir.ui.menu'].sudo()
+    for xmlid in (
+        'bharatnyay_core.menu_bharatnyay_workflow',
+        'bharatnyay_core.menu_bharatnyay_billing_root',
+    ):
+        root = env.ref(xmlid, raise_if_not_found=False)
+        if not root:
+            continue
+        Menu.search([('id', 'child_of', root.id)]).write({'active': False})
+
+
 def post_init_hook(cr, registry):
     """After install/upgrade: draft demo invoice for batch BN-DEMO-BILL when sample data exists."""
     from odoo import api, SUPERUSER_ID
@@ -661,6 +674,7 @@ def post_init_hook(cr, registry):
     raise_file_descriptor_limit()
     env = api.Environment(cr, SUPERUSER_ID, {})
     migrate_loan_workflow_award_final_stage(env)
+    hide_legacy_top_menus(env)
     repair_unbound_loan_reports(env)
     refresh_demo_hearing_datetimes(env)
     env['account.move'].sudo()._bharat_demo_seed_batch_invoice()
@@ -681,4 +695,5 @@ __all__ = [
     'repair_unbound_loan_reports',
     'migrate_loan_workflow_award_final_stage',
     'migrate_loan_workflow_award_final_stage_sql',
+    'hide_legacy_top_menus',
 ]

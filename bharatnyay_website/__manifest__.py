@@ -33,6 +33,8 @@
     "assets": {
         "web.assets_frontend": [
             "bharatnyay_website/static/src/scss/style.scss",
+            "bharatnyay_website/static/src/scss/bn_notice_slots.scss",
+            "bharatnyay_website/static/src/js/bn_notice_slot_picker.js",
         ],
     },
     "installable": True,

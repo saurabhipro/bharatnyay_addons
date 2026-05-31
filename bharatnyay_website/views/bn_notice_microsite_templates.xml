@@ -22,15 +22,20 @@
                         <div class="card shadow-sm mb-4">
                             <div class="card-body">
                                 <p><strong>OTP (demo)</strong>: enter the 6-digit code shown on your notice email.</p>
-                                <form t-attf-action="/bn/respond/{{ line.qr_access_token }}" method="post" class="o_mark_required">
+                                <form id="bn_notice_form"
+                                      t-attf-action="/bn/respond/{{ line.qr_access_token }}"
+                                      t-attf-data-slots-url="/bn/respond/{{ line.qr_access_token }}/slots"
+                                      method="post"
+                                      class="o_mark_required">
                                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="grid_selected_index" id="bn_grid_selected_index" value="0"/>
                                     <div class="mb-3">
                                         <label class="form-label">OTP</label>
                                         <input class="form-control" type="text" name="otp" maxlength="8" required="required"/>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Choose arbitrator</label>
-                                        <select class="form-select" name="arbitrator_id" required="required">
+                                        <select class="form-select" name="arbitrator_id" id="bn_arbitrator_id" required="required">
                                             <option value="">—</option>
                                             <t t-foreach="arbitrators" t-as="u">
                                                 <option t-att-value="u.id"><t t-esc="u.name"/></option>
@@ -38,8 +43,27 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Preferred hearing slot / notes (optional)</label>
-                                        <textarea class="form-control" name="preferred_slot" rows="3"/>
+                                        <label class="form-label" for="bn_scheduler_date">Preferred hearing day</label>
+                                        <input type="date"
+                                               class="form-control"
+                                               name="scheduler_date"
+                                               id="bn_scheduler_date"
+                                               t-att-value="default_scheduler_date"
+                                               required="required"/>
+                                    </div>
+                                    <div class="mb-3 bn-notice-slot-wrap" id="bn_slot_section" style="display: none;">
+                                        <label class="form-label d-block">Pick a time slot</label>
+                                        <div class="bn-slot-legend">
+                                            <span class="lg-free"><i/> Free</span>
+                                            <span class="lg-booked"><i/> Booked</span>
+                                            <span class="lg-unavail"><i/> Unavailable</span>
+                                        </div>
+                                        <div id="bn_slot_grid" class="bn-slot-grid" role="grid" aria-label="Hearing time slots"/>
+                                        <p class="text-muted small mb-0" id="bn_slot_hint"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Additional notes (optional)</label>
+                                        <textarea class="form-control" name="preferred_slot_notes" rows="2" placeholder="Any special requests for the hearing"/>
                                     </div>
                                     <div class="form-check mb-3">
                                         <input class="form-check-input" type="checkbox" name="consent" value="1" id="bn_consent" required="required"/>
