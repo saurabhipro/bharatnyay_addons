@@ -68,9 +68,10 @@ class BharatLoanStage(models.Model):
 
     @api.model
     def _ensure_default_master_stages(self):
-        if self.search_count([]):
-            return
-        self.create([dict(spec) for spec in DEFAULT_LOAN_STAGES])
+        """Create any default master stages missing by code (idempotent)."""
+        for spec in DEFAULT_LOAN_STAGES:
+            if not self.search([('code', '=', spec['code'])], limit=1):
+                self.create(dict(spec))
 
 
 class BharatCompanyLoanStage(models.Model):

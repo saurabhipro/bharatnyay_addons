@@ -75,14 +75,6 @@ class BharatWebsite(http.Controller):
             {'loans': loans},
         )
 
-    @http.route(
-        ['/bn/respond/<string:token>'],
-        type='http',
-        auth='public',
-        website=True,
-        methods=['GET', 'POST'],
-        csrf=True,
-    )
     def _bn_notice_default_scheduler_date(self, loan):
         Wiz = request.env['bharat.loan.hearing.schedule.wizard'].sudo()
         return Wiz._default_scheduler_date_for_loan(loan)
@@ -116,6 +108,14 @@ class BharatWebsite(http.Controller):
             headers=[('Content-Type', 'application/json')],
         )
 
+    @http.route(
+        ['/bn/respond/<string:token>'],
+        type='http',
+        auth='public',
+        website=True,
+        methods=['GET', 'POST'],
+        csrf=True,
+    )
     def bn_notice_respond(self, token, **post):
         NoticeLine = request.env['bharat.loan.notice.line'].sudo()
         line = NoticeLine.search([('qr_access_token', '=', token)], limit=1)

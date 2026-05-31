@@ -2,6 +2,7 @@
 import base64
 import io
 import logging
+import resource
 
 from odoo import _, api, models
 from odoo.exceptions import UserError
@@ -134,9 +135,7 @@ class IrActionsReport(models.Model):
 
     def _render_qweb_pdf(self, report_ref, res_ids=None, data=None):
         if self._is_bharatnyay_pdf_report(report_ref):
-            from odoo.addons.bharatnyay_core.hooks import raise_file_descriptor_limit
-
-            raise_file_descriptor_limit()
+            _raise_file_descriptor_limit()
             ids = self._normalize_res_ids(res_ids)
             if len(ids) > 1:
                 try:

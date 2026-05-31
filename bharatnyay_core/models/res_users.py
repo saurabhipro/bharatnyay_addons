@@ -167,64 +167,6 @@ class ResUsers(models.Model):
     def _bharat_trigger_loan_case_manager_recompute(self):
         self.env['bharat.loan'].sudo()._recompute_auto_case_managers()
 
-    @api.model
-    def bharatnyay_ensure_demo_case_manager(self):
-        """Create or align the sandbox case manager user (module data XML)."""
-        login = 'bn.demo.case.manager'
-        Users = self.sudo()
-        user = Users.search([('login', '=', login)], limit=1)
-        company = self.env.ref('base.main_company', raise_if_not_found=False)
-        vals = {
-            'name': 'Demo Case Manager',
-            'email': 'manager.demo@bharatnyay.example.com',
-            'bharat_role': 'case_manager',
-        }
-        if company:
-            vals['company_id'] = company.id
-            vals['company_ids'] = [(6, 0, [company.id])]
-        if not user:
-            vals.update({
-                'login': login,
-                'groups_id': [(6, 0, [self.env.ref('base.group_user').id])],
-            })
-            user = Users.create(vals)
-            user.password = '1234'
-            return user
-        if not user.bharat_role:
-            user.write(vals)
-        user._sync_bharat_role_groups()
-        return user
-
-    @api.model
-    def bharatnyay_ensure_demo_lender(self):
-        """Create or align the sandbox lender user (module data XML)."""
-        login = 'bn.demo.lender'
-        Users = self.sudo()
-        user = Users.search([('login', '=', login)], limit=1)
-        company = self.env.ref('base.main_company', raise_if_not_found=False)
-        vals = {
-            'name': 'Demo Lender',
-            'email': 'lender.demo@bharatnyay.example.com',
-            'bharat_role': 'lender',
-        }
-        if company:
-            vals['company_id'] = company.id
-            vals['company_ids'] = [(6, 0, [company.id])]
-        if not user:
-            vals.update({
-                'login': login,
-                'groups_id': [(6, 0, [self.env.ref('base.group_user').id])],
-            })
-            user = Users.create(vals)
-            user.password = '1234'
-            return user
-        if not user.bharat_role:
-            user.write(vals)
-        elif company and company.id not in user.company_ids.ids:
-            user.write({'company_ids': [(4, company.id)]})
-        user._sync_bharat_role_groups()
-        return user
-
     @api.onchange('bharat_region_id')
     def _onchange_bharat_region_id(self):
         for user in self:

@@ -67,7 +67,7 @@
             <form string="Bill loan batch">
                 <group>
                     <field name="move_id" invisible="1"/>
-                    <field name="batch_number" placeholder="e.g. BN-DEMO-BILL"/>
+                    <field name="batch_number" placeholder="e.g. BN-2026-001"/>
                     <field name="preview_case_count" readonly="1"/>
                 </group>
                 <div class="alert alert-info" role="alert">

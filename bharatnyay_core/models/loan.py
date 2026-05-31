@@ -395,7 +395,11 @@ class BharatLoan(models.Model):
     def _get_company_stage(self, code, company=None):
         company = company or self.env.company
         if hasattr(company, '_get_loan_stage_by_code'):
-            return company._get_loan_stage_by_code(code)
+            stage = company._get_loan_stage_by_code(code)
+            if not stage and hasattr(company, '_sync_loan_stages_from_master'):
+                company._sync_loan_stages_from_master()
+                stage = company._get_loan_stage_by_code(code)
+            return stage
         return self.env['bharat.loan.stage'].search([('code', '=', code)], limit=1)
 
     def _stage_code(self):
@@ -1863,45 +1867,6 @@ class BharatLoan(models.Model):
             'upcoming_hearings': self._upcoming_hearings(domain),
             'loan_domain': domain,
         }
-
-    def _register_hook(self):
-        super()._register_hook()
-        try:
-            from odoo.addons.bharatnyay_core.hooks import (
-                migrate_borrower_state_to_country_state,
-                migrate_collection_manager_to_case_manager,
-                migrate_loan_workflow_stage_to_state_id,
-                repair_loan_arbitrator_id_column,
-                repair_loan_case_manager_id_column,
-                repair_loan_foreign_key_columns,
-                repair_loan_hearing_columns,
-                seed_bharatnyay_demo_users_and_roles,
-                seed_loan_stages_for_all_companies,
-                migrate_per_company_loan_stages_to_master,
-            )
-        except ImportError:
-            return
-        if not getattr(self.pool, 'db_name', False):
-            return
-        cr = self.pool.cursor()
-        try:
-            migrate_borrower_state_to_country_state(cr)
-            migrate_collection_manager_to_case_manager(cr)
-            migrate_per_company_loan_stages_to_master(cr)
-            seed_loan_stages_for_all_companies(cr)
-            migrate_loan_workflow_stage_to_state_id(cr)
-            repair_loan_foreign_key_columns(cr)
-            repair_loan_arbitrator_id_column(cr)
-            repair_loan_case_manager_id_column(cr)
-            repair_loan_hearing_columns(cr)
-            seed_bharatnyay_demo_users_and_roles(cr)
-            cr.commit()
-        except Exception:
-            cr.rollback()
-            _logger.exception('bharatnyay_core: bharat.loan FK column repair failed; run Odoo upgrade')
-        finally:
-            cr.close()
-
 
 class BharatLoanNoticeLine(models.Model):
     _name = 'bharat.loan.notice.line'

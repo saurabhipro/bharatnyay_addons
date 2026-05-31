@@ -53,21 +53,30 @@ class ResCompany(models.Model):
         return line.stage_id if line else self.env['bharat.loan.stage']
 
     def _assign_default_loan_stages(self):
+        """Assign full master workflow to companies that have no stage lines yet."""
+        self._sync_loan_stages_from_master(only_empty=True)
+
+    def _sync_loan_stages_from_master(self, only_empty=False):
+        """Add missing master stages to each company (e.g. hearing after go-live)."""
         Stage = self.env['bharat.loan.stage']
         Line = self.env['bharat.company.loan.stage']
         Stage._ensure_default_master_stages()
-        master_stages = Stage.search([], order='sequence, id')
+        master_stages = Stage.search([('active', '=', True)], order='sequence, id')
         for company in self:
-            if company.loan_stage_line_ids:
+            if only_empty and company.loan_stage_line_ids:
                 continue
-            Line.create([
+            existing_stage_ids = set(company.loan_stage_line_ids.mapped('stage_id').ids)
+            vals_list = [
                 {
                     'company_id': company.id,
                     'stage_id': stage.id,
                     'sequence': stage.sequence,
                 }
                 for stage in master_stages
-            ])
+                if stage.id not in existing_stage_ids
+            ]
+            if vals_list:
+                Line.create(vals_list)
 
     @api.model_create_multi
     def create(self, vals_list):
