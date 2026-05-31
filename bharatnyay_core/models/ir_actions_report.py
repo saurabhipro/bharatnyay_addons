@@ -202,8 +202,6 @@ class IrActionsReport(models.Model):
             '--load-media-error-handling', 'ignore',
             '--image-quality', '75',
         ])
-        if not any(a == '--dpi' for a in filtered):
-            filtered.extend(['--dpi', '80'])
         # Allow wkhtmltopdf to shrink content so each notice letter stays on one page.
         filtered = [a for a in filtered if a != '--disable-smart-shrinking']
         return filtered

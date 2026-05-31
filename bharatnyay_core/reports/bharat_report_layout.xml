@@ -4,6 +4,7 @@
       Do NOT use CSS class names "header" or "footer" here — Odoo/wkhtmltopdf repeats them on
       every PDF page and wastes space. Use bn-report-* instead.
     -->
+    <!-- Delegates to Odoo document layout (company letterhead, logo, footer). -->
     <template id="bharat_report_external_layout">
         <t t-if="not o" t-set="o" t-value="doc"/>
         <t t-if="not company and o">
@@ -11,12 +12,9 @@
             <t t-elif="o._name == 'bharat.loan'" t-set="company" t-value="o.company_id"/>
         </t>
         <t t-set="company" t-value="company or env.company"/>
-        <div class="bn-report-top" style="font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #334155; padding-bottom: 4px; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0;">
-            <strong t-esc="company.name or 'BharatNyay'"/>
-        </div>
-        <div class="article o_bharat_report_article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id">
+        <t t-call="web.external_layout">
             <t t-out="0"/>
-        </div>
+        </t>
     </template>
 
     <!-- Shared compact QR + signature row (keeps closing block on same page as body) -->

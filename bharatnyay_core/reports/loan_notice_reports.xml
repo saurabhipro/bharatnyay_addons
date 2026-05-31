@@ -123,7 +123,8 @@
     <template id="report_bharat_loan_commencement_arbitration">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
                         <h2 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">
                             1. Commencement of Arbitration
@@ -208,7 +209,8 @@
     <template id="report_bharat_loan_reminder_notice">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
                         <div style="border: 1px solid #222; padding: 10px 12px;">
                             <h2 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
@@ -297,7 +299,8 @@
     <template id="report_bharat_loan_final_notice">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
                         <div style="border: 1px solid #222; padding: 10px 12px;">
                             <h2 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
@@ -382,7 +385,8 @@
     <template id="report_bharat_loan_hearing_proceedings">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <t t-set="hearing_lines" t-value="o.hearing_line_ids.sorted('hearing_datetime')"/>
                     <t t-set="hearing_no" t-value="len(hearing_lines) or 1"/>
                     <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
@@ -462,7 +466,8 @@
     <template id="report_bharat_loan_hearing_proceedings_2">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <t t-set="hearing_lines" t-value="o.hearing_line_ids.sorted('hearing_datetime')"/>
                     <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
@@ -533,7 +538,8 @@
     <template id="report_bharat_loan_hearing_final">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <t t-set="hearing_lines" t-value="o.hearing_line_ids.sorted('hearing_datetime')"/>
                     <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
@@ -598,7 +604,8 @@
     <template id="report_bharat_loan_interim_order">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
                         <div style="border: 1px solid #222; padding: 22px 24px;">
@@ -678,7 +685,8 @@
     <template id="report_bharat_loan_written_statement">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <t t-set="payments_made" t-value="(o.financed_amount or 0) - (o.current_pos or 0) if o.financed_amount and o.current_pos is not None else 0"/>
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
                         <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
@@ -755,7 +763,8 @@
     <template id="report_bharat_loan_notice">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                     <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0; page-break-inside: avoid; page-break-after: avoid;">
                         <div style="border: 1px solid #222; padding: 10px 12px;">
                             <h2 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
@@ -846,7 +855,7 @@
             <t t-foreach="docs" t-as="o">
                 <t t-set="loan" t-value="o.loan_id"/>
                 <t t-set="company" t-value="loan.company_id or env.company"/>
-                <t t-call="bharatnyay_core.bharat_report_external_layout">
+                <t t-call="web.external_layout">
                     <div class="page">
                         <t t-set="notice_title" t-value="(loan.notice_hand or '').strip() or 'Notice'"/>
                         <h2 style="margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
@@ -921,6 +930,8 @@
     <template id="report_bharat_loan_envelope">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
                 <div class="page" style="padding: 24mm 18mm; page-break-after: always;">
                     <div style="font-size: 16px; font-weight: 700; margin-bottom: 16px;">To,</div>
                     <div style="font-size: 18px; line-height: 1.45;">
@@ -946,6 +957,7 @@
                         <strong>Loan:</strong> <span t-esc="o.loan_number or '-'"/>
                     </div>
                 </div>
+                </t>
             </t>
         </t>
     </template>
