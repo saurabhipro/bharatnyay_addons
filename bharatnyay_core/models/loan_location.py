@@ -28,6 +28,8 @@ class BharatLoanLocation(models.Model):
 
     @api.constrains('region_id', 'state_id')
     def _check_state_matches_region(self):
+        if self.env.context.get('from_import') or self.env.context.get('import_file'):
+            return
         for rec in self:
             if (
                 rec.region_id

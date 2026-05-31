@@ -37,6 +37,8 @@ class BharatBranch(models.Model):
 
     @api.constrains('region_id', 'borrower_state_id', 'location_id')
     def _check_branch_geography(self):
+        if self.env.context.get('from_import') or self.env.context.get('import_file'):
+            return
         for rec in self:
             if rec.borrower_state_id and rec.region_id and rec.borrower_state_id.region_id != rec.region_id:
                 raise ValidationError(

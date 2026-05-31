@@ -38,6 +38,12 @@
               action="action_bharat_loan"
               sequence="15"/>
 
+    <menuitem id="menu_bharatnyay_portfolio_import"
+              name="Import portfolio Excel"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_loan_portfolio_import_wizard"
+              sequence="16"/>
+
     <menuitem id="menu_bharatnyay_workflow"
               name="Workflow queues"
               parent="menu_bharatnyay_root"

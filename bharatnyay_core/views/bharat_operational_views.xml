@@ -60,6 +60,47 @@
         <field name="target">new</field>
     </record>
 
+    <record id="view_bharat_loan_portfolio_import_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.portfolio.import.wizard.form</field>
+        <field name="model">bharat.loan.portfolio.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import portfolio Excel">
+                <header>
+                    <field name="import_state" widget="statusbar" statusbar_visible="idle,done"/>
+                </header>
+                <group>
+                    <field name="data_file" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                    <field name="update_existing"/>
+                    <field name="dry_run"/>
+                </group>
+                <div class="alert alert-info" role="alert" invisible="result_summary">
+                    Upload your Lok Adalat / portfolio Excel (.xlsx). Valid rows are imported immediately.
+                    Wrong rows are listed below — all other rows are still saved.
+                </div>
+                <group string="Result" invisible="not result_summary">
+                    <field name="result_summary" nolabel="1" widget="text"/>
+                </group>
+                <group string="Failed rows only" invisible="not error_log">
+                    <field name="error_log" nolabel="1" widget="text"/>
+                </group>
+                <footer>
+                    <button name="action_import" string="Import" type="object" class="btn-primary"/>
+                    <button name="action_view_cases" string="Open Cases" type="object"
+                            class="btn-secondary" invisible="import_state != 'done'"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_loan_portfolio_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import portfolio Excel</field>
+        <field name="res_model">bharat.loan.portfolio.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
     <record id="view_bharat_arbitration_invoice_loader_wizard_form" model="ir.ui.view">
         <field name="name">bharat.arbitration.invoice.line.loader.wizard.form</field>
         <field name="model">bharat.arbitration.invoice.line.loader.wizard</field>

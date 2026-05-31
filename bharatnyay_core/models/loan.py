@@ -3,6 +3,7 @@
 
 from collections import defaultdict
 import logging
+import re
 from datetime import datetime, time as dt_time, timedelta
 
 import pytz
@@ -1129,11 +1130,27 @@ class BharatLoan(models.Model):
         }
 
     @api.model
+    def _is_data_import(self):
+        ctx = self.env.context
+        return bool(ctx.get('from_import') or ctx.get('import_file'))
+
+    _IMPORT_GEO_FIELDS = frozenset({
+        'region_id', 'state_id', 'borrower_state_id', 'location_id',
+    })
+
+    @staticmethod
+    def _normalize_master_lookup(name):
+        """Strip noise and collapse whitespace for case-insensitive master matching."""
+        if not name:
+            return ''
+        text = str(name).strip()
+        text = re.sub(r'\s*\([^)]+\)\s*$', '', text).strip()
+        return ' '.join(text.split())
+
+    @api.model
     def _resolve_country_state(self, name):
         """Match imported state text to ``res.country.state`` (India)."""
-        if not name:
-            return False
-        value = str(name).strip()
+        value = self._normalize_master_lookup(name)
         if not value:
             return False
         country = self.env.ref('base.in', raise_if_not_found=False)
@@ -1143,18 +1160,32 @@ class BharatLoan(models.Model):
         return self.env['res.country.state'].search(domain, limit=1)
 
     @api.model
+    def _align_state_region_for_import(self, state, region):
+        """During import, trust spreadsheet region over stale state master links."""
+        if not self._is_data_import() or not state or not region:
+            return
+        if state.region_id != region:
+            state.sudo().write({'region_id': region.id})
+
+    @api.model
     def _ensure_master(self, model_name, name, extra_vals=None):
         """Get-or-create helper for master records from imported text."""
         if not name:
             return False
-        value = str(name).strip()
+        value = self._normalize_master_lookup(name)
         if not value:
             return False
         Model = self.env[model_name]
         rec = Model.search([('name', '=ilike', value)], limit=1)
         if rec:
             if extra_vals:
-                to_write = {k: v for k, v in extra_vals.items() if v and not rec[k]}
+                if self._is_data_import():
+                    to_write = {
+                        k: v for k, v in extra_vals.items()
+                        if v and (k in self._IMPORT_GEO_FIELDS or not rec[k])
+                    }
+                else:
+                    to_write = {k: v for k, v in extra_vals.items() if v and not rec[k]}
                 if to_write:
                     rec.write(to_write)
             return rec
@@ -1203,7 +1234,9 @@ class BharatLoan(models.Model):
         state = self._resolve_country_state(vals.get('borrower_state')) if vals.get('borrower_state') else False
         if state and not vals.get('borrower_state_id'):
             vals['borrower_state_id'] = state.id
-        if state and state.region_id and not vals.get('region_id'):
+        if self._is_data_import() and state and region:
+            self._align_state_region_for_import(state, region)
+        elif state and state.region_id and not vals.get('region_id'):
             vals['region_id'] = state.region_id.id
 
         location = self._ensure_master(
