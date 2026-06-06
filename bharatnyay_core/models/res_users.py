@@ -104,6 +104,27 @@ class ResUsers(models.Model):
         return False
 
     @api.model
+    def _find_arbitrator_for_assignment(self):
+        """Return the active arbitrator with the fewest assigned cases (round-robin)."""
+        candidates = self.search([
+            ('bharat_role', '=', 'arbitrator'),
+            ('active', '=', True),
+            ('share', '=', False),
+        ], order='id')
+        if not candidates:
+            return False
+
+        Loan = self.env['bharat.loan'].sudo()
+        best = candidates[0]
+        min_count = Loan.search_count([('arbitrator_id', '=', best.id)])
+        for user in candidates[1:]:
+            count = Loan.search_count([('arbitrator_id', '=', user.id)])
+            if count < min_count:
+                best = user
+                min_count = count
+        return best.id
+
+    @api.model
     def _bharat_operational_groups(self):
         """All BharatNyay role groups in the operational category (for add/remove)."""
         category = self.env.ref(

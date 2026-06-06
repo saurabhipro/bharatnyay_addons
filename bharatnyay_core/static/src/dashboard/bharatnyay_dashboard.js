@@ -33,6 +33,7 @@ export class BharatnyayDashboard extends Component {
             error: null,
             data: null,
             pieStyle: pieGradient([]),
+            locationPieStyle: pieGradient([]),
             search: "",
         });
 
@@ -46,6 +47,7 @@ export class BharatnyayDashboard extends Component {
             const data = await this.orm.call("bharat.loan", "get_dashboard_statistics", []);
             this.state.data = data;
             this.state.pieStyle = pieGradient(data.product_mix || []);
+            this.state.locationPieStyle = pieGradient(data.location_mix || []);
         } catch (e) {
             this.state.data = null;
             this.state.error = e?.message || String(e);
@@ -121,7 +123,57 @@ export class BharatnyayDashboard extends Component {
                 [false, "list"],
                 [false, "form"],
             ],
-            domain: [["state_code", "=", stage]],
+            domain: [["milestone_code", "=", stage]],
+            target: "current",
+        });
+    }
+
+    openLocationCases(ev) {
+        const rawId = ev.currentTarget?.dataset?.locationId;
+        if (rawId === undefined || rawId === null || rawId === "") {
+            return;
+        }
+        const locationId = parseInt(rawId, 10);
+        const domain =
+            locationId > 0
+                ? [["location_id", "=", locationId]]
+                : [["location_id", "=", false]];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Cases by location",
+            res_model: "bharat.loan",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain,
+            target: "current",
+        });
+    }
+
+    openInvoices(ev) {
+        const mode = ev.currentTarget?.dataset?.filter || "all";
+        const domain = [
+            ["move_type", "=", "out_invoice"],
+            ["bharat_arbitration_invoice", "=", true],
+        ];
+        if (mode === "draft") {
+            domain.push(["state", "=", "draft"]);
+        } else if (mode === "paid") {
+            domain.push(["state", "=", "posted"]);
+            domain.push(["payment_state", "in", ["paid", "in_payment"]]);
+        } else if (mode === "unpaid") {
+            domain.push(["state", "=", "posted"]);
+            domain.push(["payment_state", "not in", ["paid", "in_payment"]]);
+            domain.push(["amount_residual", ">", 0]);
+        }
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Arbitration invoices",
+            res_model: "account.move",
+            views: [[false, "list"], [false, "form"]],
+            domain,
+            context: { default_move_type: "out_invoice" },
             target: "current",
         });
     }

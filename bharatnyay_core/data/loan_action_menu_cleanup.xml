@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Fast upgrade hooks only — PDF backfill is opt-in (see _bharat_backfill_notice_pdfs). -->
+    <function model="bharat.loan" name="_bharat_run_upgrade_hooks"/>
+</odoo>

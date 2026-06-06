@@ -19,6 +19,19 @@ class AccountMove(models.Model):
         index=True,
         help='Import/batch number shared by the cases billed on this invoice.',
     )
+    bharat_loan_id = fields.Many2one(
+        'bharat.loan',
+        string='Loan case',
+        index=True,
+        ondelete='set null',
+        copy=False,
+    )
+    bharat_milestone_code = fields.Char(
+        string='Milestone billed',
+        index=True,
+        copy=False,
+        help='Workflow milestone that triggered this per-case invoice.',
+    )
 
     def action_open_arbitration_line_loader(self):
         self.ensure_one()
@@ -86,3 +99,54 @@ class AccountMove(models.Model):
             leftover = ', '.join(stage_ids.keys())
             raise UserError(_('Unhandled milestone keys (add products): %s') % leftover)
         return line_cmds
+
+    @api.model
+    def bharat_create_case_milestone_invoice(self, loan, milestone_code):
+        """Draft one customer invoice line for a single loan milestone."""
+        loan.ensure_one()
+        billing_code = milestone_code
+        if billing_code == 'commencement':
+            return self.env['account.move']
+
+        Template = self.env['product.template'].sudo()
+        labels = dict(Template._fields['bharat_arbitration_stage'].selection)
+        tmpl = Template.search([('bharat_arbitration_stage', '=', billing_code)], limit=2)
+        if len(tmpl) != 1:
+            raise UserError(
+                _('Configure exactly one billing product for milestone “%s” (found %s).')
+                % (labels.get(billing_code, billing_code), len(tmpl))
+            )
+        product = tmpl.product_variant_ids[:1]
+        if not product:
+            raise UserError(_('Product “%s” has no variant.') % tmpl.display_name)
+
+        partner = loan.company_id.partner_id
+        if not partner:
+            raise UserError(
+                _('Company “%s” has no linked partner for invoicing.') % loan.company_id.display_name
+            )
+
+        case_ref = loan.case_number or loan.loan_number or loan.display_name
+        task_label = labels.get(billing_code, billing_code)
+        line_name = _('%s — %s — batch %s') % (
+            case_ref,
+            task_label,
+            loan.batch_number or '-',
+        )
+        move = self.create({
+            'move_type': 'out_invoice',
+            'partner_id': partner.id,
+            'company_id': loan.company_id.id,
+            'invoice_date': fields.Date.context_today(self),
+            'ref': _('BharatNyay — %s') % case_ref,
+            'bharat_arbitration_invoice': True,
+            'bharat_invoice_batch_ref': loan.batch_number,
+            'bharat_loan_id': loan.id,
+            'bharat_milestone_code': billing_code,
+            'invoice_line_ids': [(0, 0, {
+                'product_id': product.id,
+                'quantity': 1,
+                'name': line_name,
+            })],
+        })
+        return move

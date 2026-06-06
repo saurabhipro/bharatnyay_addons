@@ -8,6 +8,8 @@ from xml.etree import ElementTree as ET
 
 _NS = {'m': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
 _CELL_REF_RE = re.compile(r'^([A-Z]+)(\d+)$')
+_DEFAULT_MAX_ROWS = 100_000
+_MAX_SHEET_ROW = 1_048_576
 
 
 def _col_index(col_letters):
@@ -66,40 +68,71 @@ def _cell_value(cell, shared_strings):
     return raw
 
 
-def read_xlsx_rows(file_bytes, *, max_rows=None):
-    """Return list of rows; each row is a list of cell values (column-aligned)."""
-    with zipfile.ZipFile(file_bytes) as zf:
-        shared_strings = _load_shared_strings(zf)
-        sheet_root = ET.fromstring(zf.read(_sheet_path(zf)))
-        sparse_rows = {}
-        max_col = 0
-        for row_el in sheet_root.findall('m:sheetData/m:row', _NS):
-            row_num = int(row_el.get('r', '0') or 0)
-            if max_rows is not None and row_num > max_rows:
-                break
-            cells = {}
-            for cell in row_el.findall('m:c', _NS):
-                ref = cell.get('r') or ''
-                match = _CELL_REF_RE.match(ref)
-                if not match:
-                    continue
-                col_idx = _col_index(match.group(1))
-                cells[col_idx] = _cell_value(cell, shared_strings)
-                max_col = max(max_col, col_idx)
-            if cells:
-                sparse_rows[row_num] = cells
+def _parse_row_element(row_el, shared_strings):
+    row_num = int(row_el.get('r', '0') or 0)
+    cells = {}
+    for cell in row_el.findall('m:c', _NS):
+        ref = cell.get('r') or ''
+        match = _CELL_REF_RE.match(ref)
+        if not match:
+            continue
+        col_idx = _col_index(match.group(1))
+        cells[col_idx] = _cell_value(cell, shared_strings)
+    return row_num, cells
 
-    if not sparse_rows:
+
+def read_xlsx_rows(file_bytes, *, max_rows=None):
+    """Return list of rows; each row is a list of cell values (column-aligned).
+
+    Only rows that contain at least one populated cell are returned (no dense fill
+    between distant row numbers — avoids MemoryError on sheets with stray formatting
+    on row 1,048,576).
+    """
+    row_cap = max_rows if max_rows is not None else _DEFAULT_MAX_ROWS
+    parsed_rows = []
+    max_col = 0
+
+    try:
+        zf = zipfile.ZipFile(file_bytes)
+    except zipfile.BadZipFile as exc:
+        raise ValueError(
+            'File is not a valid .xlsx workbook (ZIP). Save as Excel .xlsx, not .xls.'
+        ) from exc
+
+    with zf:
+        shared_strings = _load_shared_strings(zf)
+        sheet_path = _sheet_path(zf)
+
+        # Stream-parse the sheet so we never build a DOM for the whole worksheet.
+        for event, elem in ET.iterparse(zf.open(sheet_path), events=('end',)):
+            if not elem.tag.endswith('}row'):
+                continue
+            row_num, cells = _parse_row_element(elem, shared_strings)
+            elem.clear()
+            if row_num > _MAX_SHEET_ROW:
+                continue
+            if not cells:
+                continue
+            if row_num > row_cap:
+                raise ValueError(
+                    'Worksheet row %s exceeds the import limit (%s rows). '
+                    'Remove stray data/formatting far below your data range.'
+                    % (row_num, row_cap)
+                )
+            max_col = max(max_col, max(cells))
+            parsed_rows.append((row_num, cells))
+
+    if not parsed_rows:
         return []
 
-    min_row = min(sparse_rows)
-    max_row = max(sparse_rows)
-    rows = []
-    for row_num in range(min_row, max_row + 1):
-        cells = sparse_rows.get(row_num, {})
-        row = [cells.get(col) for col in range(max_col + 1)]
-        rows.append(row)
-    return rows
+    if len(parsed_rows) > row_cap:
+        raise ValueError('Too many populated rows (%s). Maximum is %s.' % (len(parsed_rows), row_cap))
+
+    parsed_rows.sort(key=lambda item: item[0])
+    return [
+        [cells.get(col) for col in range(max_col + 1)]
+        for _row_num, cells in parsed_rows
+    ]
 
 
 def excel_serial_to_date(serial):

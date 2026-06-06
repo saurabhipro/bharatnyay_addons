@@ -6,7 +6,7 @@
                 <div class="bn-header">
                     <div class="bn-title-block">
                         <h1>Portfolio dashboard</h1>
-                        <p>Live roll-up from your loan sheet — exposure, mix, and branch spread.</p>
+                        <p>Cases, exposure, and workflow at a glance.</p>
                     </div>
                     <div class="bn-header-actions">
                         <input type="search"
@@ -50,72 +50,56 @@
                 </t>
 
                 <t t-elif="state.data">
-                    <div class="bn-kpi-grid">
+                    <div class="bn-kpi-grid bn-kpi-grid--4">
                         <div class="bn-kpi-card bn-accent-border">
-                            <div class="bn-kpi-label">Total loans</div>
+                            <div class="bn-kpi-label">Total cases</div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_loans)"/>
-                            <div class="bn-kpi-trend">Rows in portfolio</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Active exposure</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.active_exposure_rows)"/>
-                            <div class="bn-kpi-trend bn-good">POS &gt; 0</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Milestones</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.delivered_or_lok)"/>
-                            <div class="bn-kpi-trend">Delivered / Lok date</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Exposure rate</div>
-                            <div class="bn-kpi-value" t-out="state.data.kpis.pos_ratio_pct + '%'"/>
-                            <div class="bn-kpi-trend">Rows with outstanding POS</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Customers</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unique_customers)"/>
-                            <div class="bn-kpi-trend">Distinct names (approx.)</div>
                         </div>
                         <div class="bn-kpi-card">
                             <div class="bn-kpi-label">Total POS</div>
                             <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.total_pos_amount)"/>
-                            <div class="bn-kpi-trend">Outstanding principal (sum)</div>
                         </div>
-                    </div>
-
-                    <div class="bn-kpi-grid bn-kpi-phase mt-3">
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Total claim</div>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.total_claim_amount)"/>
+                        </div>
                         <div class="bn-kpi-card">
                             <div class="bn-kpi-label">Hearings today</div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
-                            <div class="bn-kpi-trend">Scheduled hearing lines</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Dispatch backlog</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.pending_dispatch || 0)"/>
-                            <div class="bn-kpi-trend">Notice sent, not delivered</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Draft invoices</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.draft_invoices || 0)"/>
-                            <div class="bn-kpi-trend">Billing annexures</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">No arbitrator</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.cases_without_arbitrator || 0)"/>
-                            <div class="bn-kpi-trend">Appointment stage</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Award pending</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.pending_award_upload || 0)"/>
-                            <div class="bn-kpi-trend">Final award, no doc</div>
-                        </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Loan activities due</div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.loan_activities_due || 0)"/>
-                            <div class="bn-kpi-trend">Open Odoo activities</div>
                         </div>
                     </div>
 
+                    <div class="bn-section-title mt-2">Arbitration invoices</div>
+                    <div class="bn-kpi-grid bn-kpi-grid--4">
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--success"
+                             data-filter="paid"
+                             t-on-click="openInvoices">
+                            <div class="bn-kpi-label">Paid invoices</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.paid_invoices || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0) + ' received'"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--accent"
+                             data-filter="unpaid"
+                             t-on-click="openInvoices">
+                            <div class="bn-kpi-label">Unpaid invoices</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0) + ' outstanding'"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click"
+                             data-filter="draft"
+                             t-on-click="openInvoices">
+                            <div class="bn-kpi-label">Draft invoices</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.draft_invoices || 0)"/>
+                            <div class="bn-kpi-trend">Not yet posted</div>
+                        </div>
+                        <div class="bn-kpi-card">
+                            <div class="bn-kpi-label">Invoice total</div>
+                            <div class="bn-kpi-value" t-out="fmtMoney((state.data.kpis.paid_invoice_amount || 0) + (state.data.kpis.unpaid_invoice_amount || 0))"/>
+                            <div class="bn-kpi-trend">Posted paid + unpaid</div>
+                        </div>
+                    </div>
+
+                    <div class="bn-section-title mt-3">Case pipeline</div>
                     <div class="bn-stage-strip">
                         <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
                             <button type="button"
@@ -138,11 +122,33 @@
                         </t>
                     </div>
 
-                    <div class="bn-chart-row">
+                    <div class="bn-section-title mt-3">Locations</div>
+                    <div class="bn-location-strip" t-if="state.data.location_cards.length">
+                        <t t-foreach="state.data.location_cards" t-as="loc" t-key="loc.id + '_' + loc.label">
+                            <button type="button"
+                                    class="bn-location-card"
+                                    t-att-data-location-id="loc.id"
+                                    t-attf-style="--loc: {{ loc.color }};"
+                                    t-on-click="openLocationCases">
+                                <div class="bn-location-top">
+                                    <span class="bn-location-dot" t-attf-style="background: {{ loc.color }}"/>
+                                    <span class="bn-location-name" t-out="loc.label"/>
+                                </div>
+                                <div class="bn-location-value">
+                                    <span class="n" t-out="fmtInt(loc.count)"/>
+                                    <span class="p" t-out="loc.percent + '%'"/>
+                                </div>
+                                <div class="bn-location-meta" t-out="'POS ' + fmtMoney(loc.pos_amount)"/>
+                            </button>
+                        </t>
+                    </div>
+                    <div t-else="" class="bn-muted-empty bn-muted-empty--sm">No location data on cases yet.</div>
+
+                    <div class="bn-chart-row bn-chart-row--3 mt-3">
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Monthly volume (new rows)</h2>
-                                <span class="hint">By create month</span>
+                                <h2>Monthly volume</h2>
+                                <span class="hint">New cases by month</span>
                             </div>
                             <div class="bn-bar-chart" t-if="state.data.monthly_created.length">
                                 <t t-foreach="state.data.monthly_created" t-as="m" t-key="m.period">
@@ -156,8 +162,8 @@
                         </div>
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Product / class mix</h2>
-                                <span class="hint">By product class or label</span>
+                                <h2>Product mix</h2>
+                                <span class="hint">By product class</span>
                             </div>
                             <div class="bn-pie-wrap" t-if="state.data.product_mix.length">
                                 <div class="bn-pie" t-attf-style="background: {{ state.pieStyle }}"/>
@@ -173,45 +179,25 @@
                             </div>
                             <div t-else="" class="bn-muted-empty">No classification data.</div>
                         </div>
-                    </div>
-
-                    <div class="bn-panel">
-                        <div class="bn-panel-head">
-                            <h2>Branch snapshot</h2>
-                            <span class="hint">Top branches by loan count</span>
+                        <div class="bn-panel">
+                            <div class="bn-panel-head">
+                                <h2>Location mix</h2>
+                                <span class="hint">Cases by location</span>
+                            </div>
+                            <div class="bn-pie-wrap" t-if="state.data.location_mix.length">
+                                <div class="bn-pie" t-attf-style="background: {{ state.locationPieStyle }}"/>
+                                <ul>
+                                    <t t-foreach="state.data.location_mix" t-as="s" t-key="s.label">
+                                        <li>
+                                            <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                            <span t-out="s.label"/>
+                                            <span class="pct" t-out="s.percent + '%'"/>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+                            <div t-else="" class="bn-muted-empty">No location data.</div>
                         </div>
-                        <div class="bn-entities-scroll" t-if="state.data.entity_cards.length">
-                            <t t-foreach="state.data.entity_cards" t-as="e" t-key="e.title + '_' + e_index">
-                                <article class="bn-entity-card">
-                                    <header>
-                                        <div class="ico"><i class="fa fa-building"/></div>
-                                        <div>
-                                            <h3 t-out="e.title"/>
-                                            <span class="sub">Branch distribution</span>
-                                        </div>
-                                    </header>
-                                    <dl class="grid2">
-                                        <div>
-                                            <dt>Total</dt>
-                                            <dd t-out="fmtInt(e.total)"/>
-                                        </div>
-                                        <div>
-                                            <dt>Exposure</dt>
-                                            <dd t-out="fmtInt(e.active_exposure)"/>
-                                        </div>
-                                        <div>
-                                            <dt>Settled hint</dt>
-                                            <dd class="bn-ok" t-out="fmtInt(e.settled_hint)"/>
-                                        </div>
-                                        <div>
-                                            <dt>POS sum</dt>
-                                            <dd class="bn-money" t-out="fmtMoney(e.pos_amount)"/>
-                                        </div>
-                                    </dl>
-                                </article>
-                            </t>
-                        </div>
-                        <div t-else="" class="bn-muted-empty">No branch assignment — link branches on import.</div>
                     </div>
                 </t>
 

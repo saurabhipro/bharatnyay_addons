@@ -1,6 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_bharat_loan,bharat.loan,model_bharat_loan,base.group_user,1,1,1,1
 access_bharat_loan_stage,bharat.loan.stage,model_bharat_loan_stage,base.group_user,1,1,1,1
+access_bharat_loan_milestone,bharat.loan.milestone,model_bharat_loan_milestone,base.group_user,1,1,1,1
 access_bharat_company_loan_stage,bharat.company.loan.stage,model_bharat_company_loan_stage,base.group_user,1,1,1,1
 access_bharat_region,bharat.region,model_bharat_region,base.group_user,1,1,1,1
 access_bharat_branch,bharat.branch,model_bharat_branch,base.group_user,1,1,1,1
@@ -15,6 +16,7 @@ access_bharat_loan_hearing_slot_line,bharat.loan.hearing.slot.line,model_bharat_
 access_bharat_loan_hearing_schedule_wizard,bharat.loan.hearing.schedule.wizard,model_bharat_loan_hearing_schedule_wizard,base.group_user,1,1,1,1
 access_bharat_loan_assign_arbitrator_wizard,bharat.loan.assign.arbitrator.wizard,model_bharat_loan_assign_arbitrator_wizard,base.group_user,1,1,1,1
 access_bharat_loan_interim_award_wizard,bharat.loan.interim.award.wizard,model_bharat_loan_interim_award_wizard,base.group_user,1,1,1,1
+access_bharat_loan_award_upload_wizard,bharat.loan.award.upload.wizard,model_bharat_loan_award_upload_wizard,base.group_user,1,1,1,1
 access_bharat_loan_notice_line,bharat.loan.notice.line,model_bharat_loan_notice_line,base.group_user,1,1,1,1
 access_bharat_loan_hearing_line,bharat.loan.hearing.line,model_bharat_loan_hearing_line,base.group_user,1,1,1,1
 access_bharat_loan_interim_order,bharat.loan.interim.order,model_bharat_loan_interim_order,base.group_user,1,1,1,1

@@ -1,6 +1,6 @@
 {
     'name': 'BharatNyay Core',
-    'version': '18.0.31.0.12',
+    'version': '18.0.31.0.27',
     'icon': '/bharatnyay_core/static/description/icon.png',
     'summary': 'Loan portfolio aligned to Excel import template',
     'description': """
@@ -17,6 +17,7 @@
         'data/loan_sequence_data.xml',
         'data/loan_stage_data.xml',
         'data/loan_stage_award_update.xml',
+        'data/loan_milestone_data.xml',
         'data/notification_template_data.xml',
         'views/master_views.xml',
         'views/res_company_views.xml',
@@ -27,6 +28,7 @@
         'views/bharat_operational_views.xml',
         'views/bharat_account_product_views.xml',
         'views/loan_hearing_wizard_views.xml',
+        'views/loan_award_wizard_views.xml',
         'views/loan_assign_arbitrator_wizard_views.xml',
         'views/hearing_line_views.xml',
         'views/interim_order_views.xml',
@@ -34,6 +36,7 @@
         'reports/bharat_report_layout.xml',
         'reports/loan_notice_reports.xml',
         'views/loan_views.xml',
+        'data/loan_action_menu_cleanup.xml',
         'views/notice_line_views.xml',
         'views/dashboard_action.xml',
         'views/menus.xml',
@@ -60,4 +63,5 @@
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
+    'pre_init_hook': 'pre_init_hook',
 }

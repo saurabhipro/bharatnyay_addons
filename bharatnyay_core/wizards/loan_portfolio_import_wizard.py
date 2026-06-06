@@ -173,17 +173,33 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         if match:
             vals['borrower_phone'] = re.sub(r'\s+', '', match.group(1))
 
+    _MAX_IMPORT_BYTES = 25 * 1024 * 1024  # 25 MB
+
     def _parse_workbook(self):
         if not self.data_file:
             raise UserError(_('Upload an Excel (.xlsx) file.'))
+        if self.filename and not str(self.filename).lower().endswith('.xlsx'):
+            raise UserError(
+                _('Upload a modern Excel workbook (.xlsx). Legacy .xls files are not supported.')
+            )
         try:
             raw = base64.b64decode(self.data_file)
         except Exception as exc:
             raise UserError(_('Could not decode the uploaded file.')) from exc
         if not raw:
             raise UserError(_('The uploaded file is empty.'))
+        if len(raw) > self._MAX_IMPORT_BYTES:
+            raise UserError(
+                _('File is too large (%(size)s MB). Maximum is %(max)s MB.')
+                % {'size': round(len(raw) / (1024 * 1024), 1), 'max': round(self._MAX_IMPORT_BYTES / (1024 * 1024))}
+            )
         try:
             rows = read_xlsx_rows(io.BytesIO(raw))
+        except MemoryError as exc:
+            raise UserError(
+                _('Not enough memory to read this workbook. '
+                  'In Excel, delete unused rows/columns below your data, save as .xlsx, and try again.')
+            ) from exc
         except Exception as exc:
             raise UserError(_('Could not read the Excel workbook: %s') % exc) from exc
         if not rows:

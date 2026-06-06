@@ -2,8 +2,11 @@
 """Portfolio row aligned to the standard Excel import sheet (one record = one row)."""
 
 from collections import defaultdict
+import base64
 import logging
 import re
+import secrets
+import uuid
 from datetime import datetime, time as dt_time, timedelta
 
 import pytz
@@ -15,6 +18,17 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
+
+LOAN_MILESTONE_CODE_SELECTION = [
+    ('commencement', 'Commencement'),
+    ('notice_1', 'Notice 1'),
+    ('notice_2', 'Notice 2'),
+    ('notice_3', 'Notice 3'),
+    ('hearing_1', 'Hearing 1'),
+    ('hearing_2', 'Hearing 2'),
+    ('hearing_3', 'Hearing 3'),
+    ('award', 'Award'),
+]
 
 
 class BharatLoan(models.Model):
@@ -141,38 +155,54 @@ class BharatLoan(models.Model):
 
     STAGE_ICONS = {
         'commencement': '🚀',
-        'notice': '📩',
-        'arbitrator_appointed': '✅',
-        'hearing': '🎥',
-        'final_award': 'Award',
+        'notice_1': '📩',
+        'notice_2': '📩',
+        'notice_3': '📩',
+        'hearing_1': '🎥',
+        'hearing_2': '🎥',
+        'hearing_3': '🎥',
+        'award': '🏆',
     }
     STAGE_STYLE = {
         'commencement': {'color': '#6366f1', 'icon': 'fa-flag-checkered'},
-        'notice': {'color': '#0ea5e9', 'icon': 'fa-envelope-open-o'},
-        'arbitrator_appointed': {'color': '#8b5cf6', 'icon': 'fa-user-circle-o'},
-        'hearing': {'color': '#10b981', 'icon': 'fa-video-camera'},
-        'final_award': {'color': '#ef4444', 'icon': 'fa-gavel'},
+        'notice_1': {'color': '#0ea5e9', 'icon': 'fa-envelope-o'},
+        'notice_2': {'color': '#0284c7', 'icon': 'fa-envelope-open-o'},
+        'notice_3': {'color': '#0369a1', 'icon': 'fa-envelope'},
+        'hearing_1': {'color': '#8b5cf6', 'icon': 'fa-video-camera'},
+        'hearing_2': {'color': '#7c3aed', 'icon': 'fa-gavel'},
+        'hearing_3': {'color': '#6d28d9', 'icon': 'fa-gavel'},
+        'award': {'color': '#ef4444', 'icon': 'fa-trophy'},
     }
 
-    # ── Dispute playbook / workflow ──────────────────────────────────────
-    state_id = fields.Many2one(
-        'bharat.loan.stage',
-        string='Stage',
+    # ── Dispute playbook / workflow (single milestone master) ────────────
+    milestone_id = fields.Many2one(
+        'bharat.loan.milestone',
+        string='Milestone',
         tracking=True,
         index=True,
-        domain="[('id', 'in', allowed_stage_ids)]",
-        # default=lambda self: self._default_state_id(),
+        default=lambda self: self.env['bharat.loan.milestone']._default_commencement().id,
     )
-    allowed_stage_ids = fields.Many2many(
-        'bharat.loan.stage',
-        compute='_compute_allowed_stage_ids',
-        string='Allowed stages',
-    )
-    state_code = fields.Char(
-        string='Stage code',
-        related='state_id.code',
+    milestone_code = fields.Selection(
+        selection=LOAN_MILESTONE_CODE_SELECTION,
+        string='Milestone code',
+        compute='_compute_milestone_code',
         store=True,
         index=True,
+    )
+    allowed_milestone_ids = fields.Many2many(
+        'bharat.loan.milestone',
+        compute='_compute_allowed_milestone_ids',
+        string='Allowed milestones',
+    )
+    next_milestone_label = fields.Char(
+        string='Next milestone',
+        compute='_compute_next_milestone_label',
+    )
+    can_move_to_next_stage = fields.Boolean(
+        compute='_compute_can_move_to_next_stage',
+    )
+    arbitration_invoice_count = fields.Integer(
+        compute='_compute_arbitration_invoice_count',
     )
     state_is_arbitrator = fields.Boolean(
         string='Stage allows arbitrator assignment',
@@ -183,7 +213,7 @@ class BharatLoan(models.Model):
         string='Case locked (final award)',
         compute='_compute_is_case_locked',
         store=True,
-        help='When set, the case form and related records are read-only.',
+        help='When set (Award milestone), the case form and related records are read-only.',
     )
     state_display = fields.Char(
         string='Stage display',
@@ -374,76 +404,553 @@ class BharatLoan(models.Model):
                 parts.append(rec.borrower_state)
             rec.respondent_territory_display = ', '.join(p for p in parts if p)
 
-    @api.depends(
-        'company_id',
-        'company_id.loan_stage_line_ids',
-        'company_id.loan_stage_line_ids.stage_id',
-    )
-    def _compute_allowed_stage_ids(self):
+    @api.depends()
+    def _compute_allowed_milestone_ids(self):
+        milestones = self._milestone_master_ordered()
         for rec in self:
-            if rec.company_id:
-                rec.allowed_stage_ids = rec.company_id._loan_stages_ordered()
-            else:
-                rec.allowed_stage_ids = self.env['bharat.loan.stage'].search([])
+            rec.allowed_milestone_ids = milestones
 
-    # @api.model
-    # def _default_state_id(self):
-    #     company = self.env.company
-    #     stage = company._get_loan_stage_by_code('notice') if company else self.env['bharat.loan.stage']
-    #     return stage.id if stage else False
+    def _milestone_code(self):
+        self.ensure_one()
+        return self.milestone_id.code or self.milestone_code or ''
+
+    def _is_hearing_milestone(self):
+        self.ensure_one()
+        return (self._milestone_code() or '').startswith('hearing_')
+
+    def _is_notice_milestone(self):
+        self.ensure_one()
+        return (self._milestone_code() or '').startswith('notice_')
+
+    def _set_milestone(self, milestone):
+        self.ensure_one()
+        if not milestone:
+            raise UserError(_('Unknown workflow milestone.'))
+        self.write({
+            'milestone_id': milestone.id,
+            'workflow_section': milestone.section or 1,
+            'workflow_phase': milestone.phase or milestone.name,
+        })
+        return milestone
+
+    def _set_milestone_by_code(self, code):
+        self.ensure_one()
+        milestone = self._milestone_by_code(code)
+        if not milestone:
+            raise UserError(_('Workflow milestone “%s” is not configured.') % code)
+        return self._set_milestone(milestone)
 
     @api.model
-    def _get_company_stage(self, code, company=None):
-        company = company or self.env.company
-        if hasattr(company, '_get_loan_stage_by_code'):
-            stage = company._get_loan_stage_by_code(code)
-            if not stage and hasattr(company, '_sync_loan_stages_from_master'):
-                company._sync_loan_stages_from_master()
-                stage = company._get_loan_stage_by_code(code)
-            return stage
-        return self.env['bharat.loan.stage'].search([('code', '=', code)], limit=1)
+    def _milestone_master_ordered(self):
+        Milestone = self.env['bharat.loan.milestone']
+        if not Milestone.search_count([]):
+            Milestone._ensure_default_master_milestones()
+        return Milestone.search([('active', '=', True)], order='sequence, id')
 
-    def _stage_code(self):
+    @api.model
+    def _milestone_by_code(self, code):
+        if not code:
+            return self.env['bharat.loan.milestone']
+        return self.env['bharat.loan.milestone'].search([('code', '=', code)], limit=1)
+
+    def _next_milestone_record(self):
         self.ensure_one()
-        return self.state_id.code or ''
+        milestones = self._milestone_master_ordered()
+        codes = milestones.mapped('code')
+        code = self._milestone_code()
+        if code not in codes:
+            return self.env['bharat.loan.milestone']
+        idx = codes.index(code)
+        if idx + 1 >= len(milestones):
+            return self.env['bharat.loan.milestone']
+        return milestones[idx + 1]
 
-    def _write_stage_by_code(self, code):
+    @api.depends('milestone_id', 'milestone_id.code')
+    def _compute_milestone_code(self):
+        for rec in self:
+            rec.milestone_code = rec.milestone_id.code or 'commencement'
+
+    @api.depends('milestone_id', 'milestone_id.code')
+    def _compute_next_milestone_label(self):
+        for rec in self:
+            nxt = rec._next_milestone_record()
+            rec.next_milestone_label = nxt.name if nxt else ''
+
+    @api.depends('milestone_id', 'milestone_id.code', 'is_case_locked')
+    def _compute_can_move_to_next_stage(self):
+        for rec in self:
+            rec.can_move_to_next_stage = bool(
+                not rec.is_case_locked and rec._next_milestone_record()
+            )
+
+    def _compute_arbitration_invoice_count(self):
+        Move = self.env['account.move'].sudo()
+        for rec in self:
+            rec.arbitration_invoice_count = Move.search_count([
+                ('bharat_loan_id', '=', rec.id),
+                ('move_type', '=', 'out_invoice'),
+                ('bharat_arbitration_invoice', '=', True),
+            ])
+
+    def action_open_arbitration_invoices(self):
         self.ensure_one()
-        stage = self._get_company_stage(code, self.company_id)
-        if not stage:
-            raise UserError(_('Workflow stage “%s” is not configured for company %s.') % (code, self.company_id.display_name))
-        vals = {'state_id': stage.id}
-        if stage.section:
-            vals['workflow_section'] = stage.section
-        if stage.phase:
-            vals['workflow_phase'] = stage.phase
-        self.write(vals)
-        return stage
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Arbitration invoices'),
+            'res_model': 'account.move',
+            'view_mode': 'list,form',
+            'domain': [
+                ('bharat_loan_id', '=', self.id),
+                ('move_type', '=', 'out_invoice'),
+                ('bharat_arbitration_invoice', '=', True),
+            ],
+            'context': {'default_move_type': 'out_invoice'},
+        }
 
-    @api.depends('state_id', 'state_id.name', 'state_id.code')
+    def _resolve_borrower_partner(self):
+        """Find a partner for the borrower email when available."""
+        self.ensure_one()
+        email = (self.borrower_email or '').strip()
+        if not email:
+            return self.env['res.partner']
+        Partner = self.env['res.partner']
+        partner = Partner.search([('email', '=ilike', email)], limit=1)
+        if not partner:
+            partner = Partner.search([('child_ids.email', '=ilike', email)], limit=1)
+        return partner
+
+    def _milestone_create_notice_line(self, notice_number):
+        """Create a notice history row and render the stage PDF (Notice 1–3 templates)."""
+        self.ensure_one()
+        email = (self.borrower_email or 'noreply@bharatnyay.local').strip()
+        partner = self._resolve_borrower_partner()
+        subject = _('Notice %s — %s') % (notice_number, self.loan_number or self.case_number or '')
+        body_html = ''
+        template = self.env['bharat.notification.template'].search(
+            [('notice_type', '=', 'notice'), ('active', '=', True)],
+            limit=1,
+        )
+        if template:
+            subject, body = template.render_for_loan(self)
+            body_html = (body or '').replace('\n', '<br/>')
+
+        line = self.env['bharat.loan.notice.line'].create({
+            'loan_id': self.id,
+            'notice_type': 'notice',
+            'notice_number': notice_number,
+            'sent_on': fields.Datetime.now(),
+            'sent_by_id': self.env.user.id,
+            'recipient_partner_id': partner.id if partner else False,
+            'sent_to': email,
+            'subject': subject,
+            'body_html': body_html,
+            'qr_access_token': uuid.uuid4().hex,
+            'microsite_otp_code': '%06d' % secrets.randbelow(1000000),
+        })
+        line._attach_notice_pdf()
+        return line
+
+    def _milestone_attach_hearing_pdf(self, hearing_number):
+        """Render hearing proceedings PDF and attach to the case chatter."""
+        self.ensure_one()
+        mapping = {
+            1: 'bharatnyay_core.action_report_bharat_loan_hearing_proceedings',
+            2: 'bharatnyay_core.action_report_bharat_loan_hearing_proceedings_2',
+            3: 'bharatnyay_core.action_report_bharat_loan_hearing_final',
+        }
+        xmlid = mapping.get(hearing_number)
+        if not xmlid:
+            return False
+        report = self.env.ref(xmlid, raise_if_not_found=False)
+        if not report:
+            return False
+        pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=self.ids)
+        ref = self.loan_number or self.case_number or self.id
+        filename = 'Hearing_%s_%s.pdf' % (hearing_number, ref)
+        self.message_post(
+            body=_('Hearing %s proceedings PDF generated.') % hearing_number,
+            attachments=[(filename, pdf_bytes)],
+        )
+        return True
+
+    def _ensure_milestone_id(self):
+        """Backfill milestone for legacy rows missing milestone_id."""
+        self.ensure_one()
+        if self.milestone_id:
+            return
+        n_notice = len(self.notice_line_ids)
+        n_hearing = len(self.hearing_line_ids)
+        if n_hearing:
+            code = 'hearing_%d' % min(n_hearing, 3)
+        elif n_notice:
+            code = 'notice_%d' % min(n_notice, 3)
+        else:
+            code = 'commencement'
+        milestone = self._milestone_by_code(code)
+        if milestone:
+            self._set_milestone(milestone)
+
+    @api.model
+    def _bharat_migrate_loans_to_milestone_only(self):
+        """Upgrade hook: point every case at Workflow milestones (drop loan stages)."""
+        Milestone = self.env['bharat.loan.milestone']
+        Milestone._ensure_default_master_milestones()
+        code_to_milestone = {m.code: m for m in Milestone.search([])}
+        loans = self.with_context(bharat_allow_locked_case_write=True).search([
+            ('milestone_id', '=', False),
+        ])
+        for loan in loans:
+            code = (loan.milestone_code or '').strip()
+            if not code:
+                n_notice = len(loan.notice_line_ids)
+                n_hearing = len(loan.hearing_line_ids)
+                if n_hearing:
+                    code = 'hearing_%d' % min(n_hearing, 3)
+                elif n_notice:
+                    code = 'notice_%d' % min(n_notice, 3)
+                else:
+                    code = 'commencement'
+            milestone = code_to_milestone.get(code)
+            if milestone:
+                loan.write({
+                    'milestone_id': milestone.id,
+                    'workflow_section': milestone.section or 1,
+                    'workflow_phase': milestone.phase or milestone.name,
+                })
+        return True
+
+    @api.model
+    def _bharat_backfill_notice_pdfs(self, limit=50):
+        """Opt-in: render PDFs for notice lines missing attachments (never run on every upgrade)."""
+        ICP = self.env['ir.config_parameter'].sudo()
+        if ICP.get_param('bharatnyay_core.notice_pdf_backfill_done'):
+            return True
+        NoticeLine = self.env['bharat.loan.notice.line']
+        lines = NoticeLine.search([('notice_pdf', '=', False)], limit=limit)
+        for line in lines:
+            if not line.qr_access_token:
+                line.qr_access_token = uuid.uuid4().hex
+            if not line.microsite_otp_code:
+                line.microsite_otp_code = '%06d' % secrets.randbelow(1000000)
+            try:
+                line._attach_notice_pdf()
+            except Exception:
+                _logger.exception(
+                    'Notice PDF backfill failed for notice line %s (loan %s)',
+                    line.id,
+                    line.loan_id.id,
+                )
+        if not NoticeLine.search_count([('notice_pdf', '=', False)]):
+            ICP.set_param('bharatnyay_core.notice_pdf_backfill_done', '1')
+        return True
+
+    @api.model
+    def _bharat_fixup_milestone_code_field_metadata(self):
+        """Repair ir.model.fields after a failed Char migration (Odoo 18 selection unlink bug)."""
+        cr = self.env.cr
+        cr.execute(
+            """
+            SELECT id, ttype FROM ir_model_fields
+            WHERE model = 'bharat.loan' AND name = 'milestone_code'
+            LIMIT 1
+            """
+        )
+        row = cr.fetchone()
+        if not row:
+            return True
+        field_id, ttype = row
+        if ttype == 'char':
+            cr.execute(
+                "DELETE FROM ir_model_fields_selection WHERE field_id = %s",
+                (field_id,),
+            )
+            cr.execute(
+                "UPDATE ir_model_fields SET ttype = 'selection' WHERE id = %s",
+                (field_id,),
+            )
+        self._bharat_ensure_milestone_code_selections()
+        return True
+
+    @api.model
+    def _bharat_ensure_milestone_code_selections(self):
+        """Register every milestone code (incl. award) on ir.model.fields.selection."""
+        field = self.env['ir.model.fields'].search([
+            ('model', '=', 'bharat.loan'),
+            ('name', '=', 'milestone_code'),
+        ], limit=1)
+        if not field:
+            return True
+        Selection = self.env['ir.model.fields.selection'].sudo()
+        existing = set(Selection.search([('field_id', '=', field.id)]).mapped('value'))
+        for seq, (code, label) in enumerate(LOAN_MILESTONE_CODE_SELECTION):
+            if code in existing:
+                continue
+            Selection.create({
+                'field_id': field.id,
+                'value': code,
+                'name': label,
+                'sequence': seq,
+            })
+        return True
+
+    @api.model
+    def _bharat_run_upgrade_hooks(self):
+        """Fast, safe hooks invoked once per module upgrade."""
+        for hook_name, hook in (
+            ('fixup_milestone_code_metadata', self._bharat_fixup_milestone_code_field_metadata),
+            ('cleanup_action_menu', self._bharat_cleanup_action_menu),
+            ('migrate_loans_to_milestone_only', self._bharat_migrate_loans_to_milestone_only),
+        ):
+            try:
+                hook()
+            except Exception:
+                _logger.exception('BharatNyay upgrade hook failed: %s', hook_name)
+        return True
+
+    def _milestone_apply_entry_actions(self, milestone):
+        self.ensure_one()
+        if milestone.auto_assign_case_manager and not self.case_manager_id:
+            branch_id = self.branch_id.id if self.branch_id else False
+            location_id = self.location_id.id if self.location_id else False
+            cm_id = self.env['res.users']._find_case_manager_for_scope(branch_id, location_id)
+            if not cm_id:
+                raise UserError(
+                    _('No case manager found for branch/location scope. Configure case managers in Users.')
+                )
+            self.write({'case_manager_manual': False, 'case_manager_id': cm_id})
+        if milestone.auto_assign_arbitrator and not self.arbitrator_id:
+            arb_id = self.env['res.users']._find_arbitrator_for_assignment()
+            if not arb_id:
+                raise UserError(_('No active arbitrator found. Mark at least one user as Arbitrator.'))
+            self.write({'arbitrator_id': arb_id})
+        if milestone.code.startswith('notice_'):
+            notice_number = int(milestone.code.split('_')[1])
+            existing = self.notice_line_ids.filtered(lambda l: l.notice_number == notice_number)
+            if not existing:
+                self._milestone_create_notice_line(notice_number)
+        if milestone.code == 'hearing_1' and self.arbitrator_id and not self.hearing_line_ids:
+            self._provision_hearing_lines_on_arbitrator_assign()
+        if milestone.code.startswith('hearing_'):
+            hearing_number = int(milestone.code.split('_')[1])
+            self._milestone_attach_hearing_pdf(hearing_number)
+        if milestone.code == 'award':
+            doc = self._get_or_create_final_award_document()
+            doc._attach_draft_award_letter()
+
+    def _milestone_create_exit_invoice(self, milestone):
+        self.ensure_one()
+        if not milestone.auto_invoice_on_exit:
+            return self.env['account.move']
+        billing_code = milestone.code
+        if billing_code == 'commencement':
+            return self.env['account.move']
+        return self.env['account.move'].bharat_create_case_milestone_invoice(self, billing_code)
+
+    def _advance_one_milestone(self):
+        """Move a single case to its next milestone. Returns (next_name, skip_reason)."""
+        self.ensure_one()
+        self._ensure_milestone_id()
+
+        case_ref = self.case_number or self.loan_number or self.display_name
+        if self.is_case_locked:
+            return False, _('%(case)s — locked (Award)') % {'case': case_ref}
+
+        current = self.milestone_id or self._milestone_by_code(self._milestone_code())
+        if not current:
+            return False, _('%(case)s — unknown milestone “%s”') % {
+                'case': case_ref,
+                's': self._milestone_code() or '?',
+            }
+
+        nxt = self._next_milestone_record()
+        if not nxt:
+            return False, _('%(case)s — already at %(milestone)s') % {
+                'case': case_ref,
+                'milestone': current.name,
+            }
+
+        invoice = self._milestone_create_exit_invoice(current)
+        self._milestone_apply_entry_actions(nxt)
+        self._set_milestone(nxt)
+
+        body_parts = [_('Moved to <b>%s</b>') % escape(nxt.name)]
+        if invoice:
+            body_parts.append(
+                _('Draft invoice <a href="#" data-oe-model="account.move" data-oe-id="%s">%s</a> created.')
+                % (invoice.id, escape(invoice.name or invoice.display_name))
+            )
+        if nxt.auto_assign_case_manager and self.case_manager_id:
+            body_parts.append(_('Case manager: <b>%s</b>') % escape(self.case_manager_id.name))
+        if nxt.auto_assign_arbitrator and self.arbitrator_id:
+            body_parts.append(_('Arbitrator: <b>%s</b>') % escape(self.arbitrator_id.name))
+        self.message_post(body='<br/>'.join(body_parts))
+        return nxt.name, False
+
+    @staticmethod
+    def _milestone_action_notification(title, message, notif_type='success'):
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': message,
+                'type': notif_type,
+                'sticky': False,
+            },
+        }
+
+    def action_move_to_next_stage(self):
+        """Advance each selected case by one milestone (bulk-safe, per-case logic)."""
+        advanced = []
+        skipped = []
+        failed = []
+
+        for rec in self:
+            try:
+                next_name, skip_reason = rec._advance_one_milestone()
+            except UserError as exc:
+                case_ref = rec.case_number or rec.loan_number or rec.display_name
+                failed.append('%s — %s' % (case_ref, exc.args[0]))
+                continue
+            except Exception as exc:
+                case_ref = rec.case_number or rec.loan_number or rec.display_name
+                failed.append('%s — %s' % (case_ref, exc))
+                _logger.exception('Move to next stage failed for loan %s', rec.id)
+                continue
+
+            case_ref = rec.case_number or rec.loan_number or rec.display_name
+            if skip_reason:
+                skipped.append(skip_reason)
+            else:
+                advanced.append('%s → %s' % (case_ref, next_name))
+
+        title = _('Move to next stage')
+        if len(self) == 1 and advanced:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'bharat.loan',
+                'res_id': self.id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
+        if len(self) == 1 and skipped and not failed:
+            return self._milestone_action_notification(title, skipped[0], 'warning')
+        if len(self) == 1 and failed:
+            raise UserError(failed[0].split(' — ', 1)[-1])
+
+        lines = []
+        if advanced:
+            lines.append(_('Advanced %(n)s case(s):') % {'n': len(advanced)})
+            lines.extend(advanced[:15])
+            if len(advanced) > 15:
+                lines.append(_('… and %(n)s more') % {'n': len(advanced) - 15})
+        if skipped:
+            lines.append(_('Skipped %(n)s case(s):') % {'n': len(skipped)})
+            lines.extend(skipped[:10])
+            if len(skipped) > 10:
+                lines.append(_('… and %(n)s more') % {'n': len(skipped) - 10})
+        if failed:
+            lines.append(_('Failed %(n)s case(s):') % {'n': len(failed)})
+            lines.extend(failed[:10])
+
+        if not advanced:
+            msg = '\n'.join(lines) if lines else _('No cases were advanced.')
+            return self._milestone_action_notification(title, msg, 'warning')
+
+        notif_type = 'warning' if (skipped or failed) else 'success'
+        return self._milestone_action_notification(title, '\n'.join(lines), notif_type)
+
+    @api.model
+    def _bharat_cleanup_action_menu(self):
+        """Remove legacy PDF server actions from the loan Action menu (upgrade hook)."""
+        loan_model = self.env['ir.model']._get('bharat.loan')
+        keep = self.env.ref(
+            'bharatnyay_core.action_bharat_loan_move_to_next_stage',
+            raise_if_not_found=False,
+        )
+        keep_ids = {keep.id} if keep else set()
+
+        legacy_xmlids = (
+            'bharatnyay_core.action_bharat_loan_bulk_written_statement_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_interim_order_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_hearing_final_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_hearing_proceedings_2_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_hearing_proceedings_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_final_notice_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_reminder_notice_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_commencement_arbitration_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_notice_pdf',
+            'bharatnyay_core.action_bharat_loan_bulk_envelope_pdf',
+        )
+        to_unlink = self.env['ir.actions.server']
+        for xid in legacy_xmlids:
+            action = self.env.ref(xid, raise_if_not_found=False)
+            if action and action.id not in keep_ids:
+                to_unlink |= action
+        if to_unlink:
+            to_unlink.unlink()
+
+        stray_servers = self.env['ir.actions.server'].search([
+            ('binding_model_id', '=', loan_model.id),
+            ('id', 'not in', list(keep_ids)),
+        ])
+        if stray_servers:
+            stray_servers.write({'binding_model_id': False})
+
+        bound_reports = self.env['ir.actions.report'].search([
+            ('binding_model_id', '=', loan_model.id),
+        ])
+        if bound_reports:
+            bound_reports.write({'binding_model_id': False})
+
+        return True
+
+    @api.model
+    def _compute_next_batch_number(self):
+        """Batch 1 when no loans exist; otherwise max existing batch number + 1."""
+        if not self.search_count([]):
+            return 'Batch 1'
+        loans = self.search_read([], ['batch_number'])
+        max_n = 0
+        for row in loans:
+            bn = (row.get('batch_number') or '').strip()
+            mobj = re.match(r'^Batch\s*(\d+)\s*$', bn, re.I)
+            if mobj:
+                max_n = max(max_n, int(mobj.group(1)))
+        return 'Batch %d' % (max_n + 1)
+
+    @api.model
+    def _import_batch_cache(self):
+        if not hasattr(self.env.cr, '_bharat_import_batch_cache'):
+            self.env.cr._bharat_import_batch_cache = {}
+        return self.env.cr._bharat_import_batch_cache
+
+    @api.model
+    def _get_shared_import_batch_number(self):
+        cache = self._import_batch_cache()
+        if 'batch' not in cache:
+            cache['batch'] = self._compute_next_batch_number()
+        return cache['batch']
+
+    @api.depends('milestone_id', 'milestone_id.name', 'milestone_id.code')
     def _compute_state_display(self):
         for rec in self:
-            label = rec.state_id.name or 'Unknown'
-            ico = self.STAGE_ICONS.get(rec.state_id.code or '', '•')
+            code = rec._milestone_code()
+            label = rec.milestone_id.name if rec.milestone_id else 'Unknown'
+            ico = self.STAGE_ICONS.get(code, '•')
             rec.state_display = f'{ico} {label}'
 
-    @api.depends(
-        'state_id',
-        'company_id',
-        'company_id.loan_stage_line_ids.is_arbitrator',
-        'company_id.loan_stage_line_ids.stage_id',
-    )
+    @api.depends('milestone_id', 'milestone_id.is_arbitrator')
     def _compute_state_is_arbitrator(self):
         for rec in self:
-            line = rec.company_id.loan_stage_line_ids.filtered(
-                lambda row: row.stage_id == rec.state_id
-            )[:1]
-            rec.state_is_arbitrator = bool(line.is_arbitrator)
+            rec.state_is_arbitrator = bool(rec.milestone_id.is_arbitrator)
 
-    @api.depends('state_code')
+    @api.depends('milestone_id', 'milestone_id.locks_case', 'milestone_id.code')
     def _compute_is_case_locked(self):
         for rec in self:
-            rec.is_case_locked = rec.state_code == 'final_award'
+            rec.is_case_locked = bool(
+                rec.milestone_id.locks_case or rec._milestone_code() == 'award'
+            )
 
     @staticmethod
     def _format_amount_compact(amount):
@@ -521,12 +1028,10 @@ class BharatLoan(models.Model):
     _ARBITRATOR_HEARING_OFFSET_DAYS = (1, 10, 30)
 
     def _sync_arbitrator_appointed_on_assign(self):
-        """Move to Arbitrator Appointed and provision three hearing log rows."""
+        """Provision three hearing log rows when an arbitrator is assigned."""
         for rec in self:
             if not rec.arbitrator_id:
                 continue
-            if rec._stage_code() != 'arbitrator_appointed':
-                rec._write_stage_by_code('arbitrator_appointed')
             rec._provision_hearing_lines_on_arbitrator_assign()
 
     def _provision_hearing_lines_on_arbitrator_assign(self):
@@ -587,13 +1092,6 @@ class BharatLoan(models.Model):
                 continue
             rec.arbitrator_name = rec.arbitrator_id.name
             rec.arbitrator_email = rec.arbitrator_id.email or ''
-            stage = rec._get_company_stage('arbitrator_appointed', rec.company_id)
-            if stage:
-                rec.state_id = stage
-                if stage.section:
-                    rec.workflow_section = stage.section
-                if stage.phase:
-                    rec.workflow_phase = stage.phase
 
     @api.constrains('loan_number')
     def _check_loan_number_unique(self):
@@ -623,66 +1121,33 @@ class BharatLoan(models.Model):
             if sec < 1 or sec > 31:
                 raise ValidationError(_("Workflow section must be between 1 and 31."))
 
-    @api.onchange('state_id')
-    def _onchange_state_id(self):
+    @api.onchange('milestone_id')
+    def _onchange_milestone_id(self):
         for rec in self:
-            if not rec.state_id:
+            if not rec.milestone_id:
                 continue
-            if rec.state_id.section:
-                rec.workflow_section = rec.state_id.section
-            if rec.state_id.phase:
-                rec.workflow_phase = rec.state_id.phase
-
-    @api.onchange('workflow_section')
-    def _onchange_workflow_section(self):
-        for rec in self:
-            section = rec.workflow_section or 1
-            company = rec.company_id or self.env.company
-            stages = company._loan_stages_ordered()
-            if not stages:
-                continue
-            best = stages[0]
-            best_delta = 10**9
-            for stage in stages:
-                delta = abs((stage.section or 1) - section)
-                if delta < best_delta:
-                    best = stage
-                    best_delta = delta
-            rec.state_id = best
+            rec.workflow_section = rec.milestone_id.section or 1
+            rec.workflow_phase = rec.milestone_id.phase or rec.milestone_id.name
 
     @api.model
     def _normalize_workflow_values(self, vals):
-        company_id = vals.get('company_id') or self.env.company.id
-        company = self.env['res.company'].browse(company_id)
-        if not company.exists():
-            company = self.env.company
-        if vals.get('state_id'):
-            stage = self.env['bharat.loan.stage'].browse(vals['state_id'])
-            if stage:
-                vals.setdefault('workflow_section', stage.section or 1)
-                vals.setdefault('workflow_phase', stage.phase or '')
+        if vals.get('milestone_id'):
+            milestone = self.env['bharat.loan.milestone'].browse(vals['milestone_id'])
+            if milestone:
+                vals.setdefault('workflow_section', milestone.section or 1)
+                vals.setdefault('workflow_phase', milestone.phase or milestone.name)
             return
-        section = vals.get('workflow_section')
-        if section is None:
-            if not vals.get('state_id'):
-                default = company._get_loan_stage_by_code('notice') if company else self.env['bharat.loan.stage']
-                if default:
-                    vals.setdefault('state_id', default.id)
-                    vals.setdefault('workflow_section', default.section or 1)
-                    vals.setdefault('workflow_phase', default.phase or '')
-            return
-        stages = company._loan_stages_ordered() if company else self.env['bharat.loan.stage'].search([])
-        if not stages:
-            return
-        best = stages[0]
-        best_delta = 10**9
-        for stage in stages:
-            delta = abs((stage.section or 1) - section)
-            if delta < best_delta:
-                best = stage
-                best_delta = delta
-        vals.setdefault('state_id', best.id)
-        vals.setdefault('workflow_phase', best.phase or '')
+        initializing = (
+            self.env.context.get('import_file')
+            or self.env.context.get('from_import')
+            or not self
+        )
+        if initializing and not vals.get('milestone_id'):
+            default = self.env['bharat.loan.milestone']._default_commencement()
+            if default:
+                vals.setdefault('milestone_id', default.id)
+                vals.setdefault('workflow_section', default.section or 1)
+                vals.setdefault('workflow_phase', default.phase or default.name)
 
     @api.depends(
         'notice_line_ids',
@@ -714,18 +1179,23 @@ class BharatLoan(models.Model):
         if self.env.context.get('skip_hearing_countdown'):
             return self
         loans = self.with_context(skip_hearing_countdown=True).filtered(
-            lambda l: l._stage_code() != 'hearing' and l.hearing_line_ids
+            lambda l: not l._is_hearing_milestone() and l.hearing_line_ids
         )
         for loan in loans:
             if loan.hearing_minutes_remaining != 0:
                 continue
             loan._promote_to_hearing_stage()
 
+    def _hearing_milestone_for_count(self, hearing_count):
+        """Map hearing log row count to hearing_1 / hearing_2 / hearing_3."""
+        idx = min(max(hearing_count, 1), 3)
+        return self._milestone_by_code('hearing_%d' % idx)
+
     def _promote_to_hearing_stage(self):
-        """Move case to Hearing when countdown reaches zero (next hearing is due)."""
+        """Move case to the matching hearing milestone when countdown reaches zero."""
         now = fields.Datetime.now()
         for loan in self.with_context(skip_hearing_countdown=True):
-            if loan._stage_code() == 'hearing':
+            if loan._is_hearing_milestone():
                 continue
             due_lines = loan.hearing_line_ids.filtered(
                 lambda l: l.hearing_datetime and l.hearing_datetime <= now
@@ -733,7 +1203,9 @@ class BharatLoan(models.Model):
             if not due_lines:
                 continue
             line = due_lines.sorted('hearing_datetime')[-1]
-            loan._write_stage_by_code('hearing')
+            milestone = loan._hearing_milestone_for_count(len(loan.hearing_line_ids))
+            if milestone:
+                loan._set_milestone(milestone)
             loan.write({
                 'hearing_datetime': line.hearing_datetime,
                 'hearing_link_type': line.link_type,
@@ -748,20 +1220,20 @@ class BharatLoan(models.Model):
         return result
 
     def bharat_arbitration_bill_stage(self):
-        """Map case workflow + activity to arbitration billing SKU (product.template stage)."""
+        """Map case workflow to arbitration billing SKU (product.template stage)."""
         self.ensure_one()
-        ws = self._stage_code()
+        code = self._milestone_code()
+        if self.award_document_ids or code == 'award':
+            return 'award'
+        if code and code != 'commencement':
+            return code
         n_notice = len(self.notice_line_ids)
         n_hear = len(self.hearing_line_ids)
-        if self.award_document_ids or ws == 'final_award':
-            return 'award'
-        if ws == 'hearing':
-            idx = min(max(n_hear, 1), 3)
-            return 'hearing_%s' % idx
-        if ws == 'arbitrator_appointed':
-            return 'hearing_1'
-        idx = min(max(n_notice, 1), 3)
-        return 'notice_%s' % idx
+        if n_hear:
+            return 'hearing_%d' % min(n_hear, 3)
+        if n_notice:
+            return 'notice_%d' % min(n_notice, 3)
+        return 'commencement'
 
     def action_open_notice_lines(self):
         self.ensure_one()
@@ -806,6 +1278,57 @@ class BharatLoan(models.Model):
             'view_mode': 'list,form',
             'domain': [('loan_id', '=', self.id)],
             'context': {'default_loan_id': self.id},
+        }
+
+    def _get_or_create_final_award_document(self):
+        self.ensure_one()
+        Award = self.env['bharat.loan.award.document']
+        doc = Award.search([
+            ('loan_id', '=', self.id),
+            ('award_type', '=', 'final'),
+        ], order='award_date desc, id desc', limit=1)
+        if not doc:
+            doc = Award.create({
+                'loan_id': self.id,
+                'award_type': 'final',
+                'award_date': fields.Datetime.now(),
+                'award_notes': self.interim_award_notes or False,
+                'created_by_id': self.env.user.id,
+            })
+        return doc
+
+    def action_download_award_letter(self):
+        """Generate draft award letter PDF and open download."""
+        self.ensure_one()
+        if self._milestone_code() != 'award':
+            raise UserError(_('Download award letter is only available at the Award milestone.'))
+        doc = self._get_or_create_final_award_document()
+        doc._attach_draft_award_letter()
+        report = self.env.ref(
+            'bharatnyay_core.action_report_bharat_loan_award_letter',
+            raise_if_not_found=False,
+        )
+        if not report:
+            raise UserError(_('Award letter report is not configured.'))
+        self.message_post(body=_('Draft award letter generated for download.'))
+        return report.report_action(self)
+
+    def action_upload_signed_award(self):
+        """Upload the arbitrator-signed award letter PDF."""
+        self.ensure_one()
+        if self._milestone_code() != 'award':
+            raise UserError(_('Upload signed award is only available at the Award milestone.'))
+        doc = self._get_or_create_final_award_document()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Upload signed award'),
+            'res_model': 'bharat.loan.award.upload.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_loan_id': self.id,
+                'default_award_document_id': doc.id,
+            },
         }
 
     def _action_open_notice_wizard(self, notice_type, notice_number=False):
@@ -903,26 +1426,23 @@ class BharatLoan(models.Model):
         }
 
     def action_move_to_hearing(self):
-        """Set workflow stage to Hearing without opening the schedule wizard."""
+        """Set workflow milestone to Hearing 1 without opening the schedule wizard."""
         for rec in self:
-            if rec._stage_code() == 'hearing':
-                raise UserError(_('This case is already in the Hearing stage.'))
-            rec._write_stage_by_code('hearing')
-            rec.message_post(body=_('<p><b>Moved to Hearing stage</b></p>'))
+            if rec._is_hearing_milestone():
+                raise UserError(_('This case is already in a hearing milestone.'))
+            rec._set_milestone_by_code('hearing_1')
+            rec.message_post(body=_('<p><b>Moved to Hearing 1</b></p>'))
         return True
 
     def action_schedule_hearing(self):
         self.ensure_one()
-        if self._stage_code() == 'hearing':
+        if self._is_hearing_milestone():
             raise UserError(
-                _('This case is already at Hearing. Use “Reschedule hearing” or the Hearing tab.')
+                _('This case is already at a hearing milestone. Use “Reschedule hearing” or the Hearing tab.')
             )
-        if self._stage_code() != 'arbitrator_appointed':
+        if not self.arbitrator_id:
             raise UserError(
-                _('Schedule Hearing is only available when the arbitrator has been appointed.')
-                + ' '
-                + _('Current workflow stage is: %s')
-                % (self.state_id.name or '?')
+                _('Schedule Hearing requires an arbitrator. Assign one first or move to Hearing 1.')
             )
         return {
             'type': 'ir.actions.act_window',
@@ -934,11 +1454,11 @@ class BharatLoan(models.Model):
         }
 
     def action_reschedule_hearing(self):
-        """Move hearing date/time while remaining in Hearing stage (Teams-like reschedule)."""
+        """Move hearing date/time while remaining in a hearing milestone."""
         self.ensure_one()
-        if self._stage_code() != 'hearing':
+        if not self._is_hearing_milestone():
             raise UserError(
-                _('Use “Schedule Hearing” before the Hearing stage. Reschedule is only for active hearings.')
+                _('Use “Schedule Hearing” before hearings begin. Reschedule is only for active hearings.')
             )
         return {
             'type': 'ir.actions.act_window',
@@ -1003,9 +1523,9 @@ class BharatLoan(models.Model):
 
     def action_send_hearing_video_link(self):
         for rec in self:
-            if rec._stage_code() != 'hearing':
+            if not rec._is_hearing_milestone():
                 raise UserError(
-                    _('Send video link only when the case is in the Hearing stage.')
+                    _('Send video link only when the case is in a hearing milestone.')
                 )
             if not rec.hearing_datetime:
                 raise UserError(_('Set a hearing date and time before sending invitations.'))
@@ -1089,8 +1609,8 @@ class BharatLoan(models.Model):
     def action_join_hearing_meeting(self):
         """Open meeting join target in a new browser tab (never duplicate this form dialog)."""
         self.ensure_one()
-        if self._stage_code() != 'hearing':
-            raise UserError(_('Join online is available during the Hearing stage.'))
+        if not self._is_hearing_milestone():
+            raise UserError(_('Join online is available during hearing milestones.'))
 
         base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
         mode = self.hearing_link_type or 'external'
@@ -1118,8 +1638,8 @@ class BharatLoan(models.Model):
 
     def action_pass_interim_award(self):
         self.ensure_one()
-        if self._stage_code() != 'hearing':
-            raise UserError(_('Pass Interim Award is only available during the Hearing stage.'))
+        if not self._is_hearing_milestone():
+            raise UserError(_('Pass Interim Award is only available during hearing milestones.'))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Pass Interim Award'),
@@ -1315,7 +1835,7 @@ class BharatLoan(models.Model):
         is_import = bool(self.env.context.get('import_file') or self.env.context.get('from_import'))
         shared_batch_number = False
         if is_import and any(not vals.get('batch_number') for vals in vals_list):
-            shared_batch_number = self.env['ir.sequence'].next_by_code('bharat.loan.import.batch') or 'Batch 1'
+            shared_batch_number = self._get_shared_import_batch_number()
 
         normalized = []
         for vals in vals_list:
@@ -1342,7 +1862,7 @@ class BharatLoan(models.Model):
         locked = self.filtered('is_case_locked')
         if locked and not self.env.context.get('bharat_allow_locked_case_write'):
             raise UserError(
-                _('This case is at Final Award stage and cannot be modified.')
+                _('This case is at Award stage and cannot be modified.')
             )
         values = dict(vals)
         self._normalize_loan_number_in_vals(values)
@@ -1433,9 +1953,11 @@ class BharatLoan(models.Model):
             [
                 'loan_number',
                 'customer_name',
-                'state_id',
-                'state_code',
+                'milestone_id',
+                'milestone_code',
                 'branch_id',
+                'location_id',
+                'location',
                 'product_class_id',
                 'product_classification',
                 'product',
@@ -1464,6 +1986,7 @@ class BharatLoan(models.Model):
         monthly_created = defaultdict(int)
         monthly_claim = defaultdict(float)
         by_branch = defaultdict(lambda: {'total': 0, 'active_pos': 0, 'pos_sum': 0.0, 'claim_sum': 0.0})
+        by_location = defaultdict(lambda: {'total': 0, 'pos_sum': 0.0, 'name': 'Unassigned location'})
         by_product_label = defaultdict(int)
         by_stage = defaultdict(int)
 
@@ -1500,14 +2023,13 @@ class BharatLoan(models.Model):
             if (row.get('notice_count') or 0) > 0 and not delivered and not row.get('lok_adalat_date'):
                 pending_dispatch += 1
 
-            stage_key = row.get('state_code') or ''
+            stage_key = row.get('milestone_code') or ''
             if (
-                stage_key == 'notice'
+                stage_key == 'notice_3'
                 and not row.get('arbitrator_id')
-                and (row.get('notice_count') or 0) >= 3
             ):
                 cases_no_arbitrator += 1
-            if stage_key == 'final_award' and not (row.get('award_document_count') or 0):
+            if stage_key == 'award' and not (row.get('award_document_count') or 0):
                 pending_award_upload += 1
 
             if stage_key:
@@ -1541,6 +2063,16 @@ class BharatLoan(models.Model):
             if not pcl:
                 pcl = row.get('product_classification') or row.get('product') or 'Unclassified'
             by_product_label[pcl] += 1
+
+            lok = row.get('location_id')
+            if lok:
+                lid, lname = lok[0], lok[1]
+            else:
+                lid = -1
+                lname = (row.get('location') or '').strip() or 'Unassigned location'
+            by_location[lid]['total'] += 1
+            by_location[lid]['name'] = lname
+            by_location[lid]['pos_sum'] += pos_f
 
         uniq_borrowers = len(borrower_keys)
 
@@ -1595,16 +2127,68 @@ class BharatLoan(models.Model):
                 'claim_amount': agg['claim_sum'],
             })
 
-        company_stages = self.env.company._loan_stages_ordered()
+        loc_items = sorted(by_location.items(), key=lambda kv: kv[1]['total'], reverse=True)
+        loc_denom = sum(v['total'] for _, v in loc_items) or 1
+        location_mix = []
+        location_cards = []
+        for i, (lid, agg) in enumerate(loc_items[:12]):
+            cnt = agg['total']
+            color = palette[i % len(palette)]
+            pct = round(100.0 * cnt / loc_denom, 2)
+            location_mix.append({
+                'label': agg['name'],
+                'count': cnt,
+                'percent': pct,
+                'color': color,
+            })
+            location_cards.append({
+                'id': lid,
+                'label': agg['name'],
+                'count': cnt,
+                'percent': pct,
+                'pos_amount': round(agg['pos_sum'], 2),
+                'color': color,
+            })
+        loc_other = sum(v['total'] for _, v in loc_items[12:])
+        if loc_other:
+            location_mix.append({
+                'label': 'Other',
+                'count': loc_other,
+                'percent': round(100.0 * loc_other / loc_denom, 2),
+                'color': '#94a3b8',
+            })
+
+        Move = self.env['account.move'].sudo()
+        arb_inv_domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ]
+        posted_arb = Move.search(arb_inv_domain + [('state', '=', 'posted')])
+        paid_moves = posted_arb.filtered(
+            lambda m: m.payment_state in ('paid', 'in_payment')
+        )
+        unpaid_moves = posted_arb.filtered(
+            lambda m: m.payment_state not in ('paid', 'in_payment')
+            and (m.amount_residual or 0) > 0
+        )
+        paid_invoice_count = len(paid_moves)
+        unpaid_invoice_count = len(unpaid_moves)
+        paid_invoice_amount = round(
+            sum((m.amount_total or 0) - (m.amount_residual or 0) for m in paid_moves),
+            2,
+        )
+        unpaid_invoice_amount = round(sum(unpaid_moves.mapped('amount_residual')), 2)
+
+        milestones = self._milestone_master_ordered()
         stage_cards = []
-        for stage in company_stages:
-            stage_key = stage.code
+        for milestone in milestones:
+            stage_key = milestone.code
             cnt = by_stage.get(stage_key, 0)
             sty = self.STAGE_STYLE.get(stage_key, {})
             stage_cards.append({
                 'key': stage_key,
-                'id': stage.id,
-                'label': stage.name or stage_key,
+                'id': milestone.id,
+                'label': milestone.name or stage_key,
                 'count': cnt,
                 'percent': round((100.0 * cnt / total), 1) if total else 0.0,
                 'color': sty.get('color', '#64748b'),
@@ -1655,9 +2239,15 @@ class BharatLoan(models.Model):
                 'cases_without_arbitrator': cases_no_arbitrator,
                 'pending_award_upload': pending_award_upload,
                 'loan_activities_due': activities_open,
+                'paid_invoices': paid_invoice_count,
+                'unpaid_invoices': unpaid_invoice_count,
+                'paid_invoice_amount': paid_invoice_amount,
+                'unpaid_invoice_amount': unpaid_invoice_amount,
             },
             'monthly_created': monthly_series,
             'product_mix': pie,
+            'location_mix': location_mix,
+            'location_cards': location_cards,
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
         }
@@ -1688,8 +2278,9 @@ class BharatLoan(models.Model):
     def _case_progress_bucket_code(self):
         """Pipeline bucket for dashboards (commencement + billing milestones)."""
         self.ensure_one()
-        if (self.state_code or '') == 'commencement':
-            return 'commencement'
+        code = self._milestone_code()
+        if code:
+            return code
         return self.bharat_arbitration_bill_stage()
 
     @api.model
@@ -1891,7 +2482,7 @@ class BharatLoan(models.Model):
                 'awards_uploaded': awards,
                 'awards_pending': len(
                     loans.filtered(
-                        lambda l: l.state_code == 'final_award' and not l.award_document_ids
+                        lambda l: l._milestone_code() == 'award' and not l.award_document_ids
                     )
                 ),
                 **billing,
@@ -1961,6 +2552,43 @@ class BharatLoanNoticeLine(models.Model):
     def _compute_notice_label(self):
         for rec in self:
             rec.notice_label = 'Notice %s' % (rec.notice_number or 1)
+
+    def _notice_report_xmlid(self):
+        """Map notice # to the full legal PDF template on the loan."""
+        self.ensure_one()
+        mapping = {
+            1: 'bharatnyay_core.action_report_bharat_loan_notice',
+            2: 'bharatnyay_core.action_report_bharat_loan_reminder_notice',
+            3: 'bharatnyay_core.action_report_bharat_loan_final_notice',
+        }
+        return mapping.get(self.notice_number or 1, 'bharatnyay_core.action_report_bharat_notice_line_notice')
+
+    def _attach_notice_pdf(self):
+        """Render and store the notice PDF on this history line."""
+        self.ensure_one()
+        loan = self.loan_id
+        if not loan:
+            return False
+
+        report = self.env.ref(self._notice_report_xmlid(), raise_if_not_found=False)
+        if not report:
+            report = self.env.ref(
+                'bharatnyay_core.action_report_bharat_notice_line_notice',
+                raise_if_not_found=False,
+            )
+        if not report:
+            _logger.warning('No notice report configured for notice line %s', self.id)
+            return False
+
+        res_ids = loan.ids if report.model == 'bharat.loan' else self.ids
+        pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=res_ids)
+        ref = loan.loan_number or loan.case_number or loan.id
+        filename = 'Notice_%s_%s.pdf' % (self.notice_number or 1, ref)
+        self.write({
+            'notice_pdf': base64.b64encode(pdf_bytes),
+            'notice_pdf_filename': filename,
+        })
+        return True
 
     def _get_notice_qr_image_data_uri(self, width=120, height=120):
         """Inline QR for notice-line PDFs."""
@@ -2039,7 +2667,7 @@ class BharatLoanHearingLine(models.Model):
         locked_loans = self.mapped('loan_id').filtered('is_case_locked')
         if locked_loans and not self.env.context.get('bharat_allow_locked_case_write'):
             raise UserError(
-                _('Case %(cases)s is at Final Award stage and cannot be modified.')
+                _('Case %(cases)s is at Award stage and cannot be modified.')
                 % {'cases': ', '.join(locked_loans.mapped('loan_number'))}
             )
         if 'loan_id' in vals:
@@ -2076,8 +2704,8 @@ class BharatLoanHearingLine(models.Model):
         """Open schedule wizard for this loan while staying in Hearing stage."""
         self.ensure_one()
         loan = self.loan_id
-        if loan._stage_code() != 'hearing':
-            raise UserError(_('Reschedule from this list only applies to cases in the Hearing stage.'))
+        if not loan._is_hearing_milestone():
+            raise UserError(_('Reschedule from this list only applies to cases in hearing milestones.'))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Reschedule hearing'),
@@ -2160,6 +2788,67 @@ class BharatLoanAwardDocument(models.Model):
     )
     award_date = fields.Datetime(string='Award date', default=fields.Datetime.now, required=True)
     award_notes = fields.Text(string='Award summary')
-    award_pdf = fields.Binary(string='Award PDF', attachment=True)
-    award_pdf_filename = fields.Char(string='Award filename')
+    draft_award_pdf = fields.Binary(string='Draft award letter', attachment=True)
+    draft_award_pdf_filename = fields.Char(string='Draft filename')
+    draft_generated_on = fields.Datetime(string='Draft generated on', copy=False)
+    award_pdf = fields.Binary(string='Signed award PDF', attachment=True)
+    award_pdf_filename = fields.Char(string='Signed filename')
+    signed_on = fields.Datetime(string='Signed on', copy=False)
+    is_signed = fields.Boolean(string='Signed copy uploaded', compute='_compute_is_signed', store=True)
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    @api.depends('award_pdf')
+    def _compute_is_signed(self):
+        for rec in self:
+            rec.is_signed = bool(rec.award_pdf)
+
+    def _award_letter_report(self):
+        return self.env.ref(
+            'bharatnyay_core.action_report_bharat_loan_award_letter',
+            raise_if_not_found=False,
+        )
+
+    def _attach_draft_award_letter(self):
+        """Render draft award letter PDF and store on this document."""
+        self.ensure_one()
+        loan = self.loan_id
+        if not loan:
+            return False
+        report = self._award_letter_report()
+        if not report:
+            _logger.warning('Award letter report not configured for award document %s', self.id)
+            return False
+        pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=loan.ids)
+        ref = loan.loan_number or loan.case_number or loan.id
+        filename = 'Award_Letter_Draft_%s.pdf' % ref
+        self.write({
+            'draft_award_pdf': base64.b64encode(pdf_bytes),
+            'draft_award_pdf_filename': filename,
+            'draft_generated_on': fields.Datetime.now(),
+        })
+        return True
+
+    def action_download_award_letter(self):
+        self.ensure_one()
+        if self.award_type != 'final':
+            raise UserError(_('Draft award letter applies to final awards only.'))
+        if not self.draft_award_pdf:
+            self._attach_draft_award_letter()
+        report = self._award_letter_report()
+        if not report:
+            raise UserError(_('Award letter report is not configured.'))
+        return report.report_action(self.loan_id)
+
+    def action_upload_signed_award(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Upload signed award'),
+            'res_model': 'bharat.loan.award.upload.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_loan_id': self.loan_id.id,
+                'default_award_document_id': self.id,
+            },
+        }

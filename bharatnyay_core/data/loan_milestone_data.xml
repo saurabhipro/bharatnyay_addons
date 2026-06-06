@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="loan_milestone_commencement" model="bharat.loan.milestone">
+        <field name="code">commencement</field>
+        <field name="name">Commencement</field>
+        <field name="sequence">1</field>
+        <field name="section">1</field>
+        <field name="phase">Commencement</field>
+    </record>
+    <record id="loan_milestone_notice_1" model="bharat.loan.milestone">
+        <field name="code">notice_1</field>
+        <field name="name">Notice 1</field>
+        <field name="sequence">2</field>
+        <field name="section">21</field>
+        <field name="phase">Notice 1</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+        <field name="auto_assign_case_manager" eval="True"/>
+    </record>
+    <record id="loan_milestone_notice_2" model="bharat.loan.milestone">
+        <field name="code">notice_2</field>
+        <field name="name">Notice 2</field>
+        <field name="sequence">3</field>
+        <field name="section">21</field>
+        <field name="phase">Notice 2</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+    </record>
+    <record id="loan_milestone_notice_3" model="bharat.loan.milestone">
+        <field name="code">notice_3</field>
+        <field name="name">Notice 3</field>
+        <field name="sequence">4</field>
+        <field name="section">21</field>
+        <field name="phase">Notice 3</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+    </record>
+    <record id="loan_milestone_hearing_1" model="bharat.loan.milestone">
+        <field name="code">hearing_1</field>
+        <field name="name">Hearing 1</field>
+        <field name="sequence">5</field>
+        <field name="section">24</field>
+        <field name="phase">Hearing 1</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+        <field name="auto_assign_arbitrator" eval="True"/>
+        <field name="is_arbitrator" eval="True"/>
+    </record>
+    <record id="loan_milestone_hearing_2" model="bharat.loan.milestone">
+        <field name="code">hearing_2</field>
+        <field name="name">Hearing 2</field>
+        <field name="sequence">6</field>
+        <field name="section">24</field>
+        <field name="phase">Hearing 2</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+    </record>
+    <record id="loan_milestone_hearing_3" model="bharat.loan.milestone">
+        <field name="code">hearing_3</field>
+        <field name="name">Hearing 3</field>
+        <field name="sequence">7</field>
+        <field name="section">24</field>
+        <field name="phase">Hearing 3</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+    </record>
+    <record id="loan_milestone_award" model="bharat.loan.milestone">
+        <field name="code">award</field>
+        <field name="name">Award</field>
+        <field name="sequence">8</field>
+        <field name="section">31</field>
+        <field name="phase">Award</field>
+        <field name="auto_invoice_on_exit" eval="True"/>
+        <field name="locks_case" eval="True"/>
+    </record>
+</odoo>

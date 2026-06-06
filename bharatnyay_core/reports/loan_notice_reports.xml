@@ -8,7 +8,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_envelope</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_envelope</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Envelope - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -20,7 +20,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_notice</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_notice</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Notice 1 - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -32,7 +32,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_reminder_notice</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_reminder_notice</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Notice 2 - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -44,7 +44,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_final_notice</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_final_notice</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Notice 3 - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -56,7 +56,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_hearing_proceedings</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_hearing_proceedings</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Interim Order 1 - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -68,7 +68,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_hearing_proceedings_2</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_hearing_proceedings_2</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Interim Order 2 - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -80,7 +80,7 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_interim_order</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_interim_order</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Interim Order 3 - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
@@ -92,9 +92,21 @@
         <field name="report_name">bharatnyay_core.report_bharat_loan_hearing_final</field>
         <field name="report_file">bharatnyay_core.report_bharat_loan_hearing_final</field>
         <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
         <field name="print_report_name">'Award - %s' % (object.loan_number or object.case_number or 'Case')</field>
+    </record>
+
+    <record id="action_report_bharat_loan_award_letter" model="ir.actions.report">
+        <field name="name">Final Award Letter</field>
+        <field name="model">bharat.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_award_letter</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_award_letter</field>
+        <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
+        <field name="binding_model_id" eval="False"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Award Letter - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
 
     <!-- Available from code / technical menu only (hidden from loan Print dropdown) -->
@@ -601,6 +613,90 @@
         </t>
     </template>
 
+    <template id="report_bharat_loan_award_letter">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="company" t-value="o.company_id or env.company"/>
+                <t t-call="web.external_layout">
+                    <t t-set="arbitrator_name" t-value="o.arbitrator_id.name if o.arbitrator_id else (o.arbitrator_name or 'Learned Sole Arbitrator')"/>
+                    <t t-set="award_notes" t-value="o.interim_award_notes or ''"/>
+                    <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0;">
+                        <div style="border: 1px solid #222; padding: 22px 24px;">
+                            <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                                Final Award
+                            </h2>
+                            <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                                Before the Learned Sole Arbitrator
+                            </h3>
+
+                            <ul style="margin: 0 0 8px 0; padding-left: 22px; list-style-type: disc;">
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Loan Account No.:</strong>
+                                    <span t-esc="o.loan_number or '—'"/>
+                                </li>
+                                <li style="margin-bottom: 6px;">
+                                    <strong>Case ID:</strong>
+                                    <span t-esc="o.case_number or '—'"/>
+                                </li>
+                                <li>
+                                    <strong>Respondent:</strong>
+                                    <span t-esc="o.customer_name or '—'"/>
+                                </li>
+                            </ul>
+
+                            <p style="margin: 0 0 8px 0; text-align: justify; line-height: 1.4;">
+                                This Award is passed after hearing the parties / concluding proceedings ex-parte
+                                where the Respondent remained absent despite due notice. The Tribunal has considered
+                                the pleadings, documents, and submissions on record.
+                            </p>
+
+                            <p style="margin: 0 0 6px 0; font-weight: 700;">Award:</p>
+                            <ol style="margin: 0 0 10px 0; padding-left: 22px; line-height: 1.4;">
+                                <li>
+                                    The Respondent is directed to pay the Claimant a sum of
+                                    <strong>
+                                        <span t-field="o.claim_amount"
+                                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </strong>
+                                    (or outstanding POS if claim is not stated)
+                                    together with interest and costs as permissible under law and the arbitration agreement.
+                                </li>
+                                <li>
+                                    The Respondent shall pay the awarded amount within the period prescribed under
+                                    applicable law, failing which the Claimant may take steps for enforcement.
+                                </li>
+                            </ol>
+
+                            <t t-if="award_notes">
+                                <p style="margin: 0 0 8px 0; font-weight: 700;">Directions / observations:</p>
+                                <p style="margin: 0 0 12px 0; white-space: pre-wrap; line-height: 1.4;" t-esc="award_notes"/>
+                            </t>
+
+                            <p style="margin: 0 0 8px 0;">
+                                <strong>Date of Award:</strong>
+                                <t t-if="o.interim_award_date">
+                                    <span t-field="o.interim_award_date" t-options='{"widget": "date"}'/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="o.create_date" t-options='{"widget": "date"}'/>
+                                </t>
+                            </p>
+
+                            <div style="margin-top: 28px;">
+                                <p style="margin: 0 0 6px 0;">Sd/-</p>
+                                <p style="margin: 0; font-weight: 700;"><span t-esc="arbitrator_name"/></p>
+                                <p style="margin: 4px 0 0 0; font-size: 10px; color: #444;">(Arbitrator)</p>
+                            </div>
+                        </div>
+                        <p style="margin-top: 16px; font-size: 9px; color: #666; text-align: center;">
+                            Draft award letter — sign and upload the executed copy on the case Awards tab.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
     <template id="report_bharat_loan_interim_order">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
@@ -870,7 +966,7 @@
                             </div>
                             <div style="display: flex; justify-content: space-between;">
                                 <span><strong>Borrower:</strong> <span t-esc="loan.customer_name or '-'"/></span>
-                                <span><strong>Stage:</strong> <span t-esc="loan.state_id.name or '-'"/></span>
+                                <span><strong>Milestone:</strong> <span t-esc="loan.milestone_id.name or '-'"/></span>
                             </div>
                         </div>
 

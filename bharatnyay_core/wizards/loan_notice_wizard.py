@@ -112,20 +112,9 @@ class BharatLoanNoticeWizard(models.TransientModel):
             'microsite_otp_code': otp,
         })
 
-        report = self.env.ref(
-            'bharatnyay_core.action_report_bharat_notice_line_notice',
-            raise_if_not_found=False,
-        )
-        if report:
-            pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=line.ids)
-            pdf_content = base64.b64encode(pdf_bytes)
-            pdf_filename = (
-                'Notice_%s_%s_%s.pdf'
-                % (self.notice_number or 1, self.loan_id.loan_number or self.loan_id.id, token[:8])
-            )
-            line.write({'notice_pdf': pdf_content, 'notice_pdf_filename': pdf_filename})
-
-        self.loan_id._write_stage_by_code('notice')
+        line._attach_notice_pdf()
+        pdf_filename = line.notice_pdf_filename
+        pdf_bytes = base64.b64decode(line.notice_pdf) if line.notice_pdf else None
 
         post_vals = dict(
             body=(

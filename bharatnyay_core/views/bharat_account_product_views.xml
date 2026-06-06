@@ -41,6 +41,10 @@
                         invisible="move_type != 'out_invoice' or state != 'draft'"/>
             </xpath>
             <xpath expr="//field[@name='ref']" position="after">
+                <field name="bharat_loan_id" readonly="1"
+                       invisible="not bharat_loan_id"/>
+                <field name="bharat_milestone_code" readonly="1"
+                       invisible="not bharat_milestone_code"/>
                 <field name="bharat_invoice_batch_ref"
                        readonly="state != 'draft'"
                        invisible="not bharat_invoice_batch_ref and not bharat_arbitration_invoice"/>

@@ -12,5 +12,6 @@ from . import account_move
 from . import ir_actions_report
 from . import bharat_arbitrator_blockout
 from . import loan_stage
+from . import loan_milestone
 from . import res_company
 from . import loan

@@ -5,23 +5,10 @@
         <field name="name">res.company.form.loan.stages</field>
         <field name="model">res.company</field>
         <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="active" eval="False"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Loan stages" name="loan_stages">
-                    <p class="text-muted">
-                        Pick stages from the master list (Masters → Loan stages). Drag rows to set order for this company.
-                    </p>
-                    <field name="loan_stage_line_ids">
-                        <list editable="bottom">
-                            <field name="sequence" widget="handle"/>
-                            <field name="stage_id"
-                                   options="{'no_create': True, 'no_quick_create': True}"/>
-                            <field name="is_arbitrator" optional="show"/>
-                            <field name="stage_code" optional="show"/>
-                            <field name="stage_name" optional="hide"/>
-                        </list>
-                    </field>
-                </page>
+                <page string="Loan stages" name="loan_stages" invisible="1"/>
             </xpath>
         </field>
     </record>
@@ -49,7 +36,7 @@
                 <field name="name"/>
                 <field name="currency_id"/>
                 <field name="loan_count" string="Cases"/>
-                <field name="loan_stage_count" string="Stages"/>
+                <field name="loan_stage_count" string="Stages" column_invisible="1"/>
                 <field name="email" optional="show"/>
                 <field name="phone" optional="show"/>
                 <field name="vat" optional="hide"/>
@@ -101,28 +88,13 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Loan workflow stages" name="loan_stages">
-                            <p class="text-muted">
-                                Select stages from the master list (Masters → Loan stages). Drag to set pipeline order for this lender.
-                            </p>
-                            <field name="loan_stage_line_ids">
-                                <list editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="stage_id"
-                                           options="{'no_create': True, 'no_quick_create': True}"/>
-                                    <field name="is_arbitrator" optional="show"/>
-                                    <field name="stage_code" optional="show"/>
-                                    <field name="stage_name" optional="hide"/>
-                                </list>
-                            </field>
-                        </page>
                         <page string="Cases" name="loan_cases">
                             <field name="loan_ids" readonly="1">
                                 <list>
                                     <field name="case_number"/>
                                     <field name="loan_number"/>
                                     <field name="customer_name"/>
-                                    <field name="state_id"/>
+                                    <field name="milestone_id"/>
                                     <field name="current_pos" sum="POS"/>
                                     <field name="claim_amount" sum="Claim"/>
                                     <field name="branch_id" optional="hide"/>

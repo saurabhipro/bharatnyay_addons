@@ -75,8 +75,9 @@
                     <field name="dry_run"/>
                 </group>
                 <div class="alert alert-info" role="alert" invisible="result_summary">
-                    Upload your Lok Adalat / portfolio Excel (.xlsx). Valid rows are imported immediately.
+                    Upload your Lok Adalat / portfolio Excel (.xlsx only). Valid rows are imported immediately.
                     Wrong rows are listed below — all other rows are still saved.
+                    If import fails with a memory error, open the file in Excel, delete blank rows far below your data, and save again.
                 </div>
                 <group string="Result" invisible="not result_summary">
                     <field name="result_summary" nolabel="1" widget="text"/>

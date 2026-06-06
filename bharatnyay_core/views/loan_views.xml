@@ -29,15 +29,19 @@
                 <field name="product"/>
                 <field name="case_manager_id"/>
                 <field name="workflow_phase"/>
-                <field name="state_id"/>
-                <field name="state_code"/>
+                <field name="milestone_id"/>
+                <field name="milestone_code"/>
                 <field name="respondent_name"/>
                 <separator/>
                 <filter string="Has claim" name="has_claim" domain="[('claim_amount','&gt;',0)]"/>
-                <filter string="Notice" name="wf_notice" domain="[('state_code','=','notice')]"/>
-                <filter string="Arbitrator Appointed" name="wf_arb_appointed" domain="[('state_code','=','arbitrator_appointed')]"/>
-                <filter string="Hearing" name="wf_hearing" domain="[('state_code','=','hearing')]"/>
-                <filter string="Award" name="wf_final_award" domain="[('state_code','=','final_award')]"/>
+                <filter string="Commencement" name="wf_commencement" domain="[('milestone_code','=','commencement')]"/>
+                <filter string="Notice 1" name="wf_notice_1" domain="[('milestone_code','=','notice_1')]"/>
+                <filter string="Notice 2" name="wf_notice_2" domain="[('milestone_code','=','notice_2')]"/>
+                <filter string="Notice 3" name="wf_notice_3" domain="[('milestone_code','=','notice_3')]"/>
+                <filter string="Hearing 1" name="wf_hearing_1" domain="[('milestone_code','=','hearing_1')]"/>
+                <filter string="Hearing 2" name="wf_hearing_2" domain="[('milestone_code','=','hearing_2')]"/>
+                <filter string="Hearing 3" name="wf_hearing_3" domain="[('milestone_code','=','hearing_3')]"/>
+                <filter string="Award" name="wf_award" domain="[('milestone_code','=','award')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter string="Region" name="grp_region" context="{'group_by': 'region_id'}"/>
@@ -55,6 +59,14 @@
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
             <list string="Loans">
+                <header>
+                    <button name="%(bharatnyay_core.action_bharat_loan_portfolio_import_wizard)d"
+                            type="action"
+                            string="Import Excel"
+                            class="btn-secondary"
+                            display="always"
+                            icon="fa-upload"/>
+                </header>
                 <field name="case_number"/>
                 <field name="batch_number" optional="show"/>
                 <field name="company_id" optional="show"/>
@@ -63,12 +75,12 @@
                 <field name="region_id" optional="hide"/>
                 <field name="borrower_state_id" optional="hide"/>
                 <field name="branch_id" optional="show"/>
-                <field name="location_id" optional="hide"/>
+                <field name="location_id" string="Location" optional="show"/>
                 <field name="financed_amount" sum="Financed"/>
                 <field name="current_pos" sum="POS"/>
-                <field name="state_display" string="Stage" optional="show"/>
-                <field name="state_id" optional="hide"/>
-                <field name="state_code" column_invisible="1"/>
+                <field name="milestone_id" string="Milestone" optional="show"/>
+                <field name="state_display" string="Milestone" optional="hide"/>
+                <field name="milestone_code" column_invisible="1"/>
                 <field name="workflow_section" optional="hide"/>
                 <field name="workflow_phase" optional="hide"/>
                 <field name="claim_amount" sum="Claim"/>
@@ -84,10 +96,10 @@
         <field name="name">bharat.loan.kanban</field>
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state_id" records_draggable="1">
+            <kanban default_group_by="milestone_id" records_draggable="1">
                 <field name="loan_number"/>
                 <field name="customer_name"/>
-                <field name="state_id"/>
+                <field name="milestone_id"/>
                 <field name="branch_id"/>
                 <field name="current_pos"/>
                 <field name="claim_amount"/>
@@ -115,10 +127,10 @@
         <field name="name">bharat.loan.calendar</field>
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
-            <calendar string="Loan Calendar" date_start="deliver_date" color="state_id" mode="month">
+            <calendar string="Loan Calendar" date_start="deliver_date" color="milestone_id" mode="month">
                 <field name="loan_number"/>
                 <field name="customer_name"/>
-                <field name="state_id"/>
+                <field name="milestone_id"/>
                 <field name="branch_id"/>
                 <field name="deliver_status"/>
             </calendar>
@@ -132,30 +144,33 @@
             <form string="Loan" class="o_bharat_loan_form">
                 <header>
                     <field name="company_id" invisible="1"/>
-                    <field name="allowed_stage_ids" invisible="1"/>
-                    <field name="state_code" invisible="1"/>
+                    <field name="allowed_milestone_ids" invisible="1"/>
                     <field name="state_is_arbitrator" invisible="1"/>
                     <field name="is_case_locked" invisible="1"/>
-                    <field name="state_id" widget="statusbar"
-                           domain="[('id', 'in', allowed_stage_ids)]"
-                           readonly="is_case_locked"
-                           options="{'clickable': '1'}"/>
-                    <button name="action_send_notice" type="object" string="Send Notice" class="oe_highlight"
-                            invisible="is_case_locked"/>
-                    <button name="action_assign_arbitrator" type="object" string="Assign Arbitrator"
-                            class="btn-primary" invisible="is_case_locked or not state_is_arbitrator"/>
-                    <button name="action_move_to_hearing" type="object" string="Move to Hearing"
-                            class="btn-primary" invisible="is_case_locked or state_code == 'hearing'"/>
-                    <button name="action_schedule_hearing" type="object" string="Schedule Hearing" class="btn-primary"
-                            invisible="is_case_locked or state_code == 'hearing'"/>
+                    <field name="milestone_code" invisible="1"/>
+                    <field name="can_move_to_next_stage" invisible="1"/>
+                    <field name="next_milestone_label" invisible="1"/>
+                    <field name="milestone_id" widget="statusbar"
+                           domain="[('id', 'in', allowed_milestone_ids)]"
+                           readonly="1"
+                           options="{'clickable': '0'}"/>
+                    <button name="action_move_to_next_stage" type="object"
+                            string="Move to next stage" class="oe_highlight"
+                            invisible="is_case_locked or not can_move_to_next_stage"
+                            confirm="Advance this case to the next workflow milestone?"/>
                     <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"
-                            invisible="is_case_locked or state_code != 'hearing'"/>
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
-                            invisible="is_case_locked or state_code != 'hearing'"/>
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_join_hearing_meeting" type="object" string="Join Meeting Online"
-                            invisible="is_case_locked or state_code != 'hearing'"/>
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
-                            invisible="is_case_locked or state_code != 'hearing'"/>
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
+                    <button name="action_download_award_letter" type="object" string="Download award letter"
+                            class="oe_highlight"
+                            invisible="milestone_code != 'award'"/>
+                    <button name="action_upload_signed_award" type="object" string="Upload signed award"
+                            invisible="milestone_code != 'award'"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -170,6 +185,10 @@
                         </button>
                         <button name="action_open_award_documents" type="object" class="oe_stat_button" icon="fa-trophy">
                             <field name="award_document_count" widget="statinfo" string="Awards"/>
+                        </button>
+                        <button name="action_open_arbitration_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="arbitration_invoice_count == 0">
+                            <field name="arbitration_invoice_count" widget="statinfo" string="Invoices"/>
                         </button>
                     </div>
                    
@@ -356,8 +375,8 @@
                         </div>
                     </div>
 
-                    <notebook readonly="is_case_locked">
-                        <page string="🔔 Notices">
+                    <notebook class="bn-loan-notebook" readonly="is_case_locked">
+                        <page string="Notices" name="page_notices">
                             <group string="All notices sent / responses">
                                 <field name="notice_line_ids" nolabel="1" readonly="is_case_locked">
                                     <list create="0" delete="0" edit="0" multi_edit="0">
@@ -424,7 +443,7 @@
                                 </field>
                             </group>
                         </page>
-                        <page string="🎥 Hearing" name="page_hearing">
+                        <page string="Hearing" name="page_hearing">
                             <group>
                                 <group string="Schedule">
                                     <field name="hearing_datetime"/>
@@ -499,24 +518,48 @@
                                 </form>
                             </field>
                         </page>
-                        <page string="🏆 Awards" name="page_awards">
-                            <field name="award_document_ids" nolabel="1" readonly="is_case_locked">
-                                <list create="0" delete="0" edit="0">
+                        <page string="Awards" name="page_awards">
+                            <field name="award_document_ids" nolabel="1">
+                                <list create="0" delete="0">
                                     <field name="award_type"/>
                                     <field name="award_date"/>
-                                    <field name="created_by_id"/>
-                                    <field name="award_pdf_filename"/>
-                                    <field name="award_notes"/>
+                                    <field name="draft_generated_on" optional="show"/>
+                                    <field name="is_signed" widget="boolean"/>
+                                    <field name="signed_on" optional="show"/>
+                                    <field name="created_by_id" optional="hide"/>
+                                    <field name="award_notes" optional="hide"/>
+                                    <button name="action_download_award_letter" type="object"
+                                            string="Download draft" icon="fa-download"
+                                            invisible="award_type != 'final'"/>
+                                    <button name="action_upload_signed_award" type="object"
+                                            string="Upload signed" icon="fa-upload"
+                                            invisible="award_type != 'final'"/>
                                 </list>
-                                <form string="Award document" create="0" edit="0" delete="0">
+                                <form string="Award document" create="0" delete="0">
+                                    <header>
+                                        <button name="action_download_award_letter" type="object"
+                                                string="Download award letter" class="oe_highlight"
+                                                invisible="award_type != 'final'"/>
+                                        <button name="action_upload_signed_award" type="object"
+                                                string="Upload signed award"
+                                                invisible="award_type != 'final'"/>
+                                    </header>
                                     <group>
                                         <group>
-                                            <field name="award_type"/>
-                                            <field name="award_date"/>
-                                            <field name="created_by_id"/>
+                                            <field name="award_type" readonly="1"/>
+                                            <field name="award_date" readonly="1"/>
+                                            <field name="created_by_id" readonly="1"/>
+                                            <field name="draft_generated_on" readonly="1"/>
+                                            <field name="signed_on" readonly="1"/>
+                                            <field name="is_signed" readonly="1"/>
                                         </group>
                                         <group>
-                                            <field name="award_pdf" filename="award_pdf_filename" widget="pdf_viewer"/>
+                                            <field name="draft_award_pdf" filename="draft_award_pdf_filename"
+                                                   widget="pdf_viewer" readonly="1"/>
+                                            <field name="draft_award_pdf_filename" invisible="1"/>
+                                            <field name="award_pdf" filename="award_pdf_filename"
+                                                   widget="pdf_viewer" readonly="1"
+                                                   string="Signed award PDF"/>
                                             <field name="award_pdf_filename" invisible="1"/>
                                             <field name="award_notes"/>
                                         </group>
@@ -541,8 +584,8 @@
         <field name="search_view_id" ref="view_bharat_loan_search"/>
         <field name="context">{}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Import or capture loan rows.</p>
-            <p>Set up <strong>Masters</strong> once (regions, branches, …), then link them here. Use <strong>Favorites → Import Records</strong> and map spreadsheet columns.</p>
+            <p class="o_view_nocontent_smiling_face">Import your portfolio Excel to get started.</p>
+            <p>Click <strong>Import Excel</strong> next to New, or set up <strong>Masters</strong> (regions, branches, …) before your first import.</p>
         </field>
     </record>
     <record id="action_bharat_loan_view_list" model="ir.actions.act_window.view">
@@ -575,108 +618,36 @@
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('state_code', '=', 'notice')]</field>
+        <field name="domain">[('milestone_code', 'in', ['notice_1', 'notice_2', 'notice_3'])]</field>
     </record>
     <record id="action_bharat_loan_arbitrator_appointed" model="ir.actions.act_window">
-        <field name="name">Arbitrator Appointed</field>
+        <field name="name">Hearing 1 (arbitrator)</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('state_code', '=', 'arbitrator_appointed')]</field>
+        <field name="domain">[('milestone_code', '=', 'hearing_1'), ('arbitrator_id', '!=', False)]</field>
     </record>
     <record id="action_bharat_loan_hearing_status" model="ir.actions.act_window">
         <field name="name">Hearing status</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('state_code', '=', 'hearing')]</field>
+        <field name="domain">[('milestone_code', 'in', ['hearing_1', 'hearing_2', 'hearing_3'])]</field>
     </record>
     <record id="action_bharat_loan_final_award" model="ir.actions.act_window">
         <field name="name">Award</field>
         <field name="res_model">bharat.loan</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_bharat_loan_search"/>
-        <field name="domain">[('state_code', '=', 'final_award')]</field>
+        <field name="domain">[('milestone_code', '=', 'award')]</field>
     </record>
 
-    <record id="action_bharat_loan_bulk_written_statement_pdf" model="ir.actions.server">
-        <field name="name">Written Statement / Response by Borrower</field>
+    <record id="action_bharat_loan_move_to_next_stage" model="ir.actions.server">
+        <field name="name">Move to next stage</field>
         <field name="model_id" ref="model_bharat_loan"/>
         <field name="binding_model_id" ref="model_bharat_loan"/>
         <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_written_statement').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_interim_order_pdf" model="ir.actions.server">
-        <field name="name">Interim Order / Interim Award</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_interim_order').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_hearing_final_pdf" model="ir.actions.server">
-        <field name="name">Hearing No. 3 – Final Hearing</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_hearing_final').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_hearing_proceedings_2_pdf" model="ir.actions.server">
-        <field name="name">Hearing No. 2 – Record of Proceedings</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_hearing_proceedings_2').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_hearing_proceedings_pdf" model="ir.actions.server">
-        <field name="name">Hearing No. 1 – Record of Proceedings</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_hearing_proceedings').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_final_notice_pdf" model="ir.actions.server">
-        <field name="name">Notice No. 3 – Final Notice</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_final_notice').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_reminder_notice_pdf" model="ir.actions.server">
-        <field name="name">Notice No. 2 – Reminder Notice</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_reminder_notice').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_commencement_arbitration_pdf" model="ir.actions.server">
-        <field name="name">Commencement of Arbitration</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_commencement_arbitration').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_notice_pdf" model="ir.actions.server">
-        <field name="name">Notice No. 1 – Notice of Arbitration</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_notice').report_action(records)</field>
-    </record>
-    <record id="action_bharat_loan_bulk_envelope_pdf" model="ir.actions.server">
-        <field name="name">Generate envelope PDF (selected)</field>
-        <field name="model_id" ref="model_bharat_loan"/>
-        <field name="binding_model_id" ref="model_bharat_loan"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">action = env.ref('bharatnyay_core.action_report_bharat_loan_envelope').report_action(records)</field>
+        <field name="code">action = records.action_move_to_next_stage()</field>
     </record>
 </odoo>

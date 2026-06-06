@@ -189,7 +189,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
 
         loan_domain = [
             ('arbitrator_id', '=', arbitrator_user.id),
-            ('state_code', '=', 'hearing'),
+            ('milestone_code', 'in', ['hearing_1', 'hearing_2', 'hearing_3']),
             ('hearing_datetime', '!=', False),
         ]
         if exclude_loan:
@@ -450,13 +450,13 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         self.ensure_one()
         loan = self.loan_id
         if self.hearing_reschedule:
-            if loan._stage_code() != 'hearing':
+            if not loan._is_hearing_milestone():
                 raise UserError(
-                    _('Reschedule is only available when the case is already in the Hearing stage.')
+                    _('Reschedule is only available when the case is already in a hearing milestone.')
                 )
-        elif loan._stage_code() != 'arbitrator_appointed':
+        elif not loan.arbitrator_id:
             raise UserError(
-                _('Schedule Hearing is only available when the arbitrator has been appointed.')
+                _('Schedule Hearing requires an arbitrator. Assign one first or move to Hearing 1.')
             )
 
         if not self.use_manual_time:
@@ -498,13 +498,15 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             'hearing_invite_user_ids': [(6, 0, self.invite_user_ids.ids)],
         }
         if not self.hearing_reschedule:
-            stage_code = 'final_award' if self.is_final_award else 'hearing'
-            stage = loan._get_company_stage(stage_code, loan.company_id)
-            if stage:
-                vals_loan['state_id'] = stage.id
-                vals_loan['workflow_phase'] = stage.phase or (
-                    'Award' if stage_code == 'final_award' else 'Hearing'
-                )
+            if self.is_final_award:
+                milestone = loan._milestone_by_code('award')
+            else:
+                hearing_no = min(max(len(loan.hearing_line_ids) + 1, 1), 3)
+                milestone = loan._milestone_by_code('hearing_%d' % hearing_no)
+            if milestone:
+                vals_loan['milestone_id'] = milestone.id
+                vals_loan['workflow_section'] = milestone.section or 1
+                vals_loan['workflow_phase'] = milestone.phase or milestone.name
 
         loan.write(vals_loan)
 
@@ -611,8 +613,8 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
     def action_confirm(self):
         self.ensure_one()
         loan = self.loan_id
-        if loan._stage_code() != 'hearing':
-            raise UserError(_('Pass Interim Award is only available during the Hearing stage.'))
+        if not loan._is_hearing_milestone():
+            raise UserError(_('Pass Interim Award is only available during hearing milestones.'))
         if not self.order_type:
             raise UserError(_('Select an interim order type.'))
 
@@ -620,20 +622,20 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         summary_bits = [self.purpose, self.common_directions, notes]
         summary = '\n\n'.join(bit for bit in summary_bits if bit)
 
-        stage_code = 'final_award' if self.is_final_award else 'hearing'
-        stage = loan._get_company_stage(stage_code, loan.company_id)
-        if not stage:
+        milestone_code = 'award' if self.is_final_award else loan._milestone_code()
+        milestone = loan._milestone_by_code(milestone_code)
+        if not milestone:
             raise UserError(
-                _('Workflow stage “%s” is not configured for this company.') % stage_code
+                _('Workflow milestone “%s” is not configured.') % milestone_code
             )
         loan_vals = {
             'interim_award_date': fields.Datetime.now(),
             'interim_award_notes': summary or self.common_directions or self.purpose,
             'interim_award_amount': self.interim_award_amount or 0.0,
-            'state_id': stage.id,
+            'milestone_id': milestone.id,
+            'workflow_section': milestone.section or 1,
+            'workflow_phase': milestone.phase or milestone.name,
         }
-        if stage.phase:
-            loan_vals['workflow_phase'] = stage.phase
         loan.write(loan_vals)
 
         amt = loan.interim_award_amount or 0.0
@@ -674,13 +676,14 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             'created_by_id': self.env.user.id,
         })
         if self.is_final_award:
-            loan.env['bharat.loan.award.document'].create({
+            award_doc = loan.env['bharat.loan.award.document'].create({
                 'loan_id': loan.id,
                 'award_type': 'final',
                 'award_date': fields.Datetime.now(),
                 'award_notes': summary or type_label,
                 'created_by_id': self.env.user.id,
             })
+            award_doc._attach_draft_award_letter()
         else:
             loan.env['bharat.loan.award.document'].create({
                 'loan_id': loan.id,
