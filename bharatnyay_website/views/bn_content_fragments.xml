@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Shared rich content blocks for BharatNyay prose pages -->
+
+    <template id="bn_prose_workflow" name="BharatNyay ODR workflow grid">
+        <div class="bn-workflow-grid">
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-file-text-o" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">01</span>
+                <h4>Case initiation</h4>
+                <p>Case Initiation and Registration.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-search" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">02</span>
+                <h4>Case vetting</h4>
+                <p>Preliminary Review and Case Vetting.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-calendar" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">03</span>
+                <h4>Hearings</h4>
+                <p>Scheduling of Hearings.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-folder-open-o" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">04</span>
+                <h4>Evidence</h4>
+                <p>Submission of Evidence and Documents.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-gavel" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">05</span>
+                <h4>Conduct</h4>
+                <p>Conduct of Hearings.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-check-circle" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">06</span>
+                <h4>Outcome</h4>
+                <p>Resolution and Issuance of Outcome.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_offers" name="BharatNyay platform offers grid">
+        <div class="bn-offer-grid">
+            <article class="bn-offer-card">
+                <i class="fa fa-shield bn-offer-icon" aria-hidden="true"/>
+                <p>Secure and confidential case management.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-cloud-upload bn-offer-icon" aria-hidden="true"/>
+                <p>Digital evidence submission and document management.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-sitemap bn-offer-icon" aria-hidden="true"/>
+                <p>Transparent procedural workflows.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-balance-scale bn-offer-icon" aria-hidden="true"/>
+                <p>Neutral and impartial adjudication in accordance with applicable laws.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-comments-o bn-offer-icon" aria-hidden="true"/>
+                <p>Efficient communication and case tracking mechanisms.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-road bn-offer-icon" aria-hidden="true"/>
+                <p>End-to-end support for online dispute resolution proceedings.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_capabilities" name="BharatNyay platform capabilities grid">
+        <div class="bn-capability-grid">
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-shield" aria-hidden="true"/></div>
+                <h4>Secure case management</h4>
+                <p>Confidential case administration, digital evidence submission, and transparent procedural workflows.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-video-camera" aria-hidden="true"/></div>
+                <h4>Virtual hearings</h4>
+                <p>Video-enabled hearing rooms, secure participation, real-time document sharing, and remote accessibility.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-magic" aria-hidden="true"/></div>
+                <h4>AI-assisted support</h4>
+                <p>Administrative data organization, document retrieval, workflow automation, and scheduling — not decision-making.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-line-chart" aria-hidden="true"/></div>
+                <h4>Transparency &amp; monitoring</h4>
+                <p>Real-time status updates, milestone visibility, and performance tracking.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-gavel" aria-hidden="true"/></div>
+                <h4>Neutral adjudication</h4>
+                <p>Impartial proceedings conducted in accordance with applicable laws.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_virtual_hearings" name="BharatNyay virtual hearings list">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-video-camera" aria-hidden="true"/><span>Video-enabled hearing rooms.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-user-secret" aria-hidden="true"/><span>Secure participation of parties and representatives.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-files-o" aria-hidden="true"/><span>Real-time document sharing and presentation.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-wechat" aria-hidden="true"/><span>Multiple communication tools to support effective proceedings.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-globe" aria-hidden="true"/><span>Accessibility from any location, promoting convenience and efficiency.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_prose_ai_support" name="BharatNyay AI support list">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-database" aria-hidden="true"/><span>Data organization and management.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-folder-open-o" aria-hidden="true"/><span>Document categorization and retrieval.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-cogs" aria-hidden="true"/><span>Workflow automation.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-calendar-check-o" aria-hidden="true"/><span>Scheduling and procedural assistance.</span></div>
+        </div>
+        <div class="bn-prose-note mt-3">
+            <i class="fa fa-info-circle" aria-hidden="true"/>
+            <span>AI does not participate in decision-making, adjudication, or outcome determination.</span>
+        </div>
+    </template>
+
+    <template id="bn_prose_transparency" name="BharatNyay transparency list">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-bolt" aria-hidden="true"/><span>Real-time status updates.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-flag-checkered" aria-hidden="true"/><span>Visibility of procedural milestones.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-tasks" aria-hidden="true"/><span>Monitoring of case progress.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-archive" aria-hidden="true"/><span>Access to relevant records and communications.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-clock-o" aria-hidden="true"/><span>Performance and timeline tracking to ensure procedural efficiency.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_prose_exclusion" name="BharatNyay exclusions callout">
+        <div class="bn-exclusion-callout">
+            <div class="bn-exclusion-icon"><i class="fa fa-exclamation-circle" aria-hidden="true"/></div>
+            <div>
+                <h3>Exclusions</h3>
+                <p>The platform does not undertake negotiation functions unless specifically incorporated within a structured mediation or conciliation process conducted in accordance with applicable law and institutional rules.</p>
+            </div>
+        </div>
+    </template>
+
+    <template id="bn_legal_nav" name="BharatNyay legal page switcher">
+        <nav class="bn-legal-nav" aria-label="Legal documents">
+            <a href="/terms-and-conditions" t-attf-class="bn-legal-nav-item #{'is-active' if active == 'terms' else ''}">
+                <i class="fa fa-file-text-o" aria-hidden="true"/>
+                <span>Terms &amp; Conditions</span>
+            </a>
+            <a href="/privacy-policy" t-attf-class="bn-legal-nav-item #{'is-active' if active == 'privacy' else ''}">
+                <i class="fa fa-shield" aria-hidden="true"/>
+                <span>Privacy Policy</span>
+            </a>
+            <a href="/cookie-policy" t-attf-class="bn-legal-nav-item #{'is-active' if active == 'cookies' else ''}">
+                <i class="fa fa-tag" aria-hidden="true"/>
+                <span>Cookie Policy</span>
+            </a>
+        </nav>
+    </template>
+
+    <template id="bn_legal_terms_sections" name="Terms and conditions sections">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-check-circle" aria-hidden="true"/><span><strong>Acceptance.</strong> By accessing BharatNyay you agree to these terms. If you do not agree, discontinue use of the platform.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-users" aria-hidden="true"/><span><strong>Eligibility.</strong> Users must be authorised representatives of parties, neutrals, institutions, or administrators with lawful authority to participate in ODR proceedings.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-gavel" aria-hidden="true"/><span><strong>ODR services.</strong> BharatNyay provides technology infrastructure for dispute resolution. It does not provide legal advice, adjudication outcomes, or substitute for qualified counsel.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-lock" aria-hidden="true"/><span><strong>Account security.</strong> You are responsible for safeguarding credentials, MFA devices, and activity conducted under your workspace login.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-folder-o" aria-hidden="true"/><span><strong>Case materials.</strong> Parties must upload accurate, lawfully obtained documents. Misrepresentation or unauthorised disclosure may result in suspension.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-copyright" aria-hidden="true"/><span><strong>Intellectual property.</strong> Platform software, branding, and documentation remain the property of BharatNyay. User content remains owned by submitting parties.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_legal_terms_obligations" name="Terms obligations grid">
+        <div class="bn-offer-grid">
+            <article class="bn-offer-card">
+                <i class="fa fa-ban bn-offer-icon" aria-hidden="true"/>
+                <p>No unlawful, harassing, or fraudulent use of hearings, messaging, or evidence tools.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-eye-slash bn-offer-icon" aria-hidden="true"/>
+                <p>Respect confidentiality obligations tied to mediation, conciliation, or sealed arbitration records.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-balance-scale bn-offer-icon" aria-hidden="true"/>
+                <p>Comply with applicable Indian law, institutional rules, and contractual ODR clauses.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-wrench bn-offer-icon" aria-hidden="true"/>
+                <p>Do not attempt to reverse engineer, scrape, or disrupt platform availability or integrity.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-exclamation-triangle bn-offer-icon" aria-hidden="true"/>
+                <p>Report security incidents or unethical neutral conduct through designated grievance channels.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-refresh bn-offer-icon" aria-hidden="true"/>
+                <p>Keep contact, KYC, and organisational details current for service-of-process and notices.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_legal_privacy_sections" name="Privacy policy sections">
+        <div class="bn-capability-grid">
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-id-card-o" aria-hidden="true"/></div>
+                <h4>Identity &amp; contact</h4>
+                <p>Name, email, phone, organisation, role, and authentication metadata for workspace access.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-folder-open-o" aria-hidden="true"/></div>
+                <h4>Case &amp; proceeding data</h4>
+                <p>Filings, pleadings, evidence, hearing schedules, neutral appointments, and outcome artefacts.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-video-camera" aria-hidden="true"/></div>
+                <h4>Hearing telemetry</h4>
+                <p>Session logs, attendance, document-sharing events, and recordings where parties provide informed consent.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-desktop" aria-hidden="true"/></div>
+                <h4>Technical data</h4>
+                <p>IP address, browser type, device signals, and audit trails for security and fraud prevention.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-line-chart" aria-hidden="true"/></div>
+                <h4>Usage analytics</h4>
+                <p>Aggregated performance metrics to improve reliability — not used for adjudicative decision-making.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_legal_privacy_rights" name="Privacy rights list">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-eye" aria-hidden="true"/><span><strong>Access &amp; correction.</strong> Request copies of personal data we hold and ask us to rectify inaccuracies.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-trash-o" aria-hidden="true"/><span><strong>Erasure.</strong> Where law permits, request deletion of non-essential data outside active proceedings or retention mandates.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-download" aria-hidden="true"/><span><strong>Portability.</strong> Receive structured exports of account and case metadata subject to confidentiality constraints.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-hand-paper-o" aria-hidden="true"/><span><strong>Objection.</strong> Object to certain processing activities such as non-essential marketing communications.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-envelope-o" aria-hidden="true"/><span><strong>Grievance.</strong> Contact <a href="mailto:privacy@bharatnyay.in">privacy@bharatnyay.in</a> for DPDP-aligned queries and escalation.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_legal_cookie_sections" name="Cookie policy sections">
+        <div class="bn-workflow-grid">
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-cog" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">01</span>
+                <h4>Essential</h4>
+                <p>Session, authentication, CSRF, and load-balancing cookies required for secure login and case access.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-sliders" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">02</span>
+                <h4>Functional</h4>
+                <p>Remember language, timezone, and UI preferences across visits to the public site and workspace.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-bar-chart" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">03</span>
+                <h4>Analytics</h4>
+                <p>Anonymous usage statistics to measure page performance and improve navigation — no adjudicative profiling.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-plug" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">04</span>
+                <h4>Third-party</h4>
+                <p>Embedded video, maps, or support widgets may set their own cookies under separate policies.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-wrench" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">05</span>
+                <h4>Your controls</h4>
+                <p>Manage or delete cookies via browser settings. Blocking essential cookies may limit platform features.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-calendar" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">06</span>
+                <h4>Retention</h4>
+                <p>Session cookies expire when you close the browser; preference cookies typically last up to 12 months.</p>
+            </article>
+        </div>
+    </template>
+
+    <!-- ODR education & standards fragments -->
+    <template id="bn_prose_what_odr_modalities" name="ODR modalities cards">
+        <div class="bn-capability-grid">
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-comments-o" aria-hidden="true"/></div>
+                <h4>Mediation / conciliation</h4>
+                <p>Facilitative neutrals shepherd interests; confidentiality of documents and submissions is preserved.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-gavel" aria-hidden="true"/></div>
+                <h4>Arbitration</h4>
+                <p>Adjudication with awards under the Arbitration &amp; Conciliation Act, enforceable before courts of competent jurisdiction in India.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_what_odr_services" name="BharatNyay ODR services grid">
+        <div class="bn-workflow-grid">
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-comments-o" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">01</span>
+                <h4>Online mediation</h4>
+                <p>Structured facilitation to preserve relationships.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-balance-scale" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">02</span>
+                <h4>Online arbitration</h4>
+                <p>Enforceable adjudication with digital evidence trails.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-puzzle-piece" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">03</span>
+                <h4>Online conciliation</h4>
+                <p>Settlement-focused neutral assistance for faster closure.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_what_odr_digital" name="Why digital ODR matters">
+        <div class="bn-offer-grid">
+            <article class="bn-offer-card">
+                <i class="fa fa-map-o bn-offer-icon" aria-hidden="true"/>
+                <p>Slash travel burdens across India’s geography-heavy lending books.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-clock-o bn-offer-icon" aria-hidden="true"/>
+                <p>Align with RBI grievance SLA expectations and proportional timelines.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-university bn-offer-icon" aria-hidden="true"/>
+                <p>Free bench capacity while maintaining audit trails for supervisory reviews.</p>
+            </article>
+            <article class="bn-offer-card">
+                <i class="fa fa-users bn-offer-icon" aria-hidden="true"/>
+                <p>Built for individuals, businesses, and court-referred institutional caseloads.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_procedural_rules" name="Procedural rules list">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-play-circle" aria-hidden="true"/><span><strong>Commencement &amp; joinder:</strong> request for arbitration, claimant roster, ancillary parties, consolidating related facilities.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-globe" aria-hidden="true"/><span><strong>Seat &amp; language:</strong> defaults from your contractual clause repository; deviations recorded with tribunal leave.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-folder-open-o" aria-hidden="true"/><span><strong>Evidence &amp; discovery:</strong> document production calendars, objections, supplemental bundles before hearing weeks.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-video-camera" aria-hidden="true"/><span><strong>Virtual hearings etiquette:</strong> oath, recording disclosure, interpreters, caucus blackout windows.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-inr" aria-hidden="true"/><span><strong>Costs &amp; deposits:</strong> advance on arbitrator fees — surfaced for finance sign-off workflows.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-check-square-o" aria-hidden="true"/><span><strong>Settlement homologation:</strong> mediated minutes converted to consent awards with registrar reminders.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_prose_ethics_hooks" name="Ethics operational hooks">
+        <div class="bn-capability-grid">
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-question-circle" aria-hidden="true"/></div>
+                <h4>Conflict disclosures</h4>
+                <p>Questionnaires before arbitrator acceptance clicks.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-lock" aria-hidden="true"/></div>
+                <h4>Caucus separation</h4>
+                <p>Immutable logs separating caucus vs joint session artefacts.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-money" aria-hidden="true"/></div>
+                <h4>Fee transparency</h4>
+                <p>Schedules versioned beside appointment letters.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-flag" aria-hidden="true"/></div>
+                <h4>Grievance escalation</h4>
+                <p>Paths for unethical conduct surfaced to supervisory counsel.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_hearing_steps" name="Hearing protocol steps">
+        <div class="bn-workflow-grid">
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-lock" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">01</span>
+                <h4>Bundle lock</h4>
+                <p>Pre-hearing bundles locked with hash metadata for tamper-awareness.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-signal" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">02</span>
+                <h4>Tech checks</h4>
+                <p>Live technical checks + bandwidth declarations stored with consent.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-microphone" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">03</span>
+                <h4>Recording policy</h4>
+                <p>Recording policy signed by representatives before the hearing opens.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-paper-plane-o" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">04</span>
+                <h4>Post-hearing</h4>
+                <p>Written submissions routed with tribunal-set deadlines.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_appointment_items" name="Neutral appointment items">
+        <div class="bn-offer-grid">
+            <article class="bn-offer-card"><i class="fa fa-id-card-o bn-offer-icon" aria-hidden="true"/><p>Vetting credentials, speciality tags (banking, SARFAESI, MSME).</p></article>
+            <article class="bn-offer-card"><i class="fa fa-list-ol bn-offer-icon" aria-hidden="true"/><p>Strike-out / shortlist rounds with SLA clocks.</p></article>
+            <article class="bn-offer-card"><i class="fa fa-ban bn-offer-icon" aria-hidden="true"/><p>Challenge mechanics mirroring ACA 1996 practice notes.</p></article>
+            <article class="bn-offer-card"><i class="fa fa-refresh bn-offer-icon" aria-hidden="true"/><p>Substitute arbitrator flows when unavoidable conflicts ripen.</p></article>
+        </div>
+    </template>
+
+    <template id="bn_prose_empanelment_items" name="Empanelment playbook items">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-graduation-cap" aria-hidden="true"/><span>Education, experiential hours, mentorship, and malpractice insurance expectations.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-folder-o" aria-hidden="true"/><span>Digitised onboarding packets and KPI reviews for panel neutrals.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-random" aria-hidden="true"/><span>Rotational fairness and grievance dossiers aligned to institutional registries.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-wrench" aria-hidden="true"/><span>Customise every rubric locally for regulatory and contractual needs.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_prose_video_rules" name="Video conferencing rules">
+        <div class="bn-capability-grid">
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-key" aria-hidden="true"/></div>
+                <h4>Role-based access</h4>
+                <p>Join links segmented by role — neutral vs party vs registrar.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-file-text-o" aria-hidden="true"/></div>
+                <h4>Minutes upload</h4>
+                <p>Post-session minutes slot with SLA for objections.</p>
+            </article>
+            <article class="bn-capability-card">
+                <div class="bn-capability-icon"><i class="fa fa-phone" aria-hidden="true"/></div>
+                <h4>Failover dial-in</h4>
+                <p>Contingency numbering when conferencing vendor degrades unexpectedly.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_standards_safeguards" name="Operational safeguards">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-sitemap" aria-hidden="true"/><span>Segregation of duties across recovery desks / legal / neutrals.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-history" aria-hidden="true"/><span>Immutable chatter + downloadable audit packs for supervisory examination.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-user-secret" aria-hidden="true"/><span>Least-privilege access to personally identifiable borrower data.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-check-square" aria-hidden="true"/><span>Vendor due diligence artefacts for outsourced transcription / hosting.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_prose_standards_ethics" name="Neutral ethics cues">
+        <div class="bn-feature-rows">
+            <div class="bn-feature-row"><i class="fa fa-eye" aria-hidden="true"/><span>Conflict disclosures before appointment acceptance.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-money" aria-hidden="true"/><span>Fee transparency &amp; pass-through disbursement logs.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-archive" aria-hidden="true"/><span>Record retention aligned with Evidence Act adaptations for e-records.</span></div>
+            <div class="bn-feature-row"><i class="fa fa-comments-o" aria-hidden="true"/><span>No ex-parte caucus bleed into tribunal deliberations improperly.</span></div>
+        </div>
+    </template>
+
+    <template id="bn_prose_clause_checklist" name="Model clause checklist">
+        <div class="bn-workflow-grid">
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-map-marker" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">01</span>
+                <h4>Jurisdiction layering</h4>
+                <p>Expressly carve SARFAESI / DRT paths where statute mandates.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-hourglass-half" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">02</span>
+                <h4>Cool-off ladder</h4>
+                <p>Minimum days between notice, mediator assignment, arbitrator challenge window.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-file-text-o" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">03</span>
+                <h4>Electronic records</h4>
+                <p>Admissibility of BharatNyay exports as business records.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-bolt" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">04</span>
+                <h4>Emergency arbitrator</h4>
+                <p>Opt-in/opt-out aligning with Arbitration Act timelines.</p>
+            </article>
+            <article class="bn-workflow-step">
+                <div class="bn-workflow-icon"><i class="fa fa-language" aria-hidden="true"/></div>
+                <span class="bn-workflow-num">05</span>
+                <h4>Language &amp; seat</h4>
+                <p>Pick Indian seat unless regulatory ring-fencing forbids offshore seats.</p>
+            </article>
+        </div>
+    </template>
+
+    <template id="bn_prose_standards_hub" name="Standards protocol hub links">
+        <div class="row g-3 bn-standards-hub-grid">
+            <div class="col-md-6 col-lg-4"><a href="/odr/procedural-rules" class="bn-standards-hub-card"><i class="fa fa-book" aria-hidden="true"/><strong>Procedural rules</strong><span>Governing pleadings &amp; calendars</span></a></div>
+            <div class="col-md-6 col-lg-4"><a href="/odr/standards/code-of-ethics" class="bn-standards-hub-card"><i class="fa fa-gavel" aria-hidden="true"/><strong>Code of ethics — neutrals</strong><span>Impartiality &amp; fees</span></a></div>
+            <div class="col-md-6 col-lg-4"><a href="/odr/standards/hearing-protocol" class="bn-standards-hub-card"><i class="fa fa-video-camera" aria-hidden="true"/><strong>Hearing &amp; submissions</strong><span>Written rounds → virtual hearing</span></a></div>
+            <div class="col-md-6 col-lg-4"><a href="/odr/standards/neutral-appointment" class="bn-standards-hub-card"><i class="fa fa-user-plus" aria-hidden="true"/><strong>Neutral appointment</strong><span>Vetting &amp; challenges</span></a></div>
+            <div class="col-md-6 col-lg-4"><a href="/odr/standards/empanelment" class="bn-standards-hub-card"><i class="fa fa-users" aria-hidden="true"/><strong>Empanelment rules</strong><span>Panel governance</span></a></div>
+            <div class="col-md-6 col-lg-4"><a href="/odr/standards/video-conferencing" class="bn-standards-hub-card"><i class="fa fa-desktop" aria-hidden="true"/><strong>Video conferencing</strong><span>Remote integrity</span></a></div>
+        </div>
+    </template>
+</odoo>

@@ -34,33 +34,31 @@ class BharatWebsite(http.Controller):
     def odr_model_clause_page(self, **kw):
         return request.render('bharatnyay_website.page_odr_model_clause')
 
-    @http.route(['/odr/standards'], type='http', auth='public', website=True)
-    def odr_standards_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_standards')
-
     @http.route(['/odr/procedural-rules'], type='http', auth='public', website=True)
     def odr_procedural_rules_page(self, **kw):
         return request.render('bharatnyay_website.page_odr_procedural_rules')
 
-    @http.route(['/odr/standards/code-of-ethics'], type='http', auth='public', website=True)
-    def odr_code_of_ethics_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_code_of_ethics')
+    @http.route(
+        ['/terms-and-conditions', '/terms'],
+        type='http',
+        auth='public',
+        website=True,
+    )
+    def terms_and_conditions_page(self, **kw):
+        return request.render('bharatnyay_website.page_terms_and_conditions')
 
-    @http.route(['/odr/standards/hearing-protocol'], type='http', auth='public', website=True)
-    def odr_hearing_protocol_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_hearing_protocol')
+    @http.route(
+        ['/privacy-policy', '/privacy'],
+        type='http',
+        auth='public',
+        website=True,
+    )
+    def privacy_policy_page(self, **kw):
+        return request.render('bharatnyay_website.page_privacy_policy')
 
-    @http.route(['/odr/standards/neutral-appointment'], type='http', auth='public', website=True)
-    def odr_neutral_appointment_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_neutral_appointment')
-
-    @http.route(['/odr/standards/empanelment'], type='http', auth='public', website=True)
-    def odr_empanelment_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_empanelment')
-
-    @http.route(['/odr/standards/video-conferencing'], type='http', auth='public', website=True)
-    def odr_video_conferencing_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_video_conferencing')
+    @http.route(['/cookie-policy', '/cookies'], type='http', auth='public', website=True)
+    def cookie_policy_page(self, **kw):
+        return request.render('bharatnyay_website.page_cookie_policy')
 
     @http.route(['/bharat/cases'], type='http', auth='user', website=True)
     def cases_list(self, **post):

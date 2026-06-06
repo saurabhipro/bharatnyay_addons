@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="contactus_bharatnyay" inherit_id="website.contactus" name="BharatNyay Contact Us" priority="20">
+        <xpath expr="//t[@t-call='website.layout']/t[@t-set='logged_partner']" position="before">
+            <t t-set="no_footer" t-value="True"/>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div id="wrap" class="bn-contact-page">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero bn-hero-split text-lg-start">
+                        <div class="container">
+                            <div class="bn-hero-inner">
+                                <p class="bn-hash mb-3">Get in touch</p>
+                                <h1>Contact <span class="text-orange">BharatNyay</span></h1>
+                                <p class="lead mb-0">File a dispute, book a discovery call, or ask about ODR platform architecture, neutrality policy, and deployment for your organisation.</p>
+                            </div>
+                        </div>
+                    </header>
+                    <section class="bn-about-body bn-contact-body">
+                        <div class="container">
+                            <div class="row g-4 g-lg-5 align-items-start">
+                                <div class="col-lg-7">
+                                    <div class="bn-contact-form-card">
+                                        <h2 class="h4 fw-bold mb-2">Send us a message</h2>
+                                        <p class="bn-contact-intro mb-4">Tell us about your dispute programme, portfolio scale, or integration needs. We typically respond within one business day.</p>
+                                        <section class="s_website_form bn-contact-form" data-vcss="001" data-snippet="s_website_form">
+                                            <form id="contactus_form" action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*" data-model_name="mail.mail" data-success-mode="redirect" data-success-page="/contactus-thank-you" data-pre-fill="true">
+                                                <div class="s_website_form_rows row s_col_no_bgcolor g-3">
+                                                    <div class="col-md-6 s_website_form_field s_website_form_custom s_website_form_required" data-type="char" data-name="Field">
+                                                        <label class="s_website_form_label" for="contact1">
+                                                            <span class="s_website_form_label_content">Name</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="contact1" type="text" class="form-control s_website_form_input" name="name" required="" data-fill-with="name" placeholder="Your full name"/>
+                                                    </div>
+                                                    <div class="col-md-6 s_website_form_field s_website_form_custom" data-type="char" data-name="Field">
+                                                        <label class="s_website_form_label" for="contact2">
+                                                            <span class="s_website_form_label_content">Phone</span>
+                                                        </label>
+                                                        <input id="contact2" type="tel" class="form-control s_website_form_input" name="phone" data-fill-with="phone" placeholder="+91 …"/>
+                                                    </div>
+                                                    <div class="col-md-6 s_website_form_field s_website_form_required s_website_form_model_required" data-type="email" data-name="Field">
+                                                        <label class="s_website_form_label" for="contact3">
+                                                            <span class="s_website_form_label_content">Email</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="contact3" type="email" class="form-control s_website_form_input" name="email_from" required="" data-fill-with="email" placeholder="you@organisation.in"/>
+                                                    </div>
+                                                    <div class="col-md-6 s_website_form_field s_website_form_custom" data-type="char" data-name="Field">
+                                                        <label class="s_website_form_label" for="contact4">
+                                                            <span class="s_website_form_label_content">Organisation</span>
+                                                        </label>
+                                                        <input id="contact4" type="text" class="form-control s_website_form_input" name="company" data-fill-with="commercial_company_name" placeholder="Company / NBFC / firm"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_required s_website_form_model_required" data-type="char" data-name="Field">
+                                                        <label class="s_website_form_label" for="contact5">
+                                                            <span class="s_website_form_label_content">Subject</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <input id="contact5" type="text" class="form-control s_website_form_input" name="subject" required="" placeholder="e.g. ODR platform demo, dispute filing, empanelment"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_custom s_website_form_required" data-type="text" data-name="Field">
+                                                        <label class="s_website_form_label" for="contact6">
+                                                            <span class="s_website_form_label_content">Message</span>
+                                                            <span class="s_website_form_mark"> *</span>
+                                                        </label>
+                                                        <textarea id="contact6" class="form-control s_website_form_input" name="description" required="" rows="6" placeholder="How can BharatNyay support your dispute resolution workflow?"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_field s_website_form_dnone">
+                                                        <input id="contact7" type="hidden" class="form-control s_website_form_input" name="email_to"/>
+                                                    </div>
+                                                    <div class="col-12 s_website_form_submit s_website_form_no_submit_label bn-contact-submit" data-name="Submit Button">
+                                                        <a href="#" role="button" class="btn bn-contact-btn s_website_form_send">Send message →</a>
+                                                        <span id="s_website_form_result" class="ms-2"/>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </section>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5">
+                                    <div class="bn-contact-sidebar-card">
+                                        <h3 class="h5 fw-bold mb-3">BharatNyay</h3>
+                                        <p class="small mb-4">Secure Online Dispute Resolution for arbitration, mediation, and conciliation programmes across India.</p>
+                                        <ul class="bn-contact-info-list list-unstyled mb-4">
+                                            <li>
+                                                <i class="fa fa-map-marker" aria-hidden="true"/>
+                                                <span>
+                                                    <t t-if="res_company.street"><t t-esc="res_company.street"/><br/></t>
+                                                    Corporate HQ · New Delhi, India
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <i class="fa fa-phone" aria-hidden="true"/>
+                                                <a t-att-href="'tel:' + (res_company.phone or '1800-XXX-XXXX')" class="o_force_ltr" t-esc="res_company.phone or '1800-XXX-XXXX'"/>
+                                            </li>
+                                            <li>
+                                                <i class="fa fa-envelope-o" aria-hidden="true"/>
+                                                <a t-att-href="'mailto:' + (res_company.email or 'support@bharatnyay.in')" t-esc="res_company.email or 'support@bharatnyay.in'"/>
+                                            </li>
+                                        </ul>
+                                        <div class="bn-contact-pills">
+                                            <span>Arbitration</span>
+                                            <span>Mediation</span>
+                                            <span>Conciliation</span>
+                                        </div>
+                                        <p class="small text-muted mb-0 mt-4">Prefer to explore first? Read our <a href="/features" class="bn-link-accent">platform features</a> or <a href="/how-it-works" class="bn-link-accent">how it works</a>.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root">
+                    <t t-call="bharatnyay_website.bn_public_footer"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="page_contactus_thank_you" name="BharatNyay Contact Thank You">
+        <t t-call="website.layout">
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap" class="bn-contact-page">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <section class="bn-about-body bn-contact-thanks py-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <div class="bn-contact-thanks-card text-center">
+                                        <span class="bn-contact-thanks-icon" aria-hidden="true"><i class="fa fa-check"/></span>
+                                        <h1 class="fw-bold mb-2">Thank you!</h1>
+                                        <p class="lead mb-1">Your message has been sent successfully.</p>
+                                        <p class="text-muted mb-4">Our team will get back to you shortly.</p>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                            <a href="/" class="btn bn-btn-pill-primary">Back to homepage</a>
+                                            <a href="/features" class="btn bn-btn-pill-soft">Explore platform</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root">
+                    <t t-call="bharatnyay_website.bn_public_footer"/>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

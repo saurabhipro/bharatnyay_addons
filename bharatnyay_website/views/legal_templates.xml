@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="page_terms_and_conditions" name="Terms and Conditions">
+        <t t-call="website.layout">
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <div class="bn-hero-inner">
+                                <p class="bn-hash mb-3">Legal · Platform use</p>
+                                <h1><span class="text-orange">Terms</span> &amp; Conditions</h1>
+                                <p class="mb-0">Rules governing access to BharatNyay’s ODR workspace, public site, and dispute-resolution tooling — read before filing cases, joining hearings, or administering programmes.</p>
+                            </div>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-page">
+                            <p class="bn-legal-updated"><i class="fa fa-calendar-o" aria-hidden="true"/> Last updated · June 2026</p>
+                            <t t-set="active" t-value="'terms'"/>
+                            <t t-call="bharatnyay_website.bn_legal_nav"/>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Overview</span>
+                                <h2>Agreement to terms</h2>
+                                <p class="bn-prose-lead">These Terms &amp; Conditions (“Terms”) form a binding agreement between you and BharatNyay for use of our website, APIs, and Online Dispute Resolution platform.</p>
+                                <t t-call="bharatnyay_website.bn_legal_terms_sections"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Conduct</span>
+                                <h2>User obligations</h2>
+                                <p class="bn-prose-lead">All participants — parties, neutrals, counsel, and institutional administrators — must use the platform responsibly and in line with applicable law.</p>
+                                <t t-call="bharatnyay_website.bn_legal_terms_obligations"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Liability</span>
+                                <h2>Disclaimers &amp; limitation</h2>
+                                <div class="bn-feature-rows">
+                                    <div class="bn-feature-row"><i class="fa fa-info-circle" aria-hidden="true"/><span>The platform is provided on an “as is” basis. We do not warrant uninterrupted availability but maintain commercially reasonable uptime and security practices.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-legal" aria-hidden="true"/><span>BharatNyay is not a court, tribunal, or law firm. Outcomes depend on neutrals, parties, and governing clauses — not on the software itself.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-map-marker" aria-hidden="true"/><span>These Terms are governed by the laws of India. Courts at New Delhi shall have exclusive jurisdiction, subject to arbitration agreements between parties.</span></div>
+                                </div>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <t t-call="bharatnyay_website.bn_prose_exclusion"/>
+                                <div class="bn-prose-note mt-3">
+                                    <i class="fa fa-pencil" aria-hidden="true"/>
+                                    <span>We may update these Terms. Material changes will be posted on this page with a revised “last updated” date.</span>
+                                </div>
+                            </div>
+
+                            <div class="bn-prose-cta-bar">
+                                <p class="bn-prose-cta-hint">Questions about platform use or institutional deployments?</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/privacy-policy" class="btn bn-btn-pill-soft btn-sm">Privacy Policy</a>
+                                    <a href="/contactus" class="btn bn-btn-pill-primary btn-sm">Contact us</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_privacy_policy" name="Privacy Policy">
+        <t t-call="website.layout">
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <div class="bn-hero-inner">
+                                <p class="bn-hash mb-3">Legal · Data protection</p>
+                                <h1><span class="text-orange">Privacy</span> Policy</h1>
+                                <p class="mb-0">How BharatNyay collects, uses, stores, and protects personal and case data across ODR proceedings — aligned with India’s Digital Personal Data Protection framework and sector confidentiality expectations.</p>
+                            </div>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-page">
+                            <p class="bn-legal-updated"><i class="fa fa-calendar-o" aria-hidden="true"/> Last updated · June 2026</p>
+                            <t t-set="active" t-value="'privacy'"/>
+                            <t t-call="bharatnyay_website.bn_legal_nav"/>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Collection</span>
+                                <h2>Data we process</h2>
+                                <p class="bn-prose-lead">We process only data necessary to operate secure ODR programmes, authenticate users, and maintain auditable proceeding records.</p>
+                                <t t-call="bharatnyay_website.bn_legal_privacy_sections"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Purpose</span>
+                                <h2>How we use your data</h2>
+                                <div class="bn-feature-rows">
+                                    <div class="bn-feature-row"><i class="fa fa-key" aria-hidden="true"/><span>Authenticate users and enforce role-based access to cases, neutrals, and institutional dashboards.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-exchange" aria-hidden="true"/><span>Facilitate filings, hearings, evidence exchange, interim orders, and outcome publication per programme rules.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-shield" aria-hidden="true"/><span>Detect fraud, secure infrastructure, and produce audit logs for regulatory or supervisory review.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-bell-o" aria-hidden="true"/><span>Send procedural notices, hearing reminders, and service-of-process communications you have opted into.</span></div>
+                                </div>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Sharing</span>
+                                <h2>Confidentiality &amp; disclosure</h2>
+                                <p class="bn-prose-lead">Case materials are shared only with authorised participants, appointed neutrals, and infrastructure providers bound by confidentiality agreements.</p>
+                                <div class="bn-offer-grid">
+                                    <article class="bn-offer-card">
+                                        <i class="fa fa-user-secret bn-offer-icon" aria-hidden="true"/>
+                                        <p>We do not sell personal data to advertisers or data brokers.</p>
+                                    </article>
+                                    <article class="bn-offer-card">
+                                        <i class="fa fa-server bn-offer-icon" aria-hidden="true"/>
+                                        <p>Cloud subprocessors process data in India or approved regions with encryption in transit and at rest.</p>
+                                    </article>
+                                    <article class="bn-offer-card">
+                                        <i class="fa fa-university bn-offer-icon" aria-hidden="true"/>
+                                        <p>We may disclose information when required by court order, RBI directions, or other lawful authority.</p>
+                                    </article>
+                                </div>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Your rights</span>
+                                <h2>Data subject choices</h2>
+                                <t t-call="bharatnyay_website.bn_legal_privacy_rights"/>
+                            </div>
+
+                            <div class="bn-prose-cta-bar">
+                                <p class="bn-prose-cta-hint">See how cookies support login sessions and site preferences.</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/cookie-policy" class="btn bn-btn-pill-soft btn-sm">Cookie Policy</a>
+                                    <a href="mailto:privacy@bharatnyay.in" class="btn bn-btn-pill-primary btn-sm">privacy@bharatnyay.in</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+    <template id="page_cookie_policy" name="Cookie Policy">
+        <t t-call="website.layout">
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-about-page">
+                    <header class="bn-about-hero text-lg-start bn-hero-split">
+                        <div class="container">
+                            <div class="bn-hero-inner">
+                                <p class="bn-hash mb-3">Legal · Cookies</p>
+                                <h1><span class="text-orange">Cookie</span> Policy</h1>
+                                <p class="mb-0">Transparent explanation of how BharatNyay uses cookies and similar technologies on the public website and authenticated workspace — and how you can control them.</p>
+                            </div>
+                        </div>
+                    </header>
+                    <section class="bn-about-body">
+                        <div class="container bn-prose bn-prose-page">
+                            <p class="bn-legal-updated"><i class="fa fa-calendar-o" aria-hidden="true"/> Last updated · June 2026</p>
+                            <t t-set="active" t-value="'cookies'"/>
+                            <t t-call="bharatnyay_website.bn_legal_nav"/>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Basics</span>
+                                <h2>What are cookies?</h2>
+                                <p class="bn-prose-lead">Cookies are small text files stored on your device. They help us keep you signed in, remember preferences, and understand how visitors navigate our site.</p>
+                                <div class="bn-exclusion-callout">
+                                    <div class="bn-exclusion-icon"><i class="fa fa-tag" aria-hidden="true"/></div>
+                                    <div>
+                                        <h3>Not used for adjudication</h3>
+                                        <p>Cookie data is never used to influence neutral decisions, case outcomes, or AI-assisted adjudicative features.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Categories</span>
+                                <h2>Types of cookies we use</h2>
+                                <t t-call="bharatnyay_website.bn_legal_cookie_sections"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Control</span>
+                                <h2>Managing your preferences</h2>
+                                <div class="bn-feature-rows">
+                                    <div class="bn-feature-row"><i class="fa fa-globe" aria-hidden="true"/><span>Most browsers let you block or delete cookies under Settings → Privacy. Consult your browser help pages for steps.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-sign-out" aria-hidden="true"/><span>Clearing essential cookies will log you out of the workspace and may reset form progress.</span></div>
+                                    <div class="bn-feature-row"><i class="fa fa-refresh" aria-hidden="true"/><span>We review this policy when we add new integrations. Check the “last updated” date above for changes.</span></div>
+                                </div>
+                            </div>
+
+                            <div class="bn-prose-cta-bar">
+                                <p class="bn-prose-cta-hint">Learn how we protect personal and case data beyond cookies.</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/privacy-policy" class="btn bn-btn-pill-primary btn-sm">Privacy Policy</a>
+                                    <a href="/terms-and-conditions" class="btn bn-btn-pill-soft btn-sm">Terms &amp; Conditions</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

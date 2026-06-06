@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Remove legacy standards menus by URL (safe when xmlids were never created). -->
+    <delete model="website.menu" search="[('url', 'in', ['/odr/standards', '/odr/standards/code-of-ethics', '/odr/standards/hearing-protocol', '/odr/standards/neutral-appointment', '/odr/standards/empanelment', '/odr/standards/video-conferencing'])]"/>
+</odoo>

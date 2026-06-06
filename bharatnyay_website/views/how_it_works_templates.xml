@@ -2,34 +2,74 @@
 <odoo>
     <template id="page_how_it_works" name="How it works detailed">
         <t t-call="website.layout">
+            <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>
                 <t t-call="bharatnyay_website.bn_public_nav"/>
                 <div class="bn-about-page">
                     <header class="bn-about-hero bn-hero-split text-lg-start">
                         <div class="container">
-                            <p class="bn-hash mb-3">Operating model</p>
-                            <h1>BharatNyay <span class="text-orange">throughput</span> vs classic ODR steps</h1>
-                            <p class="mx-lg-0">We translate adjudicatory stages into SLA-aware software tasks — so recovery teams, borrower advocates, neutrals share one clock.</p>
+                            <div class="bn-hero-inner">
+                                <p class="bn-hash mb-3">Operating model</p>
+                                <h1>How BharatNyay <span class="text-orange">supports</span> the ODR process</h1>
+                                <p class="mb-0">A comprehensive digital platform facilitating modern dispute resolution mechanisms, including Arbitration, Mediation, and Conciliation.</p>
+                            </div>
                         </div>
                     </header>
                     <section class="bn-about-body">
-                        <div class="container bn-prose bn-prose-wide">
-                            <ol class="bn-step-list mb-5">
-                                <li><strong>Pre-filing reconciliation:</strong> balance confirmations, amortisation artefacts, grievance tagging per RBI escalation norms.</li>
-                                <li><strong>Notice discipline:</strong> statutory / contractual notices templated &amp; timestamped prior to arbitrator engagement.</li>
-                                <li><strong>Neutral directory:</strong> empanel arbitrators mediators pulled from segregated credential lists incl. conflict questionnaires.</li>
-                                <li><strong>Evidence exchange:</strong> bundle builders export PDF hearing binders aligning with tribunal directions.</li>
-                                <li><strong>Virtual hearing week:</strong> staggered caucus slots, interpreters, tribunal secretary minute logs optional.</li>
-                                <li><strong>Outcome artefacts:</strong> settlement deeds, interim awards placeholders, disbursement confirmations.</li>
-                                <li><strong>Post-award bookkeeping:</strong> registry filings reminders, stamping notes, supervisory attachments where applicable.</li>
-                            </ol>
-                            <div class="p-4 bg-light rounded-4 border">
-                                <strong>Why timing matters:</strong> Regulators scrutinise undue delay in borrower communications; neutral tribunals dismiss claims for lethargic prosecution — BharatNyay’s timers visualise exposure for legal ops dashboards.
+                        <div class="container bn-prose bn-prose-page">
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Overview</span>
+                                <h2>What BharatNyay offers</h2>
+                                <p class="bn-prose-lead">BharatNyay provides a secure and technology-enabled platform to support Online Dispute Resolution (ODR) proceedings, including Arbitration, Mediation, and Conciliation.</p>
+                                <p class="fw-semibold small text-uppercase mb-3" style="letter-spacing:0.08em;color:var(--bn-text-muted-light);">The platform offers</p>
+                                <t t-call="bharatnyay_website.bn_prose_offers"/>
                             </div>
-                            <div class="d-flex flex-wrap gap-2 mt-5">
-                                <a href="/odr/proceedings" class="btn btn-primary rounded-pill">Compare doctrinal briefing</a>
-                                <a href="/features" class="btn btn-outline-primary rounded-pill">See feature mapping</a>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">E-Filing</span>
+                                <h2>E-Filing and Case Management</h2>
+                                <h3>E-Filing and Case Vetting</h3>
+                                <p class="bn-prose-lead">The platform enables seamless electronic filing and preliminary scrutiny of cases, ensuring procedural compliance and efficient case administration.</p>
+                                <p class="fw-semibold small text-uppercase mb-3" style="letter-spacing:0.08em;color:var(--bn-text-muted-light);">Workflow</p>
+                                <t t-call="bharatnyay_website.bn_prose_workflow"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Hearings</span>
+                                <h2>Virtual Hearings</h2>
+                                <p class="bn-prose-lead">The platform facilitates secure virtual hearings for the smooth and efficient conduct of dispute resolution proceedings.</p>
+                                <p class="fw-semibold small text-uppercase mb-3" style="letter-spacing:0.08em;color:var(--bn-text-muted-light);">Key features</p>
+                                <t t-call="bharatnyay_website.bn_prose_virtual_hearings"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Automation</span>
+                                <h2>AI-Assisted Support</h2>
+                                <p class="bn-prose-lead">Artificial Intelligence is utilized solely for administrative and operational purposes, including:</p>
+                                <t t-call="bharatnyay_website.bn_prose_ai_support"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Visibility</span>
+                                <h2>Transparency and Performance Monitoring</h2>
+                                <h3>Interim Updates and Case Visibility</h3>
+                                <p class="bn-prose-lead">The platform provides stakeholders with real-time insight into every procedural milestone.</p>
+                                <t t-call="bharatnyay_website.bn_prose_transparency"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <t t-call="bharatnyay_website.bn_prose_exclusion"/>
+                            </div>
+
+                            <div class="bn-prose-cta-bar">
+                                <p class="bn-prose-cta-hint">See how each capability fits your operating model end to end.</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/features" class="btn bn-btn-pill-primary btn-sm">Platform features</a>
+                                    <a href="/odr/proceedings" class="btn bn-btn-pill-soft btn-sm">ODR proceedings</a>
+                                    <a href="/odr/what-is" class="btn bn-btn-pill-soft btn-sm">What is ODR?</a>
+                                </div>
                             </div>
                         </div>
                     </section>

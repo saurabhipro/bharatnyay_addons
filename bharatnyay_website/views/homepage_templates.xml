@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="homepage" name="BharatNyay Homepage" inherit_id="website.homepage">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <t t-set="no_footer" t-value="True"/>
+        </xpath>
         <xpath expr="//div[@id='wrap']" position="replace">
             <div id="wrap" class="oe_structure bn-landing-root">
                 <t t-set="bn_nav_inner" t-value="False"/>
@@ -8,13 +11,11 @@
 
                 <section class="bn-hero">
                     <div class="container position-relative">
-                        <div class="bn-chip"><i class="fa fa-star me-1 text-warning"/> India’s AI-assisted ODR dispute stack</div>
+                        <div class="bn-chip"><i class="fa fa-star me-1 text-warning"/> Online Dispute Resolution platform</div>
                         <h1>BharatNyay</h1>
                         <div class="bn-tagline-lg">Click Karo! Resolve Karo!</div>
-                        <p class="bn-hero-copy">Fast, fair routes for loan and portfolio disputes built on proven <abbr title="Online Dispute Resolution" class="border-0 text-decoration-none"><strong class="text-white">ODR</strong></abbr> ideas:
-                            structured <strong class="text-white">negotiation</strong>, neutral-led <strong class="text-white">mediation</strong>,
-                            <strong class="text-white">conciliation</strong>, and <strong class="text-white">arbitration</strong> under the Arbitration &amp; Conciliation Act, 1996 — online, secure, and audit-aware.
-                            BharatNyay supports individuals, enterprises, and institutions with legally aligned digital dispute workflows.</p>
+                        <p class="bn-hero-copy">A comprehensive digital platform facilitating modern dispute resolution mechanisms, including
+                            <strong class="text-white">Arbitration</strong>, <strong class="text-white">Mediation</strong>, and <strong class="text-white">Conciliation</strong>.</p>
                         <div class="bn-hero-buttons">
                             <a href="/contactus" class="btn bn-btn-orange">Government →</a>
                             <a href="/contactus" class="btn bn-btn-outline-light border-0">Corporate →</a>
@@ -41,17 +42,16 @@
                 <section class="bn-light-section bn-odr-callout-home">
                     <div class="container">
                         <div class="row justify-content-center">
-                            <div class="col-lg-10 bn-prose-muted">
-                                <span class="bn-badge-pill">ODR snapshot</span>
-                                <p class="lead mb-3"><strong>Online Dispute Resolution (ODR)</strong> integrates technology with mediation, conciliation,
-                                    negotiation, or arbitration — so pleadings, evidence, and hearings can proceed without needless travel,
-                                    aligned with UNCITRAL’s technical notes on ODR foundations and proportional case management.</p>
-                                <p class="mb-3">BharatNyay service lanes include online mediation, online arbitration, online conciliation, and online negotiation.
-                                    These tracks are designed to resolve disputes faster, legally, and securely while preserving commercial and customer relationships.</p>
-                                <div class="d-flex flex-wrap gap-2 justify-content-lg-center">
-                                    <a href="/odr/what-is" class="btn btn-outline-primary btn-sm rounded-pill">What is ODR?</a>
-                                    <a href="/odr/proceedings" class="btn btn-outline-primary btn-sm rounded-pill">Proceedings ladder</a>
-                                    <a href="/features" class="btn btn-outline-primary btn-sm rounded-pill">Platform fit</a>
+                            <div class="col-lg-10">
+                                <div class="bn-odr-callout-card bn-prose-muted">
+                                    <span class="bn-badge-pill">ODR snapshot</span>
+                                    <p class="lead mb-3"><strong>BharatNyay</strong> provides a secure and technology-enabled platform to support Online Dispute Resolution (ODR) proceedings, including Arbitration, Mediation, and Conciliation — with confidential case management, digital evidence submission, transparent procedural workflows, and end-to-end ODR support.</p>
+                                    <p class="mb-4">The platform does not undertake negotiation functions unless specifically incorporated within a structured mediation or conciliation process conducted in accordance with applicable law and institutional rules.</p>
+                                    <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-start">
+                                        <a href="/odr/what-is" class="btn btn-sm bn-btn-pill-primary">What is ODR?</a>
+                                        <a href="/odr/proceedings" class="btn btn-sm bn-btn-pill-soft">Proceedings ladder</a>
+                                        <a href="/features" class="btn btn-sm bn-btn-pill-soft">Platform fit</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -60,7 +60,7 @@
 
                 <section class="bn-trusted-strip">
                     <div class="container">
-                        <p class="small text-muted text-center text-uppercase fw-semibold mb-3 letter-spacing-sm">Trusted by teams across India’s lending ecosystem</p>
+                        <p class="bn-trusted-label mb-0">Trusted by teams across India’s lending ecosystem</p>
                         <div class="bn-trusted-inner">
                             <span>Bajaj Finance</span><span>HDFC Bank</span><span>SBI</span>
                             <span>ICICI Bank</span><span>Axis Bank</span><span>Kotak Mahindra</span>
@@ -72,30 +72,30 @@
                     <div class="container">
                         <div class="bn-section-title">
                             <span class="bn-badge-pill">Platform features</span>
-                            <h2>Operational depth for lawful ODR</h2>
-                            <p class="lead">Rails that mirror how institutional ADR blends party-driven negotiations with adjudicatory closure — dossiers, neutrality, timelines, hearings, and artefacts from one cockpit.</p>
+                            <h2>Platform Features Mapped to the ODR Process</h2>
+                            <p class="lead">A comprehensive digital platform facilitating modern dispute resolution mechanisms, including Arbitration, Mediation, and Conciliation.</p>
                         </div>
                         <div class="row g-4">
                             <div class="col-md-6 col-xl-4">
-                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-file-text-o"/></div><h4>Electronic filing vault</h4><p>Governed filings, versioning, tagging, and chronological trails — analogous to procedural registers ODR institutes maintain for transparency.</p></article>
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Secure case management</h4><p>Confidential case management, digital evidence submission, transparent workflows, and neutral adjudication in accordance with applicable laws.</p></article>
                             </div>
                             <div class="col-md-6 col-xl-4">
-                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-balance-scale"/></div><h4>Escalation ladder</h4><p>Mapped from pre-arbitral consultations through neutral appointment, aligning with UNCITRAL’s emphasis on exhaustion of amicable tiers where parties agree.</p></article>
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-file-text-o"/></div><h4>E-Filing &amp; case vetting</h4><p>Seamless electronic filing and preliminary scrutiny of cases, ensuring procedural compliance and efficient case administration.</p></article>
                             </div>
                             <div class="col-md-6 col-xl-4">
-                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-microchip"/></div><h4>AI-assisted triage</h4><p>Portfolio classification hints, SLA risk spotting, anomaly flags — always reviewable so humans certify outcomes (ICODR good-practice echoes).</p></article>
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-video-camera"/></div><h4>Virtual hearings</h4><p>Video-enabled hearing rooms, secure party participation, real-time document sharing, and accessibility from any location.</p></article>
                             </div>
                             <div class="col-md-6 col-xl-4">
-                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Mandatory notices discipline</h4><p>Dated communications respecting cooling-off etiquette before arbitration petitions consume court bandwidth.</p></article>
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-magic"/></div><h4>AI-assisted support</h4><p>Administrative assistance for data organization, document retrieval, workflow automation, and scheduling — not decision-making.</p></article>
                             </div>
                             <div class="col-md-6 col-xl-4">
-                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-line-chart"/></div><h4>Financial exposure KPIs</h4><p>Portfolio POS/claim overlays so creditor committees quantify exposure while neutrals supervise proportionality.</p></article>
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-line-chart"/></div><h4>Transparency &amp; monitoring</h4><p>Real-time status updates, procedural milestone visibility, case progress monitoring, and performance tracking.</p></article>
                             </div>
                             <div class="col-md-6 col-xl-4">
-                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-gavel"/></div><h4>Hearing &amp; award readiness</h4><p>Secure conferencing hooks, chatter logs, interim capture fields — artefacts expected when converting digital hearings into settlements or awards.</p></article>
+                                <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-comments-o"/></div><h4>Communication &amp; tracking</h4><p>Efficient communication and case tracking mechanisms with end-to-end support for online dispute resolution proceedings.</p></article>
                             </div>
                         </div>
-                        <div class="text-center mt-4"><a href="/features" class="fw-semibold">Full feature briefing →</a></div>
+                        <div class="text-center mt-4"><a href="/features" class="bn-link-accent">Full feature briefing →</a></div>
                     </div>
                 </section>
 
@@ -103,40 +103,54 @@
                     <div class="container">
                         <div class="bn-section-title">
                             <span class="bn-badge-pill">How it works</span>
-                            <h2>Stages parties expect in disciplined ODR</h2>
-                            <p class="lead">BharatNyay hard-wires intake, neutrality, procedural fairness logs, and repository hygiene for mediation, conciliation, negotiation, and arbitration at production scale.</p>
+                            <h2>E-Filing and Case Management</h2>
+                            <p class="lead">From case initiation and vetting through hearings to resolution and outcome — transparent milestones at every step.</p>
                         </div>
-                        <div class="row g-4 text-center">
-                            <div class="col-md-3">
-                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
-                                    <strong class="d-block fs-4 text-primary mb-2">01</strong>
-                                    <h5 class="fw-bold mb-2">Consent &amp; clause check</h5>
-                                    <p class="text-muted small mb-0">Validate arbitration agreements / ODR tiers and seat language before escalating.</p>
+                        <div class="row g-3 g-lg-4 text-center">
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                                    <strong class="d-block fs-5 bn-step-num mb-2">01</strong>
+                                    <h6 class="fw-bold mb-2 small">Case initiation</h6>
+                                    <p class="bn-step-desc mb-0">Case Initiation and Registration.</p>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
-                                    <strong class="d-block fs-4 text-primary mb-2">02</strong>
-                                    <h5 class="fw-bold mb-2">Negotiate &amp; mediate</h5>
-                                    <p class="text-muted small mb-0">Controlled notices, caucus slots, escalation clocks — chatter becomes evidence of good faith effort.</p>
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                                    <strong class="d-block fs-5 bn-step-num mb-2">02</strong>
+                                    <h6 class="fw-bold mb-2 small">Case vetting</h6>
+                                    <p class="bn-step-desc mb-0">Preliminary Review and Case Vetting.</p>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
-                                    <strong class="d-block fs-4 text-primary mb-2">03</strong>
-                                    <h5 class="fw-bold mb-2">Neutral &amp; hearing</h5>
-                                    <p class="text-muted small mb-0">Appointment logs, disclosures, digitally witnessed hearings respecting natural justice norms.</p>
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                                    <strong class="d-block fs-5 bn-step-num mb-2">03</strong>
+                                    <h6 class="fw-bold mb-2 small">Hearings</h6>
+                                    <p class="bn-step-desc mb-0">Scheduling of Hearings.</p>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="rounded-4 bg-white shadow-sm border p-4 h-100">
-                                    <strong class="d-block fs-4 text-primary mb-2">04</strong>
-                                    <h5 class="fw-bold mb-2">Settlement / award</h5>
-                                    <p class="text-muted small mb-0">Document repository ready for stamping, filings, RBI/NCLT interplay where jurisdiction permits.</p>
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                                    <strong class="d-block fs-5 bn-step-num mb-2">04</strong>
+                                    <h6 class="fw-bold mb-2 small">Evidence</h6>
+                                    <p class="bn-step-desc mb-0">Submission of Evidence and Documents.</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                                    <strong class="d-block fs-5 bn-step-num mb-2">05</strong>
+                                    <h6 class="fw-bold mb-2 small">Conduct</h6>
+                                    <p class="bn-step-desc mb-0">Conduct of Hearings.</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                                    <strong class="d-block fs-5 bn-step-num mb-2">06</strong>
+                                    <h6 class="fw-bold mb-2 small">Outcome</h6>
+                                    <p class="bn-step-desc mb-0">Resolution and Issuance of Outcome.</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-center mt-4"><a href="/how-it-works" class="fw-semibold">Deep dive on timings →</a></div>
+                        <div class="text-center mt-4"><a href="/how-it-works" class="bn-link-accent">Deep dive on timings →</a></div>
                     </div>
                 </section>
 
@@ -161,7 +175,7 @@
                         <div class="bn-section-title">
                             <span class="bn-badge-pill">Testimonials</span>
                             <h2>Trusted by thousands</h2>
-                            <p class="lead small text-muted mx-auto">Illustrative stories — customise with live references after deployment.</p>
+                            <p class="lead small mx-auto">Illustrative stories — customise with live references after deployment.</p>
                         </div>
                         <div class="row g-4">
                             <div class="col-md-4">

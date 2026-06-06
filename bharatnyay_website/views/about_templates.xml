@@ -2,21 +2,24 @@
 <odoo>
     <template id="page_about_bharatnyay" name="About BharatNyay">
         <t t-call="website.layout">
+            <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>
                 <t t-call="bharatnyay_website.bn_public_nav"/>
                 <div class="bn-about-page">
                     <header class="bn-about-hero">
                         <div class="container">
-                            <p class="bn-hash">#ResolveWithODR</p>
-                            <h1>Building India’s governed resolution fabric, <span class="text-orange">digitally</span>.</h1>
-                            <p>BharatNyay aligns technology with UNCITRAL’s ODR facilitation principles and Arbitration Act 1996 guardrails.
-                                We deliver structured online negotiation, mediation, conciliation, and arbitration experiences for India-focused dispute programs.
-                                Our playbook deep-dives:</p>
-                            <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
-                                <a href="/odr/what-is" class="btn btn-outline-light rounded-pill btn-sm">What is ODR?</a>
-                                <a href="/odr/proceedings" class="btn btn-outline-light rounded-pill btn-sm">Proceedings</a>
-                                <a href="/odr/model-clause" class="btn btn-outline-light rounded-pill btn-sm">Clause design</a>
+                            <div class="bn-hero-inner">
+                                <p class="bn-hash">#ResolveWithODR</p>
+                                <h1>Building India’s governed resolution fabric, <span class="text-orange">digitally</span>.</h1>
+                                <p>BharatNyay aligns technology with UNCITRAL’s ODR facilitation principles and Arbitration Act 1996 guardrails.
+                                    We deliver structured online negotiation, mediation, conciliation, and arbitration experiences for India-focused dispute programs.
+                                    Our playbook deep-dives:</p>
+                                <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                                    <a href="/odr/what-is" class="btn btn-outline-light rounded-pill btn-sm">What is ODR?</a>
+                                    <a href="/odr/proceedings" class="btn btn-outline-light rounded-pill btn-sm">Proceedings</a>
+                                    <a href="/odr/model-clause" class="btn btn-outline-light rounded-pill btn-sm">Clause design</a>
+                                </div>
                             </div>
                         </div>
                     </header>
@@ -83,7 +86,7 @@
                                         <span class="badge bg-dark px-4 py-3 rounded-pill">RBI fair practice overlays</span>
                                         <span class="badge border border-secondary text-secondary px-4 py-3 rounded-pill">Arbitration Act 1996 fit</span>
                                     </div>
-                                    <div class="mt-4"><a href="/odr/standards" class="fw-semibold">Read standards briefing →</a></div>
+                                    <div class="mt-4"><a href="/features" class="fw-semibold">Explore platform safeguards →</a></div>
                                 </div>
                             </div>
                         </div>
@@ -102,9 +105,9 @@
                                     </ul>
                                 </div>
                                 <div class="col-lg-6">
-                                    <div class="p-5 rounded-4 border border-secondary bg-dark bg-opacity-25">
-                                        <h4 class="text-white fw-bold mb-3">Discuss architecture</h4>
-                                        <p class="text-secondary mb-4">We’ll map neutrality policy, arbitrator empanelment, hosting posture, DPIA artefacts, tribunal fees.</p>
+                                    <div class="p-5 rounded-4 bn-architecture-card">
+                                        <h4 class="fw-bold mb-3">Discuss architecture</h4>
+                                        <p class="mb-4">We’ll map neutrality policy, arbitrator empanelment, hosting posture, DPIA artefacts, tribunal fees.</p>
                                         <a href="/contactus" class="btn bn-cta-orange">Book discovery call</a>
                                     </div>
                                 </div>
