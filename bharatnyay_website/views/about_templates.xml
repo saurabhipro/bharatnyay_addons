@@ -2,6 +2,10 @@
 <odoo>
     <template id="page_about_bharatnyay" name="About BharatNyay">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">About BharatNyay</t>
+            <t t-set="bn_meta_description">Learn how BharatNyay aligns technology with UNCITRAL ODR principles and India's Arbitration Act 1996 for governed digital dispute resolution programmes.</t>
+            <t t-set="bn_seo_canonical">/about</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

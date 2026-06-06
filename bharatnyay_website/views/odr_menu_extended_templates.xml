@@ -3,6 +3,10 @@
 
     <template id="page_odr_procedural_rules" name="ODR procedural rules">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">Procedural Rules</t>
+            <t t-set="bn_meta_description">BharatNyay procedural rules for digitised arbitration, mediation, and conciliation — timelines, filings, hearings, and enforceable outcomes.</t>
+            <t t-set="bn_seo_canonical">/odr/procedural-rules</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

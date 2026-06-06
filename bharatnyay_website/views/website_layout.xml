@@ -7,4 +7,45 @@
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
         </xpath>
     </template>
+
+    <template id="bharatnyay_layout_seo" inherit_id="website.layout" name="BharatNyay SEO meta tags">
+        <xpath expr="//head" position="inside">
+            <t t-set="bn_seo_site_name" t-value="website.name or 'BharatNyay'"/>
+            <t t-set="bn_seo_title_full" t-value="(additional_title and (additional_title + ' | ') or '') + bn_seo_site_name"/>
+            <t t-set="bn_seo_base_url" t-value="request.website.get_base_url().rstrip('/')"/>
+            <t t-set="bn_seo_canonical_path" t-value="bn_seo_canonical if bn_seo_canonical else request.httprequest.path"/>
+            <t t-set="bn_seo_canonical_url" t-value="bn_seo_base_url + bn_seo_canonical_path"/>
+            <t t-set="bn_seo_robots_value" t-value="bn_seo_robots or 'index, follow'"/>
+
+            <meta name="robots" t-att-content="bn_seo_robots_value"/>
+            <link rel="canonical" t-att-href="bn_seo_canonical_url"/>
+
+            <meta property="og:type" content="website"/>
+            <meta property="og:site_name" t-att-content="bn_seo_site_name"/>
+            <meta property="og:url" t-att-content="bn_seo_canonical_url"/>
+            <t t-if="additional_title">
+                <meta property="og:title" t-att-content="bn_seo_title_full"/>
+                <meta name="twitter:title" t-att-content="bn_seo_title_full"/>
+            </t>
+            <t t-if="meta_description">
+                <meta property="og:description" t-att-content="meta_description"/>
+                <meta name="twitter:description" t-att-content="meta_description"/>
+            </t>
+            <meta name="twitter:card" content="summary_large_image"/>
+            <t t-set="bn_seo_og_image" t-value="bn_seo_base_url + '/web/image/website/' + str(website.id) + '/logo'"/>
+            <meta property="og:image" t-att-content="bn_seo_og_image"/>
+            <meta name="twitter:image" t-att-content="bn_seo_og_image"/>
+
+            <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "BharatNyay",
+                    "url": "<t t-esc="bn_seo_base_url"/>",
+                    "logo": "<t t-esc="bn_seo_og_image"/>",
+                    "description": "India-facing Online Dispute Resolution platform for arbitration, mediation, and conciliation."
+                }
+            </script>
+        </xpath>
+    </template>
 </odoo>

@@ -2,6 +2,10 @@
 <odoo>
     <template id="page_odr_proceedings" name="ODR proceedings primer">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">ODR Proceedings</t>
+            <t t-set="bn_meta_description">How ODR proceedings work on BharatNyay — case intake, evidence exchange, virtual hearings, interim orders, and published outcomes.</t>
+            <t t-set="bn_seo_canonical">/odr/proceedings</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

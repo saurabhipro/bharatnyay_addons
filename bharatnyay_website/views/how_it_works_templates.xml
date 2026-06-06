@@ -2,6 +2,10 @@
 <odoo>
     <template id="page_how_it_works" name="How it works detailed">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">How It Works</t>
+            <t t-set="bn_meta_description">Step-by-step guide to filing disputes, scheduling hearings, exchanging evidence, and resolving cases on the BharatNyay ODR platform.</t>
+            <t t-set="bn_seo_canonical">/how-it-works</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

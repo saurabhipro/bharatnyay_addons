@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Set bn_meta_title, bn_meta_description (and optionally bn_seo_canonical, bn_seo_robots)
+        before calling this fragment inside a page's website.layout block.
+    -->
+    <template id="bn_page_seo" name="BharatNyay page SEO">
+        <t t-set="additional_title" t-value="bn_meta_title"/>
+        <t t-set="meta_description" t-value="bn_meta_description"/>
+        <t t-if="not bn_seo_robots" t-set="bn_seo_robots" t-value="'index, follow'"/>
+    </template>
+</odoo>

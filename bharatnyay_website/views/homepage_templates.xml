@@ -3,6 +3,10 @@
     <template id="homepage" name="BharatNyay Homepage" inherit_id="website.homepage">
         <xpath expr="//div[@id='wrap']" position="before">
             <t t-set="no_footer" t-value="True"/>
+            <t t-set="bn_meta_title">Online Dispute Resolution Platform</t>
+            <t t-set="bn_meta_description">BharatNyay is India's governed ODR platform for arbitration, mediation, and conciliation. Secure digital dispute resolution aligned with the Arbitration Act 1996.</t>
+            <t t-set="bn_seo_canonical">/</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
         </xpath>
         <xpath expr="//div[@id='wrap']" position="replace">
             <div id="wrap" class="oe_structure bn-landing-root">

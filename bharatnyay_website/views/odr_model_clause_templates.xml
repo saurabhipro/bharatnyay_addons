@@ -2,6 +2,10 @@
 <odoo>
     <template id="page_odr_model_clause" name="ODR model clause">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">ODR Model Clause</t>
+            <t t-set="bn_meta_description">Starter arbitration and ODR clause language for India-facing dispute programmes. Adapt tribunal rules, costs, and court references with legal counsel.</t>
+            <t t-set="bn_seo_canonical">/odr/model-clause</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

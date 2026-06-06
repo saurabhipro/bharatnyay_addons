@@ -2,6 +2,10 @@
 <odoo>
     <template id="page_odr_what_is" name="What is ODR">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">What is ODR?</t>
+            <t t-set="bn_meta_description">Primer on Online Dispute Resolution (ODR), party autonomy, neutral appointment, and India-facing arbitration and mediation programmes.</t>
+            <t t-set="bn_seo_canonical">/odr/what-is</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

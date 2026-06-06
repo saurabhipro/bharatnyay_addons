@@ -2,6 +2,10 @@
 <odoo>
     <template id="contactus_bharatnyay" inherit_id="website.contactus" name="BharatNyay Contact Us" priority="20">
         <xpath expr="//t[@t-call='website.layout']/t[@t-set='logged_partner']" position="before">
+            <t t-set="bn_meta_title">Contact Us</t>
+            <t t-set="bn_meta_description">Contact BharatNyay about ODR platform deployment, dispute programmes, neutrality policy, and enterprise integrations.</t>
+            <t t-set="bn_seo_canonical">/contactus</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
         </xpath>
         <xpath expr="//div[@id='wrap']" position="replace">
@@ -122,6 +126,11 @@
 
     <template id="page_contactus_thank_you" name="BharatNyay Contact Thank You">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">Thank You</t>
+            <t t-set="bn_meta_description">Your message to BharatNyay was sent successfully. Our team will respond shortly.</t>
+            <t t-set="bn_seo_canonical">/contactus-thank-you</t>
+            <t t-set="bn_seo_robots">noindex, nofollow</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap" class="bn-contact-page">
                 <t t-set="bn_nav_inner" t-value="True"/>

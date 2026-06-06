@@ -3,6 +3,10 @@
 
     <template id="page_terms_and_conditions" name="Terms and Conditions">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">Terms and Conditions</t>
+            <t t-set="bn_meta_description">Terms governing access to BharatNyay's ODR workspace, public website, and dispute-resolution tooling for parties, neutrals, and administrators.</t>
+            <t t-set="bn_seo_canonical">/terms-and-conditions</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>
@@ -72,6 +76,10 @@
 
     <template id="page_privacy_policy" name="Privacy Policy">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">Privacy Policy</t>
+            <t t-set="bn_meta_description">How BharatNyay collects, uses, stores, and protects personal data in ODR proceedings, hearings, and on our public website.</t>
+            <t t-set="bn_seo_canonical">/privacy-policy</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>
@@ -153,6 +161,10 @@
 
     <template id="page_cookie_policy" name="Cookie Policy">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">Cookie Policy</t>
+            <t t-set="bn_meta_description">How BharatNyay uses cookies and similar technologies for login sessions, preferences, analytics, and site performance.</t>
+            <t t-set="bn_seo_canonical">/cookie-policy</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>

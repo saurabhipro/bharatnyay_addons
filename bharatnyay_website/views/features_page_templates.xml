@@ -2,6 +2,10 @@
 <odoo>
     <template id="page_features" name="BharatNyay features">
         <t t-call="website.layout">
+            <t t-set="bn_meta_title">Platform Features</t>
+            <t t-set="bn_meta_description">Explore BharatNyay ODR platform features mapped to arbitration, mediation, and conciliation workflows — filings, hearings, evidence, and outcomes.</t>
+            <t t-set="bn_seo_canonical">/features</t>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
             <t t-set="no_footer" t-value="True"/>
             <div id="wrap">
                 <t t-set="bn_nav_inner" t-value="True"/>
