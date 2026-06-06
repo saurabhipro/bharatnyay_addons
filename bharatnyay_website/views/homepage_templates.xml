@@ -35,10 +35,10 @@
                 <section class="bn-stats">
                     <div class="container">
                         <div class="row g-3">
-                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-check"/></div><h3>856+</h3><p>Cases tracked</p></div></div>
-                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-trophy"/></div><h3>91%</h3><p>Resolution fidelity</p></div></div>
-                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-clock-o"/></div><h3>14 days</h3><p>SLA target</p></div></div>
-                            <div class="col-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-inr"/></div><h3>₹12.5 Cr+</h3><p>Portfolio value</p></div></div>
+                            <div class="col-12 col-sm-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-check"/></div><h3>856+</h3><p>Cases tracked</p></div></div>
+                            <div class="col-12 col-sm-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-trophy"/></div><h3>91%</h3><p>Resolution fidelity</p></div></div>
+                            <div class="col-12 col-sm-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-clock-o"/></div><h3>14 days</h3><p>SLA target</p></div></div>
+                            <div class="col-12 col-sm-6 col-md-3"><div class="bn-stat-card"><div class="bn-stat-icon"><i class="fa fa-inr"/></div><h3>₹12.5 Cr+</h3><p>Portfolio value</p></div></div>
                         </div>
                     </div>
                 </section>
@@ -80,22 +80,22 @@
                             <p class="lead">A comprehensive digital platform facilitating modern dispute resolution mechanisms, including Arbitration, Mediation, and Conciliation.</p>
                         </div>
                         <div class="row g-4">
-                            <div class="col-md-6 col-xl-4">
+                            <div class="col-12 col-md-6 col-xl-4">
                                 <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Secure case management</h4><p>Confidential case management, digital evidence submission, transparent workflows, and neutral adjudication in accordance with applicable laws.</p></article>
                             </div>
-                            <div class="col-md-6 col-xl-4">
+                            <div class="col-12 col-md-6 col-xl-4">
                                 <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-file-text-o"/></div><h4>E-Filing &amp; case vetting</h4><p>Seamless electronic filing and preliminary scrutiny of cases, ensuring procedural compliance and efficient case administration.</p></article>
                             </div>
-                            <div class="col-md-6 col-xl-4">
+                            <div class="col-12 col-md-6 col-xl-4">
                                 <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-video-camera"/></div><h4>Virtual hearings</h4><p>Video-enabled hearing rooms, secure party participation, real-time document sharing, and accessibility from any location.</p></article>
                             </div>
-                            <div class="col-md-6 col-xl-4">
+                            <div class="col-12 col-md-6 col-xl-4">
                                 <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-magic"/></div><h4>AI-assisted support</h4><p>Administrative assistance for data organization, document retrieval, workflow automation, and scheduling — not decision-making.</p></article>
                             </div>
-                            <div class="col-md-6 col-xl-4">
+                            <div class="col-12 col-md-6 col-xl-4">
                                 <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-line-chart"/></div><h4>Transparency &amp; monitoring</h4><p>Real-time status updates, procedural milestone visibility, case progress monitoring, and performance tracking.</p></article>
                             </div>
-                            <div class="col-md-6 col-xl-4">
+                            <div class="col-12 col-md-6 col-xl-4">
                                 <article class="bn-feature-card"><div class="icon-box"><i class="fa fa-comments-o"/></div><h4>Communication &amp; tracking</h4><p>Efficient communication and case tracking mechanisms with end-to-end support for online dispute resolution proceedings.</p></article>
                             </div>
                         </div>
@@ -111,43 +111,43 @@
                             <p class="lead">From case initiation and vetting through hearings to resolution and outcome — transparent milestones at every step.</p>
                         </div>
                         <div class="row g-3 g-lg-4 text-center">
-                            <div class="col-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
                                     <strong class="d-block fs-5 bn-step-num mb-2">01</strong>
                                     <h6 class="fw-bold mb-2 small">Case initiation</h6>
                                     <p class="bn-step-desc mb-0">Case Initiation and Registration.</p>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
                                     <strong class="d-block fs-5 bn-step-num mb-2">02</strong>
                                     <h6 class="fw-bold mb-2 small">Case vetting</h6>
                                     <p class="bn-step-desc mb-0">Preliminary Review and Case Vetting.</p>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
                                     <strong class="d-block fs-5 bn-step-num mb-2">03</strong>
                                     <h6 class="fw-bold mb-2 small">Hearings</h6>
                                     <p class="bn-step-desc mb-0">Scheduling of Hearings.</p>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
                                     <strong class="d-block fs-5 bn-step-num mb-2">04</strong>
                                     <h6 class="fw-bold mb-2 small">Evidence</h6>
                                     <p class="bn-step-desc mb-0">Submission of Evidence and Documents.</p>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
                                     <strong class="d-block fs-5 bn-step-num mb-2">05</strong>
                                     <h6 class="fw-bold mb-2 small">Conduct</h6>
                                     <p class="bn-step-desc mb-0">Conduct of Hearings.</p>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bg-white bn-step-card p-3 p-lg-4 h-100">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
                                     <strong class="d-block fs-5 bn-step-num mb-2">06</strong>
                                     <h6 class="fw-bold mb-2 small">Outcome</h6>
                                     <p class="bn-step-desc mb-0">Resolution and Issuance of Outcome.</p>
@@ -166,10 +166,10 @@
                             <p class="lead">Consumers, financiers, neutrals, and supervisors converge on one fabric — aligning with fiduciary duties and supervisory expectations for fair recovery (<abbr title="Reserve Bank of India">RBI</abbr>).</p>
                         </div>
                         <div class="row g-4">
-                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-user"/></div><h4>Borrowers</h4><p>Fair EMI disputes, coercion complaints, SARFAESI interplay — mediated channels before escalation.</p></article></div>
-                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-building"/></div><h4>Lenders &amp; NBFCs</h4><p>Repeatable dockets respecting fair practices code timelines and escalation governance.</p></article></div>
-                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-pencil-square-o"/></div><h4>Neutrals</h4><p>Remote case management disclosures, neutrality declarations, remuneration transparency.</p></article></div>
-                            <div class="col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Regulators / audit</h4><p>Grievance redress artefacts, SLA telemetry, segregation of duties for sensitive actions.</p></article></div>
+                            <div class="col-12 col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-user"/></div><h4>Borrowers</h4><p>Fair EMI disputes, coercion complaints, SARFAESI interplay — mediated channels before escalation.</p></article></div>
+                            <div class="col-12 col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-building"/></div><h4>Lenders &amp; NBFCs</h4><p>Repeatable dockets respecting fair practices code timelines and escalation governance.</p></article></div>
+                            <div class="col-12 col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-pencil-square-o"/></div><h4>Neutrals</h4><p>Remote case management disclosures, neutrality declarations, remuneration transparency.</p></article></div>
+                            <div class="col-12 col-md-6 col-xl-3"><article class="bn-stake-card"><div class="icon-box"><i class="fa fa-shield"/></div><h4>Regulators / audit</h4><p>Grievance redress artefacts, SLA telemetry, segregation of duties for sensitive actions.</p></article></div>
                         </div>
                     </div>
                 </section>
@@ -182,21 +182,21 @@
                             <p class="lead small mx-auto">Illustrative stories — customise with live references after deployment.</p>
                         </div>
                         <div class="row g-4">
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4">
                                 <blockquote class="bn-testimonial-card">
                                     <div class="stars"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/></div>
                                     <p class="quote">“Structured ODR ladders closed my EMI overcharge in twelve days.”</p>
                                     <footer class="user-info"><span class="avatar">SR</span><div class="name-box"><h5>Sneha Reddy</h5><p>Borrower, Hyderabad</p></div></footer>
                                 </blockquote>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4">
                                 <blockquote class="bn-testimonial-card">
                                     <div class="stars"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/></div>
                                     <p class="quote">“Neutral dashboards shave hours versus inbox arbitration.”</p>
                                     <footer class="user-info"><span class="avatar">AP</span><div class="name-box"><h5>Adv. Priya Sharma</h5><p>Mediator</p></div></footer>
                                 </blockquote>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-12 col-md-4">
                                 <blockquote class="bn-testimonial-card">
                                     <div class="stars"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star"/></div>
                                     <p class="quote">“Penalty reversal path finally matched our clause library governance.”</p>
