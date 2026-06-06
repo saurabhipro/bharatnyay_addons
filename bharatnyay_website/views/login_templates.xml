@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Hide Odoo website header/footer on workspace login -->
     <template id="bn_login_hide_chrome" inherit_id="website.login_layout" name="BharatNyay login hide chrome" priority="25">
         <xpath expr="//t[@t-call='website.layout']" position="before">
             <t t-set="no_header" t-value="True"/>
@@ -9,7 +8,6 @@
         </xpath>
     </template>
 
-    <!-- Focused login shell: centered card, no site nav/footer -->
     <template id="bn_website_login_layout" inherit_id="website.login_layout" name="BharatNyay login layout" priority="30">
         <xpath expr="//div[hasclass('oe_website_login_container')]" position="replace">
             <div class="oe_website_login_container bn-login-page">
@@ -21,23 +19,22 @@
                 <section class="bn-login-body">
                     <div class="container">
                         <div class="row justify-content-center">
-                            <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
-                                <div class="bn-login-card">
-                                    <div class="bn-login-card-brand text-center">
+                            <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+                                <article class="bn-login-card">
+                                    <header class="bn-login-card-head text-center">
                                         <span class="bn-login-logo-badge" aria-hidden="true">BN</span>
-                                        <p class="bn-login-kicker mb-2">Secure workspace</p>
+                                        <p class="bn-login-kicker">Secure workspace</p>
                                         <h1 class="bn-login-title">Sign in to BharatNyay</h1>
-                                        <p class="bn-login-subtitle mb-0">Access your ODR cases, hearings, and dispute programme dashboards.</p>
-                                    </div>
+                                        <p class="bn-login-subtitle">Access your ODR cases, hearings, and dispute programme dashboards.</p>
+                                    </header>
                                     <div class="bn-login-card-form">
                                         <t t-out="0"/>
                                     </div>
-                                </div>
-                                <p class="bn-login-page-footer text-center mb-0">
-                                    <a href="/">← Back to homepage</a>
-                                    <span class="bn-login-page-footer-sep" aria-hidden="true">·</span>
-                                    <a href="/contactus">Need access?</a>
-                                </p>
+                                    <footer class="bn-login-card-foot">
+                                        <a href="/">← Back to homepage</a>
+                                        <a href="/contactus">Need access?</a>
+                                    </footer>
+                                </article>
                             </div>
                         </div>
                     </div>
@@ -46,26 +43,39 @@
         </xpath>
     </template>
 
-    <!-- Form polish — hide Odoo OAuth, labels, sign-in button -->
     <template id="bn_login_form" inherit_id="web.login" name="BharatNyay login form" priority="30">
         <xpath expr="//owl-component[@name='web.user_switch']" position="replace"/>
         <xpath expr="//form[contains(@t-attf-class, 'oe_login_form')]" position="attributes">
             <attribute name="t-attf-class">oe_login_form bn-login-form</attribute>
         </xpath>
-        <xpath expr="//label[@for='login']" position="replace">
-            <label for="login" class="form-label bn-login-label">Email</label>
+        <xpath expr="//div[hasclass('field-login')]" position="replace">
+            <div class="bn-login-field">
+                <label for="login" class="bn-login-label">Email</label>
+                <div class="bn-login-input-wrap">
+                    <i class="fa fa-envelope-o bn-login-input-icon" aria-hidden="true"/>
+                    <input type="text" placeholder="you@organisation.com" name="login" t-att-value="login" id="login" class="form-control" required="required" autocapitalize="off" autocomplete="username"/>
+                </div>
+            </div>
         </xpath>
-        <xpath expr="//label[@for='password']" position="replace">
-            <label for="password" class="form-label bn-login-label d-flex justify-content-between align-items-center flex-wrap gap-1 w-100">
-                <span>Password</span>
-                <a href="/web/reset_password" class="bn-login-forgot small">Reset password</a>
-            </label>
+        <xpath expr="//input[@id='password']/parent::div" position="replace">
+            <div class="bn-login-field">
+                <div class="bn-login-label-row">
+                    <label for="password" class="bn-login-label mb-0">Password</label>
+                    <a href="/web/reset_password" class="bn-login-forgot">Forgot?</a>
+                </div>
+                <div class="bn-login-input-wrap">
+                    <i class="fa fa-lock bn-login-input-icon" aria-hidden="true"/>
+                    <input type="password" placeholder="Enter your password" name="password" id="password" class="form-control" required="required" autocomplete="current-password" t-att-autofocus="'autofocus' if login else None" maxlength="4096"/>
+                </div>
+            </div>
         </xpath>
         <xpath expr="//div[hasclass('o_login_auth')]" position="replace"/>
+        <xpath expr="//div[hasclass('oe_login_buttons')]" position="attributes">
+            <attribute name="class" remove="pt-3 mb-1" add="bn-login-actions" separator=" "/>
+        </xpath>
         <xpath expr="//div[hasclass('oe_login_buttons')]/button[@type='submit'][1]" position="replace">
             <button type="submit" class="btn bn-login-submit w-100">Sign in</button>
         </xpath>
     </template>
 
 </odoo>
-
