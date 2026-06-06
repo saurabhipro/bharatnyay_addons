@@ -207,7 +207,7 @@
                     <div class="container">
                         <div class="bn-cta-box">
                             <h2>Deploy governed ODR for your portfolios</h2>
-                            <p>Book a blueprint session — neutrality policy, arbitrator panel rules, data residency, escalation matrices, integrations.</p>
+                            <p class="bn-cta-subtext">Book a blueprint session — neutrality policy, arbitrator panel rules, data residency, escalation matrices, integrations.</p>
                             <div class="d-flex flex-wrap justify-content-center gap-3">
                                 <a class="btn bn-cta-orange" href="/contactus">File a dispute now →</a>
                                 <a class="btn bn-cta-white" href="/odr/model-clause">Review model clause cues</a>
