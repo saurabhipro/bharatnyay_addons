@@ -1994,12 +1994,124 @@ class BharatLoan(models.Model):
                 rec.law_firm_name = rec.law_firm_id.name
 
     @api.model
-    def get_dashboard_statistics(self):
+    def _dashboard_role_base_domain(self, dashboard_role=None):
+        if dashboard_role == 'case_manager':
+            return self._case_manager_dashboard_domain()
+        if dashboard_role == 'arbitrator':
+            return self._arbitrator_dashboard_domain()
+        return []
+
+    @api.model
+    def _dashboard_apply_scope_filters(
+        self, base_domain=None, region_id=False, state_id=False, batch_number=False,
+    ):
+        """Build loan domain for dashboard scope (region / state / batch)."""
+        domain = list(base_domain or [])
+        if region_id:
+            domain.append(('region_id', '=', int(region_id)))
+        if state_id:
+            domain.append(('borrower_state_id', '=', int(state_id)))
+        if batch_number:
+            bn = str(batch_number).strip()
+            if bn == '__none__':
+                domain.append(('batch_number', 'in', [False, '']))
+            elif bn:
+                domain.append(('batch_number', '=', bn))
+        return domain
+
+    @api.model
+    def _dashboard_scope_filters_active(self, region_id=False, state_id=False, batch_number=False):
+        return bool(region_id or state_id or batch_number)
+
+    @api.model
+    def _dashboard_arbitration_moves_for_loans(self, loans, extra_domain=None):
+        """Arbitration invoices linked to a loan set (direct, annexure, or line text)."""
+        Move = self.env['account.move'].sudo()
+        inv_domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ]
+        if extra_domain:
+            inv_domain.extend(extra_domain)
+        moves = Move.search(inv_domain)
+        if not loans:
+            return Move.browse()
+        loan_ids = set(loans.ids)
+        loan_numbers = {n for n in loans.mapped('loan_number') if n}
+
+        def _matches(move):
+            if move.bharat_loan_id and move.bharat_loan_id.id in loan_ids:
+                return True
+            annexure_ids = move.bharat_annexure_line_ids.mapped('loan_id').ids
+            if any(lid in loan_ids for lid in annexure_ids):
+                return True
+            if loan_numbers:
+                blob = ' '.join(move.invoice_line_ids.mapped('name') or [])
+                return any(num in blob for num in loan_numbers)
+            return False
+
+        return moves.filtered(_matches)
+
+    @api.model
+    def get_dashboard_filter_options(
+        self, region_id=False, state_id=False, dashboard_role=None,
+    ):
+        """Dropdown options for portfolio / role dashboards (includes All on the client)."""
+        self.check_access('read')
+        base = self._dashboard_role_base_domain(dashboard_role)
+        domain = self._dashboard_apply_scope_filters(
+            base, region_id=region_id, state_id=state_id, batch_number=False,
+        )
+        loans = self.search(domain)
+
+        regions = self.env['bharat.region'].search([], order='name')
+        region_options = [{'id': r.id, 'name': r.name} for r in regions]
+
+        state_domain = [('country_id.code', '=', 'IN')]
+        if region_id:
+            state_domain.append(('region_id', '=', int(region_id)))
+        states = self.env['res.country.state'].search(state_domain, order='name')
+        state_options = [
+            {
+                'id': s.id,
+                'name': s.name,
+                'region_id': s.region_id.id if s.region_id else False,
+            }
+            for s in states
+        ]
+
+        batch_keys = sorted(
+            {(loan.batch_number or '').strip() for loan in loans},
+            key=lambda x: (not x, x),
+        )
+        batch_options = []
+        for bn in batch_keys:
+            batch_options.append({
+                'key': bn or '__none__',
+                'label': bn or _('No batch'),
+            })
+
+        return {
+            'regions': region_options,
+            'states': state_options,
+            'batches': batch_options,
+        }
+
+    @api.model
+    def get_dashboard_statistics(
+        self, region_id=False, state_id=False, batch_number=False,
+    ):
         """Aggregates for BharatNyay OWL dashboard (JSON-serializable)."""
         self.check_access('read')
         Currency = self.env.company.currency_id
+        scope_domain = self._dashboard_apply_scope_filters(
+            [], region_id=region_id, state_id=state_id, batch_number=batch_number,
+        )
+        scope_active = self._dashboard_scope_filters_active(
+            region_id, state_id, batch_number,
+        )
         rows = self.search_read(
-            [],
+            scope_domain,
             [
                 'loan_number',
                 'customer_name',
@@ -2260,12 +2372,25 @@ class BharatLoan(models.Model):
                 'color': '#94a3b8',
             })
 
-        Move = self.env['account.move'].sudo()
-        arb_inv_domain = [
-            ('move_type', '=', 'out_invoice'),
-            ('bharat_arbitration_invoice', '=', True),
-        ]
-        posted_arb = Move.search(arb_inv_domain + [('state', '=', 'posted')])
+        scoped_loans = self.search(scope_domain)
+        loan_ids = scoped_loans.ids
+
+        if scope_active:
+            posted_arb = self._dashboard_arbitration_moves_for_loans(
+                scoped_loans, [('state', '=', 'posted')],
+            )
+            draft_moves = self._dashboard_arbitration_moves_for_loans(
+                scoped_loans, [('state', '=', 'draft')],
+            )
+        else:
+            Move = self.env['account.move'].sudo()
+            arb_inv_domain = [
+                ('move_type', '=', 'out_invoice'),
+                ('bharat_arbitration_invoice', '=', True),
+            ]
+            posted_arb = Move.search(arb_inv_domain + [('state', '=', 'posted')])
+            draft_moves = Move.search(arb_inv_domain + [('state', '=', 'draft')])
+
         paid_moves = posted_arb.filtered(
             lambda m: m.payment_state in ('paid', 'in_payment')
         )
@@ -2280,10 +2405,14 @@ class BharatLoan(models.Model):
             2,
         )
         unpaid_invoice_amount = round(sum(unpaid_moves.mapped('amount_residual')), 2)
+        draft_invoices_count = len(draft_moves)
 
-        pending_billing = self.env['bharat.loan.billing.event'].sudo().search([
-            ('state', '=', 'pending'),
-        ])
+        pending_billing_domain = [('state', '=', 'pending')]
+        if scope_active:
+            pending_billing_domain.append(('loan_id', 'in', loan_ids or [0]))
+        pending_billing = self.env['bharat.loan.billing.event'].sudo().search(
+            pending_billing_domain,
+        )
         unbilled_cases = len(pending_billing.mapped('loan_id'))
         pending_billing_charges = len(pending_billing)
 
@@ -2315,15 +2444,16 @@ class BharatLoan(models.Model):
         start_s = fields.Datetime.to_string(start_utc)
         end_s = fields.Datetime.to_string(end_utc)
 
-        hearings_today = self.env['bharat.loan.hearing.line'].sudo().search_count([
+        hearing_domain = [
             ('hearing_datetime', '>=', start_s),
             ('hearing_datetime', '<=', end_s),
-        ])
-        draft_invoices = self.env['account.move'].sudo().search_count([
-            ('move_type', '=', 'out_invoice'),
-            ('state', '=', 'draft'),
-            ('bharat_arbitration_invoice', '=', True),
-        ])
+        ]
+        if scope_active:
+            hearing_domain.append(('loan_id', 'in', loan_ids or [0]))
+        hearings_today = self.env['bharat.loan.hearing.line'].sudo().search_count(
+            hearing_domain,
+        )
+        draft_invoices = draft_invoices_count
         activities_open = self.env['mail.activity'].sudo().search_count([
             ('res_model', '=', 'bharat.loan'),
             ('date_deadline', '<=', fields.Date.context_today(self)),
@@ -2365,6 +2495,16 @@ class BharatLoan(models.Model):
             'currency_id': Currency.id,
             'currency_symbol': Currency.symbol or '₹',
             'decimals': Currency.decimal_places,
+            'loan_domain': scope_domain,
+            'pending_billing_domain': [
+                ('state', '=', 'pending'),
+                ('loan_id', 'in', loan_ids or [0]),
+            ],
+            'filters': {
+                'region_id': int(region_id) if region_id else False,
+                'state_id': int(state_id) if state_id else False,
+                'batch_number': batch_number or False,
+            },
             'kpis': {
                 'total_loans': total,
                 'total_batches': len(batch_keys),
@@ -2575,14 +2715,218 @@ class BharatLoan(models.Model):
         return domain + [('id', 'in', ids or [0])]
 
     @api.model
-    def get_case_manager_dashboard_statistics(self, date_from=None, date_to=None):
-        """OWL dashboard: case buckets + billing KPIs for case managers."""
+    def _dashboard_chart_palette(self):
+        return (
+            '#6366f1', '#06b6d4', '#8b5cf6', '#22c55e', '#eab308',
+            '#ef4444', '#f97316', '#64748b', '#14b8a6', '#a855f7',
+        )
+
+    @api.model
+    def _dashboard_payment_mix(self, paid_count, unpaid_count, draft_count):
+        denom = paid_count + unpaid_count + draft_count
+        if not denom:
+            return []
+        specs = (
+            ('paid', _('Paid'), paid_count, '#22c55e'),
+            ('unpaid', _('Unpaid'), unpaid_count, '#ef4444'),
+            ('draft', _('Draft'), draft_count, '#eab308'),
+        )
+        return [
+            {
+                'filter': fkey,
+                'label': label,
+                'count': cnt,
+                'percent': round(100.0 * cnt / denom, 2),
+                'color': pcolor,
+            }
+            for fkey, label, cnt, pcolor in specs
+            if cnt
+        ]
+
+    @api.model
+    def _dashboard_breakdown_from_loans(self, loans):
+        """Portfolio-style chart payloads scoped to a loan recordset."""
+        bucket_cards, _total = self._bucket_cards_from_loans(loans)
+        workflow_mix = [
+            {
+                'key': card['key'],
+                'label': card['label'],
+                'count': card['count'],
+                'percent': card['percent'],
+                'color': card['color'],
+            }
+            for card in bucket_cards
+            if card['count']
+        ]
+        stage_cards = [
+            {
+                'key': card['key'],
+                'label': card['label'],
+                'count': card['count'],
+                'percent': card['percent'],
+                'color': card['color'],
+                'icon': card['icon'],
+            }
+            for card in bucket_cards
+        ]
+
+        palette = self._dashboard_chart_palette()
+        no_batch_label = _('No batch')
+        by_batch = defaultdict(lambda: {'count': 0, 'batch_key': ''})
+        by_branch = defaultdict(lambda: {'total': 0, 'branch_name': 'Unassigned branch'})
+        by_location = defaultdict(lambda: {'total': 0, 'name': 'Unassigned location'})
+        by_product_label = defaultdict(int)
+
+        for loan in loans:
+            batch_no = (loan.batch_number or '').strip()
+            batch_label = batch_no or no_batch_label
+            by_batch[batch_label]['count'] += 1
+            by_batch[batch_label]['batch_key'] = batch_no
+
+            if loan.branch_id:
+                bkey = loan.branch_id.id
+                bname = loan.branch_id.display_name
+            else:
+                bkey = -1
+                bname = 'Unassigned branch'
+            by_branch[bkey]['total'] += 1
+            by_branch[bkey]['branch_name'] = bname
+
+            if loan.location_id:
+                lid = loan.location_id.id
+                lname = loan.location_id.display_name
+            else:
+                lid = -1
+                lname = (loan.location or '').strip() or 'Unassigned location'
+            by_location[lid]['total'] += 1
+            by_location[lid]['name'] = lname
+
+            pcl = (
+                loan.product_class_id.display_name
+                if loan.product_class_id
+                else (loan.product_classification or loan.product or 'Unclassified')
+            )
+            by_product_label[pcl] += 1
+
+        batch_items = sorted(
+            by_batch.items(),
+            key=lambda kv: (kv[0] == no_batch_label, kv[0]),
+        )
+        batch_volume = []
+        for batch_label, agg in batch_items[:20]:
+            batch_volume.append({
+                'batch': batch_label,
+                'batch_key': agg.get('batch_key') or '',
+                'count': agg['count'],
+            })
+        batch_other = sum(agg['count'] for _lbl, agg in batch_items[20:])
+        if batch_other:
+            batch_volume.append({
+                'batch': _('Other'),
+                'batch_key': '__other__',
+                'count': batch_other,
+            })
+
+        prod_items = sorted(by_product_label.items(), key=lambda x: -x[1])
+        prod_denom = sum(by_product_label.values()) or 1
+        product_mix = []
+        for i, (label, cnt) in enumerate(prod_items[:10]):
+            product_mix.append({
+                'label': label,
+                'count': cnt,
+                'percent': round(100.0 * cnt / prod_denom, 2),
+                'color': palette[i % len(palette)],
+            })
+        prod_other = sum(c for _lbl, c in prod_items[10:])
+        if prod_other:
+            product_mix.append({
+                'label': 'Other',
+                'count': prod_other,
+                'percent': round(100.0 * prod_other / prod_denom, 2),
+                'color': '#94a3b8',
+            })
+
+        branch_items = sorted(by_branch.items(), key=lambda kv: kv[1]['total'], reverse=True)
+        branch_denom = sum(v['total'] for _k, v in branch_items) or 1
+        branch_mix = []
+        for i, (bid, agg) in enumerate(branch_items[:12]):
+            cnt = agg['total']
+            branch_mix.append({
+                'id': bid,
+                'label': agg.get('branch_name') or 'Unassigned branch',
+                'count': cnt,
+                'percent': round(100.0 * cnt / branch_denom, 2),
+                'color': palette[i % len(palette)],
+            })
+        branch_other = sum(v['total'] for _k, v in branch_items[12:])
+        if branch_other:
+            branch_mix.append({
+                'label': 'Other',
+                'count': branch_other,
+                'percent': round(100.0 * branch_other / branch_denom, 2),
+                'color': '#94a3b8',
+            })
+
+        loc_items = sorted(by_location.items(), key=lambda kv: kv[1]['total'], reverse=True)
+        loc_denom = sum(v['total'] for _k, v in loc_items) or 1
+        location_mix = []
+        for i, (lid, agg) in enumerate(loc_items[:12]):
+            cnt = agg['total']
+            location_mix.append({
+                'id': lid,
+                'label': agg['name'],
+                'count': cnt,
+                'percent': round(100.0 * cnt / loc_denom, 2),
+                'color': palette[i % len(palette)],
+            })
+        loc_other = sum(v['total'] for _k, v in loc_items[12:])
+        if loc_other:
+            location_mix.append({
+                'label': 'Other',
+                'count': loc_other,
+                'percent': round(100.0 * loc_other / loc_denom, 2),
+                'color': '#94a3b8',
+            })
+
+        return {
+            'stage_cards': stage_cards,
+            'workflow_mix': workflow_mix,
+            'batch_volume': batch_volume,
+            'product_mix': product_mix,
+            'branch_mix': branch_mix,
+            'location_mix': location_mix,
+        }
+
+    @api.model
+    def get_case_manager_dashboard_statistics(
+        self, date_from=None, date_to=None,
+        region_id=False, state_id=False, batch_number=False,
+    ):
+        """OWL dashboard: portfolio layout scoped to case manager caseload."""
         self.check_access('read')
-        domain = self._case_manager_dashboard_domain()
+        domain = self._dashboard_apply_scope_filters(
+            self._case_manager_dashboard_domain(),
+            region_id=region_id,
+            state_id=state_id,
+            batch_number=batch_number,
+        )
         loans = self.search(domain)
         bucket_cards, total_cases = self._bucket_cards_from_loans(loans)
         billing = self._billing_stats_for_loans(loans, date_from, date_to)
+        breakdown = self._dashboard_breakdown_from_loans(loans)
         Currency = self.env.company.currency_id
+
+        pending_billing = self.env['bharat.loan.billing.event'].sudo().search([
+            ('state', '=', 'pending'),
+            ('loan_id', 'in', loans.ids),
+        ])
+        batch_keys = {b for b in loans.mapped('batch_number') if b}
+
+        payment_mix = self._dashboard_payment_mix(
+            billing.get('paid_invoices', 0),
+            billing.get('posted_unpaid_invoices', 0),
+            billing.get('draft_invoices', 0),
+        )
 
         return {
             'currency_id': Currency.id,
@@ -2597,23 +2941,62 @@ class BharatLoan(models.Model):
             ),
             'kpis': {
                 'total_cases': total_cases,
+                'total_loans': total_cases,
+                'total_batches': len(batch_keys),
                 'hearings_today': self._hearings_today_count(domain),
+                'unbilled_cases': len(pending_billing.mapped('loan_id')),
+                'pending_billing_charges': len(pending_billing),
+                'paid_invoice_amount': billing.get('total_received_amount', 0),
+                'unpaid_invoice_amount': billing.get('total_due_amount', 0),
+                'paid_invoices': billing.get('paid_invoices', 0),
+                'unpaid_invoices': billing.get('posted_unpaid_invoices', 0),
                 **billing,
             },
             'bucket_cards': bucket_cards,
+            'payment_mix': payment_mix,
+            'pending_billing_domain': [
+                ('state', '=', 'pending'),
+                ('loan_id', 'in', loans.ids or [0]),
+            ],
             'loan_domain': domain,
+            'filters': {
+                'region_id': int(region_id) if region_id else False,
+                'state_id': int(state_id) if state_id else False,
+                'batch_number': batch_number or False,
+            },
+            **breakdown,
         }
 
     @api.model
-    def get_arbitrator_dashboard_statistics(self, date_from=None, date_to=None):
-        """OWL dashboard: arbitrator caseload, hearings, billing, awards."""
+    def get_arbitrator_dashboard_statistics(
+        self, date_from=None, date_to=None,
+        region_id=False, state_id=False, batch_number=False,
+    ):
+        """OWL dashboard: portfolio layout scoped to arbitrator caseload."""
         self.check_access('read')
-        domain = self._arbitrator_dashboard_domain()
+        domain = self._dashboard_apply_scope_filters(
+            self._arbitrator_dashboard_domain(),
+            region_id=region_id,
+            state_id=state_id,
+            batch_number=batch_number,
+        )
         loans = self.search(domain)
         bucket_cards, total_cases = self._bucket_cards_from_loans(loans)
         billing = self._billing_stats_for_loans(loans, date_from, date_to)
+        breakdown = self._dashboard_breakdown_from_loans(loans)
+        upcoming = self._upcoming_hearings(domain)
         awards = sum(len(loan.award_document_ids) for loan in loans)
+        hearing_cases = sum(
+            c['count'] for c in bucket_cards
+            if c['key'] in ('hearing_1', 'hearing_2', 'hearing_3')
+        )
         Currency = self.env.company.currency_id
+
+        payment_mix = self._dashboard_payment_mix(
+            billing.get('paid_invoices', 0),
+            billing.get('posted_unpaid_invoices', 0),
+            billing.get('draft_invoices', 0),
+        )
 
         return {
             'currency_id': Currency.id,
@@ -2624,18 +3007,32 @@ class BharatLoan(models.Model):
             'scope_label': 'My arbitrator cases',
             'kpis': {
                 'total_cases': total_cases,
+                'total_loans': total_cases,
                 'hearings_today': self._hearings_today_count(domain),
+                'upcoming_hearings_count': len(upcoming),
+                'hearing_cases': hearing_cases,
                 'awards_uploaded': awards,
                 'awards_pending': len(
                     loans.filtered(
                         lambda l: l._milestone_code() == 'award' and not l.award_document_ids
                     )
                 ),
+                'paid_invoice_amount': billing.get('total_received_amount', 0),
+                'unpaid_invoice_amount': billing.get('total_due_amount', 0),
+                'paid_invoices': billing.get('paid_invoices', 0),
+                'unpaid_invoices': billing.get('posted_unpaid_invoices', 0),
                 **billing,
             },
             'bucket_cards': bucket_cards,
-            'upcoming_hearings': self._upcoming_hearings(domain),
+            'payment_mix': payment_mix,
+            'upcoming_hearings': upcoming,
             'loan_domain': domain,
+            'filters': {
+                'region_id': int(region_id) if region_id else False,
+                'state_id': int(state_id) if state_id else False,
+                'batch_number': batch_number or False,
+            },
+            **breakdown,
         }
 
 class BharatLoanNoticeLine(models.Model):

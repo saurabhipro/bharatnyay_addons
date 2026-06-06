@@ -5,6 +5,16 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { formatMonetary } from "@web/views/fields/formatters";
+import {
+    pieGradient,
+    dashboardFilterFields,
+    dashboardFilterRpcArgs,
+    loadDashboardFilterOptions,
+    mergeLoanDomain,
+    onDashboardFilterRegionChange,
+    onDashboardFilterStateChange,
+    onDashboardFilterBatchChange,
+} from "./dashboard_helpers";
 
 function defaultDateRange() {
     const to = new Date();
@@ -30,23 +40,43 @@ export class ArbitratorDashboard extends Component {
             data: null,
             date_from: dr.date_from,
             date_to: dr.date_to,
+            pieStyle: pieGradient([]),
+            branchPieStyle: pieGradient([]),
+            locationPieStyle: pieGradient([]),
+            workflowPieStyle: pieGradient([]),
+            paymentPieStyle: pieGradient([]),
+            ...dashboardFilterFields(),
         });
-        onWillStart(() => this.load());
+        onWillStart(async () => {
+            await loadDashboardFilterOptions(this.orm, this.state, "arbitrator");
+            await this.load();
+        });
+    }
+
+    _applyPieStyles(data) {
+        this.state.pieStyle = pieGradient(data.product_mix || []);
+        this.state.branchPieStyle = pieGradient(data.branch_mix || []);
+        this.state.locationPieStyle = pieGradient(data.location_mix || []);
+        this.state.workflowPieStyle = pieGradient(data.workflow_mix || []);
+        this.state.paymentPieStyle = pieGradient(data.payment_mix || []);
     }
 
     async load() {
         this.state.loading = true;
         this.state.error = null;
         try {
-            this.state.data = await this.orm.call(
+            const data = await this.orm.call(
                 "bharat.loan",
                 "get_arbitrator_dashboard_statistics",
                 [],
                 {
                     date_from: this.state.date_from || false,
                     date_to: this.state.date_to || false,
+                    ...dashboardFilterRpcArgs(this.state),
                 }
             );
+            this.state.data = data;
+            this._applyPieStyles(data);
         } catch (e) {
             this.state.data = null;
             this.state.error = e?.message || String(e);
@@ -56,7 +86,24 @@ export class ArbitratorDashboard extends Component {
     }
 
     async onRefresh() {
+        await loadDashboardFilterOptions(this.orm, this.state, "arbitrator");
         await this.load();
+    }
+
+    async onFilterRegionChange(ev) {
+        await onDashboardFilterRegionChange(
+            this.orm, this.state, ev, "arbitrator", () => this.load()
+        );
+    }
+
+    async onFilterStateChange(ev) {
+        await onDashboardFilterStateChange(
+            this.orm, this.state, ev, "arbitrator", () => this.load()
+        );
+    }
+
+    async onFilterBatchChange(ev) {
+        await onDashboardFilterBatchChange(this.orm, this.state, ev, () => this.load());
     }
 
     onDateFrom(ev) {
@@ -69,10 +116,6 @@ export class ArbitratorDashboard extends Component {
 
     async applyDateFilter() {
         await this.load();
-    }
-
-    percentLabel(percent) {
-        return `${percent || 0}%`;
     }
 
     hearingDtLabel(iso) {
@@ -88,26 +131,74 @@ export class ArbitratorDashboard extends Component {
         });
     }
 
-    async openBucket(ev) {
-        const key = ev.currentTarget?.dataset?.bucket;
-        if (!key) {
-            return;
-        }
-        const base = this.state.data?.loan_domain || [];
-        const domain = await this.orm.call(
-            "bharat.loan",
-            "get_progress_bucket_domain",
-            [key, base]
-        );
-        const cards = this.state.data?.bucket_cards || [];
-        const match = cards.find((b) => b.key === key);
-        const label = match ? match.label : key;
+    openMyCases() {
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: label,
+            name: "My cases",
+            res_model: "bharat.loan",
+            views: [[false, "list"], [false, "form"]],
+            domain: this.state.data?.loan_domain || [],
+            target: "current",
+        });
+    }
+
+    async openStageCases(ev) {
+        const stage = ev.currentTarget?.dataset?.stage;
+        if (!stage) {
+            return;
+        }
+        const domain = await this.orm.call("bharat.loan", "get_progress_bucket_domain", [
+            stage,
+            this.state.data?.loan_domain || [],
+        ]);
+        const match = (this.state.data?.stage_cards || []).find((s) => s.key === stage);
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: match?.label || stage,
             res_model: "bharat.loan",
             views: [[false, "list"], [false, "form"]],
             domain,
+            target: "current",
+        });
+    }
+
+    openMixCases(ev) {
+        const kind = ev.currentTarget?.dataset?.mixKind;
+        const rawId = ev.currentTarget?.dataset?.mixId;
+        if (!kind || rawId === undefined || rawId === null || rawId === "") {
+            return;
+        }
+        const recordId = parseInt(rawId, 10);
+        const field = kind === "branch" ? "branch_id" : "location_id";
+        const domain = mergeLoanDomain(this.state, [
+            recordId > 0 ? [field, "=", recordId] : [field, "=", false],
+        ]);
+        const title = kind === "branch" ? "Cases by branch" : "Cases by location";
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: title,
+            res_model: "bharat.loan",
+            views: [[false, "list"], [false, "form"]],
+            domain,
+            target: "current",
+        });
+    }
+
+    openBatchCases(ev) {
+        const batchKey = ev.currentTarget?.dataset?.batch;
+        if (batchKey === undefined || batchKey === null || batchKey === "__other__") {
+            return;
+        }
+        const batchDomain =
+            batchKey === ""
+                ? [["batch_number", "in", [false, ""]]]
+                : [["batch_number", "=", batchKey]];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Cases by batch",
+            res_model: "bharat.loan",
+            views: [[false, "list"], [false, "form"]],
+            domain: mergeLoanDomain(this.state, batchDomain),
             target: "current",
         });
     }
@@ -123,17 +214,6 @@ export class ArbitratorDashboard extends Component {
             res_model: "bharat.loan",
             views: [[false, "form"]],
             res_id: id,
-            target: "current",
-        });
-    }
-
-    openMyCases() {
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "My cases",
-            res_model: "bharat.loan",
-            views: [[false, "list"], [false, "form"]],
-            domain: this.state.data?.loan_domain || [],
             target: "current",
         });
     }
@@ -155,9 +235,10 @@ export class ArbitratorDashboard extends Component {
         } else if (mode === "paid") {
             domain.push(["state", "=", "posted"]);
             domain.push(["payment_state", "in", ["paid", "in_payment"]]);
-        } else if (mode === "due") {
+        } else if (mode === "unpaid") {
             domain.push(["state", "=", "posted"]);
             domain.push(["payment_state", "not in", ["paid", "in_payment"]]);
+            domain.push(["amount_residual", ">", 0]);
         }
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -165,6 +246,7 @@ export class ArbitratorDashboard extends Component {
             res_model: "account.move",
             views: [[false, "list"], [false, "form"]],
             domain,
+            context: { default_move_type: "out_invoice" },
             target: "current",
         });
     }
@@ -182,6 +264,20 @@ export class ArbitratorDashboard extends Component {
             }).format(amount || 0);
         }
         return formatMonetary(amount || 0, { currencyId: d.currency_id });
+    }
+
+    batchBarHeight(count) {
+        const s = this.state.data?.batch_volume || [];
+        const max = Math.max(...s.map((b) => b.count || 0), 1);
+        return Math.round(((count || 0) / max) * 100);
+    }
+
+    shortBatchLabel(batch) {
+        if (!batch) {
+            return "";
+        }
+        const label = String(batch);
+        return label.length > 14 ? `${label.slice(0, 13)}…` : label;
     }
 }
 

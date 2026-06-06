@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="bharatnyay_core.DashboardFilterBar">
+        <div class="bn-filter-bar bn-filter-bar--inline">
+            <label class="bn-filter-pill" title="Notice region">
+                <span class="bn-filter-k">Region</span>
+                <select class="bn-filter-select bn-filter-select--compact"
+                        t-att-value="state.filter_region"
+                        t-on-change="onFilterRegionChange">
+                    <option value="">All</option>
+                    <t t-foreach="state.filter_options.regions || []" t-as="r" t-key="r.id">
+                        <option t-att-value="r.id" t-out="r.name"/>
+                    </t>
+                </select>
+            </label>
+            <label class="bn-filter-pill" title="State">
+                <span class="bn-filter-k">State</span>
+                <select class="bn-filter-select bn-filter-select--compact"
+                        t-att-value="state.filter_state"
+                        t-on-change="onFilterStateChange">
+                    <option value="">All</option>
+                    <t t-foreach="state.filter_options.states || []" t-as="s" t-key="s.id">
+                        <option t-att-value="s.id" t-out="s.name"/>
+                    </t>
+                </select>
+            </label>
+            <label class="bn-filter-pill" title="Batch">
+                <span class="bn-filter-k">Batch</span>
+                <select class="bn-filter-select bn-filter-select--compact"
+                        t-att-value="state.filter_batch"
+                        t-on-change="onFilterBatchChange">
+                    <option value="">All</option>
+                    <t t-foreach="state.filter_options.batches || []" t-as="b" t-key="b.key">
+                        <option t-att-value="b.key" t-out="b.label"/>
+                    </t>
+                </select>
+            </label>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardRoleHeader">
+        <div class="bn-header">
+            <div class="bn-title-block">
+                <h1 t-out="title"/>
+                <p t-out="subtitle"/>
+            </div>
+            <div class="bn-header-actions bn-date-filter">
+                <t t-call="bharatnyay_core.DashboardFilterBar"/>
+                <label class="bn-date-label">From</label>
+                <input type="date" class="bn-date-input" t-att-value="state.date_from" t-on-change="onDateFrom"/>
+                <label class="bn-date-label">To</label>
+                <input type="date" class="bn-date-input" t-att-value="state.date_to" t-on-change="onDateTo"/>
+                <button type="button" class="btn btn-primary btn-sm" t-on-click="applyDateFilter">Apply</button>
+                <button type="button" class="bn-icon-btn" title="Refresh" t-on-click="onRefresh">
+                    <i class="fa fa-refresh"/>
+                </button>
+                <t t-if="showMyCasesBtn">
+                    <button type="button" class="btn btn-secondary btn-sm" t-on-click="openMyCases">All my cases</button>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPipeline">
+        <div class="bn-section-title mt-2">Case pipeline</div>
+        <div class="bn-stage-strip">
+            <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
+                <button type="button"
+                        class="bn-stage-card"
+                        t-att-data-stage="s.key"
+                        t-attf-style="--stg: {{ s.color }};"
+                        t-on-click="openStageCases">
+                    <div class="bn-stage-top">
+                        <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
+                        <span class="bn-stage-name" t-out="s.label"/>
+                    </div>
+                    <div class="bn-stage-value">
+                        <span class="n" t-out="fmtInt(s.count)"/>
+                        <span class="p" t-out="s.percent + '%'"/>
+                    </div>
+                    <div class="bn-stage-meter">
+                        <span t-attf-style="width: {{ s.percent }}%"/>
+                    </div>
+                </button>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelBatchVolume">
+        <div class="bn-panel">
+            <div class="bn-panel-head">
+                <div class="bn-panel-head__title">
+                    <span class="bn-panel-icon"><i class="fa fa-bar-chart"/></span>
+                    <h2>Batch volume</h2>
+                </div>
+                <span class="hint">Cases per import batch</span>
+            </div>
+            <div class="bn-panel-body">
+                <div class="bn-bar-chart bn-bar-chart--batch" t-if="state.data.batch_volume.length">
+                    <t t-foreach="state.data.batch_volume" t-as="b" t-key="b.batch">
+                        <button type="button"
+                                class="bn-bar-slot"
+                                t-att-data-batch="b.batch_key"
+                                t-att-title="b.batch + ' — ' + fmtInt(b.count) + ' cases'"
+                                t-on-click="openBatchCases">
+                            <div class="bn-bar" t-attf-style="height: {{ batchBarHeight(b.count) }}%"/>
+                            <span class="label" t-out="shortBatchLabel(b.batch)"/>
+                        </button>
+                    </t>
+                </div>
+                <div t-else="" class="bn-muted-empty">No batch data yet.</div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelUpcomingHearings">
+        <div class="bn-panel">
+            <div class="bn-panel-head">
+                <div class="bn-panel-head__title">
+                    <span class="bn-panel-icon"><i class="fa fa-calendar"/></span>
+                    <h2>Upcoming hearings</h2>
+                </div>
+                <span class="hint">Next scheduled sessions</span>
+            </div>
+            <div class="bn-panel-body bn-panel-body--list">
+                <t t-if="!(state.data.upcoming_hearings || []).length">
+                    <div class="bn-muted-empty bn-muted-empty--sm">No upcoming hearings scheduled.</div>
+                </t>
+                <t t-else="">
+                    <t t-foreach="state.data.upcoming_hearings" t-as="h" t-key="h.id">
+                        <button type="button" class="bn-hearing-row"
+                                t-att-data-loan-id="h.loan_id"
+                                t-on-click="openLoan">
+                            <div class="bn-hearing-row__main">
+                                <strong t-out="h.loan_number"/>
+                                <span t-out="h.customer_name"/>
+                            </div>
+                            <div class="bn-hearing-row__dt" t-out="hearingDtLabel(h.hearing_datetime)"/>
+                        </button>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelCaseStatus">
+        <div class="bn-panel">
+            <div class="bn-panel-head">
+                <div class="bn-panel-head__title">
+                    <span class="bn-panel-icon"><i class="fa fa-tasks"/></span>
+                    <h2>Case status</h2>
+                </div>
+                <span class="hint">Notice 1–3, hearings, award</span>
+            </div>
+            <div class="bn-panel-body">
+                <div class="bn-pie-wrap" t-if="state.data.workflow_mix.length">
+                    <div class="bn-pie" t-attf-style="background: {{ state.workflowPieStyle }}"/>
+                    <ul>
+                        <t t-foreach="state.data.workflow_mix" t-as="s" t-key="s.key">
+                            <li class="bn-pie-legend-item bn-pie-legend-item--click"
+                                t-att-data-stage="s.key"
+                                t-on-click="openStageCases">
+                                <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                <span class="lbl" t-out="s.label"/>
+                                <span class="pct" t-out="s.percent + '%'"/>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+                <div t-else="" class="bn-muted-empty">No workflow data.</div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelPaymentStatus">
+        <div class="bn-panel">
+            <div class="bn-panel-head">
+                <div class="bn-panel-head__title">
+                    <span class="bn-panel-icon"><i class="fa fa-credit-card"/></span>
+                    <h2>Payment status</h2>
+                </div>
+                <span class="hint">Arbitration invoices</span>
+            </div>
+            <div class="bn-panel-body">
+                <div class="bn-pie-wrap" t-if="state.data.payment_mix.length">
+                    <div class="bn-pie" t-attf-style="background: {{ state.paymentPieStyle }}"/>
+                    <ul>
+                        <t t-foreach="state.data.payment_mix" t-as="s" t-key="s.filter">
+                            <li class="bn-pie-legend-item bn-pie-legend-item--click"
+                                t-att-data-filter="s.filter"
+                                t-on-click="openInvoices">
+                                <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                <span class="lbl" t-out="s.label"/>
+                                <span class="pct" t-out="s.percent + '%'"/>
+                            </li>
+                        </t>
+                    </ul>
+                </div>
+                <div t-else="" class="bn-muted-empty">No invoice data.</div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardBreakdownRow2">
+        <div class="bn-chart-row bn-chart-row--3 mt-2">
+            <div class="bn-panel">
+                <div class="bn-panel-head">
+                    <div class="bn-panel-head__title">
+                        <span class="bn-panel-icon"><i class="fa fa-building-o"/></span>
+                        <h2>Branch mix</h2>
+                    </div>
+                    <span class="hint">Click a branch to filter cases</span>
+                </div>
+                <div class="bn-panel-body">
+                    <div class="bn-pie-wrap" t-if="state.data.branch_mix.length">
+                        <div class="bn-pie" t-attf-style="background: {{ state.branchPieStyle }}"/>
+                        <ul>
+                            <t t-foreach="state.data.branch_mix" t-as="s" t-key="s.label">
+                                <li t-att-class="s.id !== undefined ? 'bn-pie-legend-item bn-pie-legend-item--click' : 'bn-pie-legend-item'"
+                                    t-att-data-mix-kind="'branch'"
+                                    t-att-data-mix-id="s.id"
+                                    t-on-click="openMixCases">
+                                    <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                    <span class="lbl" t-out="s.label"/>
+                                    <span class="pct" t-out="s.percent + '%'"/>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                    <div t-else="" class="bn-muted-empty">No branch data.</div>
+                </div>
+            </div>
+            <div class="bn-panel">
+                <div class="bn-panel-head">
+                    <div class="bn-panel-head__title">
+                        <span class="bn-panel-icon"><i class="fa fa-cubes"/></span>
+                        <h2>Product mix</h2>
+                    </div>
+                    <span class="hint">By product class</span>
+                </div>
+                <div class="bn-panel-body">
+                    <div class="bn-pie-wrap" t-if="state.data.product_mix.length">
+                        <div class="bn-pie" t-attf-style="background: {{ state.pieStyle }}"/>
+                        <ul>
+                            <t t-foreach="state.data.product_mix" t-as="s" t-key="s.label">
+                                <li class="bn-pie-legend-item">
+                                    <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                    <span class="lbl" t-out="s.label"/>
+                                    <span class="pct" t-out="s.percent + '%'"/>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                    <div t-else="" class="bn-muted-empty">No classification data.</div>
+                </div>
+            </div>
+            <div class="bn-panel">
+                <div class="bn-panel-head">
+                    <div class="bn-panel-head__title">
+                        <span class="bn-panel-icon"><i class="fa fa-map-marker"/></span>
+                        <h2>Location mix</h2>
+                    </div>
+                    <span class="hint">Click a location to filter cases</span>
+                </div>
+                <div class="bn-panel-body">
+                    <div class="bn-pie-wrap" t-if="state.data.location_mix.length">
+                        <div class="bn-pie" t-attf-style="background: {{ state.locationPieStyle }}"/>
+                        <ul>
+                            <t t-foreach="state.data.location_mix" t-as="s" t-key="s.label">
+                                <li t-att-class="s.id !== undefined ? 'bn-pie-legend-item bn-pie-legend-item--click' : 'bn-pie-legend-item'"
+                                    t-att-data-mix-kind="'location'"
+                                    t-att-data-mix-id="s.id"
+                                    t-on-click="openMixCases">
+                                    <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                    <span class="lbl" t-out="s.label"/>
+                                    <span class="pct" t-out="s.percent + '%'"/>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                    <div t-else="" class="bn-muted-empty">No location data.</div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.CaseManagerDashboard">
+        <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
+            <div class="bn-wrap">
+                <t t-set="title" t-value="'Case Manager dashboard'"/>
+                <t t-set="subtitle" t-value="state.data?.scope_label || 'My assigned cases, pipeline, and billing'"/>
+                <t t-set="showMyCasesBtn" t-value="true"/>
+                <t t-call="bharatnyay_core.DashboardRoleHeader"/>
+
+                <t t-if="state.loading">
+                    <div class="bn-muted-empty">
+                        <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
+                        <div>Loading dashboard…</div>
+                    </div>
+                </t>
+                <t t-elif="state.error">
+                    <div class="bn-muted-empty bn-error"><span t-out="state.error"/></div>
+                </t>
+                <t t-elif="state.data">
+                    <div class="bn-kpi-grid bn-kpi-grid--6">
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-blue" t-on-click="openMyCases">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-briefcase"/></span>
+                                <div class="bn-kpi-label">My cases</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_cases)"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-green" t-on-click="openMyCases">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-cubes"/></span>
+                                <div class="bn-kpi-label">Total batches</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_batches || 0)"/>
+                            <div class="bn-kpi-trend">Distinct import batches</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
+                             data-filter="paid"
+                             t-on-click="openInvoices">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-check-circle"/></span>
+                                <div class="bn-kpi-label">Payment received</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-amber"
+                             data-filter="unpaid"
+                             t-on-click="openInvoices">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-file-text-o"/></span>
+                                <div class="bn-kpi-label">Payment due</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-rose" t-on-click="openUnbilledCases">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-clock-o"/></span>
+                                <div class="bn-kpi-label">Unbilled cases</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unbilled_cases || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' pending charges'"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-purple">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-gavel"/></span>
+                                <div class="bn-kpi-label">Hearings today</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
+                        </div>
+                    </div>
+
+                    <t t-call="bharatnyay_core.DashboardPipeline"/>
+
+                    <div class="bn-section-title mt-3">Portfolio breakdown</div>
+                    <div class="bn-chart-row bn-chart-row--3">
+                        <t t-call="bharatnyay_core.DashboardPanelBatchVolume"/>
+                        <t t-call="bharatnyay_core.DashboardPanelCaseStatus"/>
+                        <t t-call="bharatnyay_core.DashboardPanelPaymentStatus"/>
+                    </div>
+                    <t t-call="bharatnyay_core.DashboardBreakdownRow2"/>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.ArbitratorDashboard">
+        <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
+            <div class="bn-wrap">
+                <t t-set="title" t-value="'Arbitrator dashboard'"/>
+                <t t-set="subtitle" t-value="state.data?.scope_label || 'My cases, hearings, and awards'"/>
+                <t t-set="showMyCasesBtn" t-value="true"/>
+                <t t-call="bharatnyay_core.DashboardRoleHeader"/>
+
+                <t t-if="state.loading">
+                    <div class="bn-muted-empty">
+                        <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
+                        <div>Loading dashboard…</div>
+                    </div>
+                </t>
+                <t t-elif="state.error">
+                    <div class="bn-muted-empty bn-error"><span t-out="state.error"/></div>
+                </t>
+                <t t-elif="state.data">
+                    <div class="bn-kpi-grid bn-kpi-grid--6">
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-blue" t-on-click="openMyCases">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-briefcase"/></span>
+                                <div class="bn-kpi-label">My cases</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_cases)"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-purple">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-gavel"/></span>
+                                <div class="bn-kpi-label">Hearings today</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-green">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-calendar-check-o"/></span>
+                                <div class="bn-kpi-label">Upcoming hearings</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.upcoming_hearings_count || 0)"/>
+                            <div class="bn-kpi-trend">Scheduled ahead</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-amber">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-legal"/></span>
+                                <div class="bn-kpi-label">In hearing</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearing_cases || 0)"/>
+                            <div class="bn-kpi-trend">Hearing 1–3 stages</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-teal">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-upload"/></span>
+                                <div class="bn-kpi-label">Awards uploaded</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_uploaded || 0)"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-indigo">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-hourglass-half"/></span>
+                                <div class="bn-kpi-label">Award pending</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_pending || 0)"/>
+                            <div class="bn-kpi-trend">At award stage</div>
+                        </div>
+                    </div>
+
+                    <t t-call="bharatnyay_core.DashboardPipeline"/>
+
+                    <div class="bn-section-title mt-3">Case breakdown</div>
+                    <div class="bn-chart-row bn-chart-row--3">
+                        <t t-call="bharatnyay_core.DashboardPanelUpcomingHearings"/>
+                        <t t-call="bharatnyay_core.DashboardPanelCaseStatus"/>
+                        <t t-call="bharatnyay_core.DashboardPanelPaymentStatus"/>
+                    </div>
+                    <t t-call="bharatnyay_core.DashboardBreakdownRow2"/>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -5,20 +5,16 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { formatMonetary } from "@web/views/fields/formatters";
-
-function pieGradient(productMix) {
-    if (!productMix?.length) {
-        return "conic-gradient(#e2e8f0 0% 100%)";
-    }
-    let acc = 0;
-    const parts = [];
-    for (const s of productMix) {
-        const start = acc;
-        acc += s.percent;
-        parts.push(`${s.color} ${start}% ${acc}%`);
-    }
-    return `conic-gradient(${parts.join(", ")})`;
-}
+import {
+    pieGradient,
+    dashboardFilterFields,
+    dashboardFilterRpcArgs,
+    loadDashboardFilterOptions,
+    mergeLoanDomain,
+    onDashboardFilterRegionChange,
+    onDashboardFilterStateChange,
+    onDashboardFilterBatchChange,
+} from "./dashboard_helpers";
 
 export class BharatnyayDashboard extends Component {
     static template = "bharatnyay_core.BharatnyayDashboard";
@@ -38,16 +34,25 @@ export class BharatnyayDashboard extends Component {
             workflowPieStyle: pieGradient([]),
             paymentPieStyle: pieGradient([]),
             search: "",
+            ...dashboardFilterFields(),
         });
 
-        onWillStart(() => this.load());
+        onWillStart(async () => {
+            await loadDashboardFilterOptions(this.orm, this.state);
+            await this.load();
+        });
     }
 
     async load() {
         this.state.loading = true;
         this.state.error = null;
         try {
-            const data = await this.orm.call("bharat.loan", "get_dashboard_statistics", []);
+            const data = await this.orm.call(
+                "bharat.loan",
+                "get_dashboard_statistics",
+                [],
+                dashboardFilterRpcArgs(this.state)
+            );
             this.state.data = data;
             this.state.pieStyle = pieGradient(data.product_mix || []);
             this.state.branchPieStyle = pieGradient(data.branch_mix || []);
@@ -63,7 +68,20 @@ export class BharatnyayDashboard extends Component {
     }
 
     async onRefresh() {
+        await loadDashboardFilterOptions(this.orm, this.state);
         await this.load();
+    }
+
+    async onFilterRegionChange(ev) {
+        await onDashboardFilterRegionChange(this.orm, this.state, ev, false, () => this.load());
+    }
+
+    async onFilterStateChange(ev) {
+        await onDashboardFilterStateChange(this.orm, this.state, ev, false, () => this.load());
+    }
+
+    async onFilterBatchChange(ev) {
+        await onDashboardFilterBatchChange(this.orm, this.state, ev, () => this.load());
     }
 
     onSearchInput(ev) {
@@ -84,7 +102,7 @@ export class BharatnyayDashboard extends Component {
         }
         const exact = await this.orm.searchRead(
             "bharat.loan",
-            [["loan_number", "=", q]],
+            mergeLoanDomain(this.state, [["loan_number", "=", q]]),
             ["id"],
             { limit: 1 }
         );
@@ -107,13 +125,20 @@ export class BharatnyayDashboard extends Component {
                 [false, "list"],
                 [false, "form"],
             ],
-            domain: [["loan_number", "ilike", q]],
+            domain: mergeLoanDomain(this.state, [["loan_number", "ilike", q]]),
             target: "current",
         });
     }
 
     openLoanList() {
-        this.action.doAction("bharatnyay_core.action_bharat_loan");
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Loan sheet",
+            res_model: "bharat.loan",
+            views: [[false, "list"], [false, "form"]],
+            domain: this.state.data?.loan_domain || [],
+            target: "current",
+        });
     }
 
     openStageCases(ev) {
@@ -129,7 +154,7 @@ export class BharatnyayDashboard extends Component {
                 [false, "list"],
                 [false, "form"],
             ],
-            domain: [["milestone_code", "=", stage]],
+            domain: mergeLoanDomain(this.state, [["milestone_code", "=", stage]]),
             target: "current",
         });
     }
@@ -142,7 +167,7 @@ export class BharatnyayDashboard extends Component {
         }
         const recordId = parseInt(rawId, 10);
         const field = kind === "branch" ? "branch_id" : "location_id";
-        const domain =
+        const extra =
             recordId > 0
                 ? [[field, "=", recordId]]
                 : [[field, "=", false]];
@@ -155,13 +180,20 @@ export class BharatnyayDashboard extends Component {
                 [false, "list"],
                 [false, "form"],
             ],
-            domain,
+            domain: mergeLoanDomain(this.state, extra),
             target: "current",
         });
     }
 
     openUnbilledCases() {
-        this.action.doAction("bharatnyay_core.action_bharat_loan_billing_event_pending");
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Pending billing",
+            res_model: "bharat.loan.billing.event",
+            views: [[false, "list"]],
+            domain: this.state.data?.pending_billing_domain || [["state", "=", "pending"]],
+            target: "current",
+        });
     }
 
     openBillBatchWizard() {
@@ -229,7 +261,7 @@ export class BharatnyayDashboard extends Component {
         if (batchKey === undefined || batchKey === null || batchKey === "__other__") {
             return;
         }
-        const domain =
+        const batchDomain =
             batchKey === ""
                 ? [["batch_number", "in", [false, ""]]]
                 : [["batch_number", "=", batchKey]];
@@ -241,7 +273,7 @@ export class BharatnyayDashboard extends Component {
                 [false, "list"],
                 [false, "form"],
             ],
-            domain,
+            domain: mergeLoanDomain(this.state, batchDomain),
             target: "current",
         });
     }
