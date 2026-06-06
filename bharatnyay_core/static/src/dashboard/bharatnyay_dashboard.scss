@@ -189,6 +189,19 @@
         }
     }
 
+    .bn-kpi-grid--compact {
+        margin-bottom: 0.5rem;
+
+        .bn-kpi-card {
+            min-height: 96px;
+            padding: 0.85rem 1rem;
+        }
+
+        .bn-kpi-value {
+            font-size: 1.35rem;
+        }
+    }
+
     .bn-kpi-card--click {
         cursor: pointer;
         &:hover {
@@ -466,6 +479,7 @@
 
     .bn-chart-row--3 {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 0;
 
         @media (max-width: 1199px) {
             grid-template-columns: 1fr;
@@ -621,6 +635,11 @@
             gap: 0.35rem;
             height: 100%;
             justify-content: flex-end;
+            appearance: none;
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: default;
 
             span.label {
                 font-size: 0.65rem;
@@ -638,6 +657,23 @@
             border-radius: 6px 6px 2px 2px;
             background: linear-gradient(180deg, #5b73ff 0%, #4361ee 100%);
             min-height: 2px;
+            transition: opacity 0.15s;
+        }
+
+        &--batch {
+            overflow-x: auto;
+            padding-bottom: 0.35rem;
+            scrollbar-width: thin;
+
+            .bn-bar-slot {
+                flex: 0 0 52px;
+                min-width: 52px;
+                cursor: pointer;
+
+                &:hover .bn-bar {
+                    opacity: 0.85;
+                }
+            }
         }
     }
 
@@ -668,13 +704,18 @@
             overflow-y: auto;
         }
 
-        li {
+        li,
+        .bn-pie-legend-item {
             display: flex;
             align-items: center;
             gap: 0.45rem;
             font-size: 0.76rem;
             margin-bottom: 0.35rem;
             color: var(--bn-muted);
+            border-radius: 6px;
+            padding: 0.2rem 0.35rem;
+            margin-left: -0.35rem;
+            margin-right: -0.35rem;
 
             .sq {
                 width: 10px;
@@ -682,10 +723,34 @@
                 border-radius: 3px;
                 flex-shrink: 0;
             }
+
+            .lbl {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
             .pct {
                 margin-left: auto;
                 font-weight: 650;
                 color: var(--bn-text);
+                flex-shrink: 0;
+            }
+
+            &--click {
+                cursor: pointer;
+                transition: background 0.15s, color 0.15s;
+
+                &:hover {
+                    background: var(--bn-accent-soft);
+                    color: var(--bn-accent);
+
+                    .pct {
+                        color: var(--bn-accent);
+                    }
+                }
             }
         }
     }

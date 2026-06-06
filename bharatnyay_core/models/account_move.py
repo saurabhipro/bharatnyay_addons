@@ -26,6 +26,18 @@ class AccountMove(models.Model):
         ondelete='set null',
         copy=False,
     )
+    bharat_loan_number = fields.Char(
+        string='Loan number',
+        related='bharat_loan_id.loan_number',
+        store=True,
+        readonly=True,
+    )
+    bharat_case_number = fields.Char(
+        string='BharatNyay case no.',
+        related='bharat_loan_id.case_number',
+        store=True,
+        readonly=True,
+    )
     bharat_milestone_code = fields.Char(
         string='Milestone billed',
         index=True,
@@ -47,6 +59,22 @@ class AccountMove(models.Model):
             'target': 'new',
             'context': {'default_move_id': self.id},
         }
+
+    def _bharat_post_arbitration_invoice(self):
+        """Confirm (post) a BharatNyay arbitration invoice."""
+        for move in self:
+            if move.state != 'draft':
+                continue
+            move.action_post()
+        return self
+
+    @api.model
+    def _bharat_loan_case_line_label(self, loan):
+        loan_no = (loan.loan_number or '').strip()
+        bn_case = (loan.case_number or '').strip()
+        if loan_no and bn_case and loan_no != bn_case:
+            return '%s (%s)' % (loan_no, bn_case)
+        return loan_no or bn_case or loan.display_name
 
     @api.model
     def bharat_prepare_arbitration_invoice_line_commands(self, loans, batch_display=''):
@@ -77,7 +105,7 @@ class AccountMove(models.Model):
                 raise UserError(_('Product “%s” has no variant.') % tmpl.display_name)
             product = product[0]
             qty = len(subset)
-            nums = subset.mapped('loan_number')
+            nums = [self._bharat_loan_case_line_label(loan) for loan in subset]
             shown = ', '.join(n for n in nums[:30] if n)
             if len(nums) > 30:
                 shown += ', …'
@@ -102,11 +130,23 @@ class AccountMove(models.Model):
 
     @api.model
     def bharat_create_case_milestone_invoice(self, loan, milestone_code):
-        """Draft one customer invoice line for a single loan milestone."""
+        """Create and post one customer invoice line for a single loan milestone."""
         loan.ensure_one()
         billing_code = milestone_code
         if billing_code == 'commencement':
             return self.env['account.move']
+
+        existing = self.search([
+            ('bharat_arbitration_invoice', '=', True),
+            ('bharat_loan_id', '=', loan.id),
+            ('bharat_milestone_code', '=', billing_code),
+            ('state', 'in', ('draft', 'posted')),
+            ('move_type', '=', 'out_invoice'),
+        ], limit=1)
+        if existing:
+            if existing.state == 'draft':
+                existing._bharat_post_arbitration_invoice()
+            return existing
 
         Template = self.env['product.template'].sudo()
         labels = dict(Template._fields['bharat_arbitration_stage'].selection)
@@ -126,10 +166,10 @@ class AccountMove(models.Model):
                 _('Company “%s” has no linked partner for invoicing.') % loan.company_id.display_name
             )
 
-        case_ref = loan.case_number or loan.loan_number or loan.display_name
+        case_label = loan.bharat_invoice_reference_label()
         task_label = labels.get(billing_code, billing_code)
         line_name = _('%s — %s — batch %s') % (
-            case_ref,
+            case_label,
             task_label,
             loan.batch_number or '-',
         )
@@ -138,7 +178,7 @@ class AccountMove(models.Model):
             'partner_id': partner.id,
             'company_id': loan.company_id.id,
             'invoice_date': fields.Date.context_today(self),
-            'ref': _('BharatNyay — %s') % case_ref,
+            'ref': _('BharatNyay — %s') % case_label,
             'bharat_arbitration_invoice': True,
             'bharat_invoice_batch_ref': loan.batch_number,
             'bharat_loan_id': loan.id,
@@ -149,4 +189,5 @@ class AccountMove(models.Model):
                 'name': line_name,
             })],
         })
+        move._bharat_post_arbitration_invoice()
         return move

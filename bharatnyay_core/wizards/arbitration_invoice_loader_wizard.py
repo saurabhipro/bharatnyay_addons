@@ -56,6 +56,7 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
             'bharat_invoice_batch_ref': batch,
             'ref': move.ref or (_('BharatNyay batch %s') % batch),
         })
+        move._bharat_post_arbitration_invoice()
 
         return {
             'type': 'ir.actions.act_window',

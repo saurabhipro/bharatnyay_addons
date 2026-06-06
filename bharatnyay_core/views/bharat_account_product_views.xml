@@ -43,6 +43,10 @@
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="bharat_loan_id" readonly="1"
                        invisible="not bharat_loan_id"/>
+                <field name="bharat_loan_number" readonly="1"
+                       invisible="not bharat_loan_id"/>
+                <field name="bharat_case_number" readonly="1"
+                       invisible="not bharat_case_number"/>
                 <field name="bharat_milestone_code" readonly="1"
                        invisible="not bharat_milestone_code"/>
                 <field name="bharat_invoice_batch_ref"

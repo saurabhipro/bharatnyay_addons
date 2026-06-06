@@ -35,6 +35,8 @@ export class BharatnyayDashboard extends Component {
             pieStyle: pieGradient([]),
             branchPieStyle: pieGradient([]),
             locationPieStyle: pieGradient([]),
+            workflowPieStyle: pieGradient([]),
+            paymentPieStyle: pieGradient([]),
             search: "",
         });
 
@@ -50,6 +52,8 @@ export class BharatnyayDashboard extends Component {
             this.state.pieStyle = pieGradient(data.product_mix || []);
             this.state.branchPieStyle = pieGradient(data.branch_mix || []);
             this.state.locationPieStyle = pieGradient(data.location_mix || []);
+            this.state.workflowPieStyle = pieGradient(data.workflow_mix || []);
+            this.state.paymentPieStyle = pieGradient(data.payment_mix || []);
         } catch (e) {
             this.state.data = null;
             this.state.error = e?.message || String(e);
@@ -130,42 +134,22 @@ export class BharatnyayDashboard extends Component {
         });
     }
 
-    openBranchCases(ev) {
-        const rawId = ev.currentTarget?.dataset?.branchId;
-        if (rawId === undefined || rawId === null || rawId === "") {
+    openMixCases(ev) {
+        const kind = ev.currentTarget?.dataset?.mixKind;
+        const rawId = ev.currentTarget?.dataset?.mixId;
+        if (!kind || rawId === undefined || rawId === null || rawId === "") {
             return;
         }
-        const branchId = parseInt(rawId, 10);
+        const recordId = parseInt(rawId, 10);
+        const field = kind === "branch" ? "branch_id" : "location_id";
         const domain =
-            branchId > 0
-                ? [["branch_id", "=", branchId]]
-                : [["branch_id", "=", false]];
+            recordId > 0
+                ? [[field, "=", recordId]]
+                : [[field, "=", false]];
+        const title = kind === "branch" ? "Cases by branch" : "Cases by location";
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Cases by branch",
-            res_model: "bharat.loan",
-            views: [
-                [false, "list"],
-                [false, "form"],
-            ],
-            domain,
-            target: "current",
-        });
-    }
-
-    openLocationCases(ev) {
-        const rawId = ev.currentTarget?.dataset?.locationId;
-        if (rawId === undefined || rawId === null || rawId === "") {
-            return;
-        }
-        const locationId = parseInt(rawId, 10);
-        const domain =
-            locationId > 0
-                ? [["location_id", "=", locationId]]
-                : [["location_id", "=", false]];
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Cases by location",
+            name: title,
             res_model: "bharat.loan",
             views: [
                 [false, "list"],
@@ -218,21 +202,40 @@ export class BharatnyayDashboard extends Component {
         return formatMonetary(amount || 0, { currencyId: d.currency_id });
     }
 
-    barHeight(count) {
-        const s = this.state.data?.monthly_created || [];
-        const max = Math.max(...s.map((m) => m.count || 0), 1);
+    batchBarHeight(count) {
+        const s = this.state.data?.batch_volume || [];
+        const max = Math.max(...s.map((b) => b.count || 0), 1);
         return Math.round(((count || 0) / max) * 100);
     }
 
-    shortMonth(period) {
-        if (!period) {
+    shortBatchLabel(batch) {
+        if (!batch) {
             return "";
         }
-        const [y, mo] = period.split("-");
-        const names = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const mi = parseInt(mo, 10);
-        const yy = y && String(y).length >= 4 ? String(y).slice(2) : mo;
-        return `${names[mi] || mo}'${yy}`;
+        const label = String(batch);
+        return label.length > 14 ? `${label.slice(0, 13)}…` : label;
+    }
+
+    openBatchCases(ev) {
+        const batchKey = ev.currentTarget?.dataset?.batch;
+        if (batchKey === undefined || batchKey === null || batchKey === "__other__") {
+            return;
+        }
+        const domain =
+            batchKey === ""
+                ? [["batch_number", "in", [false, ""]]]
+                : [["batch_number", "=", batchKey]];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Cases by batch",
+            res_model: "bharat.loan",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain,
+            target: "current",
+        });
     }
 }
 

@@ -338,6 +338,15 @@ class BharatLoan(models.Model):
         help='Open issues / anomalies to review.',
     )
 
+    def bharat_invoice_reference_label(self):
+        """Loan number + BharatNyay case number for arbitration invoices."""
+        self.ensure_one()
+        loan_no = (self.loan_number or '').strip()
+        bn_case = (self.case_number or '').strip()
+        if loan_no and bn_case and loan_no != bn_case:
+            return '%s / %s' % (loan_no, bn_case)
+        return loan_no or bn_case or self.display_name
+
     def name_get(self):
         rows = []
         for rec in self:
@@ -776,7 +785,7 @@ class BharatLoan(models.Model):
         body_parts = [_('Moved to <b>%s</b>') % escape(nxt.name)]
         if invoice:
             body_parts.append(
-                _('Draft invoice <a href="#" data-oe-model="account.move" data-oe-id="%s">%s</a> created.')
+                _('Invoice <a href="#" data-oe-model="account.move" data-oe-id="%s">%s</a> posted.')
                 % (invoice.id, escape(invoice.name or invoice.display_name))
             )
         if nxt.auto_assign_case_manager and self.case_manager_id:
@@ -1990,11 +1999,13 @@ class BharatLoan(models.Model):
         by_location = defaultdict(lambda: {'total': 0, 'pos_sum': 0.0, 'name': 'Unassigned location'})
         by_product_label = defaultdict(int)
         by_stage = defaultdict(int)
+        by_batch = defaultdict(lambda: {'count': 0, 'pos_sum': 0.0})
 
         pending_dispatch = 0
         cases_no_arbitrator = 0
         pending_award_upload = 0
         batch_keys = set()
+        no_batch_label = _('No batch')
 
         for row in rows:
             pos_val = row.get('current_pos') or 0.0
@@ -2061,6 +2072,10 @@ class BharatLoan(models.Model):
                 by_branch[bkey]['active_pos'] += 1
 
             batch_no = (row.get('batch_number') or '').strip()
+            batch_label = batch_no or no_batch_label
+            by_batch[batch_label]['count'] += 1
+            by_batch[batch_label]['pos_sum'] += pos_f
+            by_batch[batch_label]['batch_key'] = batch_no
             if batch_no:
                 batch_keys.add(batch_no)
 
@@ -2092,6 +2107,30 @@ class BharatLoan(models.Model):
             for mk in month_keys
         ]
 
+        batch_items = sorted(
+            by_batch.items(),
+            key=lambda kv: (kv[0] == no_batch_label, kv[0]),
+        )
+        batch_volume = []
+        for batch_label, agg in batch_items[:20]:
+            batch_volume.append({
+                'batch': batch_label,
+                'batch_key': agg.get('batch_key') or '',
+                'count': agg['count'],
+                'pos_sum': round(agg['pos_sum'], 2),
+            })
+        batch_other = sum(agg['count'] for _lbl, agg in batch_items[20:])
+        if batch_other:
+            batch_volume.append({
+                'batch': _('Other'),
+                'batch_key': '__other__',
+                'count': batch_other,
+                'pos_sum': round(
+                    sum(agg['pos_sum'] for _lbl, agg in batch_items[20:]),
+                    2,
+                ),
+            })
+
         palette = ('#6366f1', '#06b6d4', '#8b5cf6', '#22c55e', '#eab308',
                    '#ef4444', '#f97316', '#64748b', '#14b8a6', '#a855f7')
         prod_items = sorted(by_product_label.items(), key=lambda x: -x[1])
@@ -2104,7 +2143,7 @@ class BharatLoan(models.Model):
                 'percent': round(100.0 * cnt / denom, 2),
                 'color': palette[i % len(palette)],
             })
-        other = sum(c for _, c in prod_items[10:])
+        other = sum(c for _lbl, c in prod_items[10:])
         if other:
             pie.append({
                 'label': 'Other',
@@ -2120,7 +2159,7 @@ class BharatLoan(models.Model):
         )[:16]
 
         entity_cards = []
-        for _, agg in branches_sorted:
+        for _bid, agg in branches_sorted:
             t = agg['total']
             a = agg['active_pos']
             entity_cards.append({
@@ -2134,29 +2173,21 @@ class BharatLoan(models.Model):
             })
 
         branch_items = sorted(by_branch.items(), key=lambda kv: kv[1]['total'], reverse=True)
-        branch_denom = sum(v['total'] for _, v in branch_items) or 1
+        branch_denom = sum(v['total'] for _k, v in branch_items) or 1
         branch_mix = []
-        branch_cards = []
         for i, (bid, agg) in enumerate(branch_items[:12]):
             cnt = agg['total']
             color = palette[i % len(palette)]
             pct = round(100.0 * cnt / branch_denom, 2)
             label = agg.get('branch_name') or 'Unassigned branch'
             branch_mix.append({
-                'label': label,
-                'count': cnt,
-                'percent': pct,
-                'color': color,
-            })
-            branch_cards.append({
                 'id': bid,
                 'label': label,
                 'count': cnt,
                 'percent': pct,
-                'pos_amount': round(agg['pos_sum'], 2),
                 'color': color,
             })
-        branch_other = sum(v['total'] for _, v in branch_items[12:])
+        branch_other = sum(v['total'] for _k, v in branch_items[12:])
         if branch_other:
             branch_mix.append({
                 'label': 'Other',
@@ -2166,28 +2197,20 @@ class BharatLoan(models.Model):
             })
 
         loc_items = sorted(by_location.items(), key=lambda kv: kv[1]['total'], reverse=True)
-        loc_denom = sum(v['total'] for _, v in loc_items) or 1
+        loc_denom = sum(v['total'] for _k, v in loc_items) or 1
         location_mix = []
-        location_cards = []
         for i, (lid, agg) in enumerate(loc_items[:12]):
             cnt = agg['total']
             color = palette[i % len(palette)]
             pct = round(100.0 * cnt / loc_denom, 2)
             location_mix.append({
-                'label': agg['name'],
-                'count': cnt,
-                'percent': pct,
-                'color': color,
-            })
-            location_cards.append({
                 'id': lid,
                 'label': agg['name'],
                 'count': cnt,
                 'percent': pct,
-                'pos_amount': round(agg['pos_sum'], 2),
                 'color': color,
             })
-        loc_other = sum(v['total'] for _, v in loc_items[12:])
+        loc_other = sum(v['total'] for _k, v in loc_items[12:])
         if loc_other:
             location_mix.append({
                 'label': 'Other',
@@ -2259,6 +2282,38 @@ class BharatLoan(models.Model):
             ('date_deadline', '<=', fields.Date.context_today(self)),
         ])
 
+        wf_denom = total or 1
+        workflow_mix = []
+        for card in stage_cards:
+            cnt = card['count']
+            if not cnt:
+                continue
+            workflow_mix.append({
+                'key': card['key'],
+                'label': card['label'],
+                'count': cnt,
+                'percent': round(100.0 * cnt / wf_denom, 2),
+                'color': card['color'],
+            })
+
+        payment_denom = paid_invoice_count + unpaid_invoice_count + draft_invoices
+        payment_denom = payment_denom or 1
+        payment_mix = []
+        for pkey, plabel, pcnt, pcolor in (
+            ('paid', _('Paid'), paid_invoice_count, '#22c55e'),
+            ('unpaid', _('Unpaid'), unpaid_invoice_count, '#ef4444'),
+            ('draft', _('Draft'), draft_invoices, '#eab308'),
+        ):
+            if not pcnt:
+                continue
+            payment_mix.append({
+                'filter': pkey,
+                'label': plabel,
+                'count': pcnt,
+                'percent': round(100.0 * pcnt / payment_denom, 2),
+                'color': pcolor,
+            })
+
         return {
             'currency_id': Currency.id,
             'currency_symbol': Currency.symbol or '₹',
@@ -2284,11 +2339,12 @@ class BharatLoan(models.Model):
                 'unpaid_invoice_amount': unpaid_invoice_amount,
             },
             'monthly_created': monthly_series,
+            'batch_volume': batch_volume,
             'product_mix': pie,
             'branch_mix': branch_mix,
-            'branch_cards': branch_cards,
             'location_mix': location_mix,
-            'location_cards': location_cards,
+            'workflow_mix': workflow_mix,
+            'payment_mix': payment_mix,
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
         }
