@@ -2470,6 +2470,245 @@
     }
 }
 
+#wrapwrap:has(.bn-login-page) header#top,
+#wrapwrap:has(.bn-login-page) .o_navbar_mobile,
+#wrapwrap:has(.bn-login-page) footer#bottom {
+    display: none !important;
+}
+
+#wrapwrap:has(.bn-login-page) main {
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+// Workspace login (/web/login)
+.bn-login-page {
+    font-family: var(--bn-font);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background:
+        radial-gradient(ellipse 90% 55% at 50% -10%, rgba(37, 99, 235, 0.14), transparent 70%),
+        radial-gradient(ellipse 70% 45% at 100% 20%, rgba(249, 115, 22, 0.08), transparent 55%),
+        linear-gradient(180deg, #e8eef5 0%, #f1f5f9 45%, #eef2ff 100%);
+
+    .bn-login-body {
+        flex: 1 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(2rem, 5vw, 3rem) 0;
+    }
+
+    .bn-login-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 42%, #eff6ff 100%);
+        border: 1px solid rgba(37, 99, 235, 0.18);
+        border-radius: calc(var(--bn-radius) + 6px);
+        box-shadow: 0 24px 56px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
+    }
+
+    .bn-login-card-brand {
+        padding: clamp(1.75rem, 4vw, 2.25rem) clamp(1.5rem, 4vw, 2rem) 1.25rem;
+        border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(249, 115, 22, 0.04));
+    }
+
+    .bn-login-logo-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 0.85rem;
+        background: linear-gradient(135deg, var(--bn-blue), #6366f1);
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.05rem;
+        margin-bottom: 0.85rem;
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+    }
+
+    .bn-login-kicker {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--bn-orange);
+    }
+
+    .bn-login-title {
+        font-size: clamp(1.45rem, 4.5vw, 1.85rem);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--bn-navy-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .bn-login-subtitle {
+        color: var(--bn-text-soft);
+        font-size: 0.95rem;
+        line-height: 1.65;
+        max-width: 28rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .bn-login-card-form {
+        padding: clamp(1.35rem, 4vw, 1.85rem) clamp(1.5rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem);
+    }
+
+    .bn-login-form {
+        .bn-login-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--bn-navy-900);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            border-radius: 0.65rem;
+            padding: 0.7rem 0.95rem;
+            font-size: 0.95rem;
+            color: var(--bn-text-body);
+            background: #fff;
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+            transition: border-color 0.2s, box-shadow 0.2s;
+
+            &:focus {
+                border-color: var(--bn-blue);
+                box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.16);
+            }
+        }
+
+        .alert {
+            border-radius: 0.65rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    .bn-login-forgot {
+        color: var(--bn-blue);
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+    }
+
+    .bn-login-submit {
+        background: linear-gradient(135deg, var(--bn-blue), #4f46e5) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 700;
+        padding: 0.8rem 1.5rem !important;
+        border-radius: 999px !important;
+        box-shadow: 0 10px 28px rgba(37, 99, 235, 0.3);
+        margin-top: 0.25rem;
+
+        &:hover {
+            filter: brightness(1.05);
+            color: #fff !important;
+        }
+    }
+
+    .oe_login_buttons {
+        padding-top: 0.5rem !important;
+    }
+
+    .bn-login-back-home {
+        margin-top: 1.15rem;
+        font-size: 0.9rem;
+
+        a {
+            color: var(--bn-text-muted-light);
+            font-weight: 600;
+            text-decoration: none;
+
+            &:hover {
+                color: var(--bn-blue);
+            }
+        }
+    }
+
+    .bn-login-help-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .bn-login-help-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 1rem 1.15rem;
+        border-radius: var(--bn-radius);
+        border: 1px solid rgba(37, 99, 235, 0.14);
+        background: var(--bn-grad-blue);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+        font-size: 0.9rem;
+        line-height: 1.55;
+        color: var(--bn-text-soft);
+
+        i {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.55rem;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(99, 102, 241, 0.14));
+            color: #1d4ed8;
+            font-size: 0.95rem;
+        }
+
+        a {
+            color: var(--bn-blue);
+            font-weight: 600;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        &:nth-child(2) {
+            background: var(--bn-grad-orange);
+            border-color: rgba(249, 115, 22, 0.18);
+
+            i {
+                background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(251, 146, 60, 0.14));
+                color: #c2410c;
+            }
+        }
+    }
+
+    // User switcher (multi-account) spacing
+    owl-component[name="web.user_switch"] {
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .bn-login-card-form {
+            padding-left: 1.15rem;
+            padding-right: 1.15rem;
+        }
+
+        .bn-login-help-item {
+            font-size: 0.88rem;
+        }
+    }
+}
+
 // Portfolio page (keep readable)
 .bn-portfolio-page {
     background: #0f172a;
