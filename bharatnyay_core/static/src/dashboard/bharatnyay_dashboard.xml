@@ -50,32 +50,56 @@
                 </t>
 
                 <t t-elif="state.data">
-                    <div class="bn-kpi-grid bn-kpi-grid--5">
-                        <div class="bn-kpi-card bn-accent-border">
-                            <div class="bn-kpi-label">Total cases</div>
+                    <div class="bn-kpi-grid bn-kpi-grid--6">
+                        <div class="bn-kpi-card bn-kpi-card--tone-blue">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-briefcase" title="Total cases"/></span>
+                                <div class="bn-kpi-label">Total cases</div>
+                            </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_loans)"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click" t-on-click="openLoanList">
-                            <div class="bn-kpi-label">Total batches</div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-green" t-on-click="openLoanList">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-cubes" title="Total batches"/></span>
+                                <div class="bn-kpi-label">Total batches</div>
+                            </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_batches || 0)"/>
                             <div class="bn-kpi-trend">Distinct import batches</div>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--success"
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
                              data-filter="paid"
                              t-on-click="openInvoices">
-                            <div class="bn-kpi-label">Invoices paid</div>
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-check-circle" title="Invoices paid"/></span>
+                                <div class="bn-kpi-label">Invoices paid</div>
+                            </div>
                             <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--accent"
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-amber"
                              data-filter="unpaid"
                              t-on-click="openInvoices">
-                            <div class="bn-kpi-label">Invoices unpaid</div>
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-file-text-o" title="Invoices unpaid"/></span>
+                                <div class="bn-kpi-label">Invoices unpaid</div>
+                            </div>
                             <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0)"/>
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
                         </div>
-                        <div class="bn-kpi-card">
-                            <div class="bn-kpi-label">Hearings today</div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-rose"
+                             t-on-click="openUnbilledCases">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-clock-o" title="Unbilled cases"/></span>
+                                <div class="bn-kpi-label">Unbilled cases</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unbilled_cases || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' pending charges'"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--tone-purple">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-gavel" title="Hearings today"/></span>
+                                <div class="bn-kpi-label">Hearings today</div>
+                            </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
                         </div>
                     </div>
@@ -107,9 +131,13 @@
                     <div class="bn-chart-row bn-chart-row--3">
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Batch volume</h2>
+                                <div class="bn-panel-head__title">
+                                    <span class="bn-panel-icon"><i class="fa fa-bar-chart"/></span>
+                                    <h2>Batch volume</h2>
+                                </div>
                                 <span class="hint">Cases per import batch</span>
                             </div>
+                            <div class="bn-panel-body">
                             <div class="bn-bar-chart bn-bar-chart--batch" t-if="state.data.batch_volume.length">
                                 <t t-foreach="state.data.batch_volume" t-as="b" t-key="b.batch">
                                     <button type="button"
@@ -123,12 +151,17 @@
                                 </t>
                             </div>
                             <div t-else="" class="bn-muted-empty">No batch data yet.</div>
+                            </div>
                         </div>
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Case status</h2>
+                                <div class="bn-panel-head__title">
+                                    <span class="bn-panel-icon"><i class="fa fa-tasks"/></span>
+                                    <h2>Case status</h2>
+                                </div>
                                 <span class="hint">Notice 1–3, hearings, award</span>
                             </div>
+                            <div class="bn-panel-body">
                             <div class="bn-pie-wrap" t-if="state.data.workflow_mix.length">
                                 <div class="bn-pie" t-attf-style="background: {{ state.workflowPieStyle }}"/>
                                 <ul>
@@ -144,12 +177,17 @@
                                 </ul>
                             </div>
                             <div t-else="" class="bn-muted-empty">No workflow data.</div>
+                            </div>
                         </div>
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Payment status</h2>
+                                <div class="bn-panel-head__title">
+                                    <span class="bn-panel-icon"><i class="fa fa-credit-card"/></span>
+                                    <h2>Payment status</h2>
+                                </div>
                                 <span class="hint">Arbitration invoices</span>
                             </div>
+                            <div class="bn-panel-body">
                             <div class="bn-pie-wrap" t-if="state.data.payment_mix.length">
                                 <div class="bn-pie" t-attf-style="background: {{ state.paymentPieStyle }}"/>
                                 <ul>
@@ -165,14 +203,19 @@
                                 </ul>
                             </div>
                             <div t-else="" class="bn-muted-empty">No invoice data.</div>
+                            </div>
                         </div>
                     </div>
                     <div class="bn-chart-row bn-chart-row--3 mt-2">
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Branch mix</h2>
+                                <div class="bn-panel-head__title">
+                                    <span class="bn-panel-icon"><i class="fa fa-building-o"/></span>
+                                    <h2>Branch mix</h2>
+                                </div>
                                 <span class="hint">Click a branch to filter cases</span>
                             </div>
+                            <div class="bn-panel-body">
                             <div class="bn-pie-wrap" t-if="state.data.branch_mix.length">
                                 <div class="bn-pie" t-attf-style="background: {{ state.branchPieStyle }}"/>
                                 <ul>
@@ -189,12 +232,17 @@
                                 </ul>
                             </div>
                             <div t-else="" class="bn-muted-empty">No branch data.</div>
+                            </div>
                         </div>
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Product mix</h2>
+                                <div class="bn-panel-head__title">
+                                    <span class="bn-panel-icon"><i class="fa fa-cubes"/></span>
+                                    <h2>Product mix</h2>
+                                </div>
                                 <span class="hint">By product class</span>
                             </div>
+                            <div class="bn-panel-body">
                             <div class="bn-pie-wrap" t-if="state.data.product_mix.length">
                                 <div class="bn-pie" t-attf-style="background: {{ state.pieStyle }}"/>
                                 <ul>
@@ -208,12 +256,17 @@
                                 </ul>
                             </div>
                             <div t-else="" class="bn-muted-empty">No classification data.</div>
+                            </div>
                         </div>
                         <div class="bn-panel">
                             <div class="bn-panel-head">
-                                <h2>Location mix</h2>
+                                <div class="bn-panel-head__title">
+                                    <span class="bn-panel-icon"><i class="fa fa-map-marker"/></span>
+                                    <h2>Location mix</h2>
+                                </div>
                                 <span class="hint">Click a location to filter cases</span>
                             </div>
+                            <div class="bn-panel-body">
                             <div class="bn-pie-wrap" t-if="state.data.location_mix.length">
                                 <div class="bn-pie" t-attf-style="background: {{ state.locationPieStyle }}"/>
                                 <ul>
@@ -230,6 +283,7 @@
                                 </ul>
                             </div>
                             <div t-else="" class="bn-muted-empty">No location data.</div>
+                            </div>
                         </div>
                     </div>
                 </t>

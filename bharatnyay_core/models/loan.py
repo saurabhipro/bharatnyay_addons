@@ -2281,6 +2281,12 @@ class BharatLoan(models.Model):
         )
         unpaid_invoice_amount = round(sum(unpaid_moves.mapped('amount_residual')), 2)
 
+        pending_billing = self.env['bharat.loan.billing.event'].sudo().search([
+            ('state', '=', 'pending'),
+        ])
+        unbilled_cases = len(pending_billing.mapped('loan_id'))
+        pending_billing_charges = len(pending_billing)
+
         milestones = self._milestone_master_ordered()
         stage_cards = []
         for milestone in milestones:
@@ -2378,6 +2384,8 @@ class BharatLoan(models.Model):
                 'unpaid_invoices': unpaid_invoice_count,
                 'paid_invoice_amount': paid_invoice_amount,
                 'unpaid_invoice_amount': unpaid_invoice_amount,
+                'unbilled_cases': unbilled_cases,
+                'pending_billing_charges': pending_billing_charges,
             },
             'monthly_created': monthly_series,
             'batch_volume': batch_volume,

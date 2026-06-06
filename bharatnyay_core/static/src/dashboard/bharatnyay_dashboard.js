@@ -160,6 +160,14 @@ export class BharatnyayDashboard extends Component {
         });
     }
 
+    openUnbilledCases() {
+        this.action.doAction("bharatnyay_core.action_bharat_loan_billing_event_pending");
+    }
+
+    openBillBatchWizard() {
+        this.action.doAction("bharatnyay_core.action_bharat_consolidated_billing_wizard");
+    }
+
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
         const domain = [
