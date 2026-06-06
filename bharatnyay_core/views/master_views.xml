@@ -458,12 +458,14 @@
         <field name="name">bharat.loan.milestone.list</field>
         <field name="model">bharat.loan.milestone</field>
         <field name="arch" type="xml">
-            <list string="Workflow milestones" editable="bottom">
+            <list string="Workflow milestones">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="section" optional="show"/>
                 <field name="phase" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="price" optional="show"/>
                 <field name="auto_invoice_on_exit" widget="boolean_toggle"/>
                 <field name="auto_assign_case_manager" widget="boolean_toggle" optional="show"/>
                 <field name="auto_assign_arbitrator" widget="boolean_toggle" optional="show"/>
@@ -487,6 +489,8 @@
                             <field name="sequence"/>
                             <field name="section"/>
                             <field name="phase"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price"/>
                             <field name="fold"/>
                             <field name="is_arbitrator"/>
                             <field name="locks_case"/>

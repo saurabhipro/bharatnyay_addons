@@ -95,6 +95,12 @@ class BharatLoanMilestone(models.Model):
         help='Arbitration / dispute section number (1–31).',
     )
     phase = fields.Char(string='Phase label')
+    currency_id = fields.Many2one(
+        'res.currency',
+        string='Currency',
+        default=lambda self: self.env.company.currency_id,
+    )
+    price = fields.Monetary(string='Price', currency_field='currency_id')
     fold = fields.Boolean(string='Folded in Kanban')
     is_arbitrator = fields.Boolean(
         string='Arbitrator step',
