@@ -11,109 +11,134 @@
                 <t t-set="bn_nav_inner" t-value="True"/>
                 <t t-call="bharatnyay_website.bn_public_nav"/>
                 <div class="bn-about-page">
-                    <header class="bn-about-hero">
+                    <header class="bn-about-hero bn-hero-split text-lg-start">
                         <div class="container">
                             <div class="bn-hero-inner">
-                                <p class="bn-hash">#ResolveWithODR</p>
+                                <p class="bn-hash mb-3">#ResolveWithODR</p>
                                 <h1>Building India’s governed resolution fabric, <span class="text-orange">digitally</span>.</h1>
-                                <p>BharatNyay aligns technology with UNCITRAL’s ODR facilitation principles and Arbitration Act 1996 guardrails.
-                                    We deliver structured online negotiation, mediation, conciliation, and arbitration experiences for India-focused dispute programs.
-                                    Our playbook deep-dives:</p>
-                                <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
-                                    <a href="/odr/what-is" class="btn btn-outline-light rounded-pill btn-sm">What is ODR?</a>
-                                    <a href="/odr/proceedings" class="btn btn-outline-light rounded-pill btn-sm">Proceedings</a>
-                                    <a href="/odr/model-clause" class="btn btn-outline-light rounded-pill btn-sm">Clause design</a>
-                                </div>
+                                <p class="lead mb-0">BharatNyay aligns technology with UNCITRAL’s ODR facilitation principles and Arbitration Act 1996 guardrails.
+                                    We deliver structured online negotiation, mediation, conciliation, and arbitration experiences for India-focused dispute programmes.</p>
+                                <nav class="bn-hero-pills" aria-label="ODR resources">
+                                    <a href="/odr/what-is" class="bn-hero-pill">What is ODR?</a>
+                                    <a href="/odr/proceedings" class="bn-hero-pill">Proceedings</a>
+                                    <a href="/odr/model-clause" class="bn-hero-pill">Clause design</a>
+                                </nav>
                             </div>
                         </div>
                     </header>
+
                     <section class="bn-about-body" id="what-is-odr">
                         <div class="container">
-                            <div class="row align-items-start gy-4">
-                                <div class="col-lg-7 bn-prose">
-                                    <h2><span>BharatNyay ODR ·</span> Single source-of-truth dossiers</h2>
-                                    <p>Borrowers, corporate recovery teams, and neutrals converge on chronological exhibits, neutrality disclosures,
-                                        and hearing artefacts — collapsing email sprawl yet preserving party autonomy articulated in UNCITRAL’s ODR foundational texts.</p>
-                                    <ul>
-                                        <li>Immutable chatter + upload chains for auditors &amp; courts where recognition is sought.</li>
-                                        <li>Configurable ladders that mandate cooling-off tiers before arbitrator appointment.</li>
-                                        <li>Supervisory overlays for captive NBFC/regulated entity reporting.</li>
-                                    </ul>
-                                    <p class="small text-muted mb-0">General education lives on dedicated pages —
-                                        start with <a href="/odr/what-is">What is ODR?</a>.</p>
-                                </div>
-                                <div class="col-lg-5">
-                                    <div class="rounded-4 bg-light shadow-sm border p-4 bn-prose-muted">
-                                        <h5 class="fw-bold mb-3">Deployment snapshot</h5>
-                                        <ul class="small mb-0 ps-3">
-                                            <li class="mb-2"><strong>Hear-first:</strong> video / hybrid logistics with quorum logging.</li>
-                                            <li class="mb-2"><strong>Security:</strong> role-based dossier walls + export trails.</li>
-                                            <li class="mb-0"><strong>Jurisdiction layering:</strong> seat + governing law placeholders for clause workshops.</li>
-                                        </ul>
-                                    <p class="small text-muted mt-3 mb-0">Coverage includes borrower disputes, enterprise contract claims, and court-referred ADR streams with centralised case telemetry.</p>
-                                        <a href="/features" class="btn btn-primary btn-sm mt-4 rounded-pill">Platform tour</a>
+                            <div class="row align-items-stretch gy-4">
+                                <div class="col-lg-7">
+                                    <div class="bn-about-panel">
+                                        <span class="bn-prose-kicker">Platform</span>
+                                        <h2><span>BharatNyay ODR ·</span> Single source-of-truth dossiers</h2>
+                                        <p class="bn-prose-lead">Borrowers, corporate recovery teams, and neutrals converge on chronological exhibits, neutrality disclosures,
+                                            and hearing artefacts — collapsing email sprawl yet preserving party autonomy articulated in UNCITRAL’s ODR foundational texts.</p>
+                                        <div class="bn-feature-rows">
+                                            <div class="bn-feature-row">
+                                                <i class="fa fa-link" aria-hidden="true"/>
+                                                <span>Immutable chatter + upload chains for auditors &amp; courts where recognition is sought.</span>
+                                            </div>
+                                            <div class="bn-feature-row">
+                                                <i class="fa fa-sitemap" aria-hidden="true"/>
+                                                <span>Configurable ladders that mandate cooling-off tiers before arbitrator appointment.</span>
+                                            </div>
+                                            <div class="bn-feature-row">
+                                                <i class="fa fa-shield" aria-hidden="true"/>
+                                                <span>Supervisory overlays for captive NBFC/regulated entity reporting.</span>
+                                            </div>
+                                        </div>
+                                        <p class="bn-prose-note mb-0">
+                                            <i class="fa fa-book" aria-hidden="true"/>
+                                            General education lives on dedicated pages — start with <a href="/odr/what-is" class="bn-link-accent">What is ODR?</a>
+                                        </p>
                                     </div>
                                 </div>
+                                <div class="col-lg-5">
+                                    <aside class="bn-side-card">
+                                        <h3 class="bn-side-card-title">Deployment snapshot</h3>
+                                        <ul class="bn-side-card-list">
+                                            <li><strong>Hear-first:</strong> video / hybrid logistics with quorum logging.</li>
+                                            <li><strong>Security:</strong> role-based dossier walls + export trails.</li>
+                                            <li><strong>Jurisdiction layering:</strong> seat + governing law placeholders for clause workshops.</li>
+                                        </ul>
+                                        <p class="bn-side-card-foot">Coverage includes borrower disputes, enterprise contract claims, and court-referred ADR streams with end-to-end case visibility.</p>
+                                        <a href="/features" class="btn bn-btn-pill-primary btn-sm">Platform tour →</a>
+                                    </aside>
+                                </div>
                             </div>
                         </div>
                     </section>
-                    <section class="bn-about-stats">
+
+                    <section class="bn-about-stats" aria-label="Platform metrics">
                         <div class="container">
-                            <div class="row row-cols-2 row-cols-lg-4 g-4">
-                                <div class="col bn-ab-stat"><strong>856+</strong><span>Digitised matters</span></div>
-                                <div class="col bn-ab-stat"><strong>91%</strong><span>Healthy closure rate</span></div>
-                                <div class="col bn-ab-stat"><strong>14</strong><span>Day SLA target</span></div>
-                                <div class="col bn-ab-stat"><strong>24×7</strong><span>Hearing logistics</span></div>
+                            <div class="row row-cols-2 row-cols-lg-4 g-3 g-lg-4">
+                                <div class="col"><div class="bn-ab-stat"><strong>856+</strong><span>Digitised matters</span></div></div>
+                                <div class="col"><div class="bn-ab-stat"><strong>91%</strong><span>Healthy closure rate</span></div></div>
+                                <div class="col"><div class="bn-ab-stat"><strong>14</strong><span>Day SLA target</span></div></div>
+                                <div class="col"><div class="bn-ab-stat"><strong>24×7</strong><span>Hearing logistics</span></div></div>
                             </div>
                         </div>
                     </section>
-                    <section class="bn-about-body border-top pt-5" id="proceedings">
-                        <div class="container pb-5">
+
+                    <section class="bn-about-body bn-about-body--alt" id="proceedings">
+                        <div class="container">
                             <div class="row gy-5">
                                 <div class="col-lg-6" id="model-clause">
-                                    <h2 class="fw-bold">Institutional coherence</h2>
-                                    <p class="bn-prose-muted">Model clauses unify seat, arbitrator panel rules, escalation matrices, confidentiality carve-outs,
-                                        and tribunal secretariat expectations — BharatNyay pre-populates placeholders so legal teams adapt quickly.</p>
-                                    <div class="p-4 bg-light rounded-4 border">
-                                        <small class="text-uppercase text-muted fw-semibold">Next step</small>
-                                        <p class="mb-3 small">Work through wording with your conflict counsel —
-                                            we supply clause libraries analogous to disclosures many ODR institutions publish openly.</p>
-                                        <a href="/odr/model-clause" class="btn bn-cta-orange btn-sm rounded-pill">Open clause playbook</a>
+                                    <div class="bn-about-panel">
+                                        <span class="bn-prose-kicker">Governance</span>
+                                        <h2>Institutional coherence</h2>
+                                        <p class="bn-prose-lead">Model clauses unify seat, arbitrator panel rules, escalation matrices, confidentiality carve-outs,
+                                            and tribunal secretariat expectations — BharatNyay pre-populates placeholders so legal teams adapt quickly.</p>
+                                        <div class="bn-next-step-card">
+                                            <span class="bn-next-step-label">Next step</span>
+                                            <p>Work through wording with your conflict counsel — we supply clause libraries analogous to disclosures many ODR institutions publish openly.</p>
+                                            <a href="/odr/model-clause" class="btn bn-cta-orange btn-sm rounded-pill">Open clause playbook</a>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-6" id="standards">
-                                    <h2 class="fw-bold">Standards worth rehearsing here</h2>
-                                    <p class="bn-prose-muted">Impartiality, independence, disclosures, caucus secrecy, proportional discovery, data minimisation —
-                                        these remain non-negotiable even when tooling changes (ICODR &amp; NCTDR-aligned practice notes).</p>
-                                    <div class="d-flex gap-4 flex-wrap">
-                                        <span class="badge bg-primary px-4 py-3 rounded-pill">Impartial neutrality</span>
-                                        <span class="badge bg-dark px-4 py-3 rounded-pill">RBI fair practice overlays</span>
-                                        <span class="badge border border-secondary text-secondary px-4 py-3 rounded-pill">Arbitration Act 1996 fit</span>
+                                    <div class="bn-about-panel">
+                                        <span class="bn-prose-kicker">Standards</span>
+                                        <h2>Standards worth rehearsing here</h2>
+                                        <p class="bn-prose-lead">Impartiality, independence, disclosures, caucus secrecy, proportional discovery, and data minimisation —
+                                            these remain non-negotiable across every BharatNyay programme (ICODR &amp; NCTDR-aligned practice notes).</p>
+                                        <div class="bn-standard-pills">
+                                            <span class="bn-standard-pill bn-standard-pill--blue">Impartial neutrality</span>
+                                            <span class="bn-standard-pill bn-standard-pill--navy">RBI fair practice overlays</span>
+                                            <span class="bn-standard-pill bn-standard-pill--outline">Arbitration Act 1996 fit</span>
+                                        </div>
+                                        <a href="/features" class="bn-link-accent d-inline-block mt-4">Explore platform safeguards →</a>
                                     </div>
-                                    <div class="mt-4"><a href="/features" class="fw-semibold">Explore platform safeguards →</a></div>
                                 </div>
                             </div>
                         </div>
                     </section>
+
                     <section class="bn-about-tech">
                         <div class="container">
-                            <div class="row align-items-start gy-4">
+                            <div class="row align-items-stretch gy-4">
                                 <div class="col-lg-6">
-                                    <h2><span>BharatNyay stack ·</span> Justice-grade configurability</h2>
-                                    <p>Composable entities (regions → branches → loans) underpin dashboards, SLA engines, arbitrator assignments,
-                                        and escalation analytics — analogous to configurable “justice rails” advocated by institutional ODR providers.</p>
-                                    <ul>
-                                        <li>Schema-backed dossiers interoperate with ERP / LOS exports.</li>
-                                        <li>Runtime adaptive boards + chatter evidence.</li>
-                                        <li>Native Odoo SSO for counsels / neutrals / recovery desk.</li>
-                                    </ul>
+                                    <div class="bn-about-panel bn-about-panel--dark">
+                                        <span class="bn-prose-kicker">Programmes</span>
+                                        <h2><span>BharatNyay ·</span> Built for governed dispute programmes</h2>
+                                        <p class="bn-prose-lead">Whether you run lending recovery, enterprise contract desks, or court-referred ADR streams,
+                                            BharatNyay gives every stakeholder a clear, auditable path from notice to outcome.</p>
+                                        <ul class="bn-tech-list">
+                                            <li>Structured proceedings aligned with the Arbitration Act 1996 and fair-practice expectations.</li>
+                                            <li>Role-based workspaces for parties, neutrals, and programme administrators.</li>
+                                            <li>Transparent timelines, disclosures, and hearing records for supervisory review.</li>
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <div class="p-5 rounded-4 bn-architecture-card">
-                                        <h4 class="fw-bold mb-3">Discuss architecture</h4>
-                                        <p class="mb-4">We’ll map neutrality policy, arbitrator empanelment, hosting posture, DPIA artefacts, tribunal fees.</p>
-                                        <a href="/contactus" class="btn bn-cta-orange">Book discovery call</a>
-                                    </div>
+                                    <aside class="bn-architecture-card">
+                                        <h4>Start a conversation</h4>
+                                        <p>Tell us about your dispute programme — we’ll walk through proceedings design, neutrality policy, empanelment, and rollout with your legal and operations teams.</p>
+                                        <a href="/contactus" class="btn bn-cta-orange">Speak with our team</a>
+                                    </aside>
                                 </div>
                             </div>
                         </div>
