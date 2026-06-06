@@ -774,8 +774,32 @@
     }
 }
 
-#how .row > [class*="col-"] {
-    @include bn-row-col-gradient-cycle(".bn-step-card");
+#how .bn-workflow-grid {
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (min-width: 1200px) {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+#how .bn-workflow-step {
+    text-align: center;
+    padding: 1.35rem 1rem 1.25rem;
+
+    .bn-workflow-icon {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    h4 {
+        font-size: 0.95rem;
+    }
+
+    p {
+        font-size: 0.8125rem;
+    }
 }
 
 .bn-feature-card {
@@ -1401,17 +1425,18 @@
     @include bn-card-gradient-cycle;
 
     .bn-workflow-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.7rem;
+        width: 2.85rem;
+        height: 2.85rem;
+        border-radius: 0.8rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(99, 102, 241, 0.14));
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(99, 102, 241, 0.16));
         color: #1d4ed8;
-        font-size: 1.05rem;
-        margin-bottom: 0.65rem;
-        border: 1px solid rgba(37, 99, 235, 0.15);
+        font-size: 1.15rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid rgba(37, 99, 235, 0.18);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.14);
     }
 
     .bn-workflow-num {
@@ -2707,10 +2732,12 @@
     }
 
     .bn-login-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 42%, #eff6ff 100%);
-        border: 1px solid rgba(37, 99, 235, 0.18);
-        border-radius: calc(var(--bn-radius) + 6px);
-        box-shadow: 0 24px 56px rgba(15, 23, 42, 0.12);
+        background: linear-gradient(160deg, #ffffff 0%, #f8fafc 50%, #eff6ff 100%);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+        border-radius: calc(var(--bn-radius) + 8px);
+        box-shadow:
+            0 28px 64px rgba(15, 23, 42, 0.14),
+            0 0 0 1px rgba(255, 255, 255, 0.65) inset;
         overflow: hidden;
     }
 
@@ -2765,6 +2792,8 @@
     }
 
     .bn-login-form {
+        display: block !important;
+
         .bn-login-label {
             font-weight: 600;
             font-size: 0.875rem;
@@ -2822,12 +2851,19 @@
     }
 
     .oe_login_buttons {
-        padding-top: 0.5rem !important;
+        padding-top: 0.35rem !important;
+        margin-bottom: 0 !important;
     }
 
-    .bn-login-back-home {
-        margin-top: 1.15rem;
+    .o_login_auth,
+    .o_auth_oauth_providers {
+        display: none !important;
+    }
+
+    .bn-login-page-footer {
+        margin-top: 1.35rem;
         font-size: 0.9rem;
+        color: var(--bn-text-muted-light);
 
         a {
             color: var(--bn-text-muted-light);
@@ -2838,79 +2874,17 @@
                 color: var(--bn-blue);
             }
         }
-    }
 
-    .bn-login-help-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.85rem;
-
-        @media (min-width: 768px) {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .bn-login-page-footer-sep {
+            margin: 0 0.55rem;
+            opacity: 0.45;
         }
-    }
-
-    .bn-login-help-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.85rem;
-        padding: 1rem 1.15rem;
-        border-radius: var(--bn-radius);
-        border: 1px solid rgba(37, 99, 235, 0.14);
-        background: var(--bn-grad-blue);
-        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
-        font-size: 0.9rem;
-        line-height: 1.55;
-        color: var(--bn-text-soft);
-
-        i {
-            flex-shrink: 0;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.55rem;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(99, 102, 241, 0.14));
-            color: #1d4ed8;
-            font-size: 0.95rem;
-        }
-
-        a {
-            color: var(--bn-blue);
-            font-weight: 600;
-            text-decoration: none;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
-
-        &:nth-child(2) {
-            background: var(--bn-grad-orange);
-            border-color: rgba(249, 115, 22, 0.18);
-
-            i {
-                background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(251, 146, 60, 0.14));
-                color: #c2410c;
-            }
-        }
-    }
-
-    // User switcher (multi-account) spacing
-    owl-component[name="web.user_switch"] {
-        display: block;
-        margin-bottom: 1rem;
     }
 
     @media (max-width: 767.98px) {
         .bn-login-card-form {
             padding-left: 1.15rem;
             padding-right: 1.15rem;
-        }
-
-        .bn-login-help-item {
-            font-size: 0.88rem;
         }
     }
 }

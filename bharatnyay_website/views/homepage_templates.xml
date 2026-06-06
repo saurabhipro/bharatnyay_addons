@@ -110,50 +110,7 @@
                             <h2>E-Filing and Case Management</h2>
                             <p class="lead">From case initiation and vetting through hearings to resolution and outcome — transparent milestones at every step.</p>
                         </div>
-                        <div class="row g-3 g-lg-4 text-center">
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
-                                    <strong class="d-block fs-5 bn-step-num mb-2">01</strong>
-                                    <h6 class="fw-bold mb-2 small">Case initiation</h6>
-                                    <p class="bn-step-desc mb-0">Case Initiation and Registration.</p>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
-                                    <strong class="d-block fs-5 bn-step-num mb-2">02</strong>
-                                    <h6 class="fw-bold mb-2 small">Case vetting</h6>
-                                    <p class="bn-step-desc mb-0">Preliminary Review and Case Vetting.</p>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
-                                    <strong class="d-block fs-5 bn-step-num mb-2">03</strong>
-                                    <h6 class="fw-bold mb-2 small">Hearings</h6>
-                                    <p class="bn-step-desc mb-0">Scheduling of Hearings.</p>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
-                                    <strong class="d-block fs-5 bn-step-num mb-2">04</strong>
-                                    <h6 class="fw-bold mb-2 small">Evidence</h6>
-                                    <p class="bn-step-desc mb-0">Submission of Evidence and Documents.</p>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
-                                    <strong class="d-block fs-5 bn-step-num mb-2">05</strong>
-                                    <h6 class="fw-bold mb-2 small">Conduct</h6>
-                                    <p class="bn-step-desc mb-0">Conduct of Hearings.</p>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                <div class="rounded-4 bn-step-card p-3 p-lg-4 h-100">
-                                    <strong class="d-block fs-5 bn-step-num mb-2">06</strong>
-                                    <h6 class="fw-bold mb-2 small">Outcome</h6>
-                                    <p class="bn-step-desc mb-0">Resolution and Issuance of Outcome.</p>
-                                </div>
-                            </div>
-                        </div>
+                        <t t-call="bharatnyay_website.bn_prose_workflow"/>
                         <div class="text-center mt-4"><a href="/how-it-works" class="bn-link-accent">Deep dive on timings →</a></div>
                     </div>
                 </section>

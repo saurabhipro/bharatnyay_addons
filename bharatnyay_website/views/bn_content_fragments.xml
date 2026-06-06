@@ -5,25 +5,25 @@
     <template id="bn_prose_workflow" name="BharatNyay ODR workflow grid">
         <div class="bn-workflow-grid">
             <article class="bn-workflow-step">
-                <div class="bn-workflow-icon"><i class="fa fa-file-text-o" aria-hidden="true"/></div>
+                <div class="bn-workflow-icon"><i class="fa fa-pencil-square-o" aria-hidden="true"/></div>
                 <span class="bn-workflow-num">01</span>
                 <h4>Case initiation</h4>
                 <p>Case Initiation and Registration.</p>
             </article>
             <article class="bn-workflow-step">
-                <div class="bn-workflow-icon"><i class="fa fa-search" aria-hidden="true"/></div>
+                <div class="bn-workflow-icon"><i class="fa fa-clipboard" aria-hidden="true"/></div>
                 <span class="bn-workflow-num">02</span>
                 <h4>Case vetting</h4>
                 <p>Preliminary Review and Case Vetting.</p>
             </article>
             <article class="bn-workflow-step">
-                <div class="bn-workflow-icon"><i class="fa fa-calendar" aria-hidden="true"/></div>
+                <div class="bn-workflow-icon"><i class="fa fa-calendar-check-o" aria-hidden="true"/></div>
                 <span class="bn-workflow-num">03</span>
                 <h4>Hearings</h4>
                 <p>Scheduling of Hearings.</p>
             </article>
             <article class="bn-workflow-step">
-                <div class="bn-workflow-icon"><i class="fa fa-folder-open-o" aria-hidden="true"/></div>
+                <div class="bn-workflow-icon"><i class="fa fa-paperclip" aria-hidden="true"/></div>
                 <span class="bn-workflow-num">04</span>
                 <h4>Evidence</h4>
                 <p>Submission of Evidence and Documents.</p>
@@ -35,7 +35,7 @@
                 <p>Conduct of Hearings.</p>
             </article>
             <article class="bn-workflow-step">
-                <div class="bn-workflow-icon"><i class="fa fa-check-circle" aria-hidden="true"/></div>
+                <div class="bn-workflow-icon"><i class="fa fa-flag-checkered" aria-hidden="true"/></div>
                 <span class="bn-workflow-num">06</span>
                 <h4>Outcome</h4>
                 <p>Resolution and Issuance of Outcome.</p>
