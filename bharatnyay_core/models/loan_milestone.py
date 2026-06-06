@@ -18,7 +18,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 2,
         'section': 21,
         'phase': 'Notice 1',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
         'auto_assign_case_manager': True,
         'auto_assign_arbitrator': False,
     },
@@ -28,7 +28,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 3,
         'section': 21,
         'phase': 'Notice 2',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
     },
     {
         'code': 'notice_3',
@@ -36,7 +36,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 4,
         'section': 21,
         'phase': 'Notice 3',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
     },
     {
         'code': 'hearing_1',
@@ -44,7 +44,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 5,
         'section': 24,
         'phase': 'Hearing 1',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
         'auto_assign_arbitrator': True,
         'is_arbitrator': True,
     },
@@ -54,7 +54,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 6,
         'section': 24,
         'phase': 'Hearing 2',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
     },
     {
         'code': 'hearing_3',
@@ -62,7 +62,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 7,
         'section': 24,
         'phase': 'Hearing 3',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
     },
     {
         'code': 'award',
@@ -70,7 +70,7 @@ DEFAULT_LOAN_MILESTONES = (
         'sequence': 8,
         'section': 31,
         'phase': 'Award',
-        'auto_invoice_on_exit': True,
+        'auto_invoice_on_exit': False,
         'locks_case': True,
     },
 )
@@ -107,9 +107,9 @@ class BharatLoanMilestone(models.Model):
         help='When reached, the case form becomes read-only (e.g. final award).',
     )
     auto_invoice_on_exit = fields.Boolean(
-        string='Create invoice on exit',
+        string='Create invoice on exit (legacy)',
         default=False,
-        help='When leaving this milestone via “Move to next stage”, draft a customer invoice.',
+        help='Deprecated. Leave off — billing uses pending charges + consolidated batch invoice wizard.',
     )
     auto_assign_case_manager = fields.Boolean(
         string='Auto-assign case manager',

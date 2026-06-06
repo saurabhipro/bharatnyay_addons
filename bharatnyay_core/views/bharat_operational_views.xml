@@ -106,18 +106,27 @@
         <field name="name">bharat.arbitration.invoice.line.loader.wizard.form</field>
         <field name="model">bharat.arbitration.invoice.line.loader.wizard</field>
         <field name="arch" type="xml">
-            <form string="Bill loan batch">
+            <form string="Bill batch (consolidated)">
                 <group>
-                    <field name="move_id" invisible="1"/>
-                    <field name="batch_number" placeholder="e.g. BN-2026-001"/>
-                    <field name="preview_case_count" readonly="1"/>
+                    <group>
+                        <field name="batch_number" placeholder="e.g. BN-2026-001"/>
+                        <field name="milestone_code"/>
+                    </group>
+                    <group>
+                        <field name="preview_case_count" readonly="1" string="Pending cases"/>
+                        <field name="preview_total_amount" readonly="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="move_id" placeholder="Optional — leave empty to create new invoice"/>
+                    </group>
                 </group>
+                <field name="preview_hint" readonly="1" nolabel="1" class="text-muted"/>
                 <div class="alert alert-info" role="alert">
-                    One line per milestone in this batch (Notice 1–3, Hearing 1–3, Award): quantity = case count at that task.
-                    Billing amounts come from arbitration billing products (USD sales price). Create this invoice in USD if needed (Journal currency / document currency).
+                    Creates <b>one posted invoice</b> with a single summary line (qty = case count)
+                    and a full <b>annexure</b> listing every loan, case number, borrower, and rate per action.
+                    Charges accrue automatically when cases exit each milestone (Move to next stage).
                 </div>
                 <footer>
-                    <button name="action_apply" string="Add milestone lines" type="object" class="btn-primary"/>
+                    <button name="action_apply" string="Create consolidated invoice" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

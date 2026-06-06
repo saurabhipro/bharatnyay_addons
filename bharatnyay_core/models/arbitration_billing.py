@@ -1,0 +1,208 @@
+# -*- coding: utf-8 -*-
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+
+from .product_template import BHARAT_ARBITRATION_STAGE_SELECTION
+
+BILLABLE_MILESTONE_CODES = frozenset(
+    code for code, _label in BHARAT_ARBITRATION_STAGE_SELECTION
+)
+
+
+class BharatLoanBillingEvent(models.Model):
+    _name = 'bharat.loan.billing.event'
+    _description = 'Pending / invoiced arbitration charge per case milestone'
+    _order = 'accrual_date desc, id desc'
+
+    loan_id = fields.Many2one(
+        'bharat.loan',
+        string='Case',
+        required=True,
+        ondelete='cascade',
+        index=True,
+    )
+    batch_number = fields.Char(
+        string='Batch',
+        related='loan_id.batch_number',
+        store=True,
+        readonly=True,
+        index=True,
+    )
+    company_id = fields.Many2one(
+        'res.company',
+        related='loan_id.company_id',
+        store=True,
+        readonly=True,
+        index=True,
+    )
+    milestone_code = fields.Char(string='Milestone code', required=True, index=True)
+    milestone_label = fields.Char(string='Milestone', required=True)
+    accrual_date = fields.Datetime(
+        string='Accrued on',
+        default=fields.Datetime.now,
+        required=True,
+    )
+    state = fields.Selection(
+        [
+            ('pending', 'Pending invoice'),
+            ('invoiced', 'Invoiced'),
+            ('cancelled', 'Cancelled'),
+        ],
+        string='Status',
+        default='pending',
+        required=True,
+        index=True,
+    )
+    product_id = fields.Many2one('product.product', string='Billing product', ondelete='restrict')
+    unit_price = fields.Monetary(string='Rate per action', currency_field='currency_id')
+    currency_id = fields.Many2one(
+        'res.currency',
+        string='Currency',
+        default=lambda self: self.env.company.currency_id,
+    )
+    move_id = fields.Many2one(
+        'account.move',
+        string='Invoice',
+        ondelete='set null',
+        copy=False,
+        index=True,
+    )
+    annexure_line_id = fields.Many2one(
+        'bharat.arbitration.invoice.annexure.line',
+        string='Annexure row',
+        ondelete='set null',
+        copy=False,
+    )
+    loan_number = fields.Char(related='loan_id.loan_number', store=True, readonly=True)
+    case_number = fields.Char(related='loan_id.case_number', store=True, readonly=True)
+    customer_name = fields.Char(related='loan_id.customer_name', readonly=True)
+
+    _sql_constraints = [
+        (
+            'loan_milestone_uniq',
+            'unique(loan_id, milestone_code)',
+            'Each case can only accrue one billing event per milestone.',
+        ),
+    ]
+
+    @api.model
+    def _bharat_milestone_labels(self):
+        return dict(BHARAT_ARBITRATION_STAGE_SELECTION)
+
+    @api.model
+    def _bharat_billing_product_for_milestone(self, milestone_code):
+        Template = self.env['product.template'].sudo()
+        labels = self._bharat_milestone_labels()
+        tmpl = Template.search([('bharat_arbitration_stage', '=', milestone_code)], limit=2)
+        if len(tmpl) != 1:
+            raise UserError(
+                _('Configure exactly one billing product for milestone “%s” (found %s).')
+                % (labels.get(milestone_code, milestone_code), len(tmpl))
+            )
+        product = tmpl.product_variant_ids[:1]
+        if not product:
+            raise UserError(_('Product “%s” has no variant.') % tmpl.display_name)
+        return product[0]
+
+    @api.model
+    def _bharat_unit_price_for_partner(self, product, partner, company):
+        """Resolve unit price from partner pricelist or product list price."""
+        date = fields.Date.context_today(self)
+        pricelist = partner.property_product_pricelist_id
+        if pricelist:
+            return pricelist._get_product_price(
+                product,
+                1.0,
+                uom=product.uom_id,
+                date=date,
+            )
+        return product.with_company(company).lst_price
+
+    @api.model
+    def bharat_accrue_for_loan(self, loan, milestone):
+        """Queue one pending billing row when a case exits a billable milestone."""
+        loan.ensure_one()
+        code = milestone.code
+        if code not in BILLABLE_MILESTONE_CODES:
+            return self.browse()
+
+        existing = self.search([
+            ('loan_id', '=', loan.id),
+            ('milestone_code', '=', code),
+            ('state', '!=', 'cancelled'),
+        ], limit=1)
+        if existing:
+            return existing
+
+        partner = loan.company_id.partner_id
+        if not partner:
+            raise UserError(
+                _('Company “%s” has no linked partner for billing.')
+                % loan.company_id.display_name
+            )
+
+        product = self._bharat_billing_product_for_milestone(code)
+        unit_price = self._bharat_unit_price_for_partner(product, partner, loan.company_id)
+        labels = self._bharat_milestone_labels()
+        return self.create({
+            'loan_id': loan.id,
+            'milestone_code': code,
+            'milestone_label': labels.get(code, milestone.name or code),
+            'product_id': product.id,
+            'unit_price': unit_price,
+            'currency_id': loan.company_id.currency_id.id,
+            'state': 'pending',
+        })
+
+    @api.model
+    def bharat_pending_for_batch_milestone(self, batch_number, milestone_code, company_id=False):
+        domain = [
+            ('batch_number', '=', (batch_number or '').strip()),
+            ('milestone_code', '=', milestone_code),
+            ('state', '=', 'pending'),
+        ]
+        if company_id:
+            domain.append(('company_id', '=', company_id))
+        return self.search(domain, order='loan_number, case_number, id')
+
+
+class BharatArbitrationInvoiceAnnexureLine(models.Model):
+    _name = 'bharat.arbitration.invoice.annexure.line'
+    _description = 'Arbitration invoice annexure (per-case detail)'
+    _order = 'sequence, id'
+
+    move_id = fields.Many2one(
+        'account.move',
+        string='Invoice',
+        required=True,
+        ondelete='cascade',
+        index=True,
+    )
+    sequence = fields.Integer(default=10)
+    billing_event_id = fields.Many2one(
+        'bharat.loan.billing.event',
+        string='Billing event',
+        ondelete='set null',
+        copy=False,
+    )
+    loan_id = fields.Many2one('bharat.loan', string='Case', ondelete='set null')
+    loan_number = fields.Char(string='Loan number')
+    case_number = fields.Char(string='BharatNyay case no.')
+    customer_name = fields.Char(string='Borrower')
+    milestone_code = fields.Char(string='Milestone code')
+    milestone_label = fields.Char(string='Task')
+    product_id = fields.Many2one('product.product', string='Product', ondelete='restrict')
+    quantity = fields.Float(string='Qty', default=1.0, digits='Product Unit of Measure')
+    unit_price = fields.Monetary(string='Rate per action', currency_field='currency_id')
+    amount = fields.Monetary(
+        string='Amount',
+        currency_field='currency_id',
+        compute='_compute_amount',
+        store=True,
+    )
+    currency_id = fields.Many2one(related='move_id.currency_id', store=True, readonly=True)
+
+    @api.depends('quantity', 'unit_price')
+    def _compute_amount(self):
+        for line in self:
+            line.amount = (line.quantity or 0.0) * (line.unit_price or 0.0)

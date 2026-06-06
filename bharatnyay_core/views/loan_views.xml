@@ -647,4 +647,13 @@
         <field name="state">code</field>
         <field name="code">action = records.action_move_to_next_stage()</field>
     </record>
+
+    <record id="action_bharat_loan_consolidated_billing" model="ir.actions.server">
+        <field name="name">Bill batch (consolidated)</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_open_consolidated_billing_wizard()</field>
+    </record>
 </odoo>

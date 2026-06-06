@@ -2,8 +2,9 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from .product_template import BHARAT_ARBITRATION_STAGE_SELECTION
 
-STAGE_LINE_ORDER = ('notice_1', 'notice_2', 'notice_3', 'hearing_1', 'hearing_2', 'hearing_3', 'award')
+STAGE_LINE_ORDER = tuple(code for code, _label in BHARAT_ARBITRATION_STAGE_SELECTION)
 
 
 class AccountMove(models.Model):
@@ -25,6 +26,7 @@ class AccountMove(models.Model):
         index=True,
         ondelete='set null',
         copy=False,
+        help='Legacy per-case invoice link. Consolidated invoices use annexure lines instead.',
     )
     bharat_loan_number = fields.Char(
         string='Loan number',
@@ -42,8 +44,29 @@ class AccountMove(models.Model):
         string='Milestone billed',
         index=True,
         copy=False,
-        help='Workflow milestone that triggered this per-case invoice.',
+        help='Workflow milestone billed on this consolidated invoice.',
     )
+    bharat_annexure_line_ids = fields.One2many(
+        'bharat.arbitration.invoice.annexure.line',
+        'move_id',
+        string='Annexure (case detail)',
+        copy=False,
+    )
+    bharat_billing_event_ids = fields.One2many(
+        'bharat.loan.billing.event',
+        'move_id',
+        string='Billing events',
+        copy=False,
+    )
+    bharat_annexure_case_count = fields.Integer(
+        string='Cases on annexure',
+        compute='_compute_bharat_annexure_case_count',
+    )
+
+    @api.depends('bharat_annexure_line_ids')
+    def _compute_bharat_annexure_case_count(self):
+        for move in self:
+            move.bharat_annexure_case_count = len(move.bharat_annexure_line_ids)
 
     def action_open_arbitration_line_loader(self):
         self.ensure_one()
@@ -53,12 +76,24 @@ class AccountMove(models.Model):
             raise UserError(_('Use customer invoices (out invoice).'))
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Bill loan batch (milestones)'),
+            'name': _('Bill loan batch (consolidated)'),
             'res_model': 'bharat.arbitration.invoice.line.loader.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': {'default_move_id': self.id},
         }
+
+    def action_print_arbitration_annexure(self):
+        self.ensure_one()
+        if not self.bharat_annexure_line_ids:
+            raise UserError(_('This invoice has no annexure lines.'))
+        report = self.env.ref(
+            'bharatnyay_core.action_report_bharat_arbitration_invoice_annexure',
+            raise_if_not_found=False,
+        )
+        if not report:
+            raise UserError(_('Annexure report is not configured.'))
+        return report.report_action(self)
 
     def _bharat_post_arbitration_invoice(self):
         """Confirm (post) a BharatNyay arbitration invoice."""
@@ -77,11 +112,130 @@ class AccountMove(models.Model):
         return loan_no or bn_case or loan.display_name
 
     @api.model
+    def _bharat_milestone_labels(self):
+        return dict(BHARAT_ARBITRATION_STAGE_SELECTION)
+
+    @api.model
+    def bharat_create_consolidated_from_events(self, events, batch_number, milestone_code, move=None):
+        """Create or fill one consolidated customer invoice from pending billing events."""
+        Event = self.env['bharat.loan.billing.event']
+        events = events.filtered(lambda e: e.state == 'pending')
+        if not events:
+            raise UserError(_('No pending billing charges to invoice.'))
+
+        loans = events.mapped('loan_id')
+        companies = loans.mapped('company_id')
+        if len(companies) != 1:
+            raise UserError(_('All cases in one invoice must belong to the same lender company.'))
+        company = companies[0]
+        partner = company.partner_id
+        if not partner:
+            raise UserError(
+                _('Company “%s” has no linked partner for invoicing.') % company.display_name
+            )
+
+        products = events.mapped('product_id')
+        if len(products) != 1:
+            raise UserError(_('All pending charges must use the same billing product.'))
+
+        product = products[0]
+        prices = {round(p, 2) for p in events.mapped('unit_price')}
+        if len(prices) > 1:
+            raise UserError(
+                _('Mixed rates on pending charges — use one pricelist per batch or re-accrue charges.')
+            )
+        unit_price = events[0].unit_price
+        qty = len(events)
+        labels = self._bharat_milestone_labels()
+        task_label = labels.get(milestone_code, milestone_code)
+        batch_display = (batch_number or '').strip()
+        line_name = _('%(task)s — Batch %(batch)s — %(count)s case(s)') % {
+            'task': task_label,
+            'batch': batch_display or '-',
+            'count': qty,
+        }
+
+        vals = {
+            'move_type': 'out_invoice',
+            'partner_id': partner.id,
+            'company_id': company.id,
+            'invoice_date': fields.Date.context_today(self),
+            'ref': _('BharatNyay batch %(batch)s — %(task)s') % {
+                'batch': batch_display or '-',
+                'task': task_label,
+            },
+            'bharat_arbitration_invoice': True,
+            'bharat_invoice_batch_ref': batch_display,
+            'bharat_milestone_code': milestone_code,
+            'invoice_line_ids': [(0, 0, {
+                'product_id': product.id,
+                'quantity': qty,
+                'price_unit': unit_price,
+                'name': line_name,
+            })],
+        }
+
+        if move:
+            if move.state != 'draft' or move.move_type != 'out_invoice':
+                raise UserError(_('Target invoice must be a draft customer invoice.'))
+            move.with_context(check_move_validity=False).write({
+                'partner_id': partner.id,
+                'company_id': company.id,
+                'ref': move.ref or vals['ref'],
+                'bharat_arbitration_invoice': True,
+                'bharat_invoice_batch_ref': batch_display,
+                'bharat_milestone_code': milestone_code,
+                'invoice_line_ids': [(5, 0, 0)] + vals['invoice_line_ids'],
+            })
+            invoice = move
+        else:
+            invoice = self.create(vals)
+
+        annexure_cmds = []
+        seq = 10
+        for event in events.sorted(key=lambda e: (e.loan_number or '', e.case_number or '', e.id)):
+            loan = event.loan_id
+            annexure_cmds.append((0, 0, {
+                'sequence': seq,
+                'billing_event_id': event.id,
+                'loan_id': loan.id,
+                'loan_number': loan.loan_number,
+                'case_number': loan.case_number,
+                'customer_name': loan.customer_name,
+                'milestone_code': event.milestone_code,
+                'milestone_label': event.milestone_label,
+                'product_id': event.product_id.id,
+                'quantity': 1.0,
+                'unit_price': event.unit_price,
+            }))
+            seq += 10
+
+        invoice.with_context(check_move_validity=False).write({
+            'bharat_annexure_line_ids': annexure_cmds,
+        })
+
+        annexure_by_event = {
+            line.billing_event_id.id: line
+            for line in invoice.bharat_annexure_line_ids
+            if line.billing_event_id
+        }
+        for event in events:
+            annexure_line = annexure_by_event.get(event.id)
+            event.write({
+                'state': 'invoiced',
+                'move_id': invoice.id,
+                'annexure_line_id': annexure_line.id if annexure_line else False,
+            })
+
+        invoice._bharat_post_arbitration_invoice()
+        return invoice
+
+    @api.model
     def bharat_prepare_arbitration_invoice_line_commands(self, loans, batch_display=''):
-        """Build (0, 0, vals) commands: one aggregated line per milestone present in the loan set."""
+        """Legacy: aggregate lines by current bill stage (prefer consolidated wizard instead)."""
         Loan = self.env['bharat.loan']
         Template = self.env['product.template'].sudo()
-        labels = dict(Template._fields['bharat_arbitration_stage'].selection)
+        labels = self._bharat_milestone_labels()
 
         stage_ids = {}
         for loan in loans:
@@ -130,7 +284,7 @@ class AccountMove(models.Model):
 
     @api.model
     def bharat_create_case_milestone_invoice(self, loan, milestone_code):
-        """Create and post one customer invoice line for a single loan milestone."""
+        """Legacy per-case invoice — not used when consolidated billing is enabled."""
         loan.ensure_one()
         billing_code = milestone_code
         if billing_code == 'commencement':
@@ -149,7 +303,7 @@ class AccountMove(models.Model):
             return existing
 
         Template = self.env['product.template'].sudo()
-        labels = dict(Template._fields['bharat_arbitration_stage'].selection)
+        labels = self._bharat_milestone_labels()
         tmpl = Template.search([('bharat_arbitration_stage', '=', billing_code)], limit=2)
         if len(tmpl) != 1:
             raise UserError(

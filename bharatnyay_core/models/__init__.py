@@ -9,6 +9,7 @@ from . import notification_template
 from . import res_users
 from . import product_template
 from . import account_move
+from . import arbitration_billing
 from . import ir_actions_report
 from . import bharat_arbitrator_blockout
 from . import loan_stage

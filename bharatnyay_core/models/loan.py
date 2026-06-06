@@ -494,26 +494,60 @@ class BharatLoan(models.Model):
 
     def _compute_arbitration_invoice_count(self):
         Move = self.env['account.move'].sudo()
+        Event = self.env['bharat.loan.billing.event'].sudo()
         for rec in self:
-            rec.arbitration_invoice_count = Move.search_count([
+            legacy = Move.search_count([
                 ('bharat_loan_id', '=', rec.id),
                 ('move_type', '=', 'out_invoice'),
                 ('bharat_arbitration_invoice', '=', True),
             ])
+            consolidated = Event.search_count([
+                ('loan_id', '=', rec.id),
+                ('state', '=', 'invoiced'),
+                ('move_id.move_type', '=', 'out_invoice'),
+                ('move_id.bharat_arbitration_invoice', '=', True),
+            ])
+            rec.arbitration_invoice_count = legacy + consolidated
 
     def action_open_arbitration_invoices(self):
         self.ensure_one()
+        move_ids = self.env['bharat.loan.billing.event'].sudo().search([
+            ('loan_id', '=', self.id),
+            ('state', '=', 'invoiced'),
+            ('move_id', '!=', False),
+        ]).mapped('move_id').ids
+        legacy_ids = self.env['account.move'].sudo().search([
+            ('bharat_loan_id', '=', self.id),
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ]).ids
+        all_ids = list(set(move_ids + legacy_ids))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Arbitration invoices'),
             'res_model': 'account.move',
             'view_mode': 'list,form',
-            'domain': [
-                ('bharat_loan_id', '=', self.id),
-                ('move_type', '=', 'out_invoice'),
-                ('bharat_arbitration_invoice', '=', True),
-            ],
+            'domain': [('id', 'in', all_ids or [0])],
             'context': {'default_move_type': 'out_invoice'},
+        }
+
+    def action_open_consolidated_billing_wizard(self):
+        """Open consolidated batch billing (finance)."""
+        batch = ''
+        if len(self) == 1 and self.batch_number:
+            batch = self.batch_number
+        elif self:
+            batches = set((self.mapped('batch_number') or ['']))
+            batch = batches.pop() if len(batches) == 1 else ''
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Bill batch (consolidated)'),
+            'res_model': 'bharat.arbitration.invoice.line.loader.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_batch_number': batch,
+            },
         }
 
     def _resolve_borrower_partner(self):
@@ -746,14 +780,16 @@ class BharatLoan(models.Model):
             doc = self._get_or_create_final_award_document()
             doc._attach_draft_award_letter()
 
-    def _milestone_create_exit_invoice(self, milestone):
+    def _milestone_accrue_billing_event(self, milestone):
+        """Queue a pending charge when exiting a billable milestone (consolidated billing)."""
         self.ensure_one()
-        if not milestone.auto_invoice_on_exit:
-            return self.env['account.move']
-        billing_code = milestone.code
-        if billing_code == 'commencement':
-            return self.env['account.move']
-        return self.env['account.move'].bharat_create_case_milestone_invoice(self, billing_code)
+        if milestone.code == 'commencement':
+            return self.env['bharat.loan.billing.event']
+        if milestone.auto_invoice_on_exit:
+            return self.env['account.move'].bharat_create_case_milestone_invoice(
+                self, milestone.code
+            )
+        return self.env['bharat.loan.billing.event'].bharat_accrue_for_loan(self, milestone)
 
     def _advance_one_milestone(self):
         """Move a single case to its next milestone. Returns (next_name, skip_reason)."""
@@ -778,15 +814,20 @@ class BharatLoan(models.Model):
                 'milestone': current.name,
             }
 
-        invoice = self._milestone_create_exit_invoice(current)
+        billing_result = self._milestone_accrue_billing_event(current)
         self._milestone_apply_entry_actions(nxt)
         self._set_milestone(nxt)
 
         body_parts = [_('Moved to <b>%s</b>') % escape(nxt.name)]
-        if invoice:
+        if billing_result._name == 'account.move' and billing_result:
             body_parts.append(
                 _('Invoice <a href="#" data-oe-model="account.move" data-oe-id="%s">%s</a> posted.')
-                % (invoice.id, escape(invoice.name or invoice.display_name))
+                % (billing_result.id, escape(billing_result.name or billing_result.display_name))
+            )
+        elif billing_result._name == 'bharat.loan.billing.event' and billing_result:
+            body_parts.append(
+                _('Billing queued for <b>%s</b> (batch consolidated invoice).')
+                % escape(billing_result.milestone_label or current.name)
             )
         if nxt.auto_assign_case_manager and self.case_manager_id:
             body_parts.append(_('Case manager: <b>%s</b>') % escape(self.case_manager_id.name))

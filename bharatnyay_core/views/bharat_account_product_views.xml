@@ -35,10 +35,15 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
                 <button name="action_open_arbitration_line_loader"
-                        string="Bill loan batch (milestones)"
+                        string="Bill batch (consolidated)"
                         type="object"
                         class="btn-secondary"
                         invisible="move_type != 'out_invoice' or state != 'draft'"/>
+                <button name="action_print_arbitration_annexure"
+                        string="Print annexure"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not bharat_annexure_line_ids"/>
             </xpath>
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="bharat_loan_id" readonly="1"
@@ -52,6 +57,23 @@
                 <field name="bharat_invoice_batch_ref"
                        readonly="state != 'draft'"
                        invisible="not bharat_invoice_batch_ref and not bharat_arbitration_invoice"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Annexure" name="bharat_annexure"
+                      invisible="not bharat_annexure_line_ids">
+                    <field name="bharat_annexure_case_count" readonly="1"/>
+                    <field name="bharat_annexure_line_ids" nolabel="1" readonly="1">
+                        <list create="0" delete="0" edit="0">
+                            <field name="loan_number"/>
+                            <field name="case_number"/>
+                            <field name="customer_name"/>
+                            <field name="milestone_label"/>
+                            <field name="unit_price"/>
+                            <field name="quantity"/>
+                            <field name="amount"/>
+                        </list>
+                    </field>
+                </page>
             </xpath>
             <xpath expr="//sheet" position="inside">
                 <field name="bharat_arbitration_invoice" invisible="1"/>

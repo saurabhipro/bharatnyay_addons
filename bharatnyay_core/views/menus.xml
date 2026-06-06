@@ -38,6 +38,18 @@
               action="action_bharat_loan"
               sequence="15"/>
 
+    <menuitem id="menu_bharatnyay_pending_billing"
+              name="Pending billing"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_loan_billing_event_pending"
+              sequence="16"/>
+
+    <menuitem id="menu_bharatnyay_consolidated_billing"
+              name="Bill batch (consolidated)"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_consolidated_billing_wizard"
+              sequence="17"/>
+
     <menuitem id="menu_bharatnyay_workflow"
               name="Workflow queues"
               parent="menu_bharatnyay_root"

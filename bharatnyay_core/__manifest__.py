@@ -1,6 +1,6 @@
 {
     'name': 'BharatNyay Core',
-    'version': '18.0.31.0.37',
+    'version': '18.0.31.0.38',
     'icon': '/bharatnyay_core/static/description/icon.png',
     'summary': 'Loan portfolio aligned to Excel import template',
     'description': """
@@ -27,6 +27,8 @@
         'views/loan_notice_response_wizard_views.xml',
         'views/bharat_operational_views.xml',
         'views/bharat_account_product_views.xml',
+        'views/arbitration_billing_views.xml',
+        'reports/arbitration_invoice_annexure_report.xml',
         'views/loan_hearing_wizard_views.xml',
         'views/loan_award_wizard_views.xml',
         'views/loan_assign_arbitrator_wizard_views.xml',
