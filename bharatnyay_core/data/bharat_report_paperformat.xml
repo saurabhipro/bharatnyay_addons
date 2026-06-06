@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Lower DPI / margins to reduce wkhtmltopdf memory use on notice PDFs -->
+    <!-- Margins must reserve space for web.external_layout header/footer (wkhtmltopdf). -->
     <record id="paperformat_bharat_loan_notice" model="report.paperformat">
-        <field name="name">BharatNyay — Notice (light PDF)</field>
+        <field name="name">BharatNyay — Notice (with document layout)</field>
         <field name="default" eval="False"/>
         <field name="format">A4</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">8</field>
-        <field name="margin_bottom">8</field>
-        <field name="margin_left">8</field>
-        <field name="margin_right">8</field>
+        <field name="margin_top">60</field>
+        <field name="margin_bottom">36</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">0</field>
-        <field name="dpi">80</field>
+        <field name="header_spacing">52</field>
+        <field name="dpi">90</field>
         <field name="disable_shrinking" eval="False"/>
     </record>
 </odoo>

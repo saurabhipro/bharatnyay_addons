@@ -1,0 +1,13 @@
+/* BharatNyay PDF reports — clear gap below web.external_layout header */
+.o_report_layout .article {
+    padding-top: 8mm;
+}
+
+.o_report_layout .article .page {
+    padding-top: 4mm;
+    margin-top: 0;
+}
+
+.o_report_layout .article .page > div[style*="border"] {
+    padding-top: 12px !important;
+}
