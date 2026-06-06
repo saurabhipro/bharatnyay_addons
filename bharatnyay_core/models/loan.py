@@ -2593,6 +2593,7 @@ class BharatLoanNoticeLine(models.Model):
     _name = 'bharat.loan.notice.line'
     _description = 'Loan notice dispatch history'
     _order = 'sent_on desc, id desc'
+    _rec_name = 'notice_label'
 
     loan_id = fields.Many2one('bharat.loan', required=True, ondelete='cascade', index=True)
     company_id = fields.Many2one(

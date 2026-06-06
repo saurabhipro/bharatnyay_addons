@@ -402,13 +402,9 @@
                                                     invisible="parent.is_case_locked"/>
                                         </header>
                                         <sheet>
-                                            <!-- compact meta strip -->
+                                            <field name="notice_label" invisible="1"/>
+                                            <field name="notice_number" invisible="1"/>
                                             <div class="bn-notice-meta">
-                                                <span class="bn-notice-meta__item">
-                                                    <span class="bn-notice-meta__k">Notice</span>
-                                                    <field name="notice_label" readonly="1" nolabel="1"/>
-                                                </span>
-                                                <span class="bn-notice-meta__sep">·</span>
                                                 <span class="bn-notice-meta__item">
                                                     <span class="bn-notice-meta__k">Sent</span>
                                                     <field name="sent_on" readonly="1" nolabel="1"/>
