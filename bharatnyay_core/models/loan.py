@@ -1956,6 +1956,7 @@ class BharatLoan(models.Model):
                 'milestone_id',
                 'milestone_code',
                 'branch_id',
+                'batch_number',
                 'location_id',
                 'location',
                 'product_class_id',
@@ -1993,6 +1994,7 @@ class BharatLoan(models.Model):
         pending_dispatch = 0
         cases_no_arbitrator = 0
         pending_award_upload = 0
+        batch_keys = set()
 
         for row in rows:
             pos_val = row.get('current_pos') or 0.0
@@ -2057,6 +2059,10 @@ class BharatLoan(models.Model):
             by_branch[bkey]['claim_sum'] += claim_f
             if pos_f > 0:
                 by_branch[bkey]['active_pos'] += 1
+
+            batch_no = (row.get('batch_number') or '').strip()
+            if batch_no:
+                batch_keys.add(batch_no)
 
             pcid = row.get('product_class_id')
             pcl = pcid[1] if pcid else None
@@ -2125,6 +2131,38 @@ class BharatLoan(models.Model):
                 'settled_hint': max(0, t - a),
                 'pos_amount': agg['pos_sum'],
                 'claim_amount': agg['claim_sum'],
+            })
+
+        branch_items = sorted(by_branch.items(), key=lambda kv: kv[1]['total'], reverse=True)
+        branch_denom = sum(v['total'] for _, v in branch_items) or 1
+        branch_mix = []
+        branch_cards = []
+        for i, (bid, agg) in enumerate(branch_items[:12]):
+            cnt = agg['total']
+            color = palette[i % len(palette)]
+            pct = round(100.0 * cnt / branch_denom, 2)
+            label = agg.get('branch_name') or 'Unassigned branch'
+            branch_mix.append({
+                'label': label,
+                'count': cnt,
+                'percent': pct,
+                'color': color,
+            })
+            branch_cards.append({
+                'id': bid,
+                'label': label,
+                'count': cnt,
+                'percent': pct,
+                'pos_amount': round(agg['pos_sum'], 2),
+                'color': color,
+            })
+        branch_other = sum(v['total'] for _, v in branch_items[12:])
+        if branch_other:
+            branch_mix.append({
+                'label': 'Other',
+                'count': branch_other,
+                'percent': round(100.0 * branch_other / branch_denom, 2),
+                'color': '#94a3b8',
             })
 
         loc_items = sorted(by_location.items(), key=lambda kv: kv[1]['total'], reverse=True)
@@ -2227,6 +2265,7 @@ class BharatLoan(models.Model):
             'decimals': Currency.decimal_places,
             'kpis': {
                 'total_loans': total,
+                'total_batches': len(batch_keys),
                 'active_exposure_rows': active_followup,
                 'delivered_or_lok': lok_done,
                 'pos_ratio_pct': pos_ratio,
@@ -2246,6 +2285,8 @@ class BharatLoan(models.Model):
             },
             'monthly_created': monthly_series,
             'product_mix': pie,
+            'branch_mix': branch_mix,
+            'branch_cards': branch_cards,
             'location_mix': location_mix,
             'location_cards': location_cards,
             'entity_cards': entity_cards,

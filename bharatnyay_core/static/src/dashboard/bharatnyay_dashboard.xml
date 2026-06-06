@@ -50,10 +50,15 @@
                 </t>
 
                 <t t-elif="state.data">
-                    <div class="bn-kpi-grid bn-kpi-grid--4">
+                    <div class="bn-kpi-grid bn-kpi-grid--5">
                         <div class="bn-kpi-card bn-accent-border">
                             <div class="bn-kpi-label">Total cases</div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_loans)"/>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click" t-on-click="openLoanList">
+                            <div class="bn-kpi-label">Total batches</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_batches || 0)"/>
+                            <div class="bn-kpi-trend">Distinct import batches</div>
                         </div>
                         <div class="bn-kpi-card">
                             <div class="bn-kpi-label">Total POS</div>
@@ -122,6 +127,28 @@
                         </t>
                     </div>
 
+                    <div class="bn-section-title mt-3">Branches</div>
+                    <div class="bn-location-strip" t-if="state.data.branch_cards.length">
+                        <t t-foreach="state.data.branch_cards" t-as="br" t-key="br.id + '_' + br.label">
+                            <button type="button"
+                                    class="bn-location-card"
+                                    t-att-data-branch-id="br.id"
+                                    t-attf-style="--loc: {{ br.color }};"
+                                    t-on-click="openBranchCases">
+                                <div class="bn-location-top">
+                                    <span class="bn-location-dot" t-attf-style="background: {{ br.color }}"/>
+                                    <span class="bn-location-name" t-out="br.label"/>
+                                </div>
+                                <div class="bn-location-value">
+                                    <span class="n" t-out="fmtInt(br.count)"/>
+                                    <span class="p" t-out="br.percent + '%'"/>
+                                </div>
+                                <div class="bn-location-meta" t-out="'POS ' + fmtMoney(br.pos_amount)"/>
+                            </button>
+                        </t>
+                    </div>
+                    <div t-else="" class="bn-muted-empty bn-muted-empty--sm">No branch data on cases yet.</div>
+
                     <div class="bn-section-title mt-3">Locations</div>
                     <div class="bn-location-strip" t-if="state.data.location_cards.length">
                         <t t-foreach="state.data.location_cards" t-as="loc" t-key="loc.id + '_' + loc.label">
@@ -144,7 +171,7 @@
                     </div>
                     <div t-else="" class="bn-muted-empty bn-muted-empty--sm">No location data on cases yet.</div>
 
-                    <div class="bn-chart-row bn-chart-row--3 mt-3">
+                    <div class="bn-chart-row bn-chart-row--4 mt-3">
                         <div class="bn-panel">
                             <div class="bn-panel-head">
                                 <h2>Monthly volume</h2>
@@ -159,6 +186,25 @@
                                 </t>
                             </div>
                             <div t-else="" class="bn-muted-empty">Not enough dated rows yet.</div>
+                        </div>
+                        <div class="bn-panel">
+                            <div class="bn-panel-head">
+                                <h2>Branch mix</h2>
+                                <span class="hint">Cases by branch</span>
+                            </div>
+                            <div class="bn-pie-wrap" t-if="state.data.branch_mix.length">
+                                <div class="bn-pie" t-attf-style="background: {{ state.branchPieStyle }}"/>
+                                <ul>
+                                    <t t-foreach="state.data.branch_mix" t-as="s" t-key="s.label">
+                                        <li>
+                                            <span class="sq" t-attf-style="background: {{ s.color }}"/>
+                                            <span t-out="s.label"/>
+                                            <span class="pct" t-out="s.percent + '%'"/>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+                            <div t-else="" class="bn-muted-empty">No branch data.</div>
                         </div>
                         <div class="bn-panel">
                             <div class="bn-panel-head">

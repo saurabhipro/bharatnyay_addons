@@ -326,6 +326,7 @@
                         <div class="bn-section bn-section--edit">
                             <div class="bn-section__head">
                                 <span class="bn-section__title">Case management</span>
+                                <span class="bn-section__badge bn-section__badge--edit">Editable</span>
                             </div>
                             <div class="bn-section__body">
                                 <div class="bn-import-grid">

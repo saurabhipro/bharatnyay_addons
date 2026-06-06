@@ -33,6 +33,7 @@ export class BharatnyayDashboard extends Component {
             error: null,
             data: null,
             pieStyle: pieGradient([]),
+            branchPieStyle: pieGradient([]),
             locationPieStyle: pieGradient([]),
             search: "",
         });
@@ -47,6 +48,7 @@ export class BharatnyayDashboard extends Component {
             const data = await this.orm.call("bharat.loan", "get_dashboard_statistics", []);
             this.state.data = data;
             this.state.pieStyle = pieGradient(data.product_mix || []);
+            this.state.branchPieStyle = pieGradient(data.branch_mix || []);
             this.state.locationPieStyle = pieGradient(data.location_mix || []);
         } catch (e) {
             this.state.data = null;
@@ -124,6 +126,29 @@ export class BharatnyayDashboard extends Component {
                 [false, "form"],
             ],
             domain: [["milestone_code", "=", stage]],
+            target: "current",
+        });
+    }
+
+    openBranchCases(ev) {
+        const rawId = ev.currentTarget?.dataset?.branchId;
+        if (rawId === undefined || rawId === null || rawId === "") {
+            return;
+        }
+        const branchId = parseInt(rawId, 10);
+        const domain =
+            branchId > 0
+                ? [["branch_id", "=", branchId]]
+                : [["branch_id", "=", false]];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Cases by branch",
+            res_model: "bharat.loan",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain,
             target: "current",
         });
     }
