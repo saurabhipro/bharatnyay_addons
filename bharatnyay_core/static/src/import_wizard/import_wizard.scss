@@ -1,0 +1,231 @@
+/* Portfolio / POD import wizard */
+.o_bn_import_wizard {
+    --bn-imp-accent: #4361ee;
+    --bn-imp-accent-soft: #eef2ff;
+    --bn-imp-border: #d8e0ec;
+    --bn-imp-text: #0f172a;
+    --bn-imp-muted: #64748b;
+    --bn-imp-radius: 12px;
+
+    .o_form_sheet_bg,
+    .o_form_sheet {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .bn-import-wrap {
+        padding: 0.25rem 0.5rem 0.5rem;
+    }
+
+    .bn-import-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--bn-imp-border);
+
+        &__icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--bn-imp-accent) 0%, #5a7bff 100%);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        h2 {
+            margin: 0 0 0.25rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--bn-imp-text);
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--bn-imp-muted);
+            line-height: 1.45;
+        }
+    }
+
+    .bn-import-step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 0 0.55rem;
+
+        &__num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--bn-imp-accent);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+        &__label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--bn-imp-muted);
+        }
+    }
+
+    .bn-import-type {
+        margin-bottom: 1.15rem;
+
+        .o_field_widget.o_field_radio {
+            width: 100%;
+
+            .o_radio_item {
+                flex: 1 1 220px;
+                margin: 0 !important;
+            }
+
+            .form-check {
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 0;
+            }
+
+            .form-check-input {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .form-check-label {
+                display: block;
+                width: 100%;
+                margin: 0;
+                padding: 0.85rem 1rem 0.85rem 2.5rem;
+                border: 2px solid var(--bn-imp-border);
+                border-radius: var(--bn-imp-radius);
+                background: #fff;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.875rem;
+                color: var(--bn-imp-text);
+                transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+                position: relative;
+                line-height: 1.35;
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    left: 0.9rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 16px;
+                    height: 16px;
+                    border: 2px solid #94a3b8;
+                    border-radius: 50%;
+                    background: #fff;
+                }
+            }
+
+            .form-check-input:checked + .form-check-label {
+                border-color: var(--bn-imp-accent);
+                background: var(--bn-imp-accent-soft);
+                box-shadow: 0 0 0 1px rgba(67, 97, 238, 0.15);
+
+                &::before {
+                    border-color: var(--bn-imp-accent);
+                    background: var(--bn-imp-accent);
+                    box-shadow: inset 0 0 0 3px #fff;
+                }
+            }
+        }
+
+        .o_horizontal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+        }
+    }
+
+    .bn-import-file {
+        margin-bottom: 1rem;
+        padding: 1rem 1.1rem;
+        border: 2px dashed #b8c4d9;
+        border-radius: var(--bn-imp-radius);
+        background: #fafbff;
+        text-align: center;
+
+        .o_field_widget.o_field_binary {
+            justify-content: center;
+        }
+
+        .o_form_binary_progress {
+            width: 100%;
+        }
+    }
+
+    .bn-import-help {
+        padding: 0.85rem 1rem;
+        border-radius: var(--bn-imp-radius);
+        background: var(--bn-imp-accent-soft);
+        border: 1px solid rgba(67, 97, 238, 0.18);
+        font-size: 0.8125rem;
+        color: #334155;
+        line-height: 1.5;
+
+        ul {
+            margin: 0.35rem 0 0;
+            padding-left: 1.1rem;
+
+            li {
+                margin-bottom: 0.2rem;
+            }
+        }
+
+        strong {
+            color: var(--bn-imp-text);
+        }
+    }
+
+    .bn-import-result {
+        padding: 0.5rem;
+
+        &__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .o_field_widget.o_field_text textarea {
+            min-height: 140px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            border-radius: 10px;
+        }
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--bn-imp-border);
+        padding-top: 0.85rem;
+
+        .btn-primary {
+            min-width: 120px;
+            font-weight: 600;
+        }
+    }
+}

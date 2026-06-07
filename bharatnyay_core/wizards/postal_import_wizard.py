@@ -3,8 +3,6 @@ import csv
 import io
 from datetime import datetime
 
-from markupsafe import escape
-
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
@@ -94,12 +92,12 @@ class BharatPostalTrackingImportWizard(models.TransientModel):
                 dispatch.apply_postal_import_row(disp, deliv, stat)
                 loan.message_post(
                     body=_(
-                        'Postal import updated <b>%(doc)s</b> tracking '
-                        '<b>%(track)s</b> — %(status)s.'
+                        'Postal import updated %(doc)s tracking '
+                        '%(track)s — %(status)s.'
                     ) % {
-                        'doc': escape(dispatch.document_label or ''),
-                        'track': escape(track),
-                        'status': escape(stat or dispatch.post_office_status_id.name or '-'),
+                        'doc': dispatch.document_label or '',
+                        'track': track,
+                        'status': stat or dispatch.post_office_status_id.name or '-',
                     },
                 )
             updated += 1

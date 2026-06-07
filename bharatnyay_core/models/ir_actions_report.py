@@ -3,15 +3,17 @@ import base64
 import io
 import logging
 import resource
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from odoo import _, api, models
 from odoo.exceptions import UserError
+from odoo.modules.registry import Registry
 from odoo.tools import split_every
 
-_logger = logging.getLogger(__name__)
+from ..tools.pdf_render import read_fast_mode, read_merge_chunk, read_parallel_workers
 
-# Render one loan per wkhtmltopdf run, then merge — avoids one huge HTML/PDF job.
-_BHARAT_PDF_MERGE_CHUNK = 25
+_logger = logging.getLogger(__name__)
 
 
 def _raise_file_descriptor_limit(min_limit=4096):
@@ -27,6 +29,22 @@ def _raise_file_descriptor_limit(min_limit=4096):
 
 class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'
+
+    @api.model
+    def _bharat_icp_get(self, key, default=None):
+        return self.env['ir.config_parameter'].sudo().get_param(key, default)
+
+    @api.model
+    def _bharat_pdf_parallel_workers(self):
+        return read_parallel_workers(self._bharat_icp_get)
+
+    @api.model
+    def _bharat_pdf_merge_chunk(self):
+        return read_merge_chunk(self._bharat_icp_get)
+
+    @api.model
+    def _bharat_pdf_fast_mode(self):
+        return read_fast_mode(self._bharat_icp_get)
 
     @api.model
     def bharat_qr_to_data_uri(self, payload, width=96, height=96):
@@ -99,35 +117,85 @@ class IrActionsReport(models.Model):
         )):
             return UserError(
                 _('PDF generation failed: wkhtmltopdf ran out of memory or file handles.\n\n'
-                  'Bulk prints are rendered one case at a time and merged; if this persists:\n'
-                  '1. Restart Odoo and run: pkill -f wkhtmltopdf\n'
-                  '2. Start Odoo with: ulimit -n 65536\n'
-                  '3. Print fewer loans per batch from the list')
+                  'Bulk prints use parallel workers; if this persists:\n'
+                  '1. Lower System Parameter bharat.pdf.parallel_workers (e.g. 3)\n'
+                  '2. Restart Odoo and run: pkill -f wkhtmltopdf\n'
+                  '3. Start Odoo with: ulimit -n 65536')
             )
         return None
 
+    def _render_one_loan_pdf_thread(self, report_ref, res_id, uid, ctx, data):
+        """Render a single record PDF in its own DB cursor (thread-safe)."""
+        dbname = self.env.cr.dbname
+        with Registry(dbname).cursor() as cr:
+            env = api.Environment(cr, uid, ctx)
+            report_model = env['ir.actions.report']
+            try:
+                pdf_bytes, report_type = super(
+                    IrActionsReport, report_model,
+                )._render_qweb_pdf(report_ref, res_ids=[res_id], data=data)
+            except UserError as err:
+                friendly = report_model._bharat_wkhtmltopdf_user_error(err)
+                if friendly:
+                    raise friendly from err
+                raise
+            if report_type != 'pdf':
+                raise UserError(_('Expected PDF output from report %s') % report_ref)
+            return res_id, pdf_bytes
+
+    def _render_loan_pdf_streams_ordered(self, report_ref, res_ids, data=None):
+        """Render per-loan PDFs; parallelize wkhtmltopdf when batch size > 1."""
+        workers = self._bharat_pdf_parallel_workers()
+        ctx = dict(self.env.context or {}, bharat_light_pdf=True)
+        uid = self.env.uid
+
+        if workers <= 1 or len(res_ids) <= 1:
+            streams = []
+            for res_id in res_ids:
+                _rid, pdf_bytes = self._render_one_loan_pdf_thread(
+                    report_ref, res_id, uid, ctx, data,
+                )
+                streams.append(io.BytesIO(pdf_bytes))
+            return streams
+
+        _raise_file_descriptor_limit(max(4096, workers * 32))
+        results = {}
+        max_workers = min(workers, len(res_ids))
+        t0 = time.time()
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = [
+                pool.submit(
+                    self._render_one_loan_pdf_thread,
+                    report_ref,
+                    res_id,
+                    uid,
+                    ctx,
+                    data,
+                )
+                for res_id in res_ids
+            ]
+            for fut in as_completed(futures):
+                res_id, pdf_bytes = fut.result()
+                results[res_id] = pdf_bytes
+
+        elapsed = time.time() - t0
+        _logger.info(
+            'bharatnyay_core: parallel PDF rendered %s case(s) in %.1fs (%s workers)',
+            len(res_ids), elapsed, max_workers,
+        )
+        return [io.BytesIO(results[res_id]) for res_id in res_ids]
+
     def _render_bharat_qweb_pdf_merged(self, report_ref, res_ids, data=None):
-        """One wkhtmltopdf job per loan, then append pages into a single PDF."""
+        """One wkhtmltopdf job per loan (parallel), then merge into one PDF."""
         report = self._get_report(report_ref)
-        ctx_report = self.with_context(bharat_light_pdf=True)
+        merge_chunk = self._bharat_pdf_merge_chunk()
         partial_streams = []
+        t0 = time.time()
 
-        for chunk_ids in split_every(_BHARAT_PDF_MERGE_CHUNK, res_ids):
-            loan_streams = []
-            for res_id in chunk_ids:
-                try:
-                    pdf_bytes, report_type = super(
-                        IrActionsReport, ctx_report,
-                    )._render_qweb_pdf(report_ref, res_ids=[res_id], data=data)
-                except UserError as err:
-                    friendly = self._bharat_wkhtmltopdf_user_error(err)
-                    if friendly:
-                        raise friendly from err
-                    raise
-                if report_type != 'pdf':
-                    return pdf_bytes, report_type
-                loan_streams.append(io.BytesIO(pdf_bytes))
-
+        for chunk_ids in split_every(merge_chunk, res_ids):
+            loan_streams = self._render_loan_pdf_streams_ordered(
+                report_ref, chunk_ids, data=data,
+            )
             if len(loan_streams) == 1:
                 partial_streams.append(loan_streams[0])
             else:
@@ -139,8 +207,9 @@ class IrActionsReport(models.Model):
             pdf_content = self._merge_pdfs(partial_streams).getvalue()
 
         _logger.info(
-            'bharatnyay_core: merged PDF for %s (%s record(s), report %s)',
-            report.model, len(res_ids), report.report_name,
+            'bharatnyay_core: merged PDF for %s (%s record(s), report %s) in %.1fs (workers=%s)',
+            report.model, len(res_ids), report.report_name, time.time() - t0,
+            self._bharat_pdf_parallel_workers(),
         )
         return pdf_content, 'pdf'
 
@@ -184,7 +253,6 @@ class IrActionsReport(models.Model):
         if not self.env.context.get('bharat_light_pdf'):
             return command_args
 
-        # Drop heavy defaults; keep PDF generation within RAM on typical VPS setups.
         filtered = []
         skip_next = False
         for arg in command_args:
@@ -198,10 +266,18 @@ class IrActionsReport(models.Model):
 
         filtered.extend([
             '--disable-javascript',
+            '--no-stop-slow-scripts',
             '--load-error-handling', 'ignore',
             '--load-media-error-handling', 'ignore',
-            '--image-quality', '75',
         ])
-        # Allow wkhtmltopdf to shrink content so each notice letter stays on one page.
+        if self._bharat_pdf_fast_mode():
+            filtered.extend([
+                '--lowquality',
+                '--image-quality', '60',
+            ])
+        else:
+            filtered.extend([
+                '--image-quality', '75',
+            ])
         filtered = [a for a in filtered if a != '--disable-smart-shrinking']
         return filtered

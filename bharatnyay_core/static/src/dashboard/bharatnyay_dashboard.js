@@ -277,6 +277,29 @@ export class BharatnyayDashboard extends Component {
         this.action.doAction("bharatnyay_core.action_bharat_case_vault_batch");
     }
 
+    async cancelJob(ev, jobId) {
+        ev?.stopPropagation?.();
+        if (!jobId) {
+            return;
+        }
+        await this.orm.call("bharat.process.run", "action_cancel", [[jobId]]);
+        await this.load(true);
+    }
+
+    async rerunJob(ev, jobId) {
+        ev?.stopPropagation?.();
+        if (!jobId) {
+            return;
+        }
+        await this.orm.call("bharat.process.run", "action_rerun", [[jobId]]);
+        await this.load(true);
+    }
+
+    async cancelAllJobs() {
+        await this.orm.call("bharat.process.run", "action_cancel_all_active", []);
+        await this.load(true);
+    }
+
     fmtDuration(seconds) {
         const s = Number(seconds) || 0;
         if (s < 60) {
@@ -293,6 +316,7 @@ export class BharatnyayDashboard extends Component {
             failed: "Failed",
             running: "Running",
             queued: "Queued",
+            cancelled: "Stopped",
         };
         return labels[state] || state;
     }
@@ -303,6 +327,7 @@ export class BharatnyayDashboard extends Component {
             failed: "fa-exclamation-circle",
             running: "fa-spinner fa-spin",
             queued: "fa-clock-o",
+            cancelled: "fa-stop-circle",
         };
         return icons[state] || "fa-circle-o";
     }

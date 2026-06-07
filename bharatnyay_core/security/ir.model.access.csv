@@ -29,5 +29,5 @@ access_bharat_loan_billing_event,bharat.loan.billing.event,model_bharat_loan_bil
 access_bharat_arbitration_invoice_annexure_line,bharat.arbitration.invoice.annexure.line,model_bharat_arbitration_invoice_annexure_line,base.group_user,1,1,1,0
 access_bharat_post_office_status,bharat.post.office.status,model_bharat_post_office_status,base.group_user,1,1,1,1
 access_bharat_loan_postal_dispatch,bharat.loan.postal.dispatch,model_bharat_loan_postal_dispatch,base.group_user,1,1,1,0
-access_bharat_process_run,bharat.process.run,model_bharat_process_run,base.group_user,1,0,1,0
+access_bharat_process_run,bharat.process.run,model_bharat_process_run,base.group_user,1,1,1,0
 access_bharat_case_vault_batch,bharat.case.vault.batch,model_bharat_case_vault_batch,base.group_user,1,1,1,0

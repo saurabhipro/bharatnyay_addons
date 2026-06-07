@@ -511,29 +511,32 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         loan.write(vals_loan)
 
         local = fields.Datetime.context_timestamp(loan, loan.hearing_datetime)
-        dt_human = escape(str(local))
+        dt_human = str(local)
 
-        link_disp = escape((loan.hearing_video_url or '').strip() or _('(not set)'))
+        link_disp = (loan.hearing_video_url or '').strip() or _('(not set)')
         if self.is_final_award and not self.hearing_reschedule:
-            header = _('<p><b>Final award — hearing logged</b></p>')
+            header = _('Final award — hearing logged')
         elif self.hearing_reschedule:
-            header = _('<p><b>Hearing rescheduled</b></p>')
+            header = _('Hearing rescheduled')
         else:
-            header = _('<p><b>Hearing scheduled</b></p>')
-        chunks = [header + _('<p>When (your timezone): %s</p>') % dt_human]
+            header = _('Hearing scheduled')
+        chunks = [
+            header,
+            _('When (your timezone): %s') % dt_human,
+        ]
         if link_type == 'odoo':
-            chunks.append(_('<p>Odoo case link: %s</p>') % link_disp)
+            chunks.append(_('Odoo case link: %s') % link_disp)
         else:
-            chunks.append(_('<p>External meeting link: %s</p>') % link_disp)
+            chunks.append(_('External meeting link: %s') % link_disp)
         if self.invite_user_ids:
             chunks.append(
-                '<p><b>%s</b> %s</p>'
+                '%s %s'
                 % (
-                    escape(_('Invitation list (internal users):')),
-                    escape(', '.join(self.invite_user_ids.mapped('name'))),
+                    _('Invitation list (internal users):'),
+                    ', '.join(self.invite_user_ids.mapped('name')),
                 )
             )
-        loan.message_post(body=''.join(chunks))
+        loan.message_post(body='\n'.join(chunks))
 
         invitees = ', '.join(self.invite_user_ids.mapped('name'))
         loan.env['bharat.loan.hearing.line'].create({
@@ -642,23 +645,19 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         sym = loan.currency_id.symbol or '' if loan.currency_id else ''
         type_label = dict(self._interim_order_type_selection()).get(self.order_type, self.order_type)
 
-        header = _('<p><b>Final award recorded</b></p>') if self.is_final_award else _(
-            '<p><b>Interim order recorded</b></p>'
-        )
+        header = _('Final award recorded') if self.is_final_award else _('Interim order recorded')
         chunks = [
-            header + '<p><b>Type:</b> %(type)s</p><p>%(sym)s %(amt)s</p>' % {
-                'type': escape(type_label),
-                'sym': escape(sym),
-                'amt': amt,
-            },
+            header,
+            _('Type: %s') % type_label,
+            '%s %s' % (sym, amt),
         ]
         if self.was_user_present:
-            chunks.append('<p><b>%s</b></p>' % escape(_('Borrower/respondent was present.')))
+            chunks.append(_('Borrower/respondent was present.'))
         if self.common_directions:
-            chunks.append('<p><b>Directions:</b><br/>%s</p>' % escape(self.common_directions).replace('\n', '<br/>'))
+            chunks.append('%s\n%s' % (_('Directions:'), self.common_directions))
         if notes:
-            chunks.append('<p><b>Notes:</b><br/>%s</p>' % escape(notes).replace('\n', '<br/>'))
-        loan.message_post(body=''.join(chunks))
+            chunks.append('%s\n%s' % (_('Notes:'), notes))
+        loan.message_post(body='\n'.join(chunks))
 
         latest_hearing = loan.hearing_line_ids[:1]
         loan.env['bharat.loan.interim.order'].create({

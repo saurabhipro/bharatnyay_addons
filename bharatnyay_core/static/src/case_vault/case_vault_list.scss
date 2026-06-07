@@ -1,0 +1,75 @@
+/* Case Vault list — document download & action buttons */
+.o_list_view .o_list_table {
+    .bn-vault-dl,
+    .bn-vault-action {
+        font-weight: 600;
+        padding: 0.15rem 0.45rem;
+        border-radius: 6px;
+        transition: background 0.12s ease, color 0.12s ease;
+
+        .fa {
+            margin-right: 0.2rem;
+        }
+    }
+
+    .bn-vault-dl--notice {
+        color: #2563eb !important;
+
+        &:hover {
+            background: #eff6ff;
+            color: #1d4ed8 !important;
+        }
+    }
+
+    .bn-vault-dl--interim {
+        color: #7c3aed !important;
+
+        &:hover {
+            background: #f5f3ff;
+            color: #6d28d9 !important;
+        }
+    }
+
+    .bn-vault-dl--award {
+        color: #d97706 !important;
+
+        &:hover {
+            background: #fffbeb;
+            color: #b45309 !important;
+        }
+    }
+
+    .bn-vault-action--build {
+        color: #4361ee !important;
+
+        &:hover {
+            background: #eef2ff;
+        }
+    }
+
+    .bn-vault-action--rerun {
+        color: #059669 !important;
+
+        &:hover {
+            background: #ecfdf5;
+        }
+    }
+
+    .bn-vault-action--stop {
+        &:hover {
+            background: #fef2f2;
+        }
+    }
+}
+
+.o_form_view .bn-vault-dl--notice .fa {
+    color: #2563eb;
+}
+
+.o_form_view .bn-vault-dl--interim .fa {
+    color: #7c3aed;
+}
+
+.o_form_view .bn-vault-dl--award .fa {
+    color: #d97706;
+}

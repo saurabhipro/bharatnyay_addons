@@ -17,11 +17,14 @@ VAULT_DOCUMENT_SPECS = (
     ('award', 'Award', 'bharatnyay_core.action_report_bharat_loan_award_letter'),
 )
 
+VAULT_QUEUE_PARAM = 'bharat.case_vault.queue_enabled'
+
 
 class BharatCaseVaultBatch(models.Model):
     _name = 'bharat.case.vault.batch'
     _description = 'Case Vault — batch notice PDF archive'
     _order = 'last_built_at desc, batch_number desc, id desc'
+    _vault_boot_reset_done = False
 
     batch_number = fields.Char(string='Batch', required=True, index=True)
     case_count = fields.Integer(string='Cases in batch', readonly=True)
@@ -32,6 +35,7 @@ class BharatCaseVaultBatch(models.Model):
             ('building', 'Building'),
             ('ready', 'Ready'),
             ('failed', 'Failed'),
+            ('cancelled', 'Stopped'),
         ],
         string='Vault status',
         default='empty',
@@ -74,6 +78,81 @@ class BharatCaseVaultBatch(models.Model):
         return slug.strip('_') or 'batch'
 
     @api.model
+    def _vault_queue_enabled(self):
+        return self.env['ir.config_parameter'].sudo().get_param(VAULT_QUEUE_PARAM) == 'True'
+
+    @api.model
+    def _enable_vault_queue(self):
+        self.env['ir.config_parameter'].sudo().set_param(VAULT_QUEUE_PARAM, 'True')
+
+    @api.model
+    def _disable_vault_queue(self):
+        self.env['ir.config_parameter'].sudo().set_param(VAULT_QUEUE_PARAM, 'False')
+
+    @api.model
+    def _ensure_vault_boot_reset(self):
+        """Once per Odoo worker boot: do not auto-run queued vault jobs after restart."""
+        if BharatCaseVaultBatch._vault_boot_reset_done:
+            return
+        BharatCaseVaultBatch._vault_boot_reset_done = True
+        self._disable_vault_queue()
+        self._recover_interrupted_builds()
+
+    @api.model
+    def _recover_interrupted_builds(self):
+        """Reset orphaned builds after server restart or crash."""
+        Process = self.env['bharat.process.run']
+        reason = _('Build interrupted (server restarted). Click Rerun to try again.')
+        pause_reason = _('Queued job paused after server restart. Click Build or Rerun to start again.')
+
+        building = self.search([('vault_state', '=', 'building')])
+        for vault in building:
+            vault.write({
+                'vault_state': 'cancelled',
+                'build_message': reason,
+            })
+            if vault.process_run_id and vault.process_run_id.state == 'running':
+                vault.process_run_id._do_cancel(reason)
+
+        queued_vaults = self.search([('vault_state', '=', 'queued')])
+        for vault in queued_vaults:
+            vault.write({
+                'vault_state': 'cancelled',
+                'build_message': pause_reason,
+            })
+            if vault.process_run_id and vault.process_run_id.state == 'queued':
+                vault.process_run_id._do_cancel(pause_reason)
+
+        Process.search([
+            ('job_code', '=', 'case_vault_build'),
+            ('state', 'in', ('running', 'queued')),
+        ])._do_cancel(reason)
+
+    def action_cancel_build(self):
+        """Stop this batch vault job."""
+        Process = self.env['bharat.process.run']
+        for rec in self:
+            if rec.vault_state not in ('queued', 'building'):
+                raise UserError(_('Only queued or building vault jobs can be stopped.'))
+            reason = _('Vault build stopped by %s.') % self.env.user.name
+            if rec.process_run_id and rec.process_run_id.state in ('queued', 'running'):
+                rec.process_run_id._do_cancel(reason)
+            rec.write({
+                'vault_state': 'cancelled',
+                'build_message': reason,
+            })
+        self._disable_vault_queue()
+        return True
+
+    def action_rerun_build(self):
+        """Re-queue PDF build for this batch."""
+        for rec in self:
+            if rec.vault_state in ('queued', 'building'):
+                raise UserError(_('Batch is already queued or building.'))
+            rec.action_queue_build()
+        return True
+
+    @api.model
     def ensure_for_batch(self, batch_number):
         bn = (batch_number or '').strip()
         if not bn:
@@ -88,8 +167,9 @@ class BharatCaseVaultBatch(models.Model):
             'vault_state': 'empty',
         })
 
-    @api.model
-    def action_sync_batches_from_cases(self):
+    def action_sync_batches_from_cases(self, *args, **kwargs):
+        """Create missing Case Vault rows for every distinct case batch."""
+        Vault = self.env['bharat.case.vault.batch']
         batches = {
             (bn or '').strip()
             for bn in self.env['bharat.loan'].search([]).mapped('batch_number')
@@ -97,8 +177,8 @@ class BharatCaseVaultBatch(models.Model):
         }
         created = 0
         for bn in sorted(batches):
-            if not self.search([('batch_number', '=', bn)], limit=1):
-                self.ensure_for_batch(bn)
+            if not Vault.search([('batch_number', '=', bn)], limit=1):
+                Vault.ensure_for_batch(bn)
                 created += 1
         return {
             'type': 'ir.actions.client',
@@ -158,12 +238,14 @@ class BharatCaseVaultBatch(models.Model):
                 'name': _('Case Vault — %s') % rec.batch_number,
                 'batch_number': rec.batch_number,
                 'state': 'queued',
+                'cancel_requested': False,
             })
             rec.write({
                 'vault_state': 'queued',
                 'process_run_id': run.id,
                 'build_message': _('Queued for background build.'),
             })
+        self._enable_vault_queue()
         cron = self.env.ref(
             'bharatnyay_core.ir_cron_bharat_case_vault_builder',
             raise_if_not_found=False,
@@ -223,6 +305,12 @@ class BharatCaseVaultBatch(models.Model):
 
         try:
             for step, (field_key, label, xmlid) in enumerate(VAULT_DOCUMENT_SPECS, start=1):
+                if run.is_cancelled():
+                    self.write({
+                        'vault_state': 'cancelled',
+                        'build_message': _('Build stopped before %(doc)s.') % {'doc': label},
+                    })
+                    return False
                 run.update_progress(
                     step,
                     total_steps,
@@ -276,10 +364,14 @@ class BharatCaseVaultBatch(models.Model):
     @api.model
     def _cron_process_vault_queue(self):
         """Background worker: build one queued vault at a time."""
+        self._ensure_vault_boot_reset()
+        if not self._vault_queue_enabled():
+            return False
         if self.search_count([('vault_state', '=', 'building')]):
             return False
         vault = self.search([('vault_state', '=', 'queued')], order='write_date asc, id asc', limit=1)
         if not vault:
+            self._disable_vault_queue()
             return False
         vault._execute_build(async_mode=True)
         if self.search_count([('vault_state', '=', 'queued')]):
@@ -289,6 +381,8 @@ class BharatCaseVaultBatch(models.Model):
             )
             if cron:
                 cron._trigger()
+        else:
+            self._disable_vault_queue()
         return True
 
     @api.model

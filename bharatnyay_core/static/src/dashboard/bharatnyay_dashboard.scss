@@ -1294,6 +1294,11 @@
             border-color: #bbf7d0;
             background: #f8fff9;
         }
+
+        &--cancelled {
+            border-color: #fed7aa;
+            background: #fffaf5;
+        }
     }
 
     .bn-process-row__state {
@@ -1320,6 +1325,24 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.35rem 0.65rem;
+    }
+
+    .bn-process-row__actions {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .bn-process-stop-all {
+        font-weight: 600;
+    }
+
+    .bn-process-queue-hint {
+        font-size: var(--bn-trend-size);
+        color: #b45309;
+        font-weight: 600;
     }
 
     .bn-muted-empty {

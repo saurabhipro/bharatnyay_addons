@@ -892,22 +892,22 @@ class BharatLoan(models.Model):
         self._milestone_apply_entry_actions(nxt)
         self._set_milestone(nxt)
 
-        body_parts = [_('Moved to <b>%s</b>') % escape(nxt.name)]
+        body_parts = [_('Moved to %s') % nxt.name]
         if billing_result._name == 'account.move' and billing_result:
             body_parts.append(
-                _('Invoice <a href="#" data-oe-model="account.move" data-oe-id="%s">%s</a> posted.')
-                % (billing_result.id, escape(billing_result.name or billing_result.display_name))
+                _('Invoice %s posted.')
+                % (billing_result.name or billing_result.display_name)
             )
         elif billing_result._name == 'bharat.loan.billing.event' and billing_result:
             body_parts.append(
-                _('Billing queued for <b>%s</b> (batch consolidated invoice).')
-                % escape(billing_result.milestone_label or current.name)
+                _('Billing queued for %s (batch consolidated invoice).')
+                % (billing_result.milestone_label or current.name)
             )
         if nxt.auto_assign_case_manager and self.case_manager_id:
-            body_parts.append(_('Case manager: <b>%s</b>') % escape(self.case_manager_id.name))
+            body_parts.append(_('Case manager: %s') % self.case_manager_id.name)
         if nxt.auto_assign_arbitrator and self.arbitrator_id:
-            body_parts.append(_('Arbitrator: <b>%s</b>') % escape(self.arbitrator_id.name))
-        self.message_post(body='<br/>'.join(body_parts))
+            body_parts.append(_('Arbitrator: %s') % self.arbitrator_id.name)
+        self.message_post(body='\n'.join(body_parts))
         return nxt.name, False
 
     @staticmethod
@@ -1759,7 +1759,7 @@ class BharatLoan(models.Model):
             if rec._is_hearing_milestone():
                 raise UserError(_('This case is already in a hearing milestone.'))
             rec._set_milestone_by_code('hearing_1')
-            rec.message_post(body=_('<p><b>Moved to Hearing 1</b></p>'))
+            rec.message_post(body=_('Moved to Hearing 1'))
         return True
 
     def action_schedule_hearing(self):

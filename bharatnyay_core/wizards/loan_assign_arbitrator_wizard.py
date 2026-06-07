@@ -37,6 +37,6 @@ class BharatLoanAssignArbitratorWizard(models.TransientModel):
             raise UserError(_('Please select a user with the Arbitrator role.'))
         self.loan_id.write({'arbitrator_id': self.user_id.id})
         self.loan_id.message_post(
-            body=_('Arbitrator assigned: <b>%s</b>') % (self.user_id.name,),
+            body=_('Arbitrator assigned: %s') % self.user_id.name,
         )
         return {'type': 'ir.actions.act_window_close'}

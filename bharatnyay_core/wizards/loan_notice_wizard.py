@@ -117,12 +117,12 @@ class BharatLoanNoticeWizard(models.TransientModel):
         pdf_bytes = base64.b64decode(line.notice_pdf) if line.notice_pdf else None
 
         post_vals = dict(
-            body=(
-                f"Notice sent: <b>Notice {self.notice_number or 1}</b>"
-                f"<br/>To: {recipient_label} &lt;{recipient_email}&gt;"
-                f"<br/>Subject: {self.subject}"
-                f"<br/>Borrower microsite OTP (demo): <b>{otp}</b>"
-            ),
+            body='\n'.join([
+                _('Notice sent: Notice %s') % (self.notice_number or 1),
+                _('To: %s <%s>') % (recipient_label, recipient_email),
+                _('Subject: %s') % self.subject,
+                _('Borrower microsite OTP (demo): %s') % otp,
+            ]),
         )
         if pdf_bytes and pdf_filename:
             post_vals['attachments'] = [(pdf_filename, pdf_bytes)]

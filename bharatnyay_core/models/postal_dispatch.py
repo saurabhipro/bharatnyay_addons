@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from markupsafe import escape
-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -362,14 +360,12 @@ class BharatLoanPostalDispatch(models.Model):
         dispatch.apply_postal_import_row(dispatch_date, delivery_date, status_text)
         loan.message_post(
             body=_(
-                'POD import updated <b>%(doc)s</b> — tracking '
-                '<b>%(track)s</b>, status <b>%(status)s</b>.'
+                'POD import updated %(doc)s — tracking '
+                '%(track)s, status %(status)s.'
             ) % {
-                'doc': escape(dispatch.document_label or document_type),
-                'track': escape(track or '-'),
-                'status': escape(
-                    status_text or dispatch.post_office_status_id.name or '-'
-                ),
+                'doc': dispatch.document_label or document_type,
+                'track': track or '-',
+                'status': status_text or dispatch.post_office_status_id.name or '-',
             },
         )
         return dispatch, status_label or dispatch.post_office_status_id.name or '-'

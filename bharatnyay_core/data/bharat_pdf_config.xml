@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <!--
+      PDF performance defaults (per database — overridden by odoo.conf when set).
+
+      Preferred: add to odoo.conf (server-wide, no DB UI needed):
+
+      [bharatnyay_pdf]
+      parallel_workers = 7
+      fast_mode = true
+      merge_chunk = 25
+
+      Or flat keys under [options]:
+      bharat_pdf_parallel_workers = 7
+      bharat_pdf_fast_mode = true
+      bharat_pdf_merge_chunk = 25
+
+      parallel_workers: 0 = auto (CPU cores - 1, max 6). Range 1-16.
+      odoo.conf wins over these System Parameters when present.
+    -->
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'bharat.pdf.parallel_workers'"/>
+        <value eval="'0'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'bharat.pdf.fast_mode'"/>
+        <value eval="'True'"/>
+    </function>
+    <function model="ir.config_parameter" name="set_param">
+        <value eval="'bharat.pdf.merge_chunk'"/>
+        <value eval="'25'"/>
+    </function>
+</odoo>

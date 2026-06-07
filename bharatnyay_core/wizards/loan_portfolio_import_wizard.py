@@ -87,8 +87,8 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
 
     import_type = fields.Selection(
         [
-            ('portfolio', 'Portfolio / Lok Adalat Excel'),
-            ('pod_status', 'POD status (Notice 1 / Interim Order 1 / Award)'),
+            ('portfolio', 'Portfolio cases (Lok Adalat Excel)'),
+            ('pod_status', 'POD status (Notice 1 / IO1 / Award)'),
         ],
         string='Import type',
         default='portfolio',

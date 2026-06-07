@@ -117,52 +117,6 @@
                     </div>
                     </div>
 
-                    <div class="bn-dashboard-section" t-if="state.data.processes">
-                        <div class="bn-section-title">Background jobs</div>
-                        <div class="bn-process-panel">
-                            <div class="bn-process-summary">
-                                <button type="button"
-                                        class="bn-process-stat bn-process-stat--running"
-                                        t-on-click="openProcessRuns">
-                                    <span class="bn-process-stat__value" t-out="fmtInt(state.data.processes.running_count || 0)"/>
-                                    <span class="bn-process-stat__label">Running now</span>
-                                </button>
-                                <div class="bn-process-stat" t-if="state.data.processes.last_scheduler">
-                                    <span class="bn-process-stat__label">Last scheduler run</span>
-                                    <span class="bn-process-stat__value bn-process-stat__value--sm"
-                                          t-out="fmtDuration(state.data.processes.last_scheduler.duration_seconds)"/>
-                                    <span class="bn-process-stat__meta"
-                                          t-out="processStateLabel(state.data.processes.last_scheduler.state)"/>
-                                </div>
-                                <button type="button"
-                                        class="btn btn-link bn-process-vault-link"
-                                        t-on-click="openCaseVault">
-                                    <i class="fa fa-archive"/> Case Vault
-                                </button>
-                            </div>
-                            <div class="bn-process-list" t-if="state.data.processes.recent.length">
-                                <t t-foreach="state.data.processes.recent" t-as="job" t-key="job.id">
-                                    <div class="bn-process-row"
-                                         t-attf-class="bn-process-row bn-process-row--{{ job.state }}">
-                                        <span class="bn-process-row__state">
-                                            <i t-attf-class="fa {{ processStateIcon(job.state) }}"/>
-                                        </span>
-                                        <div class="bn-process-row__body">
-                                            <div class="bn-process-row__title" t-out="job.name"/>
-                                            <div class="bn-process-row__meta">
-                                                <span t-if="job.batch_number" t-out="job.batch_number"/>
-                                                <span t-if="job.duration_seconds &amp;&amp; job.state !== 'running' &amp;&amp; job.state !== 'queued'"
-                                                      t-out="fmtDuration(job.duration_seconds)"/>
-                                                <span t-if="job.state === 'running' || job.state === 'queued'"
-                                                      t-out="processProgressLabel(job)"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </t>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="bn-dashboard-section">
                     <div class="bn-section-title">Case pipeline</div>
                     <div class="bn-stage-strip">
@@ -367,6 +321,78 @@
                             </div>
                         </div>
                     </div>
+                    </div>
+
+                    <div class="bn-dashboard-section" t-if="state.data.processes">
+                        <div class="bn-section-title">Background jobs</div>
+                        <div class="bn-process-panel">
+                            <div class="bn-process-summary">
+                                <button type="button"
+                                        class="bn-process-stat bn-process-stat--running"
+                                        t-on-click="openProcessRuns">
+                                    <span class="bn-process-stat__value" t-out="fmtInt(state.data.processes.running_count || 0)"/>
+                                    <span class="bn-process-stat__label">Running now</span>
+                                </button>
+                                <div class="bn-process-stat" t-if="state.data.processes.last_scheduler">
+                                    <span class="bn-process-stat__label">Last scheduler run</span>
+                                    <span class="bn-process-stat__value bn-process-stat__value--sm"
+                                          t-out="fmtDuration(state.data.processes.last_scheduler.duration_seconds)"/>
+                                    <span class="bn-process-stat__meta"
+                                          t-out="processStateLabel(state.data.processes.last_scheduler.state)"/>
+                                </div>
+                                <button type="button"
+                                        class="btn btn-link bn-process-vault-link"
+                                        t-on-click="openCaseVault">
+                                    <i class="fa fa-archive"/> Case Vault
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger bn-process-stop-all"
+                                        t-if="state.data.processes.has_active_jobs"
+                                        t-on-click="cancelAllJobs">
+                                    <i class="fa fa-stop"/> Stop all
+                                </button>
+                                <span class="bn-process-queue-hint"
+                                      t-if="!state.data.processes.queue_enabled &amp;&amp; state.data.processes.running_count">
+                                    Queue paused — rerun a batch to resume
+                                </span>
+                            </div>
+                            <div class="bn-process-list" t-if="state.data.processes.recent.length">
+                                <t t-foreach="state.data.processes.recent" t-as="job" t-key="job.id">
+                                    <div class="bn-process-row"
+                                         t-attf-class="bn-process-row bn-process-row--{{ job.state }}">
+                                        <span class="bn-process-row__state">
+                                            <i t-attf-class="fa {{ processStateIcon(job.state) }}"/>
+                                        </span>
+                                        <div class="bn-process-row__body">
+                                            <div class="bn-process-row__title" t-out="job.name"/>
+                                            <div class="bn-process-row__meta">
+                                                <span t-if="job.batch_number" t-out="job.batch_number"/>
+                                                <span t-if="job.duration_seconds &amp;&amp; job.state !== 'running' &amp;&amp; job.state !== 'queued'"
+                                                      t-out="fmtDuration(job.duration_seconds)"/>
+                                                <span t-if="job.state === 'running' || job.state === 'queued'"
+                                                      t-out="processProgressLabel(job)"/>
+                                            </div>
+                                        </div>
+                                        <div class="bn-process-row__actions">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Stop job"
+                                                    t-if="job.can_cancel"
+                                                    t-on-click="(ev) => this.cancelJob(ev, job.id)">
+                                                Stop
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    title="Rerun batch build"
+                                                    t-if="job.can_rerun"
+                                                    t-on-click="(ev) => this.rerunJob(ev, job.id)">
+                                                Rerun
+                                            </button>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
                     </div>
                 </t>
 
