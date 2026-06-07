@@ -7,6 +7,7 @@ import { standardActionServiceProps } from "@web/webclient/actions/action_servic
 import { formatDateTime, formatMonetary } from "@web/views/fields/formatters";
 import { deserializeDateTime } from "@web/core/l10n/dates";
 import {
+    applyDashboardPieStyles,
     pieGradient,
     dashboardFilterFields,
     dashboardFilterRpcArgs,
@@ -74,11 +75,7 @@ export class BharatnyayDashboard extends Component {
                 }
             );
             this.state.data = data;
-            this.state.pieStyle = pieGradient(data.product_mix || []);
-            this.state.branchPieStyle = pieGradient(data.branch_mix || []);
-            this.state.locationPieStyle = pieGradient(data.location_mix || []);
-            this.state.workflowPieStyle = pieGradient(data.workflow_mix || []);
-            this.state.paymentPieStyle = pieGradient(data.payment_mix || []);
+            applyDashboardPieStyles(this.state, data, document.querySelector(".o_bharatnyay_dashboard"));
             this._scheduleProcessPoll();
         } catch (e) {
             this.state.data = null;

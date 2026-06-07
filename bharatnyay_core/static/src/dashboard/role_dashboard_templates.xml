@@ -4,6 +4,7 @@
     <t t-name="bharatnyay_core.DashboardFilterBar">
         <div t-att-class="'bn-filter-bar bn-filter-bar--inline ' + (filterBarClass or '')">
             <label class="bn-filter-pill" title="Notice region">
+                <i class="fa fa-globe bn-filter-ico" aria-hidden="true"/>
                 <span class="bn-filter-k">Region</span>
                 <select class="bn-filter-select bn-filter-select--compact"
                         t-att-value="state.filter_region"
@@ -15,6 +16,7 @@
                 </select>
             </label>
             <label class="bn-filter-pill" title="State">
+                <i class="fa fa-map-marker bn-filter-ico" aria-hidden="true"/>
                 <span class="bn-filter-k">State</span>
                 <select class="bn-filter-select bn-filter-select--compact"
                         t-att-value="state.filter_state"
@@ -26,6 +28,7 @@
                 </select>
             </label>
             <label class="bn-filter-pill" title="Batch">
+                <i class="fa fa-cubes bn-filter-ico" aria-hidden="true"/>
                 <span class="bn-filter-k">Batch</span>
                 <select class="bn-filter-select bn-filter-select--compact"
                         t-att-value="state.filter_batch"
@@ -69,7 +72,6 @@
                         class="bn-stage-card"
                         t-att-class="{'bn-stage-card--billable': s.creates_unbilled_charge}"
                         t-att-data-stage="s.key"
-                        t-attf-style="--stg: {{ s.color }};"
                         t-on-click="openStageCases">
                     <span t-if="s.creates_unbilled_charge"
                           class="bn-stage-bill-badge"
@@ -99,7 +101,7 @@
         <div class="bn-section-title mt-2">Case pipeline</div>
         <p class="bn-stage-strip-hint">
             <i class="fa fa-file-text-o" title="Unbilled billing"/>
-            Amber badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+            Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
         </p>
         <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
     </t>

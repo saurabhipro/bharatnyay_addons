@@ -57,14 +57,14 @@
                 <t t-elif="state.data">
                     <div class="bn-dashboard-section">
                     <div class="bn-kpi-grid bn-kpi-grid--7">
-                        <div class="bn-kpi-card bn-kpi-card--tone-blue">
+                        <div class="bn-kpi-card">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-briefcase" title="Total cases"/></span>
                                 <div class="bn-kpi-label">Total cases</div>
                             </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_loans)"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-green" t-on-click="openLoanList">
+                        <div class="bn-kpi-card bn-kpi-card--click" t-on-click="openLoanList">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-cubes" title="Total batches"/></span>
                                 <div class="bn-kpi-label">Total batches</div>
@@ -72,7 +72,7 @@
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_batches || 0)"/>
                             <div class="bn-kpi-trend">Distinct import batches</div>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-cyan"
+                        <div class="bn-kpi-card bn-kpi-card--click"
                              t-on-click="openPendingPostalStatus">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-envelope-o" title="Awaiting POD status"/></span>
@@ -82,7 +82,7 @@
                             <div class="bn-kpi-trend"
                                  t-out="fmtMoney(state.data.kpis.postal_status_pending_amount || 0) + ' · ' + fmtInt(state.data.kpis.postal_status_pending_notice_1 || 0) + ' N1, ' + fmtInt(state.data.kpis.postal_status_pending_interim_1 || 0) + ' IO1'"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
+                        <div class="bn-kpi-card bn-kpi-card--click"
                              data-filter="paid"
                              t-on-click="openInvoices">
                             <div class="bn-kpi-card__head">
@@ -92,7 +92,7 @@
                             <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-amber"
+                        <div class="bn-kpi-card bn-kpi-card--click"
                              data-filter="unpaid"
                              t-on-click="openInvoices">
                             <div class="bn-kpi-card__head">
@@ -102,7 +102,7 @@
                             <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0)"/>
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-rose"
+                        <div class="bn-kpi-card bn-kpi-card--click"
                              t-on-click="openUnbilledCases">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-clock-o" title="Unbilled cases"/></span>
@@ -111,7 +111,7 @@
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unbilled_cases || 0)"/>
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' pending charges'"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--tone-purple">
+                        <div class="bn-kpi-card">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-gavel" title="Hearings today"/></span>
                                 <div class="bn-kpi-label">Hearings today</div>
@@ -125,7 +125,7 @@
                     <div class="bn-section-title">Case pipeline</div>
                     <p class="bn-stage-strip-hint">
                         <i class="fa fa-file-text-o" title="Unbilled billing"/>
-                        Amber badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+                        Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
                     </p>
                     <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
                     </div>

@@ -1,7 +1,4 @@
-// BharatNyay primary (#4361ee) column headers — all backend list / x2many tables.
-$o-bn-primary: #4361ee;
-$o-bn-primary-dark: #354fd4;
-$o-bn-primary-text: #ffffff;
+// BharatNyay list headers — follow Spiffy theme primary on all backend tables.
 $o-bn-row-even: #ffffff;
 $o-bn-row-odd: #f3f4f6;
 $o-bn-row-hover: #e8edff;
@@ -16,17 +13,23 @@ body.o_web_client {
     .o_field_x2many .o_list_renderer .o_list_table thead th,
     .o_field_x2many_list .o_list_renderer .o_list_table thead th,
     table.o_list_table thead th {
-        background-color: $o-bn-primary !important;
-        color: $o-bn-primary-text !important;
+        background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+        color: var(--biz-theme-primary-text-color, var(--light-theme-primary-text-color, #ffffff)) !important;
         border-color: rgba(255, 255, 255, 0.15) !important;
         font-weight: 600;
+        --bs-table-color: var(--biz-theme-primary-text-color, #ffffff);
+        --bs-table-bg: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
     }
 
     .o_list_renderer .o_list_table thead th.table-active,
     .o_list_renderer .o_list_table thead th:focus,
     .o_list_renderer .o_list_table thead th:hover {
-        background-color: $o-bn-primary-dark !important;
-        color: $o-bn-primary-text !important;
+        background-color: color-mix(
+            in srgb,
+            var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) 88%,
+            #0f172a
+        ) !important;
+        color: var(--biz-theme-primary-text-color, #ffffff) !important;
     }
 
     .o_list_renderer .o_list_table thead {
@@ -36,14 +39,17 @@ body.o_web_client {
         .dropdown-toggle,
         .o_optional_columns_dropdown_toggle,
         button,
-        a {
-            color: $o-bn-primary-text !important;
+        a,
+        span,
+        div,
+        label {
+            color: var(--biz-theme-primary-text-color, #ffffff) !important;
         }
 
         .o_list_actions_header,
         .o_list_record_selector,
         .o_list_record_selector_header {
-            background-color: $o-bn-primary !important;
+            background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
             border-color: rgba(255, 255, 255, 0.15) !important;
         }
     }
@@ -51,18 +57,18 @@ body.o_web_client {
     // Sticky header clone (Odoo 18)
     .o_list_renderer .o_list_table thead.table-light,
     .o_list_renderer .o_list_table thead.table-light th {
-        background-color: $o-bn-primary !important;
-        color: $o-bn-primary-text !important;
-        --table-bg: #{$o-bn-primary};
-        --bs-table-bg: #{$o-bn-primary};
-        --bs-table-color: #{$o-bn-primary-text};
+        background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+        color: var(--biz-theme-primary-text-color, #ffffff) !important;
+        --table-bg: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
+        --bs-table-bg: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
+        --bs-table-color: var(--biz-theme-primary-text-color, #ffffff);
     }
 
     // Pivot / graph table headers where applicable
     .o_pivot table thead th,
     .o_graph .table thead th {
-        background-color: $o-bn-primary !important;
-        color: $o-bn-primary-text !important;
+        background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+        color: var(--biz-theme-primary-text-color, #ffffff) !important;
     }
 
     // Zebra rows — white / light grey alternation (loan sheet and all list views)
@@ -129,8 +135,8 @@ body.o_web_client {
 
         .o_list_renderer .o_list_table thead th,
         .o_field_x2many .o_list_renderer .o_list_table thead th {
-            background-color: $o-bn-primary !important;
-            color: $o-bn-primary-text !important;
+            background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+            color: var(--biz-theme-primary-text-color, #ffffff) !important;
         }
 
         .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd),
@@ -157,6 +163,7 @@ body.o_web_client {
 
         .o_list_renderer .o_list_table tbody > tr.o_data_row:hover,
         .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:hover {
+            --bs-table-bg: #{$o-bn-row-hover-dark};
             background-color: $o-bn-row-hover-dark !important;
 
             > td,
@@ -166,7 +173,8 @@ body.o_web_client {
         }
 
         .o_list_renderer .o_list_table tbody > tr.o_data_row.o_selected_row,
-        .o_list_renderer .o_list_table tbody > tr.o_data_row.table-active {
+        .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row.o_selected_row {
+            --bs-table-bg: #{$o-bn-row-selected-dark};
             background-color: $o-bn-row-selected-dark !important;
 
             > td,

@@ -409,7 +409,7 @@
 
                     <notebook class="bn-loan-notebook" readonly="is_case_locked">
                         <page string="Notices" name="page_notices">
-                            <group string="All notices sent / responses">
+                            <group>
                                 <field name="notice_line_ids" nolabel="1" readonly="is_case_locked">
                                     <list create="0" delete="0" edit="0" multi_edit="0">
                                         <field name="notice_number"/>

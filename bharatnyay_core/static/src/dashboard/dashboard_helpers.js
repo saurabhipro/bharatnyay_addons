@@ -14,6 +14,48 @@ export function pieGradient(mix) {
     return `conic-gradient(${parts.join(", ")})`;
 }
 
+/** Read Spiffy-derived palette CSS variables from the dashboard root. */
+export function readDashboardThemePalette(rootEl, count = 8) {
+    const el = rootEl || document.querySelector(".o_bharatnyay_dashboard");
+    if (!el) {
+        return null;
+    }
+    const style = getComputedStyle(el);
+    const palette = [];
+    for (let i = 1; i <= count; i++) {
+        const color = style.getPropertyValue(`--bn-palette-${i}`).trim();
+        if (color) {
+            palette.push(color);
+        }
+    }
+    if (!palette.length) {
+        const accent = style.getPropertyValue("--bn-accent").trim();
+        if (accent) {
+            palette.push(accent);
+        }
+    }
+    return palette.length ? palette : null;
+}
+
+export function applyThemePaletteToMix(mix, palette) {
+    if (!mix?.length || !palette?.length) {
+        return mix || [];
+    }
+    return mix.map((item, i) => ({
+        ...item,
+        color: palette[i % palette.length],
+    }));
+}
+
+export function applyDashboardPieStyles(state, data, rootEl) {
+    const palette = readDashboardThemePalette(rootEl);
+    state.pieStyle = pieGradient(applyThemePaletteToMix(data.product_mix || [], palette));
+    state.branchPieStyle = pieGradient(applyThemePaletteToMix(data.branch_mix || [], palette));
+    state.locationPieStyle = pieGradient(applyThemePaletteToMix(data.location_mix || [], palette));
+    state.workflowPieStyle = pieGradient(applyThemePaletteToMix(data.workflow_mix || [], palette));
+    state.paymentPieStyle = pieGradient(applyThemePaletteToMix(data.payment_mix || [], palette));
+}
+
 export function dashboardFilterFields() {
     return {
         filter_region: "",
