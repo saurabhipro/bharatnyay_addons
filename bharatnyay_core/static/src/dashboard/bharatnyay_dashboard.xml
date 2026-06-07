@@ -51,6 +51,7 @@
                 </t>
 
                 <t t-elif="state.data">
+                    <div class="bn-dashboard-section">
                     <div class="bn-kpi-grid bn-kpi-grid--7">
                         <div class="bn-kpi-card bn-kpi-card--tone-blue">
                             <div class="bn-kpi-card__head">
@@ -114,8 +115,10 @@
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
                         </div>
                     </div>
+                    </div>
 
-                    <div class="bn-section-title mt-2">Case pipeline</div>
+                    <div class="bn-dashboard-section">
+                    <div class="bn-section-title">Case pipeline</div>
                     <div class="bn-stage-strip">
                         <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
                             <button type="button"
@@ -137,8 +140,10 @@
                             </button>
                         </t>
                     </div>
+                    </div>
 
-                    <div class="bn-section-title mt-3">Portfolio breakdown</div>
+                    <div class="bn-dashboard-section">
+                    <div class="bn-section-title">Portfolio breakdown</div>
                     <div class="bn-chart-row bn-chart-row--3">
                         <div class="bn-panel">
                             <div class="bn-panel-head">
@@ -146,7 +151,7 @@
                                     <span class="bn-panel-icon"><i class="fa fa-bar-chart"/></span>
                                     <h2>Batch volume</h2>
                                 </div>
-                                <span class="hint">Cases per import batch</span>
+                                <span class="hint">Paid vs unpaid cases per batch</span>
                             </div>
                             <div class="bn-panel-body">
                             <div class="bn-bar-chart bn-bar-chart--batch" t-if="state.data.batch_volume.length">
@@ -154,12 +159,31 @@
                                     <button type="button"
                                             class="bn-bar-slot"
                                             t-att-data-batch="b.batch_key"
-                                            t-att-title="b.batch + ' — ' + fmtInt(b.count) + ' cases'"
+                                            t-att-title="batchBarTitle(b)"
                                             t-on-click="openBatchCases">
-                                        <div class="bn-bar" t-attf-style="height: {{ batchBarHeight(b.count) }}%"/>
+                                        <div class="bn-bar-stack" t-attf-style="height: {{ batchBarHeight(b.count) }}%;">
+                                            <div t-if="b.paid_cases"
+                                                 class="bn-bar-seg bn-bar-seg--paid"
+                                                 t-attf-style="height: {{ batchSegPct(b, 'paid_cases') }}%;"
+                                                 t-att-title="'Paid: ' + fmtInt(b.paid_cases)"/>
+                                            <div t-if="b.unpaid_cases"
+                                                 class="bn-bar-seg bn-bar-seg--unpaid"
+                                                 t-attf-style="height: {{ batchSegPct(b, 'unpaid_cases') }}%;"
+                                                 t-att-title="'Unpaid: ' + fmtInt(b.unpaid_cases)"/>
+                                            <div t-if="b.other_cases"
+                                                 class="bn-bar-seg bn-bar-seg--other"
+                                                 t-attf-style="height: {{ batchSegPct(b, 'other_cases') }}%;"
+                                                 t-att-title="'Not invoiced / draft: ' + fmtInt(b.other_cases)"/>
+                                        </div>
                                         <span class="label" t-out="shortBatchLabel(b.batch)"/>
+                                        <span class="bn-bar-count" t-out="fmtInt(b.count)"/>
                                     </button>
                                 </t>
+                            </div>
+                            <div class="bn-bar-legend" t-if="state.data.batch_volume.length">
+                                <span class="bn-bar-legend__item"><i class="sq sq--paid"/> Paid</span>
+                                <span class="bn-bar-legend__item"><i class="sq sq--unpaid"/> Unpaid</span>
+                                <span class="bn-bar-legend__item"><i class="sq sq--other"/> Not invoiced</span>
                             </div>
                             <div t-else="" class="bn-muted-empty">No batch data yet.</div>
                             </div>
@@ -217,7 +241,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bn-chart-row bn-chart-row--3 mt-2">
+                    <div class="bn-chart-row bn-chart-row--3 bn-chart-row--mix mt-2">
                         <div class="bn-panel">
                             <div class="bn-panel-head">
                                 <div class="bn-panel-head__title">
@@ -296,6 +320,7 @@
                             <div t-else="" class="bn-muted-empty">No location data.</div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </t>
 

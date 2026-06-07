@@ -260,6 +260,21 @@ export class BharatnyayDashboard extends Component {
         return Math.round(((count || 0) / max) * 100);
     }
 
+    batchSegPct(batch, key) {
+        const total = batch?.count || 0;
+        if (!total) {
+            return 0;
+        }
+        return Math.round(((batch[key] || 0) / total) * 100);
+    }
+
+    batchBarTitle(batch) {
+        const paid = batch?.paid_cases || 0;
+        const unpaid = batch?.unpaid_cases || 0;
+        const other = batch?.other_cases || 0;
+        return `${batch?.batch || ""} — ${this.fmtInt(batch?.count || 0)} cases · Paid ${this.fmtInt(paid)} · Unpaid ${this.fmtInt(unpaid)} · Other ${this.fmtInt(other)}`;
+    }
+
     shortBatchLabel(batch) {
         if (!batch) {
             return "";

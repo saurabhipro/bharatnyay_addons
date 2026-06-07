@@ -11,10 +11,11 @@ from datetime import datetime, time as dt_time, timedelta
 
 import pytz
 import werkzeug.urls
-from markupsafe import escape
+from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.misc import format_date
 from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
@@ -169,6 +170,32 @@ class BharatLoan(models.Model):
         'loan_id',
         string='Postal dispatches',
     )
+    postal_delivery_cards_html = fields.Html(
+        string='Postal delivery status',
+        compute='_compute_postal_delivery_cards_html',
+        sanitize=False,
+    )
+
+    POSTAL_DELIVERY_DOCUMENTS = (
+        {
+            'type': 'notice_1',
+            'title': 'Notice 1',
+            'icon': 'fa-envelope-o',
+            'milestone_code': 'notice_1',
+        },
+        {
+            'type': 'interim_order_1',
+            'title': 'Interim order 1',
+            'icon': 'fa-gavel',
+            'milestone_code': 'hearing_1',
+        },
+        {
+            'type': 'award',
+            'title': 'Award',
+            'icon': 'fa-trophy',
+            'milestone_code': 'award',
+        },
+    )
 
     STAGE_ICONS = {
         'commencement': '🚀',
@@ -279,11 +306,20 @@ class BharatLoan(models.Model):
         'loan_id',
         string='Award documents',
     )
+    billing_event_ids = fields.One2many(
+        'bharat.loan.billing.event',
+        'loan_id',
+        string='Billing charges',
+    )
 
     notice_count = fields.Integer(compute='_compute_case_activity_counts', string='# Notices')
     hearing_log_count = fields.Integer(compute='_compute_case_activity_counts', string='# Hearings')
     interim_order_count = fields.Integer(compute='_compute_case_activity_counts', string='# Interim orders')
     award_document_count = fields.Integer(compute='_compute_case_activity_counts', string='# Awards')
+    pending_billing_count = fields.Integer(
+        compute='_compute_case_activity_counts',
+        string='Unbilled bills',
+    )
 
     borrower_email = fields.Char(string='Borrower email')
     borrower_phone = fields.Char(string='Borrower phone')
@@ -553,6 +589,17 @@ class BharatLoan(models.Model):
             'view_mode': 'list,form',
             'domain': [('id', 'in', all_ids or [0])],
             'context': {'default_move_type': 'out_invoice'},
+        }
+
+    def action_open_unbilled_bills(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Unbilled bills'),
+            'res_model': 'bharat.loan.billing.event',
+            'view_mode': 'list,form',
+            'domain': [('loan_id', '=', self.id), ('state', '=', 'pending')],
+            'context': {'default_loan_id': self.id, 'create': False},
         }
 
     def action_open_consolidated_billing_wizard(self):
@@ -1290,6 +1337,8 @@ class BharatLoan(models.Model):
         'hearing_line_ids',
         'interim_order_ids',
         'award_document_ids',
+        'billing_event_ids',
+        'billing_event_ids.state',
     )
     def _compute_case_activity_counts(self):
         for rec in self:
@@ -1297,6 +1346,9 @@ class BharatLoan(models.Model):
             rec.hearing_log_count = len(rec.hearing_line_ids)
             rec.interim_order_count = len(rec.interim_order_ids)
             rec.award_document_count = len(rec.award_document_ids)
+            rec.pending_billing_count = len(
+                rec.billing_event_ids.filtered(lambda e: e.state == 'pending')
+            )
 
     @api.depends('hearing_line_ids.hearing_datetime')
     def _compute_hearing_minutes_remaining(self):
@@ -1370,6 +1422,130 @@ class BharatLoan(models.Model):
         if n_notice:
             return 'notice_%d' % min(n_notice, 3)
         return 'commencement'
+
+    def _postal_milestone_sequence(self, milestone_code):
+        milestones = self._milestone_master_ordered()
+        for milestone in milestones:
+            if milestone.code == milestone_code:
+                return milestone.sequence
+        return 999
+
+    def _postal_delivery_summary(self, document_type, title, milestone_code):
+        """Return (state_key, status_label, meta_line) for one postal document."""
+        self.ensure_one()
+        loan_seq = self._postal_milestone_sequence(self._milestone_code() or 'commencement')
+        min_seq = self._postal_milestone_sequence(milestone_code)
+        if loan_seq < min_seq:
+            return (
+                'not_started',
+                _('Not started'),
+                _('Case has not reached this workflow stage yet'),
+            )
+
+        dispatch = self.postal_dispatch_ids.filtered(
+            lambda d, dt=document_type: d.document_type == dt
+        )[:1]
+        if not dispatch:
+            return (
+                'awaiting',
+                _('Awaiting dispatch'),
+                _('Postal tracking row will be created at workflow entry'),
+            )
+
+        pod = (dispatch.pod or '').strip()
+        status = dispatch.post_office_status_id
+        meta_bits = []
+        if pod:
+            meta_bits.append(_('POD %s') % pod)
+        if dispatch.dispatch_date:
+            meta_bits.append(_('Dispatched %s') % format_date(self.env, dispatch.dispatch_date))
+        if dispatch.delivery_date:
+            meta_bits.append(_('Delivered %s') % format_date(self.env, dispatch.delivery_date))
+        meta = ' · '.join(meta_bits)
+
+        if dispatch.billing_accrued:
+            label = status.name if status else _('Delivered')
+            return ('billed', label, meta or _('Unbilled charge accrued'))
+
+        if status and status.is_delivered:
+            return ('delivered', status.name, meta or _('Delivery confirmed'))
+
+        if status:
+            return ('in_progress', status.name, meta or _('Awaiting delivery confirmation'))
+
+        if pod or dispatch.dispatch_date:
+            return ('dispatched', _('Dispatched'), meta or _('Awaiting post office status update'))
+
+        return (
+            'awaiting',
+            _('Awaiting POD'),
+            _('Add tracking number or import postal status'),
+        )
+
+    @api.depends(
+        'milestone_id',
+        'milestone_id.code',
+        'postal_dispatch_ids',
+        'postal_dispatch_ids.pod',
+        'postal_dispatch_ids.dispatch_date',
+        'postal_dispatch_ids.delivery_date',
+        'postal_dispatch_ids.post_office_status_id',
+        'postal_dispatch_ids.post_office_status_id.is_delivered',
+        'postal_dispatch_ids.post_office_status_id.triggers_billing',
+        'postal_dispatch_ids.billing_accrued',
+    )
+    def _compute_postal_delivery_cards_html(self):
+        state_labels = {
+            'not_started': _('Not started'),
+            'awaiting': _('Pending'),
+            'dispatched': _('Dispatched'),
+            'in_progress': _('In progress'),
+            'delivered': _('Delivered'),
+            'billed': _('Billed'),
+        }
+        for loan in self:
+            cards = []
+            for spec in loan.POSTAL_DELIVERY_DOCUMENTS:
+                state, status_label, meta = loan._postal_delivery_summary(
+                    spec['type'],
+                    spec['title'],
+                    spec['milestone_code'],
+                )
+                badge = state_labels.get(state, status_label)
+                cards.append(
+                    Markup(
+                        '<article class="bn-postal-card bn-postal-card--%(state)s">'
+                        '<div class="bn-postal-card__head">'
+                        '<span class="bn-postal-card__icon"><i class="fa %(icon)s" aria-hidden="true"></i></span>'
+                        '<span class="bn-postal-card__title">%(title)s</span>'
+                        '<span class="bn-postal-card__badge">%(badge)s</span>'
+                        '</div>'
+                        '<div class="bn-postal-card__status">%(status)s</div>'
+                        '<div class="bn-postal-card__meta">%(meta)s</div>'
+                        '</article>'
+                    ) % {
+                        'state': escape(state),
+                        'icon': escape(spec['icon']),
+                        'title': escape(spec['title']),
+                        'badge': escape(badge),
+                        'status': escape(status_label),
+                        'meta': escape(meta or '—'),
+                    }
+                )
+            loan.postal_delivery_cards_html = Markup(
+                '<div class="bn-postal-delivery__grid">%s</div>'
+            ) % Markup('').join(cards)
+
+    def action_open_postal_dispatch(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Postal delivery tracking'),
+            'res_model': 'bharat.loan.postal.dispatch',
+            'view_mode': 'list,form',
+            'domain': [('loan_id', '=', self.id)],
+            'context': {'default_loan_id': self.id, 'search_default_loan_id': self.id},
+        }
 
     def action_open_notice_lines(self):
         self.ensure_one()
@@ -2139,6 +2315,75 @@ class BharatLoan(models.Model):
         return moves.filtered(_matches)
 
     @api.model
+    def _dashboard_batch_payment_breakdown(self, loans, no_batch_label=None):
+        """Per-batch case counts by arbitration invoice payment bucket."""
+        no_batch_label = no_batch_label or _('No batch')
+        by_batch = defaultdict(lambda: {
+            'count': 0,
+            'paid_cases': 0,
+            'unpaid_cases': 0,
+            'other_cases': 0,
+            'batch_key': '',
+        })
+        for loan in loans:
+            batch_no = (loan.batch_number or '').strip()
+            batch_label = batch_no or no_batch_label
+            bucket = by_batch[batch_label]
+            bucket['count'] += 1
+            bucket['batch_key'] = batch_no
+
+            moves = self._dashboard_arbitration_moves_for_loans(loan)
+            posted = moves.filtered(lambda m: m.state == 'posted')
+            unpaid = posted.filtered(
+                lambda m: m.payment_state not in ('paid', 'in_payment')
+                and (m.amount_residual or 0) > 0
+            )
+            paid = posted.filtered(
+                lambda m: m.payment_state in ('paid', 'in_payment')
+            )
+            if unpaid:
+                bucket['unpaid_cases'] += 1
+            elif paid:
+                bucket['paid_cases'] += 1
+            else:
+                bucket['other_cases'] += 1
+        return by_batch
+
+    @api.model
+    def _dashboard_batch_volume_payload(self, by_batch_pay, no_batch_label):
+        """Serialize batch bar chart rows with paid / unpaid / other segments."""
+        batch_items = sorted(
+            by_batch_pay.items(),
+            key=lambda kv: (kv[0] == no_batch_label, kv[0]),
+        )
+        batch_volume = []
+        for batch_label, agg in batch_items[:20]:
+            batch_volume.append({
+                'batch': batch_label,
+                'batch_key': agg.get('batch_key') or '',
+                'count': agg['count'],
+                'paid_cases': agg.get('paid_cases', 0),
+                'unpaid_cases': agg.get('unpaid_cases', 0),
+                'other_cases': agg.get('other_cases', 0),
+                'pos_sum': round(agg.get('pos_sum', 0.0), 2),
+            })
+        overflow = batch_items[20:]
+        if overflow:
+            batch_volume.append({
+                'batch': _('Other'),
+                'batch_key': '__other__',
+                'count': sum(agg['count'] for _lbl, agg in overflow),
+                'paid_cases': sum(agg.get('paid_cases', 0) for _lbl, agg in overflow),
+                'unpaid_cases': sum(agg.get('unpaid_cases', 0) for _lbl, agg in overflow),
+                'other_cases': sum(agg.get('other_cases', 0) for _lbl, agg in overflow),
+                'pos_sum': round(
+                    sum(agg.get('pos_sum', 0.0) for _lbl, agg in overflow),
+                    2,
+                ),
+            })
+        return batch_volume
+
+    @api.model
     def get_dashboard_filter_options(
         self, region_id=False, state_id=False, dashboard_role=None,
     ):
@@ -2346,29 +2591,24 @@ class BharatLoan(models.Model):
             for mk in month_keys
         ]
 
-        batch_items = sorted(
-            by_batch.items(),
-            key=lambda kv: (kv[0] == no_batch_label, kv[0]),
+        scoped_loans = self.search(scope_domain)
+        loan_ids = scoped_loans.ids
+        batch_pay = self._dashboard_batch_payment_breakdown(
+            scoped_loans, no_batch_label=no_batch_label,
         )
-        batch_volume = []
-        for batch_label, agg in batch_items[:20]:
-            batch_volume.append({
-                'batch': batch_label,
-                'batch_key': agg.get('batch_key') or '',
-                'count': agg['count'],
-                'pos_sum': round(agg['pos_sum'], 2),
-            })
-        batch_other = sum(agg['count'] for _lbl, agg in batch_items[20:])
-        if batch_other:
-            batch_volume.append({
-                'batch': _('Other'),
-                'batch_key': '__other__',
-                'count': batch_other,
-                'pos_sum': round(
-                    sum(agg['pos_sum'] for _lbl, agg in batch_items[20:]),
-                    2,
-                ),
-            })
+        for batch_label, agg in by_batch.items():
+            if batch_label in batch_pay:
+                batch_pay[batch_label]['pos_sum'] = agg.get('pos_sum', 0.0)
+            else:
+                batch_pay[batch_label] = {
+                    'count': agg['count'],
+                    'batch_key': agg.get('batch_key') or '',
+                    'pos_sum': agg.get('pos_sum', 0.0),
+                    'paid_cases': 0,
+                    'unpaid_cases': 0,
+                    'other_cases': agg['count'],
+                }
+        batch_volume = self._dashboard_batch_volume_payload(batch_pay, no_batch_label)
 
         palette = ('#6366f1', '#06b6d4', '#8b5cf6', '#22c55e', '#eab308',
                    '#ef4444', '#f97316', '#64748b', '#14b8a6', '#a855f7')
@@ -2457,9 +2697,6 @@ class BharatLoan(models.Model):
                 'percent': round(100.0 * loc_other / loc_denom, 2),
                 'color': '#94a3b8',
             })
-
-        scoped_loans = self.search(scope_domain)
-        loan_ids = scoped_loans.ids
 
         if scope_active:
             posted_arb = self._dashboard_arbitration_moves_for_loans(
@@ -2903,24 +3140,10 @@ class BharatLoan(models.Model):
             )
             by_product_label[pcl] += 1
 
-        batch_items = sorted(
-            by_batch.items(),
-            key=lambda kv: (kv[0] == no_batch_label, kv[0]),
+        batch_pay = self._dashboard_batch_payment_breakdown(
+            loans, no_batch_label=no_batch_label,
         )
-        batch_volume = []
-        for batch_label, agg in batch_items[:20]:
-            batch_volume.append({
-                'batch': batch_label,
-                'batch_key': agg.get('batch_key') or '',
-                'count': agg['count'],
-            })
-        batch_other = sum(agg['count'] for _lbl, agg in batch_items[20:])
-        if batch_other:
-            batch_volume.append({
-                'batch': _('Other'),
-                'batch_key': '__other__',
-                'count': batch_other,
-            })
+        batch_volume = self._dashboard_batch_volume_payload(batch_pay, no_batch_label)
 
         prod_items = sorted(by_product_label.items(), key=lambda x: -x[1])
         prod_denom = sum(by_product_label.values()) or 1

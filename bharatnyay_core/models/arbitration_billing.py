@@ -123,9 +123,11 @@ class BharatLoanBillingEvent(models.Model):
 
     @api.model
     def _bharat_unit_price_for_partner(self, product, partner, company):
-        """Resolve unit price from partner pricelist or product list price."""
+        """Resolve unit price from partner pricelist (if available) or product list price."""
         date = fields.Date.context_today(self)
-        pricelist = partner.property_product_pricelist_id
+        pricelist = False
+        if 'property_product_pricelist_id' in partner._fields:
+            pricelist = partner.property_product_pricelist_id
         if pricelist:
             return pricelist._get_product_price(
                 product,

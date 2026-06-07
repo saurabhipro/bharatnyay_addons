@@ -139,6 +139,156 @@
             &__dot { color: var(--bn-line); }
         }
 
+        .bn-postal-delivery {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--bn-line);
+
+            &__head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+
+            &__title {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                font-size: 0.68rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #64748b;
+
+                i.fa {
+                    color: var(--bn-primary);
+                    font-size: 0.78rem;
+                }
+            }
+
+            &__link {
+                padding: 0;
+                font-size: 0.76rem;
+                font-weight: 650;
+                color: var(--bn-primary);
+                text-decoration: none;
+
+                &:hover {
+                    color: var(--bn-primary-dk);
+                    text-decoration: underline;
+                }
+            }
+
+            .o_field_widget.o_readonly_modifier,
+            .o_field_html {
+                width: 100%;
+            }
+        }
+
+        .bn-postal-delivery__grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+
+            @media (max-width: 860px) {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .bn-postal-card {
+            --postal-accent: #64748b;
+            border-radius: 10px;
+            border: 1px solid color-mix(in srgb, var(--postal-accent) 22%, var(--bn-line));
+            border-top: 3px solid var(--postal-accent);
+            background: #ffffff;
+            padding: 10px 11px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+            min-height: 88px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            &__head {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 2px;
+            }
+
+            &__icon {
+                width: 1.65rem;
+                height: 1.65rem;
+                border-radius: 7px;
+                display: grid;
+                place-items: center;
+                flex-shrink: 0;
+                background: color-mix(in srgb, var(--postal-accent) 10%, #ffffff);
+                color: var(--postal-accent);
+                border: 1px solid color-mix(in srgb, var(--postal-accent) 18%, var(--bn-line));
+                font-size: 0.78rem;
+            }
+
+            &__title {
+                flex: 1;
+                min-width: 0;
+                font-size: 0.68rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #334155;
+            }
+
+            &__badge {
+                flex-shrink: 0;
+                font-size: 0.58rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                padding: 2px 7px;
+                border-radius: 999px;
+                background: color-mix(in srgb, var(--postal-accent) 12%, #ffffff);
+                color: color-mix(in srgb, var(--postal-accent) 82%, #0f172a);
+                border: 1px solid color-mix(in srgb, var(--postal-accent) 22%, var(--bn-line));
+            }
+
+            &__status {
+                font-size: 0.92rem;
+                font-weight: 800;
+                color: var(--bn-ink);
+                line-height: 1.2;
+            }
+
+            &__meta {
+                font-size: 0.72rem;
+                font-weight: 600;
+                color: var(--bn-sub);
+                line-height: 1.35;
+                margin-top: auto;
+            }
+
+            &--not_started {
+                --postal-accent: #94a3b8;
+                background: #f8fafc;
+            }
+            &--awaiting {
+                --postal-accent: #d97706;
+            }
+            &--dispatched {
+                --postal-accent: #2563eb;
+            }
+            &--in_progress {
+                --postal-accent: #0891b2;
+            }
+            &--delivered {
+                --postal-accent: #059669;
+            }
+            &--billed {
+                --postal-accent: #7c3aed;
+            }
+        }
+
         .bn-hero-metrics {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -719,6 +869,10 @@
         .nav-item:nth-child(3) .nav-link::before {
             content: "\f091";
             color: #d97706;
+        }
+        .nav-item:nth-child(4) .nav-link::before {
+            content: "\f017";
+            color: #ea580c;
         }
         .nav-item .nav-link.active::before {
             color: #fff !important;

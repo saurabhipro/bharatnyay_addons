@@ -196,6 +196,14 @@
                                 invisible="arbitration_invoice_count == 0">
                             <field name="arbitration_invoice_count" widget="statinfo" string="Invoices"/>
                         </button>
+                        <button name="action_open_unbilled_bills" type="object" class="oe_stat_button" icon="fa-clock-o">
+                            <field name="pending_billing_count" widget="statinfo" string="Unbilled bills"/>
+                        </button>
+                        <button name="action_open_postal_dispatch" type="object" class="oe_stat_button" icon="fa-truck">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Postal delivery</span>
+                            </div>
+                        </button>
                     </div>
                    
                     <field name="workflow_section" invisible="1"/>
@@ -237,6 +245,19 @@
                                         <field name="product_class_id" readonly="1" nolabel="1"/>
                                     </span>
                                 </div>
+                            </div>
+                            <div class="bn-postal-delivery">
+                                <div class="bn-postal-delivery__head">
+                                    <span class="bn-postal-delivery__title">
+                                        <i class="fa fa-paper-plane" title="Postal delivery" aria-hidden="true"/>
+                                        Document delivery status
+                                    </span>
+                                    <button name="action_open_postal_dispatch" type="object"
+                                            class="btn btn-link bn-postal-delivery__link">
+                                        Manage tracking
+                                    </button>
+                                </div>
+                                <field name="postal_delivery_cards_html" nolabel="1" readonly="1"/>
                             </div>
                             <div class="bn-hero-metrics">
                                 <div class="bn-metric bn-metric--financed">
@@ -450,23 +471,6 @@
                                 </field>
                             </group>
                         </page>
-                        <page string="Postal dispatch" name="page_postal_dispatch">
-                            <group>
-                                <field name="postal_case_locked" readonly="1"/>
-                                <field name="pod" readonly="is_case_locked"/>
-                            </group>
-                            <field name="postal_dispatch_ids" nolabel="1" readonly="is_case_locked">
-                                <list editable="bottom" create="0" delete="0">
-                                    <field name="document_label" readonly="1"/>
-                                    <field name="pod"/>
-                                    <field name="dispatch_date"/>
-                                    <field name="delivery_date"/>
-                                    <field name="post_office_status_id" options="{'no_create': True}"/>
-                                    <field name="billing_milestone_code" readonly="1" optional="hide"/>
-                                    <field name="billing_accrued" readonly="1"/>
-                                </list>
-                            </field>
-                        </page>
                         <page string="Hearing" name="page_hearing">
                             <group>
                                 <group string="Schedule">
@@ -588,6 +592,50 @@
                                             <field name="award_notes"/>
                                         </group>
                                     </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Unbilled bills" name="page_unbilled_bills">
+                            <group>
+                                <p class="text-muted mb-0">
+                                    Pending arbitration charges for this case — included on the next consolidated batch invoice.
+                                </p>
+                            </group>
+                            <field name="billing_event_ids"
+                                   nolabel="1"
+                                   readonly="1"
+                                   domain="[('state', '=', 'pending')]">
+                                <list create="0" delete="0" edit="0">
+                                    <field name="accrual_date"/>
+                                    <field name="milestone_label"/>
+                                    <field name="milestone_code" optional="hide"/>
+                                    <field name="accrual_trigger"/>
+                                    <field name="unit_price" widget="monetary"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="state" widget="badge"
+                                           decoration-warning="state == 'pending'"
+                                           decoration-success="state == 'invoiced'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                    <field name="postal_dispatch_id" optional="show"/>
+                                </list>
+                                <form string="Billing charge" create="0" delete="0" edit="0">
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="milestone_label" readonly="1"/>
+                                                <field name="milestone_code" readonly="1"/>
+                                                <field name="accrual_trigger" readonly="1"/>
+                                                <field name="accrual_date" readonly="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="product_id" readonly="1"/>
+                                                <field name="unit_price" readonly="1"/>
+                                                <field name="state" readonly="1"/>
+                                                <field name="postal_dispatch_id" readonly="1"/>
+                                                <field name="move_id" readonly="1"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
                                 </form>
                             </field>
                         </page>
