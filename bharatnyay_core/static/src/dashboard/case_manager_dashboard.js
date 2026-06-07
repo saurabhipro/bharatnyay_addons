@@ -14,6 +14,9 @@ import {
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
+    batchVolumeRows,
+    batchBarHeight as batchBarHeightHelper,
+    batchSegPctCount as batchSegPctCountHelper,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -45,6 +48,7 @@ export class CaseManagerDashboard extends Component {
             locationPieStyle: pieGradient([]),
             workflowPieStyle: pieGradient([]),
             paymentPieStyle: pieGradient([]),
+            batchVolumeMode: "payment",
             ...dashboardFilterFields(),
         });
         onWillStart(async () => {
@@ -262,9 +266,70 @@ export class CaseManagerDashboard extends Component {
     }
 
     batchBarHeight(count) {
-        const s = this.state.data?.batch_volume || [];
-        const max = Math.max(...s.map((b) => b.count || 0), 1);
-        return Math.round(((count || 0) / max) * 100);
+        return batchBarHeightHelper(this.state, count);
+    }
+
+    batchSegPct(batch, key) {
+        const total = batch?.count || 0;
+        if (!total) {
+            return 0;
+        }
+        return Math.round(((batch[key] || 0) / total) * 100);
+    }
+
+    batchSegPctCount(batch, segCount) {
+        return batchSegPctCountHelper(batch, segCount);
+    }
+
+    batchVolumeHasData() {
+        return batchVolumeRows(this.state).length > 0;
+    }
+
+    onBatchVolumeModeChange(ev) {
+        this.state.batchVolumeMode = ev.target.value === "stage" ? "stage" : "payment";
+    }
+
+    batchBarTitle(batch) {
+        const paid = batch?.paid_cases || 0;
+        const unpaid = batch?.unpaid_cases || 0;
+        const other = batch?.other_cases || 0;
+        return `${batch?.batch || ""} — ${this.fmtInt(batch?.count || 0)} cases · Paid ${this.fmtInt(paid)} · Unpaid ${this.fmtInt(unpaid)} · Other ${this.fmtInt(other)}`;
+    }
+
+    batchBarTitleStage(batch) {
+        const parts = (batch?.segments || []).map(
+            (seg) => `${seg.label} ${this.fmtInt(seg.count)}`
+        );
+        return `${batch?.batch || ""} — ${this.fmtInt(batch?.count || 0)} cases · ${parts.join(" · ")}`;
+    }
+
+    openBatchStageCases(ev) {
+        ev?.stopPropagation?.();
+        ev?.preventDefault?.();
+        const slot = ev.currentTarget?.closest(".bn-bar-slot");
+        const batchKey = slot?.dataset?.batch;
+        const stage = ev.currentTarget?.dataset?.stage;
+        if (!stage || batchKey === undefined || batchKey === null || batchKey === "__other__") {
+            return;
+        }
+        const batchDomain =
+            batchKey === ""
+                ? [["batch_number", "in", [false, ""]]]
+                : [["batch_number", "=", batchKey]];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Cases by batch and stage",
+            res_model: "bharat.loan",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: mergeLoanDomain(this.state, [
+                ...batchDomain,
+                ["milestone_code", "=", stage],
+            ]),
+            target: "current",
+        });
     }
 
     shortBatchLabel(batch) {

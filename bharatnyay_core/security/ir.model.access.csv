@@ -30,4 +30,8 @@ access_bharat_arbitration_invoice_annexure_line,bharat.arbitration.invoice.annex
 access_bharat_post_office_status,bharat.post.office.status,model_bharat_post_office_status,base.group_user,1,1,1,1
 access_bharat_loan_postal_dispatch,bharat.loan.postal.dispatch,model_bharat_loan_postal_dispatch,base.group_user,1,1,1,0
 access_bharat_process_run,bharat.process.run,model_bharat_process_run,base.group_user,1,1,1,0
+access_bharat_process_run_admin,bharat.process.run,model_bharat_process_run,bharatnyay_core.group_bharat_admin,1,1,1,1
+access_bharat_process_run_system,bharat.process.run,model_bharat_process_run,base.group_system,1,1,1,1
 access_bharat_case_vault_batch,bharat.case.vault.batch,model_bharat_case_vault_batch,base.group_user,1,1,1,0
+access_bharat_case_vault_batch_admin,bharat.case.vault.batch,model_bharat_case_vault_batch,bharatnyay_core.group_bharat_admin,1,1,1,1
+access_bharat_case_vault_batch_system,bharat.case.vault.batch,model_bharat_case_vault_batch,base.group_system,1,1,1,1

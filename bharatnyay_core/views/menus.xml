@@ -13,7 +13,7 @@
               action="action_bharatnyay_dashboard"/>
 
     <menuitem id="menu_bharatnyay_dashboard_menu"
-              name="Portfolio"
+              name="Admin Dashboard"
               parent="menu_bharatnyay_root"
               action="action_bharatnyay_dashboard"
               sequence="1"/>
@@ -49,6 +49,7 @@
               parent="menu_bharatnyay_root"
               action="action_bharat_process_run"
               sequence="13"
+              active="False"
               groups="bharatnyay_core.group_bharat_admin,base.group_system"/>
 
     <menuitem id="menu_bharatnyay_workflow"

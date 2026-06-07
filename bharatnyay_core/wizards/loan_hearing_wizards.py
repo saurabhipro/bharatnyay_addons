@@ -3,8 +3,6 @@ import json
 from datetime import datetime, time as dt_time, timedelta
 
 import pytz
-from markupsafe import escape
-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.misc import format_datetime
@@ -521,25 +519,35 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         local = fields.Datetime.context_timestamp(loan, loan.hearing_datetime)
         dt_human = str(local)
 
-        meeting_url = escape((calendar_event.videocall_location or '').strip() or _('(not set)'))
+        meeting_url = (calendar_event.videocall_location or '').strip() or _('(not set)')
         if self.is_final_award and not self.hearing_reschedule:
             header = _('Final award — hearing logged')
         elif self.hearing_reschedule:
             header = _('Hearing rescheduled')
         else:
-            header = _('<p><b>Hearing scheduled</b></p>')
-        chunks = [header + _('<p>When (your timezone): %s</p>') % dt_human]
-        chunks.append(_('<p>Odoo meeting: %s</p>') % meeting_url)
+            header = _('Hearing scheduled')
+        chunks = [
+            header,
+            _('When (your timezone): %s') % dt_human,
+            _('Odoo meeting: %s') % meeting_url,
+        ]
         if self.invite_user_ids:
             chunks.append(
                 '%s %s'
                 % (
-                    escape(_('Internal attendees:')),
-                    escape(', '.join(self.invite_user_ids.mapped('name'))),
+                    _('Internal attendees:'),
+                    ', '.join(self.invite_user_ids.mapped('name')),
                 )
             )
         if external_partners:
-        loan.message_post(body=''.join(chunks))
+            chunks.append(
+                '%s %s'
+                % (
+                    _('External attendees:'),
+                    ', '.join(external_partners.mapped('display_name')),
+                )
+            )
+        loan.message_post(body='\n'.join(chunks))
 
         invitee_names = list(self.invite_user_ids.mapped('name')) + list(
             external_partners.mapped('display_name')

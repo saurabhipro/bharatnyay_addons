@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="action_bharatnyay_dashboard" model="ir.actions.client">
-        <field name="name">Dashboard</field>
+        <field name="name">Admin Dashboard</field>
         <field name="tag">bharatnyay_dashboard</field>
         <!-- Enables /odoo/bharatnyay deep links like Discuss uses /discuss -->
         <field name="path">bharatnyay</field>

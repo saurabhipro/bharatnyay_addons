@@ -12,6 +12,7 @@ class BharatProcessRun(models.Model):
     job_code = fields.Selection(
         [
             ('milestone_scheduler', 'Workflow auto-advance'),
+            ('milestone_advance', 'Milestone advance'),
             ('case_vault_build', 'Case Vault build'),
             ('portfolio_import', 'Portfolio import'),
             ('pod_import', 'POD status import'),
@@ -163,6 +164,43 @@ class BharatProcessRun(models.Model):
             vault.action_queue_build()
         return True
 
+    def action_delete_process_runs(self):
+        """Delete selected job history rows (admin cleanup)."""
+        if not self:
+            raise UserError(_('Select at least one background job to delete.'))
+        self._check_process_run_delete_allowed()
+        count = len(self)
+        self.unlink()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Background jobs'),
+                'message': _('Removed %(n)s job record(s).') % {'n': count},
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def _check_process_run_delete_allowed(self):
+        if not self.env.user.has_group('bharatnyay_core.group_bharat_admin') and not self.env.user.has_group('base.group_system'):
+            raise UserError(_('Only BharatNyay admins can delete background job records.'))
+        active = self.filtered(lambda r: r.state in ('queued', 'running'))
+        if active:
+            raise UserError(
+                _('Stop active jobs before deleting them: %s')
+                % ', '.join(active.mapped('name'))
+            )
+
+    def unlink(self):
+        self._check_process_run_delete_allowed()
+        Vault = self.env['bharat.case.vault.batch']
+        for rec in self:
+            vaults = Vault.search([('process_run_id', '=', rec.id)])
+            if vaults:
+                vaults.write({'process_run_id': False})
+        return super().unlink()
+
     def is_cancelled(self):
         self.ensure_one()
         if self.cancel_requested or self.state == 'cancelled':
@@ -171,23 +209,63 @@ class BharatProcessRun(models.Model):
         return bool(fresh.cancel_requested or fresh.state == 'cancelled')
 
     @api.model
-    def dashboard_snapshot(self):
-        """JSON payload for OWL dashboards."""
+    def log_milestone_advance(self, case_count, batches_queued=None):
+        """Record a milestone-advance action and any vault rebuilds it queued."""
+        batches_queued = batches_queued or []
+        run = self.create({
+            'job_code': 'milestone_advance',
+            'name': _('Milestone advance — %(n)s case(s)') % {'n': case_count},
+            'state': 'running',
+            'started_at': fields.Datetime.now(),
+        })
+        parts = [_('Advanced %(n)s case(s).') % {'n': case_count}]
+        if batches_queued:
+            parts.append(
+                _('Case Vault rebuild queued: %s') % ', '.join(batches_queued)
+            )
+        run.finish('\n'.join(parts))
+        return run
+
+    @api.model
+    def dashboard_snapshot(self, page=1, page_size=5):
+        """JSON payload for OWL dashboards (paginated job history)."""
         Vault = self.env['bharat.case.vault.batch']
+        Loan = self.env['bharat.loan']
         running = self.search([('state', 'in', ('queued', 'running'))])
-        recent = self.search([], order='started_at desc, id desc', limit=8)
+        page = max(1, int(page or 1))
+        page_size = min(max(1, int(page_size or 5)), 20)
+        total_count = self.search_count([])
+        state_groups = self.read_group([], ['state'], ['state'])
+        state_counts = {g['state']: g['state_count'] for g in state_groups}
+        success_count = state_counts.get('done', 0)
+        failed_count = state_counts.get('failed', 0)
+        running_only = state_counts.get('running', 0)
+        queued_count = state_counts.get('queued', 0)
+        active_count = running_only + queued_count
+        stopped_count = state_counts.get('cancelled', 0)
+        offset = (page - 1) * page_size
+        recent = self.search([], order='started_at desc, id desc', limit=page_size, offset=offset)
         last_scheduler = self.search([
             ('job_code', '=', 'milestone_scheduler'),
             ('state', 'in', ('done', 'failed', 'cancelled')),
         ], order='finished_at desc, id desc', limit=1)
 
+        job_type_labels = dict(self._fields['job_code'].selection)
+
         def _serialize(run):
+            case_count = 0
+            if run.batch_number:
+                case_count = Loan.search_count([('batch_number', '=', run.batch_number)])
+
             return {
                 'id': run.id,
                 'name': run.name,
                 'job_code': run.job_code,
+                'job_type_label': job_type_labels.get(run.job_code, run.job_code),
                 'state': run.state,
+                'state_label': dict(self._fields['state'].selection).get(run.state, run.state),
                 'batch_number': run.batch_number or False,
+                'case_count': case_count,
                 'started_at': fields.Datetime.to_string(run.started_at) if run.started_at else False,
                 'finished_at': fields.Datetime.to_string(run.finished_at) if run.finished_at else False,
                 'duration_seconds': run.duration_seconds or 0.0,
@@ -203,10 +281,30 @@ class BharatProcessRun(models.Model):
                 ),
             }
 
+        total_pages = max(1, (total_count + page_size - 1) // page_size)
+
         payload = {
-            'running_count': len(running),
+            'running_count': active_count,
+            'running_only_count': running_only,
+            'queued_count': queued_count,
+            'success_count': success_count,
+            'failed_count': failed_count,
+            'stopped_count': stopped_count,
+            'summary': {
+                'total': total_count,
+                'active': active_count,
+                'running': running_only,
+                'queued': queued_count,
+                'success': success_count,
+                'failed': failed_count,
+                'stopped': stopped_count,
+            },
             'running': [_serialize(r) for r in running],
             'recent': [_serialize(r) for r in recent],
+            'total_count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
             'last_scheduler': _serialize(last_scheduler) if last_scheduler else False,
             'queue_enabled': Vault._vault_queue_enabled(),
             'has_active_jobs': bool(running),

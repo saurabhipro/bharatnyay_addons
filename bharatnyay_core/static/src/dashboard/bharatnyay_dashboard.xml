@@ -3,33 +3,37 @@
     <t t-name="bharatnyay_core.BharatnyayDashboard">
         <div class="o_bharatnyay_dashboard">
             <div class="bn-wrap">
-                <div class="bn-header">
-                    <div class="bn-title-block">
-                        <h1>Portfolio dashboard</h1>
-                        <p>Cases, exposure, and workflow at a glance.</p>
+                <div class="bn-header bn-header--admin">
+                    <div class="bn-header__brand">
+                        <i class="fa fa-shield bn-header__icon-inline" aria-hidden="true"/>
+                        <div class="bn-title-block bn-title-block--inline">
+                            <h1>Admin Dashboard</h1>
+                            <span class="bn-header__tagline">Cases, exposure, and workflow at a glance.</span>
+                        </div>
                     </div>
                     <div class="bn-header-actions">
+                        <t t-set="filterBarClass" t-value="'bn-filter-bar--admin'"/>
                         <t t-call="bharatnyay_core.DashboardFilterBar"/>
                         <input type="search"
-                               class="bn-search"
-                               placeholder="Global search by loan number…"
+                               class="bn-search bn-search--admin"
+                               placeholder="Search loan number…"
                                t-att-value="state.search"
                                t-on-input="onSearchInput"
                                t-on-keydown="onSearchKeydown"/>
                         <button type="button"
-                                class="bn-icon-btn"
+                                class="bn-icon-btn bn-icon-btn--admin"
                                 title="Search loan"
                                 t-on-click="onSearchSubmit">
                             <i class="fa fa-search"/>
                         </button>
                         <button type="button"
-                                class="bn-icon-btn"
+                                class="bn-icon-btn bn-icon-btn--admin"
                                 title="Refresh"
                                 t-on-click="onRefresh">
                             <i class="fa fa-refresh"/>
                         </button>
                         <button type="button"
-                                class="bn-icon-btn"
+                                class="bn-icon-btn bn-icon-btn--admin"
                                 title="Open loan sheet"
                                 t-on-click="openLoanList">
                             <i class="fa fa-table"/>
@@ -40,7 +44,7 @@
                 <t t-if="state.loading">
                     <div class="bn-muted-empty">
                         <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
-                        <div>Loading portfolio metrics…</div>
+                        <div>Loading admin dashboard…</div>
                     </div>
                 </t>
 
@@ -119,75 +123,17 @@
 
                     <div class="bn-dashboard-section">
                     <div class="bn-section-title">Case pipeline</div>
-                    <div class="bn-stage-strip">
-                        <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
-                            <button type="button"
-                                    class="bn-stage-card"
-                                    t-att-data-stage="s.key"
-                                    t-attf-style="--stg: {{ s.color }};"
-                                    t-on-click="openStageCases">
-                                <div class="bn-stage-top">
-                                    <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
-                                    <span class="bn-stage-name" t-out="s.label"/>
-                                </div>
-                                <div class="bn-stage-value">
-                                    <span class="n" t-out="fmtInt(s.count)"/>
-                                    <span class="p" t-out="s.percent + '%'"/>
-                                </div>
-                                <div class="bn-stage-meter">
-                                    <span t-attf-style="width: {{ s.percent }}%"/>
-                                </div>
-                            </button>
-                        </t>
-                    </div>
+                    <p class="bn-stage-strip-hint">
+                        <i class="fa fa-file-text-o" title="Unbilled billing"/>
+                        Amber badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+                    </p>
+                    <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
                     </div>
 
                     <div class="bn-dashboard-section">
                     <div class="bn-section-title">Portfolio breakdown</div>
                     <div class="bn-chart-row bn-chart-row--3">
-                        <div class="bn-panel">
-                            <div class="bn-panel-head">
-                                <div class="bn-panel-head__title">
-                                    <span class="bn-panel-icon"><i class="fa fa-bar-chart"/></span>
-                                    <h2>Batch volume</h2>
-                                </div>
-                                <span class="hint">Paid vs unpaid cases per batch</span>
-                            </div>
-                            <div class="bn-panel-body">
-                            <div class="bn-bar-chart bn-bar-chart--batch" t-if="state.data.batch_volume.length">
-                                <t t-foreach="state.data.batch_volume" t-as="b" t-key="b.batch">
-                                    <button type="button"
-                                            class="bn-bar-slot"
-                                            t-att-data-batch="b.batch_key"
-                                            t-att-title="batchBarTitle(b)"
-                                            t-on-click="openBatchCases">
-                                        <div class="bn-bar-stack" t-attf-style="height: {{ batchBarHeight(b.count) }}%;">
-                                            <div t-if="b.paid_cases"
-                                                 class="bn-bar-seg bn-bar-seg--paid"
-                                                 t-attf-style="height: {{ batchSegPct(b, 'paid_cases') }}%;"
-                                                 t-att-title="'Paid: ' + fmtInt(b.paid_cases)"/>
-                                            <div t-if="b.unpaid_cases"
-                                                 class="bn-bar-seg bn-bar-seg--unpaid"
-                                                 t-attf-style="height: {{ batchSegPct(b, 'unpaid_cases') }}%;"
-                                                 t-att-title="'Unpaid: ' + fmtInt(b.unpaid_cases)"/>
-                                            <div t-if="b.other_cases"
-                                                 class="bn-bar-seg bn-bar-seg--other"
-                                                 t-attf-style="height: {{ batchSegPct(b, 'other_cases') }}%;"
-                                                 t-att-title="'Not invoiced / draft: ' + fmtInt(b.other_cases)"/>
-                                        </div>
-                                        <span class="label" t-out="shortBatchLabel(b.batch)"/>
-                                        <span class="bn-bar-count" t-out="fmtInt(b.count)"/>
-                                    </button>
-                                </t>
-                            </div>
-                            <div class="bn-bar-legend" t-if="state.data.batch_volume.length">
-                                <span class="bn-bar-legend__item"><i class="sq sq--paid"/> Paid</span>
-                                <span class="bn-bar-legend__item"><i class="sq sq--unpaid"/> Unpaid</span>
-                                <span class="bn-bar-legend__item"><i class="sq sq--other"/> Not invoiced</span>
-                            </div>
-                            <div t-else="" class="bn-muted-empty">No batch data yet.</div>
-                            </div>
-                        </div>
+                        <t t-call="bharatnyay_core.DashboardPanelBatchVolumeStacked"/>
                         <div class="bn-panel">
                             <div class="bn-panel-head">
                                 <div class="bn-panel-head__title">
@@ -323,74 +269,269 @@
                     </div>
                     </div>
 
-                    <div class="bn-dashboard-section" t-if="state.data.processes">
-                        <div class="bn-section-title">Background jobs</div>
-                        <div class="bn-process-panel">
-                            <div class="bn-process-summary">
-                                <button type="button"
-                                        class="bn-process-stat bn-process-stat--running"
-                                        t-on-click="openProcessRuns">
-                                    <span class="bn-process-stat__value" t-out="fmtInt(state.data.processes.running_count || 0)"/>
-                                    <span class="bn-process-stat__label">Running now</span>
-                                </button>
-                                <div class="bn-process-stat" t-if="state.data.processes.last_scheduler">
-                                    <span class="bn-process-stat__label">Last scheduler run</span>
-                                    <span class="bn-process-stat__value bn-process-stat__value--sm"
-                                          t-out="fmtDuration(state.data.processes.last_scheduler.duration_seconds)"/>
-                                    <span class="bn-process-stat__meta"
-                                          t-out="processStateLabel(state.data.processes.last_scheduler.state)"/>
-                                </div>
-                                <button type="button"
-                                        class="btn btn-link bn-process-vault-link"
-                                        t-on-click="openCaseVault">
-                                    <i class="fa fa-archive"/> Case Vault
-                                </button>
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger bn-process-stop-all"
-                                        t-if="state.data.processes.has_active_jobs"
-                                        t-on-click="cancelAllJobs">
-                                    <i class="fa fa-stop"/> Stop all
-                                </button>
-                                <span class="bn-process-queue-hint"
-                                      t-if="!state.data.processes.queue_enabled &amp;&amp; state.data.processes.running_count">
-                                    Queue paused — rerun a batch to resume
-                                </span>
-                            </div>
-                            <div class="bn-process-list" t-if="state.data.processes.recent.length">
-                                <t t-foreach="state.data.processes.recent" t-as="job" t-key="job.id">
-                                    <div class="bn-process-row"
-                                         t-attf-class="bn-process-row bn-process-row--{{ job.state }}">
-                                        <span class="bn-process-row__state">
-                                            <i t-attf-class="fa {{ processStateIcon(job.state) }}"/>
+                    <div class="bn-dashboard-section bn-ops-section" t-if="state.data.processes">
+                        <div class="bn-ops-grid">
+                            <!-- Task queue: background jobs / process runs -->
+                            <div class="bn-ops-panel bn-ops-panel--jobs">
+                                <div class="bn-ops-panel__head">
+                                    <button type="button"
+                                            class="bn-ops-panel__title"
+                                            title="Open full job history"
+                                            t-on-click="() => this.openProcessRuns()">
+                                        <span class="bn-ops-panel__icon bn-ops-panel__icon--jobs">
+                                            <i class="fa fa-tasks"/>
                                         </span>
-                                        <div class="bn-process-row__body">
-                                            <div class="bn-process-row__title" t-out="job.name"/>
-                                            <div class="bn-process-row__meta">
-                                                <span t-if="job.batch_number" t-out="job.batch_number"/>
-                                                <span t-if="job.duration_seconds &amp;&amp; job.state !== 'running' &amp;&amp; job.state !== 'queued'"
-                                                      t-out="fmtDuration(job.duration_seconds)"/>
-                                                <span t-if="job.state === 'running' || job.state === 'queued'"
-                                                      t-out="processProgressLabel(job)"/>
-                                            </div>
+                                        <span>
+                                            <strong>Task queue</strong>
+                                            <small>Background jobs &amp; schedulers</small>
+                                        </span>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="() => this.openProcessRuns()">
+                                        All jobs
+                                    </button>
+                                </div>
+
+                                <div class="bn-process-stats-grid">
+                                    <button type="button"
+                                            class="bn-process-stat bn-process-stat--click bn-process-stat--total"
+                                            title="View all jobs"
+                                            t-on-click="() => this.openProcessRuns()">
+                                        <div class="bn-process-stat__head">
+                                            <span class="bn-process-stat__icon"><i class="fa fa-history"/></span>
+                                            <span class="bn-process-stat__label">Total</span>
                                         </div>
-                                        <div class="bn-process-row__actions">
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    title="Stop job"
-                                                    t-if="job.can_cancel"
-                                                    t-on-click="(ev) => this.cancelJob(ev, job.id)">
-                                                Stop
-                                            </button>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-primary"
-                                                    title="Rerun batch build"
-                                                    t-if="job.can_rerun"
-                                                    t-on-click="(ev) => this.rerunJob(ev, job.id)">
-                                                Rerun
-                                            </button>
+                                        <span class="bn-process-stat__value"
+                                              t-out="fmtInt((state.data.processes.summary and state.data.processes.summary.total) or state.data.processes.total_count or 0)"/>
+                                    </button>
+                                    <button type="button"
+                                            t-attf-class="bn-process-stat bn-process-stat--click bn-process-stat--running {{ processActiveCount() ? 'bn-process-stat--live' : '' }}"
+                                            title="View running / queued jobs"
+                                            t-on-click="() => this.openProcessRunsActive()">
+                                        <div class="bn-process-stat__head">
+                                            <span class="bn-process-stat__icon">
+                                                <i t-attf-class="fa {{ processActiveCount() ? 'fa-cog fa-spin' : 'fa-play-circle' }}"/>
+                                            </span>
+                                            <span class="bn-process-stat__label">Running</span>
                                         </div>
+                                        <span class="bn-process-stat__value"
+                                              t-out="fmtInt((state.data.processes.summary and state.data.processes.summary.active) or state.data.processes.running_count or 0)"/>
+                                    </button>
+                                    <button type="button"
+                                            class="bn-process-stat bn-process-stat--click bn-process-stat--success"
+                                            title="View completed jobs"
+                                            t-on-click="() => this.openProcessRunsFiltered('done')">
+                                        <div class="bn-process-stat__head">
+                                            <span class="bn-process-stat__icon"><i class="fa fa-check-circle"/></span>
+                                            <span class="bn-process-stat__label">Success</span>
+                                        </div>
+                                        <span class="bn-process-stat__value"
+                                              t-out="fmtInt((state.data.processes.summary and state.data.processes.summary.success) or state.data.processes.success_count or 0)"/>
+                                    </button>
+                                    <button type="button"
+                                            class="bn-process-stat bn-process-stat--click bn-process-stat--failed"
+                                            title="View failed jobs"
+                                            t-on-click="() => this.openProcessRunsFiltered('failed')">
+                                        <div class="bn-process-stat__head">
+                                            <span class="bn-process-stat__icon"><i class="fa fa-exclamation-circle"/></span>
+                                            <span class="bn-process-stat__label">Failed</span>
+                                        </div>
+                                        <span class="bn-process-stat__value"
+                                              t-out="fmtInt((state.data.processes.summary and state.data.processes.summary.failed) or state.data.processes.failed_count or 0)"/>
+                                    </button>
+                                </div>
+
+                                <div class="bn-ops-toolbar">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            t-if="state.data.processes.has_active_jobs"
+                                            t-on-click.stop="cancelAllJobs">
+                                        <i class="fa fa-stop"/> Stop all jobs
+                                    </button>
+                                    <span class="bn-process-queue-hint"
+                                          t-if="!state.data.processes.queue_enabled &amp;&amp; state.data.processes.running_count">
+                                        Vault queue paused — rebuild a batch to resume
+                                    </span>
+                                </div>
+
+                                <div class="bn-process-table-wrap" t-if="state.data.processes.recent.length">
+                                    <table class="bn-process-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-status"/>
+                                                <th>Job</th>
+                                                <th>Type</th>
+                                                <th>Started</th>
+                                                <th>Duration</th>
+                                                <th class="col-actions">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.processes.recent" t-as="job" t-key="job.id">
+                                                <tr t-attf-class="bn-process-row bn-process-row--{{ job.state }}"
+                                                    t-att-title="job.error_message || job.message || ''">
+                                                    <td class="col-status">
+                                                        <i t-attf-class="fa {{ processStateIcon(job.state) }}"/>
+                                                    </td>
+                                                    <td class="col-job">
+                                                        <div class="bn-process-row__title" t-out="job.name"/>
+                                                        <div class="bn-process-row__hint"
+                                                             t-if="job.batch_number"
+                                                             t-out="job.batch_number"/>
+                                                    </td>
+                                                    <td t-out="job.job_type_label"/>
+                                                    <td t-out="fmtDateTime(job.started_at)"/>
+                                                    <td>
+                                                        <span t-if="job.duration_seconds &amp;&amp; job.state !== 'running' &amp;&amp; job.state !== 'queued'"
+                                                              t-out="fmtDuration(job.duration_seconds)"/>
+                                                        <span t-elif="job.state === 'running' || job.state === 'queued'"
+                                                              t-out="processProgressLabel(job)"/>
+                                                        <span t-else="">—</span>
+                                                    </td>
+                                                    <td class="col-actions">
+                                                        <div class="bn-process-row__actions">
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-danger"
+                                                                    title="Stop job"
+                                                                    t-if="job.can_cancel"
+                                                                    t-on-click="(ev) => this.cancelJob(ev, job.id)">
+                                                                Stop
+                                                            </button>
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-primary"
+                                                                    title="Rerun"
+                                                                    t-if="job.can_rerun"
+                                                                    t-on-click="(ev) => this.rerunJob(ev, job.id)">
+                                                                Rerun
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="bn-process-pagination"
+                                     t-if="processJobsTotalPages() > 1 || processJobsTotalCount() > state.jobsPageSize">
+                                    <span class="bn-process-pagination__meta">
+                                        <t t-out="fmtInt(processJobsTotalCount())"/> jobs · page <t t-out="processJobsPageLabel()"/>
+                                    </span>
+                                    <div class="bn-process-pagination__controls">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                t-att-disabled="state.jobsPage &lt;= 1"
+                                                t-on-click="processJobsPrev">
+                                            <i class="fa fa-chevron-left"/>
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                t-att-disabled="state.jobsPage >= processJobsTotalPages()"
+                                                t-on-click="processJobsNext">
+                                            <i class="fa fa-chevron-right"/>
+                                        </button>
                                     </div>
-                                </t>
+                                </div>
+                                <div t-if="!state.data.processes.recent.length" class="bn-muted-empty bn-muted-empty--compact">
+                                    No jobs yet. Milestone moves, imports, and vault builds appear here.
+                                </div>
+                            </div>
+
+                            <!-- Case Vault: batch PDF archive -->
+                            <div class="bn-ops-panel bn-ops-panel--vault" t-if="state.data.case_vault">
+                                <div class="bn-ops-panel__head">
+                                    <button type="button"
+                                            class="bn-ops-panel__title"
+                                            title="Open Case Vault"
+                                            t-on-click="openCaseVault">
+                                        <span class="bn-ops-panel__icon bn-ops-panel__icon--vault">
+                                            <i class="fa fa-archive"/>
+                                        </span>
+                                        <span>
+                                            <strong>Case Vault</strong>
+                                            <small>Batch PDF packs (Notice 1 · IO1 · Award)</small>
+                                        </span>
+                                    </button>
+                                    <span class="bn-ops-panel__badge"
+                                          t-out="fmtInt(state.data.case_vault.ready_count || 0) + ' ready'"/>
+                                </div>
+
+                                <div class="bn-vault-stats">
+                                    <span class="bn-vault-stat">
+                                        <i class="fa fa-folder-open-o"/>
+                                        <t t-out="fmtInt(state.data.case_vault.total_count || 0)"/> batches
+                                    </span>
+                                    <span class="bn-vault-stat bn-vault-stat--live"
+                                          t-if="state.data.case_vault.building_count">
+                                        <i class="fa fa-cog fa-spin"/>
+                                        <t t-out="fmtInt(state.data.case_vault.building_count)"/> building
+                                    </span>
+                                </div>
+
+                                <div class="bn-vault-table-wrap" t-if="state.data.case_vault.batches.length">
+                                    <table class="bn-vault-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Batch</th>
+                                                <th class="col-num">Cases</th>
+                                                <th>Status</th>
+                                                <th>Last built</th>
+                                                <th>Documents</th>
+                                                <th class="col-actions"/>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.case_vault.batches" t-as="vault" t-key="vault.id">
+                                                <tr t-attf-class="bn-vault-row bn-vault-row--{{ vault.vault_state }}">
+                                                    <td class="col-batch">
+                                                        <button type="button"
+                                                                class="btn btn-link btn-sm p-0"
+                                                                t-out="vault.batch_number"
+                                                                t-on-click="() => this.openVaultRecord(vault.id)"/>
+                                                    </td>
+                                                    <td class="col-num" t-out="fmtInt(vault.case_count || 0)"/>
+                                                    <td>
+                                                        <span t-attf-class="bn-vault-badge bn-vault-badge--{{ vault.vault_state }}"
+                                                              t-out="vault.vault_state_label"/>
+                                                    </td>
+                                                    <td t-out="fmtDateTime(vault.last_built_at)"/>
+                                                    <td>
+                                                        <div class="bn-vault-docs" t-if="vault.downloads.length">
+                                                            <t t-foreach="vault.downloads" t-as="dl" t-key="dl.label">
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-outline-success"
+                                                                        t-on-click="(ev) => this.downloadJobFile(ev, dl.url)">
+                                                                    <i class="fa fa-download"/>
+                                                                    <span t-out="dl.label"/>
+                                                                </button>
+                                                            </t>
+                                                        </div>
+                                                        <span t-else="" class="text-muted">—</span>
+                                                    </td>
+                                                    <td class="col-actions">
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary"
+                                                                title="Queue PDF rebuild"
+                                                                t-if="vault.can_build"
+                                                                t-on-click="(ev) => this.queueVaultBuild(ev, vault.id)">
+                                                            Build
+                                                        </button>
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                title="Stop build"
+                                                                t-if="vault.can_stop"
+                                                                t-on-click="(ev) => this.stopVaultBuild(ev, vault.id)">
+                                                            Stop
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div t-else="" class="bn-muted-empty bn-muted-empty--compact">
+                                    No vault batches yet. Import a portfolio or sync from Case Vault.
+                                </div>
                             </div>
                         </div>
                     </div>

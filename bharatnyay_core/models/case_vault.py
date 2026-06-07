@@ -8,6 +8,7 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+# field_key, label, report xmlid
 VAULT_DOCUMENT_SPECS = (
     ('notice_1', 'Notice 1', 'bharatnyay_core.action_report_bharat_loan_notice'),
     (
@@ -16,6 +17,19 @@ VAULT_DOCUMENT_SPECS = (
     ),
     ('award', 'Award', 'bharatnyay_core.action_report_bharat_loan_award_letter'),
 )
+
+# Explicit milestone codes — do not rely on sequence numbers (safer if master data drifts).
+VAULT_DOCUMENT_QUALIFYING_CODES = {
+    'notice_1': frozenset({'notice_1', 'notice_2', 'notice_3'}),
+    'interim_order_1': frozenset({'hearing_1', 'hearing_2', 'hearing_3'}),
+    'award': frozenset({'award'}),
+}
+
+VAULT_DOCUMENT_STAGE_LABELS = {
+    'notice_1': 'Notice 1',
+    'interim_order_1': 'Hearing 1',
+    'award': 'Award',
+}
 
 VAULT_QUEUE_PARAM = 'bharat.case_vault.queue_enabled'
 
@@ -152,6 +166,112 @@ class BharatCaseVaultBatch(models.Model):
             rec.action_queue_build()
         return True
 
+    def action_delete_vault_batches(self):
+        """Delete selected vault archive rows (PDFs only — cases are kept)."""
+        if not self:
+            raise UserError(_('Select at least one Case Vault batch to delete.'))
+        self._check_vault_delete_allowed()
+        names = ', '.join(self.mapped('batch_number'))
+        self.unlink()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Case Vault'),
+                'message': _('Removed vault record(s): %s') % names,
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def _check_vault_delete_allowed(self):
+        if not self.env.user.has_group('bharatnyay_core.group_bharat_admin') and not self.env.user.has_group('base.group_system'):
+            raise UserError(_('Only BharatNyay admins can delete Case Vault records.'))
+        building = self.filtered(lambda r: r.vault_state == 'building')
+        if building:
+            raise UserError(
+                _('Cannot delete while a build is running. Stop the build first: %s')
+                % ', '.join(building.mapped('batch_number'))
+            )
+
+    def unlink(self):
+        self._check_vault_delete_allowed()
+        queued = self.filtered(lambda r: r.vault_state == 'queued')
+        if queued:
+            queued.action_cancel_build()
+        return super().unlink()
+
+    @api.model
+    def queue_refresh_for_batches(self, batch_numbers):
+        """Queue Case Vault PDF rebuild for each batch (skip already queued/building)."""
+        queued = []
+        for bn in sorted({(b or '').strip() for b in batch_numbers if (b or '').strip()}):
+            vault = self.ensure_for_batch(bn)
+            if vault.vault_state in ('queued', 'building'):
+                continue
+            vault.action_queue_build()
+            queued.append(bn)
+        return queued
+
+    @api.model
+    def _vault_download_links(self, vault):
+        if not vault or vault.vault_state != 'ready':
+            return []
+        specs = (
+            ('notice_1', 'Notice 1'),
+            ('interim_order_1', 'IO1'),
+            ('award', 'Award'),
+        )
+        links = []
+        for field_key, label in specs:
+            if not getattr(vault, '%s_pdf' % field_key):
+                continue
+            filename = getattr(vault, '%s_pdf_filename' % field_key) or '%s.pdf' % label
+            links.append({
+                'label': label,
+                'url': (
+                    '/web/content/?model=bharat.case.vault.batch'
+                    '&id=%s&field=%s_pdf&filename=%s&download=true'
+                ) % (vault.id, field_key, filename),
+            })
+        return links
+
+    @api.model
+    def dashboard_snapshot(self, limit=5):
+        """Batch-wise Case Vault archive for the portfolio dashboard."""
+        limit = min(max(1, int(limit or 5)), 20)
+        vaults = self.search(
+            [],
+            order='last_built_at desc, write_date desc, batch_number desc',
+            limit=limit,
+        )
+        state_labels = dict(self._fields['vault_state'].selection)
+        batches = []
+        for vault in vaults:
+            batches.append({
+                'id': vault.id,
+                'batch_number': vault.batch_number,
+                'case_count': vault.case_count or 0,
+                'vault_state': vault.vault_state,
+                'vault_state_label': state_labels.get(vault.vault_state, vault.vault_state),
+                'last_built_at': (
+                    fields.Datetime.to_string(vault.last_built_at)
+                    if vault.last_built_at else False
+                ),
+                'build_message': (vault.build_message or '')[:160],
+                'downloads': self._vault_download_links(vault),
+                'can_build': vault.vault_state not in ('queued', 'building'),
+                'can_stop': vault.vault_state in ('queued', 'building'),
+            })
+        return {
+            'batches': batches,
+            'total_count': self.search_count([]),
+            'ready_count': self.search_count([('vault_state', '=', 'ready')]),
+            'building_count': self.search_count([
+                ('vault_state', 'in', ('queued', 'building')),
+            ]),
+        }
+
     @api.model
     def ensure_for_batch(self, batch_number):
         bn = (batch_number or '').strip()
@@ -195,6 +315,73 @@ class BharatCaseVaultBatch(models.Model):
         self.ensure_one()
         loans = self.env['bharat.loan'].search([('batch_number', '=', self.batch_number)])
         return loans.ids
+
+    @staticmethod
+    def _loan_milestone_code(loan):
+        return (
+            loan.milestone_code
+            or (loan.milestone_id.code if loan.milestone_id else '')
+            or 'commencement'
+        )
+
+    def _loan_ids_for_vault_document(self, field_key):
+        """Batch cases whose current milestone qualifies for this vault PDF."""
+        self.ensure_one()
+        qualifying = VAULT_DOCUMENT_QUALIFYING_CODES.get(field_key)
+        if not qualifying:
+            return []
+        loans = self.env['bharat.loan'].search([('batch_number', '=', self.batch_number)])
+        return [
+            loan.id for loan in loans
+            if self._loan_milestone_code(loan) in qualifying
+        ]
+
+    def _apply_vault_milestone_guard(self):
+        """Drop PDFs / counts for document types with no qualifying cases in this batch."""
+        self.ensure_one()
+        vals = {}
+        stale_cleared = []
+        for field_key, label, _xmlid in VAULT_DOCUMENT_SPECS:
+            qualified = self._loan_ids_for_vault_document(field_key)
+            pdf_field = '%s_pdf' % field_key
+            count_field = '%s_case_count' % field_key
+            has_pdf = bool(getattr(self, pdf_field))
+            stored_count = getattr(self, count_field) or 0
+            if not qualified:
+                if has_pdf or stored_count:
+                    vals.update(self._vault_clear_document_vals(field_key))
+                    stale_cleared.append(label)
+            elif has_pdf and stored_count != len(qualified):
+                vals.update(self._vault_clear_document_vals(field_key))
+                stale_cleared.append(label)
+        if not vals:
+            return False
+        if stale_cleared and self.vault_state == 'ready':
+            vals['build_message'] = _(
+                'Removed %(docs)s — not applicable at current case stage(s). '
+                'Click Rerun to rebuild Notice 1 / IO1 / Award for this batch.'
+            ) % {'docs': ', '.join(stale_cleared)}
+        self.write(vals)
+        return True
+
+    @api.model
+    def _bharat_sanitize_case_vault_documents(self):
+        """Upgrade hook: clear IO1/Award (etc.) when batch cases have not reached that stage."""
+        cleaned = 0
+        for vault in self.search([]):
+            if vault._apply_vault_milestone_guard():
+                cleaned += 1
+        if cleaned:
+            _logger.info('Case Vault milestone guard cleared stale PDFs on %s batch(es)', cleaned)
+        return True
+
+    @staticmethod
+    def _vault_clear_document_vals(field_key):
+        return {
+            '%s_pdf' % field_key: False,
+            '%s_pdf_filename' % field_key: False,
+            '%s_case_count' % field_key: 0,
+        }
 
     def _render_merged_pdf(self, loan_ids, report_xmlid):
         if not loan_ids:
@@ -300,8 +487,11 @@ class BharatCaseVaultBatch(models.Model):
 
         slug = self._safe_batch_slug(self.batch_number)
         vals = {'last_built_at': fields.Datetime.now()}
+        for field_key, _label, _xmlid in VAULT_DOCUMENT_SPECS:
+            vals.update(self._vault_clear_document_vals(field_key))
         log_lines = []
         total_steps = len(VAULT_DOCUMENT_SPECS)
+        built_any = False
 
         try:
             for step, (field_key, label, xmlid) in enumerate(VAULT_DOCUMENT_SPECS, start=1):
@@ -311,6 +501,13 @@ class BharatCaseVaultBatch(models.Model):
                         'build_message': _('Build stopped before %(doc)s.') % {'doc': label},
                     })
                     return False
+                doc_loan_ids = self._loan_ids_for_vault_document(field_key)
+                if not doc_loan_ids:
+                    stage_label = VAULT_DOCUMENT_STAGE_LABELS.get(field_key, label)
+                    log_lines.append(
+                        _('%s: skipped (no cases at %s).') % (label, stage_label)
+                    )
+                    continue
                 run.update_progress(
                     step,
                     total_steps,
@@ -320,24 +517,29 @@ class BharatCaseVaultBatch(models.Model):
                         'total': total_steps,
                     },
                 )
-                pdf_bytes = self._render_merged_pdf(loan_ids, xmlid)
+                pdf_bytes = self._render_merged_pdf(doc_loan_ids, xmlid)
                 if not pdf_bytes:
-                    log_lines.append(_('%s: skipped (empty).') % label)
+                    log_lines.append(_('%s: skipped (empty PDF).') % label)
                     continue
                 filename = '%s_%s.pdf' % (label, slug)
                 vals.update({
                     '%s_pdf' % field_key: base64.b64encode(pdf_bytes),
                     '%s_pdf_filename' % field_key: filename,
-                    '%s_case_count' % field_key: len(loan_ids),
+                    '%s_case_count' % field_key: len(doc_loan_ids),
                 })
+                built_any = True
                 log_lines.append(
                     _('%s: %(n)s case(s), %(size)s KB.') % {
                         'label': label,
-                        'n': len(loan_ids),
+                        'n': len(doc_loan_ids),
                         'size': round(len(pdf_bytes) / 1024, 1),
                     }
                 )
 
+            if not built_any:
+                log_lines.append(
+                    _('No vault PDFs built — cases have not reached Notice 1, Hearing 1, or Award yet.')
+                )
             vals.update({
                 'vault_state': 'ready',
                 'build_message': '\n'.join(log_lines),

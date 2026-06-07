@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from markupsafe import Markup
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 DEFAULT_MILESTONE_ICONS = {
     'commencement': 'fa-flag-checkered',
@@ -71,6 +71,7 @@ DEFAULT_LOAN_MILESTONES = (
         'auto_invoice_on_exit': False,
         'auto_assign_arbitrator': True,
         'is_arbitrator': True,
+        'bill_on_milestone_exit': False,
     },
     {
         'code': 'hearing_2',
@@ -105,6 +106,16 @@ DEFAULT_LOAN_MILESTONES = (
         'bill_on_milestone_exit': False,
     },
 )
+
+
+# Workflow entry points that accrue unbilled charges on postal delivery (POD).
+POSTAL_BILLING_MILESTONE_CODES = frozenset({'notice_1', 'hearing_1', 'award'})
+
+BILLING_BADGE_ICONS = {
+    'notice_1': 'fa-file-text-o',
+    'hearing_1': 'fa-legal',
+    'award': 'fa-money',
+}
 
 
 class BharatLoanMilestone(models.Model):
@@ -213,3 +224,53 @@ class BharatLoanMilestone(models.Model):
     def _default_commencement(self):
         self._ensure_default_master_milestones()
         return self.search([('code', '=', 'commencement')], limit=1)
+
+    def creates_unbilled_charge(self):
+        """True when this milestone can queue a pending billing charge (per master)."""
+        self.ensure_one()
+        if self.code in POSTAL_BILLING_MILESTONE_CODES:
+            return True
+        return bool(self.bill_on_milestone_exit)
+
+    def billing_accrual_mode(self):
+        """How unbilled charges are created for this milestone."""
+        self.ensure_one()
+        if self.code in POSTAL_BILLING_MILESTONE_CODES:
+            return 'postal_delivery'
+        if self.bill_on_milestone_exit:
+            return 'milestone_exit'
+        return False
+
+    def dashboard_billing_card_fields(self):
+        """JSON fields for dashboard stage / pipeline cards."""
+        self.ensure_one()
+        if not self.creates_unbilled_charge():
+            return {
+                'creates_unbilled_charge': False,
+                'billing_badge_icon': False,
+                'billing_badge_title': False,
+            }
+        mode = self.billing_accrual_mode()
+        if mode == 'postal_delivery':
+            title = {
+                'notice_1': _('Unbilled charge on Notice 1 postal delivery'),
+                'hearing_1': _('Unbilled charge on Interim Order 1 postal delivery'),
+                'award': _('Unbilled charge on Award postal delivery'),
+            }.get(self.code, _('Unbilled charge on postal delivery'))
+            icon = BILLING_BADGE_ICONS.get(self.code, 'fa-file-text-o')
+        else:
+            title = _('Unbilled charge when leaving this milestone')
+            icon = 'fa-sign-out'
+        return {
+            'creates_unbilled_charge': True,
+            'billing_badge_icon': icon,
+            'billing_badge_title': title,
+        }
+
+    @api.model
+    def dashboard_billing_flags_by_code(self):
+        self._ensure_default_master_milestones()
+        return {
+            m.code: m.dashboard_billing_card_fields()
+            for m in self.search([])
+        }

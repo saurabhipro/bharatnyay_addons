@@ -4,7 +4,8 @@ import { Component, useState, onWillStart, onWillUnmount } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
-import { formatMonetary } from "@web/views/fields/formatters";
+import { formatDateTime, formatMonetary } from "@web/views/fields/formatters";
+import { deserializeDateTime } from "@web/core/l10n/dates";
 import {
     pieGradient,
     dashboardFilterFields,
@@ -14,6 +15,9 @@ import {
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
+    batchVolumeRows,
+    batchBarHeight as batchBarHeightHelper,
+    batchSegPctCount as batchSegPctCountHelper,
 } from "./dashboard_helpers";
 
 export class BharatnyayDashboard extends Component {
@@ -34,6 +38,9 @@ export class BharatnyayDashboard extends Component {
             workflowPieStyle: pieGradient([]),
             paymentPieStyle: pieGradient([]),
             search: "",
+            jobsPage: 1,
+            jobsPageSize: 5,
+            batchVolumeMode: "payment",
             ...dashboardFilterFields(),
         });
 
@@ -60,7 +67,11 @@ export class BharatnyayDashboard extends Component {
                 "bharat.loan",
                 "get_dashboard_statistics",
                 [],
-                dashboardFilterRpcArgs(this.state)
+                {
+                    ...dashboardFilterRpcArgs(this.state),
+                    jobs_page: this.state.jobsPage,
+                    jobs_page_size: this.state.jobsPageSize,
+                }
             );
             this.state.data = data;
             this.state.pieStyle = pieGradient(data.product_mix || []);
@@ -256,21 +267,30 @@ export class BharatnyayDashboard extends Component {
             clearInterval(this._processPollTimer);
             this._processPollTimer = null;
         }
-        const running = this.state.data?.processes?.running_count || 0;
-        if (running > 0) {
+        const running = this.processActiveCount();
+        const vaultBuilding = this.state.data?.case_vault?.building_count || 0;
+        if (running > 0 || vaultBuilding > 0) {
             this._processPollTimer = setInterval(() => this.load(true), 15000);
         }
     }
 
-    openProcessRuns() {
+    openProcessRuns(domain = []) {
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Background processes",
+            name: "Background jobs",
             res_model: "bharat.process.run",
             views: [[false, "list"], [false, "form"]],
-            domain: [],
+            domain,
             target: "current",
         });
+    }
+
+    openProcessRunsActive() {
+        this.openProcessRuns([["state", "in", ["queued", "running"]]]);
+    }
+
+    openProcessRunsFiltered(state) {
+        this.openProcessRuns([["state", "=", state]]);
     }
 
     openCaseVault() {
@@ -279,6 +299,7 @@ export class BharatnyayDashboard extends Component {
 
     async cancelJob(ev, jobId) {
         ev?.stopPropagation?.();
+        ev?.preventDefault?.();
         if (!jobId) {
             return;
         }
@@ -288,6 +309,7 @@ export class BharatnyayDashboard extends Component {
 
     async rerunJob(ev, jobId) {
         ev?.stopPropagation?.();
+        ev?.preventDefault?.();
         if (!jobId) {
             return;
         }
@@ -332,11 +354,103 @@ export class BharatnyayDashboard extends Component {
         return icons[state] || "fa-circle-o";
     }
 
+    processActiveCount() {
+        const processes = this.state.data?.processes;
+        if (!processes) {
+            return 0;
+        }
+        return (processes.summary && processes.summary.active) || processes.running_count || 0;
+    }
+
     processProgressLabel(job) {
         if (job.progress_total > 0) {
             return `${job.progress_current}/${job.progress_total}`;
         }
         return job.state === "running" ? "In progress" : "Queued";
+    }
+
+    fmtDateTime(value) {
+        if (!value) {
+            return "—";
+        }
+        try {
+            return formatDateTime(deserializeDateTime(value));
+        } catch {
+            return value;
+        }
+    }
+
+    processJobsTotalPages() {
+        return this.state.data?.processes?.total_pages || 1;
+    }
+
+    processJobsTotalCount() {
+        return this.state.data?.processes?.total_count || 0;
+    }
+
+    processJobsPageLabel() {
+        const page = this.state.data?.processes?.page || this.state.jobsPage;
+        return `${page} / ${this.processJobsTotalPages()}`;
+    }
+
+    async processJobsPrev() {
+        if (this.state.jobsPage <= 1) {
+            return;
+        }
+        this.state.jobsPage -= 1;
+        await this.load(true);
+    }
+
+    async processJobsNext() {
+        if (this.state.jobsPage >= this.processJobsTotalPages()) {
+            return;
+        }
+        this.state.jobsPage += 1;
+        await this.load(true);
+    }
+
+    openVaultRecord(vaultId) {
+        if (!vaultId) {
+            this.openCaseVault();
+            return;
+        }
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Case Vault",
+            res_model: "bharat.case.vault.batch",
+            views: [[false, "form"]],
+            res_id: vaultId,
+            target: "current",
+        });
+    }
+
+    async queueVaultBuild(ev, vaultId) {
+        ev?.stopPropagation?.();
+        ev?.preventDefault?.();
+        if (!vaultId) {
+            return;
+        }
+        await this.orm.call("bharat.case.vault.batch", "action_queue_build", [[vaultId]]);
+        await this.load(true);
+    }
+
+    async stopVaultBuild(ev, vaultId) {
+        ev?.stopPropagation?.();
+        ev?.preventDefault?.();
+        if (!vaultId) {
+            return;
+        }
+        await this.orm.call("bharat.case.vault.batch", "action_cancel_build", [[vaultId]]);
+        await this.load(true);
+    }
+
+    downloadJobFile(ev, url) {
+        ev?.preventDefault?.();
+        ev?.stopPropagation?.();
+        if (!url) {
+            return;
+        }
+        window.open(url, "_blank");
     }
 
     fmtInt(n) {
@@ -355,9 +469,7 @@ export class BharatnyayDashboard extends Component {
     }
 
     batchBarHeight(count) {
-        const s = this.state.data?.batch_volume || [];
-        const max = Math.max(...s.map((b) => b.count || 0), 1);
-        return Math.round(((count || 0) / max) * 100);
+        return batchBarHeightHelper(this.state, count);
     }
 
     batchSegPct(batch, key) {
@@ -368,11 +480,59 @@ export class BharatnyayDashboard extends Component {
         return Math.round(((batch[key] || 0) / total) * 100);
     }
 
+    batchSegPctCount(batch, segCount) {
+        return batchSegPctCountHelper(batch, segCount);
+    }
+
+    batchVolumeHasData() {
+        return batchVolumeRows(this.state).length > 0;
+    }
+
+    onBatchVolumeModeChange(ev) {
+        this.state.batchVolumeMode = ev.target.value === "stage" ? "stage" : "payment";
+    }
+
     batchBarTitle(batch) {
         const paid = batch?.paid_cases || 0;
         const unpaid = batch?.unpaid_cases || 0;
         const other = batch?.other_cases || 0;
         return `${batch?.batch || ""} — ${this.fmtInt(batch?.count || 0)} cases · Paid ${this.fmtInt(paid)} · Unpaid ${this.fmtInt(unpaid)} · Other ${this.fmtInt(other)}`;
+    }
+
+    batchBarTitleStage(batch) {
+        const parts = (batch?.segments || []).map(
+            (seg) => `${seg.label} ${this.fmtInt(seg.count)}`
+        );
+        return `${batch?.batch || ""} — ${this.fmtInt(batch?.count || 0)} cases · ${parts.join(" · ")}`;
+    }
+
+    openBatchStageCases(ev) {
+        ev?.stopPropagation?.();
+        ev?.preventDefault?.();
+        const slot = ev.currentTarget?.closest(".bn-bar-slot");
+        const batchKey = slot?.dataset?.batch;
+        const stage = ev.currentTarget?.dataset?.stage;
+        if (!stage || batchKey === undefined || batchKey === null || batchKey === "__other__") {
+            return;
+        }
+        const batchDomain =
+            batchKey === ""
+                ? [["batch_number", "in", [false, ""]]]
+                : [["batch_number", "=", batchKey]];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Cases by batch and stage",
+            res_model: "bharat.loan",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: mergeLoanDomain(this.state, [
+                ...batchDomain,
+                ["milestone_code", "=", stage],
+            ]),
+            target: "current",
+        });
     }
 
     shortBatchLabel(batch) {

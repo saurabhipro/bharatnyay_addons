@@ -829,6 +829,7 @@ class BharatLoan(models.Model):
             ('fixup_milestone_code_metadata', self._bharat_fixup_milestone_code_field_metadata),
             ('cleanup_action_menu', self._bharat_cleanup_action_menu),
             ('migrate_loans_to_milestone_only', self._bharat_migrate_loans_to_milestone_only),
+            ('sanitize_case_vault_documents', self.env['bharat.case.vault.batch']._bharat_sanitize_case_vault_documents),
         ):
             try:
                 hook()
@@ -943,6 +944,7 @@ class BharatLoan(models.Model):
         advanced = []
         skipped = []
         failed = []
+        advanced_batches = set()
 
         for rec in self:
             try:
@@ -962,9 +964,26 @@ class BharatLoan(models.Model):
                 skipped.append(skip_reason)
             else:
                 advanced.append('%s → %s' % (case_ref, next_name))
+                batch_no = (rec.batch_number or '').strip()
+                if batch_no:
+                    advanced_batches.add(batch_no)
+
+        vault_queued = []
+        if advanced_batches:
+            vault_queued = self.env['bharat.case.vault.batch'].queue_refresh_for_batches(
+                advanced_batches,
+            )
 
         title = _('Move to next stage')
         if len(self) == 1 and advanced:
+            if vault_queued:
+                self.message_post(
+                    body=_(
+                        'Case Vault rebuild queued for %(batch)s. '
+                        'Batch PDFs for the current milestone(s) will appear '
+                        'on the dashboard Case Vault panel when the build finishes.'
+                    ) % {'batch': ', '.join(vault_queued)},
+                )
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'bharat.loan',
@@ -991,6 +1010,12 @@ class BharatLoan(models.Model):
         if failed:
             lines.append(_('Failed %(n)s case(s):') % {'n': len(failed)})
             lines.extend(failed[:10])
+
+        if vault_queued:
+            lines.append(
+                _('Case Vault rebuild queued: %(batch)s — batch PDFs will update in the background.')
+                % {'batch': ', '.join(vault_queued)}
+            )
 
         if not advanced:
             msg = '\n'.join(lines) if lines else _('No cases were advanced.')
@@ -2482,6 +2507,94 @@ class BharatLoan(models.Model):
         return batch_volume
 
     @api.model
+    def _dashboard_batch_stage_breakdown(self, loans, no_batch_label=None):
+        """Per-batch case counts by workflow milestone."""
+        no_batch_label = no_batch_label or _('No batch')
+        by_batch = defaultdict(lambda: {
+            'count': 0,
+            'batch_key': '',
+            'stages': defaultdict(int),
+        })
+        for loan in loans:
+            batch_no = (loan.batch_number or '').strip()
+            batch_label = batch_no or no_batch_label
+            bucket = by_batch[batch_label]
+            bucket['count'] += 1
+            bucket['batch_key'] = batch_no
+            code = (
+                loan.milestone_code
+                or (loan.milestone_id.code if loan.milestone_id else '')
+                or 'commencement'
+            )
+            bucket['stages'][code] += 1
+        return by_batch
+
+    @api.model
+    def _dashboard_batch_volume_stage_payload(self, by_batch_stage, no_batch_label):
+        """Serialize batch bar chart rows with milestone segments."""
+        milestones = self.env['bharat.loan']._milestone_master_ordered()
+        stage_legend = []
+        for milestone in milestones:
+            sty = self.STAGE_STYLE.get(milestone.code, {})
+            stage_legend.append({
+                'key': milestone.code,
+                'label': milestone.name or milestone.code,
+                'color': sty.get('color', '#64748b'),
+            })
+
+        batch_items = sorted(
+            by_batch_stage.items(),
+            key=lambda kv: (kv[0] == no_batch_label, kv[0]),
+        )
+        batches = []
+        for batch_label, agg in batch_items[:20]:
+            stages = agg.get('stages') or {}
+            segments = []
+            for leg in stage_legend:
+                cnt = stages.get(leg['key'], 0)
+                if cnt:
+                    segments.append({
+                        'key': leg['key'],
+                        'label': leg['label'],
+                        'count': cnt,
+                        'color': leg['color'],
+                    })
+            batches.append({
+                'batch': batch_label,
+                'batch_key': agg.get('batch_key') or '',
+                'count': agg['count'],
+                'segments': segments,
+            })
+        overflow = batch_items[20:]
+        if overflow:
+            stage_totals = defaultdict(int)
+            total_count = 0
+            for _lbl, agg in overflow:
+                total_count += agg['count']
+                for code, cnt in (agg.get('stages') or {}).items():
+                    stage_totals[code] += cnt
+            segments = []
+            for leg in stage_legend:
+                cnt = stage_totals.get(leg['key'], 0)
+                if cnt:
+                    segments.append({
+                        'key': leg['key'],
+                        'label': leg['label'],
+                        'count': cnt,
+                        'color': leg['color'],
+                    })
+            batches.append({
+                'batch': _('Other'),
+                'batch_key': '__other__',
+                'count': total_count,
+                'segments': segments,
+            })
+        return {
+            'batches': batches,
+            'legend': stage_legend,
+        }
+
+    @api.model
     def get_dashboard_filter_options(
         self, region_id=False, state_id=False, dashboard_role=None,
     ):
@@ -2529,6 +2642,7 @@ class BharatLoan(models.Model):
     @api.model
     def get_dashboard_statistics(
         self, region_id=False, state_id=False, batch_number=False,
+        jobs_page=1, jobs_page_size=5, vault_limit=5,
     ):
         """Aggregates for BharatNyay OWL dashboard (JSON-serializable)."""
         self.check_access('read')
@@ -2707,6 +2821,12 @@ class BharatLoan(models.Model):
                     'other_cases': agg['count'],
                 }
         batch_volume = self._dashboard_batch_volume_payload(batch_pay, no_batch_label)
+        batch_stage = self._dashboard_batch_stage_breakdown(
+            scoped_loans, no_batch_label=no_batch_label,
+        )
+        batch_volume_stages = self._dashboard_batch_volume_stage_payload(
+            batch_stage, no_batch_label,
+        )
 
         palette = ('#6366f1', '#06b6d4', '#8b5cf6', '#22c55e', '#eab308',
                    '#ef4444', '#f97316', '#64748b', '#14b8a6', '#a855f7')
@@ -2838,6 +2958,7 @@ class BharatLoan(models.Model):
         pending_billing_charges = len(pending_billing)
 
         milestones = self._milestone_master_ordered()
+        billing_flags = self.env['bharat.loan.milestone'].dashboard_billing_flags_by_code()
         stage_cards = []
         for milestone in milestones:
             stage_key = milestone.code
@@ -2850,7 +2971,8 @@ class BharatLoan(models.Model):
                 'count': cnt,
                 'percent': round((100.0 * cnt / total), 1) if total else 0.0,
                 'color': sty.get('color', '#64748b'),
-                'icon': sty.get('icon', 'fa-circle-o'),
+                'icon': sty.get('icon', milestone.icon or 'fa-circle-o'),
+                **billing_flags.get(stage_key, {}),
             })
 
         pos_ratio = round(100 * active_followup / total, 1) if total else 0.0
@@ -2959,6 +3081,8 @@ class BharatLoan(models.Model):
             },
             'monthly_created': monthly_series,
             'batch_volume': batch_volume,
+            'batch_volume_stages': batch_volume_stages['batches'],
+            'batch_volume_stage_legend': batch_volume_stages['legend'],
             'product_mix': pie,
             'branch_mix': branch_mix,
             'location_mix': location_mix,
@@ -2966,7 +3090,12 @@ class BharatLoan(models.Model):
             'payment_mix': payment_mix,
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
-            'processes': self.env['bharat.process.run'].dashboard_snapshot(),
+            'processes': self.env['bharat.process.run'].dashboard_snapshot(
+                page=jobs_page, page_size=jobs_page_size,
+            ),
+            'case_vault': self.env['bharat.case.vault.batch'].dashboard_snapshot(
+                limit=vault_limit,
+            ),
         }
 
     # ── Role dashboards (Case Manager / Arbitrator) ───────────────────────
@@ -3078,6 +3207,7 @@ class BharatLoan(models.Model):
             counts[loan._case_progress_bucket_code()] += 1
 
         cards = []
+        billing_flags = self.env['bharat.loan.milestone'].dashboard_billing_flags_by_code()
         for key, label, color, icon in self.PROGRESS_BUCKET_SPECS:
             cnt = counts.get(key, 0)
             cards.append({
@@ -3087,6 +3217,11 @@ class BharatLoan(models.Model):
                 'percent': round(100.0 * cnt / total, 1) if total else 0.0,
                 'color': color,
                 'icon': icon,
+                **billing_flags.get(key, {
+                    'creates_unbilled_charge': False,
+                    'billing_badge_icon': False,
+                    'billing_badge_title': False,
+                }),
             })
         return cards, total
 
@@ -3247,6 +3382,12 @@ class BharatLoan(models.Model):
             loans, no_batch_label=no_batch_label,
         )
         batch_volume = self._dashboard_batch_volume_payload(batch_pay, no_batch_label)
+        batch_stage = self._dashboard_batch_stage_breakdown(
+            loans, no_batch_label=no_batch_label,
+        )
+        batch_volume_stages = self._dashboard_batch_volume_stage_payload(
+            batch_stage, no_batch_label,
+        )
 
         prod_items = sorted(by_product_label.items(), key=lambda x: -x[1])
         prod_denom = sum(by_product_label.values()) or 1
@@ -3313,6 +3454,8 @@ class BharatLoan(models.Model):
             'stage_cards': stage_cards,
             'workflow_mix': workflow_mix,
             'batch_volume': batch_volume,
+            'batch_volume_stages': batch_volume_stages['batches'],
+            'batch_volume_stage_legend': batch_volume_stages['legend'],
             'product_mix': product_mix,
             'branch_mix': branch_mix,
             'location_mix': location_mix,
@@ -3393,7 +3536,6 @@ class BharatLoan(models.Model):
                 'state_id': int(state_id) if state_id else False,
                 'batch_number': batch_number or False,
             },
-            'processes': self.env['bharat.process.run'].dashboard_snapshot(),
             **breakdown,
         }
 
@@ -3462,7 +3604,6 @@ class BharatLoan(models.Model):
                 'state_id': int(state_id) if state_id else False,
                 'batch_number': batch_number or False,
             },
-            'processes': self.env['bharat.process.run'].dashboard_snapshot(),
             **breakdown,
         }
 

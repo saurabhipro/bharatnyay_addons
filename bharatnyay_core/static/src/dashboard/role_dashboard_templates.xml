@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="bharatnyay_core.DashboardFilterBar">
-        <div class="bn-filter-bar bn-filter-bar--inline">
+        <div t-att-class="'bn-filter-bar bn-filter-bar--inline ' + (filterBarClass or '')">
             <label class="bn-filter-pill" title="Notice region">
                 <span class="bn-filter-k">Region</span>
                 <select class="bn-filter-select bn-filter-select--compact"
@@ -62,15 +62,20 @@
         </div>
     </t>
 
-    <t t-name="bharatnyay_core.DashboardPipeline">
-        <div class="bn-section-title mt-2">Case pipeline</div>
+    <t t-name="bharatnyay_core.DashboardStageCardStrip">
         <div class="bn-stage-strip">
             <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
                 <button type="button"
                         class="bn-stage-card"
+                        t-att-class="{'bn-stage-card--billable': s.creates_unbilled_charge}"
                         t-att-data-stage="s.key"
                         t-attf-style="--stg: {{ s.color }};"
                         t-on-click="openStageCases">
+                    <span t-if="s.creates_unbilled_charge"
+                          class="bn-stage-bill-badge"
+                          t-att-title="s.billing_badge_title">
+                        <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
+                    </span>
                     <div class="bn-stage-top">
                         <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
                         <span class="bn-stage-name" t-out="s.label"/>
@@ -82,36 +87,121 @@
                     <div class="bn-stage-meter">
                         <span t-attf-style="width: {{ s.percent }}%"/>
                     </div>
+                    <span t-if="s.creates_unbilled_charge"
+                          class="bn-stage-bill-caption"
+                          t-out="s.billing_badge_title"/>
                 </button>
             </t>
         </div>
     </t>
 
-    <t t-name="bharatnyay_core.DashboardPanelBatchVolume">
+    <t t-name="bharatnyay_core.DashboardPipeline">
+        <div class="bn-section-title mt-2">Case pipeline</div>
+        <p class="bn-stage-strip-hint">
+            <i class="fa fa-file-text-o" title="Unbilled billing"/>
+            Amber badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+        </p>
+        <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelBatchVolumeStacked">
         <div class="bn-panel">
-            <div class="bn-panel-head">
+            <div class="bn-panel-head bn-panel-head--batch-volume">
                 <div class="bn-panel-head__title">
                     <span class="bn-panel-icon"><i class="fa fa-bar-chart"/></span>
                     <h2>Batch volume</h2>
                 </div>
-                <span class="hint">Cases per import batch</span>
+                <div class="bn-segment-toggle" role="radiogroup" aria-label="Batch volume split">
+                    <label class="bn-segment-toggle__item">
+                        <input type="radio"
+                               name="batchVolumeMode"
+                               value="payment"
+                               t-att-checked="state.batchVolumeMode === 'payment'"
+                               t-on-change="onBatchVolumeModeChange"/>
+                        <span>Payment</span>
+                    </label>
+                    <label class="bn-segment-toggle__item">
+                        <input type="radio"
+                               name="batchVolumeMode"
+                               value="stage"
+                               t-att-checked="state.batchVolumeMode === 'stage'"
+                               t-on-change="onBatchVolumeModeChange"/>
+                        <span>Stages</span>
+                    </label>
+                </div>
             </div>
             <div class="bn-panel-body">
-                <div class="bn-bar-chart bn-bar-chart--batch" t-if="state.data.batch_volume.length">
-                    <t t-foreach="state.data.batch_volume" t-as="b" t-key="b.batch">
-                        <button type="button"
-                                class="bn-bar-slot"
-                                t-att-data-batch="b.batch_key"
-                                t-att-title="b.batch + ' — ' + fmtInt(b.count) + ' cases'"
-                                t-on-click="openBatchCases">
-                            <div class="bn-bar" t-attf-style="height: {{ batchBarHeight(b.count) }}%"/>
-                            <span class="label" t-out="shortBatchLabel(b.batch)"/>
-                        </button>
-                    </t>
-                </div>
+                <t t-if="batchVolumeHasData()">
+                    <div class="bn-bar-chart bn-bar-chart--batch">
+                        <t t-if="state.batchVolumeMode === 'payment'">
+                            <t t-foreach="state.data.batch_volume" t-as="b" t-key="b.batch">
+                                <button type="button"
+                                        class="bn-bar-slot"
+                                        t-att-data-batch="b.batch_key"
+                                        t-att-title="batchBarTitle(b)"
+                                        t-on-click="openBatchCases">
+                                    <div class="bn-bar-stack" t-attf-style="height: {{ batchBarHeight(b.count) }}%;">
+                                        <div t-if="b.paid_cases"
+                                             class="bn-bar-seg bn-bar-seg--paid"
+                                             t-attf-style="height: {{ batchSegPct(b, 'paid_cases') }}%;"
+                                             t-att-title="'Paid: ' + fmtInt(b.paid_cases)"/>
+                                        <div t-if="b.unpaid_cases"
+                                             class="bn-bar-seg bn-bar-seg--unpaid"
+                                             t-attf-style="height: {{ batchSegPct(b, 'unpaid_cases') }}%;"
+                                             t-att-title="'Unpaid: ' + fmtInt(b.unpaid_cases)"/>
+                                        <div t-if="b.other_cases"
+                                             class="bn-bar-seg bn-bar-seg--other"
+                                             t-attf-style="height: {{ batchSegPct(b, 'other_cases') }}%;"
+                                             t-att-title="'Not invoiced: ' + fmtInt(b.other_cases)"/>
+                                    </div>
+                                    <span class="label" t-out="shortBatchLabel(b.batch)"/>
+                                    <span class="bn-bar-count" t-out="fmtInt(b.count)"/>
+                                </button>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <t t-foreach="state.data.batch_volume_stages || []" t-as="b" t-key="b.batch">
+                                <button type="button"
+                                        class="bn-bar-slot"
+                                        t-att-data-batch="b.batch_key"
+                                        t-att-title="batchBarTitleStage(b)"
+                                        t-on-click="openBatchCases">
+                                    <div class="bn-bar-stack" t-attf-style="height: {{ batchBarHeight(b.count) }}%;">
+                                        <t t-foreach="b.segments || []" t-as="seg" t-key="seg.key">
+                                            <div class="bn-bar-seg bn-bar-seg--stage"
+                                                 t-att-data-stage="seg.key"
+                                                 t-attf-style="height: {{ batchSegPctCount(b, seg.count) }}%; background-color: {{ seg.color }};"
+                                                 t-att-title="seg.label + ': ' + fmtInt(seg.count)"
+                                                 t-on-click="openBatchStageCases"/>
+                                        </t>
+                                    </div>
+                                    <span class="label" t-out="shortBatchLabel(b.batch)"/>
+                                    <span class="bn-bar-count" t-out="fmtInt(b.count)"/>
+                                </button>
+                            </t>
+                        </t>
+                    </div>
+                    <div class="bn-bar-legend" t-if="state.batchVolumeMode === 'payment'">
+                        <span class="bn-bar-legend__item"><i class="sq sq--paid"/> Paid</span>
+                        <span class="bn-bar-legend__item"><i class="sq sq--unpaid"/> Unpaid</span>
+                        <span class="bn-bar-legend__item"><i class="sq sq--other"/> Not invoiced</span>
+                    </div>
+                    <div class="bn-bar-legend" t-else="">
+                        <t t-foreach="state.data.batch_volume_stage_legend || []" t-as="leg" t-key="leg.key">
+                            <span class="bn-bar-legend__item">
+                                <i class="sq" t-attf-style="background: {{ leg.color }};"/>
+                                <span t-out="leg.label"/>
+                            </span>
+                        </t>
+                    </div>
+                </t>
                 <div t-else="" class="bn-muted-empty">No batch data yet.</div>
             </div>
         </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelBatchVolume">
+        <t t-call="bharatnyay_core.DashboardPanelBatchVolumeStacked"/>
     </t>
 
     <t t-name="bharatnyay_core.DashboardPanelUpcomingHearings">

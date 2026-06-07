@@ -86,3 +86,24 @@ export async function onDashboardFilterBatchChange(orm, state, ev, reloadFn) {
     state.filter_batch = ev.target.value;
     await reloadFn();
 }
+
+export function batchVolumeRows(state) {
+    if (state.batchVolumeMode === "stage") {
+        return state.data?.batch_volume_stages || [];
+    }
+    return state.data?.batch_volume || [];
+}
+
+export function batchBarHeight(state, count) {
+    const rows = batchVolumeRows(state);
+    const max = Math.max(...rows.map((b) => b.count || 0), 1);
+    return Math.round(((count || 0) / max) * 100);
+}
+
+export function batchSegPctCount(batch, segCount) {
+    const total = batch?.count || 0;
+    if (!total) {
+        return 0;
+    }
+    return Math.round(((segCount || 0) / total) * 100);
+}
