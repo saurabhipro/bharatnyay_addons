@@ -1291,6 +1291,22 @@ class BharatLoan(models.Model):
     @api.model
     def _cron_auto_advance_workflow_milestones(self):
         """Daily job: move cases to the next stage when stay period elapses."""
+        Run = self.env['bharat.process.run']
+        run = Run.start(
+            'milestone_scheduler',
+            _('Workflow auto-advance'),
+        )
+        try:
+            advanced = self._cron_auto_advance_workflow_milestones_impl()
+            run.finish(_('Advanced %(n)s case(s).') % {'n': advanced})
+            return advanced
+        except Exception as exc:
+            run.fail(str(exc))
+            raise
+
+    @api.model
+    def _cron_auto_advance_workflow_milestones_impl(self):
+        """Core scheduler logic (logged by ``_cron_auto_advance_workflow_milestones``)."""
         self._backfill_milestone_entered_on()
         today = fields.Date.context_today(self)
         candidates = self.search([
@@ -2868,6 +2884,7 @@ class BharatLoan(models.Model):
             'payment_mix': payment_mix,
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
+            'processes': self.env['bharat.process.run'].dashboard_snapshot(),
         }
 
     # ── Role dashboards (Case Manager / Arbitrator) ───────────────────────
@@ -3290,6 +3307,7 @@ class BharatLoan(models.Model):
                 'state_id': int(state_id) if state_id else False,
                 'batch_number': batch_number or False,
             },
+            'processes': self.env['bharat.process.run'].dashboard_snapshot(),
             **breakdown,
         }
 
@@ -3358,6 +3376,7 @@ class BharatLoan(models.Model):
                 'state_id': int(state_id) if state_id else False,
                 'batch_number': batch_number or False,
             },
+            'processes': self.env['bharat.process.run'].dashboard_snapshot(),
             **breakdown,
         }
 

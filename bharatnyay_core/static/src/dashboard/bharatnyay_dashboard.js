@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, useState, onWillStart, onWillUnmount } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
@@ -41,10 +41,19 @@ export class BharatnyayDashboard extends Component {
             await loadDashboardFilterOptions(this.orm, this.state);
             await this.load();
         });
+
+        this._processPollTimer = null;
+        onWillUnmount(() => {
+            if (this._processPollTimer) {
+                clearInterval(this._processPollTimer);
+            }
+        });
     }
 
-    async load() {
-        this.state.loading = true;
+    async load(silent = false) {
+        if (!silent) {
+            this.state.loading = true;
+        }
         this.state.error = null;
         try {
             const data = await this.orm.call(
@@ -59,11 +68,14 @@ export class BharatnyayDashboard extends Component {
             this.state.locationPieStyle = pieGradient(data.location_mix || []);
             this.state.workflowPieStyle = pieGradient(data.workflow_mix || []);
             this.state.paymentPieStyle = pieGradient(data.payment_mix || []);
+            this._scheduleProcessPoll();
         } catch (e) {
             this.state.data = null;
             this.state.error = e?.message || String(e);
         } finally {
-            this.state.loading = false;
+            if (!silent) {
+                this.state.loading = false;
+            }
         }
     }
 
@@ -237,6 +249,69 @@ export class BharatnyayDashboard extends Component {
             context: { default_move_type: "out_invoice" },
             target: "current",
         });
+    }
+
+    _scheduleProcessPoll() {
+        if (this._processPollTimer) {
+            clearInterval(this._processPollTimer);
+            this._processPollTimer = null;
+        }
+        const running = this.state.data?.processes?.running_count || 0;
+        if (running > 0) {
+            this._processPollTimer = setInterval(() => this.load(true), 15000);
+        }
+    }
+
+    openProcessRuns() {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Background processes",
+            res_model: "bharat.process.run",
+            views: [[false, "list"], [false, "form"]],
+            domain: [],
+            target: "current",
+        });
+    }
+
+    openCaseVault() {
+        this.action.doAction("bharatnyay_core.action_bharat_case_vault_batch");
+    }
+
+    fmtDuration(seconds) {
+        const s = Number(seconds) || 0;
+        if (s < 60) {
+            return `${s.toFixed(s < 10 ? 1 : 0)}s`;
+        }
+        const mins = Math.floor(s / 60);
+        const rem = Math.round(s % 60);
+        return rem ? `${mins}m ${rem}s` : `${mins}m`;
+    }
+
+    processStateLabel(state) {
+        const labels = {
+            done: "Completed",
+            failed: "Failed",
+            running: "Running",
+            queued: "Queued",
+        };
+        return labels[state] || state;
+    }
+
+    processStateIcon(state) {
+        const icons = {
+            done: "fa-check-circle",
+            failed: "fa-exclamation-circle",
+            running: "fa-spinner fa-spin",
+            queued: "fa-clock-o",
+        };
+        return icons[state] || "fa-circle-o";
+    }
+
+    processProgressLabel(job) {
+        if (job.progress_total > 0) {
+            return `${job.progress_current}/${job.progress_total}`;
+        }
+        return job.state === "running" ? "In progress" : "Queued";
     }
 
     fmtInt(n) {

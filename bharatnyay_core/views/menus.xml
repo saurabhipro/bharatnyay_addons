@@ -38,6 +38,19 @@
               action="action_bharat_loan"
               sequence="15"/>
 
+    <menuitem id="menu_bharatnyay_case_vault"
+              name="Case Vault"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_case_vault_batch"
+              sequence="12"/>
+
+    <menuitem id="menu_bharatnyay_process_runs"
+              name="Background processes"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_process_run"
+              sequence="13"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system"/>
+
     <menuitem id="menu_bharatnyay_workflow"
               name="Workflow queues"
               parent="menu_bharatnyay_root"

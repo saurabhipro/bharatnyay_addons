@@ -2,6 +2,10 @@
 $o-bn-primary: #4361ee;
 $o-bn-primary-dark: #354fd4;
 $o-bn-primary-text: #ffffff;
+$o-bn-row-even: #ffffff;
+$o-bn-row-odd: #f3f4f6;
+$o-bn-row-hover: #e8edff;
+$o-bn-row-selected: #dfe7ff;
 
 body.o_web_client {
     .o_list_renderer .o_list_table thead,
@@ -61,11 +65,114 @@ body.o_web_client {
         color: $o-bn-primary-text !important;
     }
 
+    // Zebra rows — white / light grey alternation (loan sheet and all list views)
+    .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd),
+    .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd),
+    .o_field_x2many_list .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd) {
+        --bs-table-bg: #{$o-bn-row-even};
+        --bs-table-striped-bg: #{$o-bn-row-even};
+        background-color: $o-bn-row-even !important;
+
+        > td,
+        > th {
+            background-color: $o-bn-row-even !important;
+            box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.06);
+        }
+    }
+
+    .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(even),
+    .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(even),
+    .o_field_x2many_list .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(even) {
+        --bs-table-bg: #{$o-bn-row-odd};
+        --bs-table-striped-bg: #{$o-bn-row-odd};
+        background-color: $o-bn-row-odd !important;
+
+        > td,
+        > th {
+            background-color: $o-bn-row-odd !important;
+            box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.06);
+        }
+    }
+
+    .o_list_renderer .o_list_table tbody > tr.o_data_row:hover,
+    .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:hover,
+    .o_field_x2many_list .o_list_renderer .o_list_table tbody > tr.o_data_row:hover {
+        --bs-table-bg: #{$o-bn-row-hover};
+        --bs-table-hover-bg: #{$o-bn-row-hover};
+        background-color: $o-bn-row-hover !important;
+
+        > td,
+        > th {
+            background-color: $o-bn-row-hover !important;
+        }
+    }
+
+    .o_list_renderer .o_list_table tbody > tr.o_data_row.o_selected_row,
+    .o_list_renderer .o_list_table tbody > tr.o_data_row.table-active,
+    .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row.o_selected_row,
+    .o_field_x2many_list .o_list_renderer .o_list_table tbody > tr.o_data_row.o_selected_row {
+        --bs-table-bg: #{$o-bn-row-selected};
+        --bs-table-active-bg: #{$o-bn-row-selected};
+        background-color: $o-bn-row-selected !important;
+
+        > td,
+        > th {
+            background-color: $o-bn-row-selected !important;
+        }
+    }
+
     &.dark_mode {
+        $o-bn-row-even-dark: #1e293b;
+        $o-bn-row-odd-dark: #273449;
+        $o-bn-row-hover-dark: #334155;
+        $o-bn-row-selected-dark: #3b4f72;
+
         .o_list_renderer .o_list_table thead th,
         .o_field_x2many .o_list_renderer .o_list_table thead th {
             background-color: $o-bn-primary !important;
             color: $o-bn-primary-text !important;
+        }
+
+        .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd),
+        .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd) {
+            --bs-table-bg: #{$o-bn-row-even-dark};
+            background-color: $o-bn-row-even-dark !important;
+
+            > td,
+            > th {
+                background-color: $o-bn-row-even-dark !important;
+            }
+        }
+
+        .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(even),
+        .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(even) {
+            --bs-table-bg: #{$o-bn-row-odd-dark};
+            background-color: $o-bn-row-odd-dark !important;
+
+            > td,
+            > th {
+                background-color: $o-bn-row-odd-dark !important;
+            }
+        }
+
+        .o_list_renderer .o_list_table tbody > tr.o_data_row:hover,
+        .o_field_x2many .o_list_renderer .o_list_table tbody > tr.o_data_row:hover {
+            background-color: $o-bn-row-hover-dark !important;
+
+            > td,
+            > th {
+                background-color: $o-bn-row-hover-dark !important;
+            }
+        }
+
+        .o_list_renderer .o_list_table tbody > tr.o_data_row.o_selected_row,
+        .o_list_renderer .o_list_table tbody > tr.o_data_row.table-active {
+            background-color: $o-bn-row-selected-dark !important;
+
+            > td,
+            > th {
+                background-color: $o-bn-row-selected-dark !important;
+            }
         }
     }
 }

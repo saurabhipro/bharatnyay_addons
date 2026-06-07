@@ -1202,6 +1202,126 @@
         --entity-border: #d4b84a;
     }
 
+    .bn-process-panel {
+        background: var(--bn-card);
+        border: 1px solid var(--bn-border-card);
+        border-radius: var(--bn-radius);
+        box-shadow: var(--bn-card-shadow);
+        padding: 1rem 1.1rem;
+    }
+
+    .bn-process-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem 1.25rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .bn-process-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 120px;
+    }
+
+    .bn-process-stat--running {
+        border: 1px solid color-mix(in srgb, var(--bn-accent) 35%, var(--bn-border));
+        background: var(--bn-accent-soft);
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        cursor: pointer;
+        transition: box-shadow 0.15s ease;
+
+        &:hover {
+            box-shadow: var(--bn-card-hover-shadow);
+        }
+    }
+
+    .bn-process-stat__value {
+        font-size: 1.35rem;
+        font-weight: 700;
+        line-height: 1.1;
+
+        &--sm {
+            font-size: 1.05rem;
+        }
+    }
+
+    .bn-process-stat__label {
+        font-size: var(--bn-label-size);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--bn-muted);
+        font-weight: 600;
+    }
+
+    .bn-process-stat__meta {
+        font-size: var(--bn-trend-size);
+        color: var(--bn-muted);
+    }
+
+    .bn-process-vault-link {
+        margin-left: auto;
+        font-weight: 600;
+    }
+
+    .bn-process-list {
+        display: grid;
+        gap: 0.45rem;
+    }
+
+    .bn-process-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid color-mix(in srgb, var(--bn-border) 80%, transparent);
+        background: rgba(255, 255, 255, 0.65);
+
+        &--running {
+            border-color: color-mix(in srgb, var(--bn-accent) 40%, var(--bn-border));
+            background: color-mix(in srgb, var(--bn-accent-soft) 70%, white);
+        }
+
+        &--failed {
+            border-color: #fecaca;
+            background: #fff5f5;
+        }
+
+        &--done {
+            border-color: #bbf7d0;
+            background: #f8fff9;
+        }
+    }
+
+    .bn-process-row__state {
+        color: var(--bn-accent);
+        padding-top: 0.1rem;
+    }
+
+    .bn-process-row--failed .bn-process-row__state {
+        color: #dc2626;
+    }
+
+    .bn-process-row--done .bn-process-row__state {
+        color: var(--bn-success);
+    }
+
+    .bn-process-row__title {
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .bn-process-row__meta {
+        font-size: var(--bn-trend-size);
+        color: var(--bn-muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.65rem;
+    }
+
     .bn-muted-empty {
         text-align: center;
         padding: 2rem;

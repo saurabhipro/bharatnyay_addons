@@ -54,30 +54,41 @@
     </record>
 
     <record id="action_bharat_postal_import_wizard" model="ir.actions.act_window">
-        <field name="name">Import postal tracking</field>
-        <field name="res_model">bharat.postal.tracking.import.wizard</field>
+        <field name="name">Import POD status</field>
+        <field name="res_model">bharat.loan.portfolio.import.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
+        <field name="context">{'default_import_type': 'pod_status'}</field>
     </record>
 
     <record id="view_bharat_loan_portfolio_import_wizard_form" model="ir.ui.view">
         <field name="name">bharat.loan.portfolio.import.wizard.form</field>
         <field name="model">bharat.loan.portfolio.import.wizard</field>
         <field name="arch" type="xml">
-            <form string="Import portfolio Excel">
+            <form string="Import Excel">
                 <header>
                     <field name="import_state" widget="statusbar" statusbar_visible="idle,done"/>
                 </header>
                 <group>
+                    <field name="import_type" widget="radio"/>
                     <field name="data_file" filename="filename"/>
                     <field name="filename" invisible="1"/>
-                    <field name="update_existing"/>
+                    <field name="update_existing" invisible="import_type != 'portfolio'"/>
                     <field name="dry_run"/>
                 </group>
-                <div class="alert alert-info" role="alert" invisible="result_summary">
+                <div class="alert alert-info" role="alert"
+                     invisible="result_summary or import_type != 'portfolio'">
                     Upload your Lok Adalat / portfolio Excel (.xlsx only). Valid rows are imported immediately.
                     Wrong rows are listed below — all other rows are still saved.
                     If import fails with a memory error, open the file in Excel, delete blank rows far below your data, and save again.
+                </div>
+                <div class="alert alert-info" role="alert"
+                     invisible="result_summary or import_type != 'pod_status'">
+                    Upload a POD status Excel (.xlsx). Each row needs <b>Loan Number</b>,
+                    <b>Notice / document</b> (Notice 1, Interim Order 1, or Award),
+                    and <b>POD / tracking</b> or <b>delivery status</b>.
+                    Optional columns: dispatch date, delivery date.
+                    Valid rows update postal tracking on the matching case document.
                 </div>
                 <group string="Result" invisible="not result_summary">
                     <field name="result_summary" nolabel="1" widget="text"/>
@@ -96,7 +107,7 @@
     </record>
 
     <record id="action_bharat_loan_portfolio_import_wizard" model="ir.actions.act_window">
-        <field name="name">Import portfolio Excel</field>
+        <field name="name">Import Excel</field>
         <field name="res_model">bharat.loan.portfolio.import.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

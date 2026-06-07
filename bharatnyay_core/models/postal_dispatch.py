@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+from markupsafe import escape
+
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 POSTAL_DOCUMENT_TYPES = [
     ('notice_1', 'Notice 1'),
@@ -284,3 +287,89 @@ class BharatLoanPostalDispatch(models.Model):
         if vals:
             self.write(vals)
         return status
+
+    @api.model
+    def _import_parse_date(self, val):
+        """Parse date from Excel cell or text (shared by import wizards)."""
+        from datetime import datetime
+
+        from ..tools.xlsx_reader import excel_serial_to_date
+
+        if val in (None, '', False):
+            return False
+        if hasattr(val, 'year'):
+            return val
+        parsed = excel_serial_to_date(val)
+        if parsed:
+            return parsed
+        text = str(val).strip()
+        if not text:
+            return False
+        for fmt in ('%d-%m-%Y', '%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y'):
+            try:
+                return datetime.strptime(text, fmt).date()
+            except ValueError:
+                continue
+        return False
+
+    @api.model
+    def _import_normalize_document_type(self, value):
+        """Map spreadsheet notice/document labels to postal document_type keys."""
+        text = str(value or '').strip().lower()
+        if not text:
+            return False
+        aliases = {
+            'notice_1': {
+                '1', '01', 'n1', 'notice 1', 'notice_1', 'notice1', 'notice one',
+            },
+            'interim_order_1': {
+                'interim order 1', 'interim_order_1', 'io1', 'interim 1',
+                'interim one', 'interim order one', 'interim order 1',
+            },
+            'award': {
+                'award', 'final award', 'final', 'award document',
+            },
+        }
+        for doc_type, labels in aliases.items():
+            if text in labels:
+                return doc_type
+        if text.isdigit():
+            notice_map = {1: 'notice_1', 2: 'interim_order_1', 3: 'award'}
+            mapped = notice_map.get(int(text))
+            if mapped:
+                return mapped
+        return False
+
+    @api.model
+    def import_pod_status_row(
+        self, loan, document_type, pod, dispatch_date, delivery_date,
+        status_text, dry_run=False,
+    ):
+        """Create/update postal dispatch for a case document from import row."""
+        loan.ensure_one()
+        if document_type not in dict(POSTAL_DOCUMENT_TYPES):
+            raise UserError(_('Unknown document type “%s”.') % document_type)
+
+        dispatch = self.ensure_for_loan(loan, document_type)
+        track = (pod or '').strip()
+        status_label = (status_text or '').strip()
+
+        if dry_run:
+            return dispatch, status_label or '-'
+
+        if track:
+            dispatch.pod = track
+        dispatch.apply_postal_import_row(dispatch_date, delivery_date, status_text)
+        loan.message_post(
+            body=_(
+                'POD import updated <b>%(doc)s</b> — tracking '
+                '<b>%(track)s</b>, status <b>%(status)s</b>.'
+            ) % {
+                'doc': escape(dispatch.document_label or document_type),
+                'track': escape(track or '-'),
+                'status': escape(
+                    status_text or dispatch.post_office_status_id.name or '-'
+                ),
+            },
+        )
+        return dispatch, status_label or dispatch.post_office_status_id.name or '-'

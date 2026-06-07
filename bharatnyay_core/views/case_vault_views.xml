@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_process_run_list" model="ir.ui.view">
+        <field name="name">bharat.process.run.list</field>
+        <field name="model">bharat.process.run</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0"
+                  decoration-success="state == 'done'"
+                  decoration-danger="state == 'failed'"
+                  decoration-info="state == 'running'"
+                  decoration-muted="state == 'queued'">
+                <field name="started_at"/>
+                <field name="name"/>
+                <field name="job_code"/>
+                <field name="batch_number" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'"
+                       decoration-info="state == 'running'"
+                       decoration-warning="state == 'queued'"/>
+                <field name="duration_seconds" string="Duration (s)"/>
+                <field name="progress_current" optional="hide"/>
+                <field name="progress_total" optional="hide"/>
+                <field name="finished_at" optional="show"/>
+                <field name="message" optional="hide"/>
+                <field name="error_message" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_process_run_form" model="ir.ui.view">
+        <field name="name">bharat.process.run.form</field>
+        <field name="model">bharat.process.run</field>
+        <field name="arch" type="xml">
+            <form string="Process run" create="0" edit="0" delete="0">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="queued,running,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="job_code"/>
+                            <field name="batch_number"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="started_at"/>
+                            <field name="finished_at"/>
+                            <field name="duration_seconds"/>
+                            <field name="progress_current"/>
+                            <field name="progress_total"/>
+                        </group>
+                    </group>
+                    <group string="Summary">
+                        <field name="message" nolabel="1" widget="text"/>
+                    </group>
+                    <group string="Error" invisible="not error_message">
+                        <field name="error_message" nolabel="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_process_run" model="ir.actions.act_window">
+        <field name="name">Background processes</field>
+        <field name="res_model">bharat.process.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <record id="view_bharat_case_vault_batch_list" model="ir.ui.view">
+        <field name="name">bharat.case.vault.batch.list</field>
+        <field name="model">bharat.case.vault.batch</field>
+        <field name="arch" type="xml">
+            <list decoration-success="vault_state == 'ready'"
+                  decoration-warning="vault_state in ('queued', 'building')"
+                  decoration-danger="vault_state == 'failed'"
+                  multi_edit="0">
+                <header>
+                    <button name="action_sync_batches_from_cases"
+                            type="object"
+                            string="Sync batches from cases"
+                            class="btn-secondary"
+                            display="always"/>
+                </header>
+                <field name="batch_number"/>
+                <field name="case_count"/>
+                <field name="vault_state" widget="badge"
+                       decoration-success="vault_state == 'ready'"
+                       decoration-warning="vault_state in ('queued', 'building')"
+                       decoration-danger="vault_state == 'failed'"
+                       decoration-muted="vault_state == 'empty'"/>
+                <field name="last_built_at"/>
+                <field name="notice_1_case_count" string="N1 pages" optional="show"/>
+                <field name="interim_order_1_case_count" string="IO1 pages" optional="show"/>
+                <field name="award_case_count" string="Award pages" optional="show"/>
+                <button name="action_download_notice_1"
+                        type="object"
+                        string="Notice 1"
+                        icon="fa-download"
+                        class="btn-link"
+                        invisible="not notice_1_pdf"/>
+                <button name="action_download_interim_order_1"
+                        type="object"
+                        string="Interim 1"
+                        icon="fa-download"
+                        class="btn-link"
+                        invisible="not interim_order_1_pdf"/>
+                <button name="action_download_award"
+                        type="object"
+                        string="Award"
+                        icon="fa-download"
+                        class="btn-link"
+                        invisible="not award_pdf"/>
+                <button name="action_queue_build"
+                        type="object"
+                        string="Build"
+                        icon="fa-cogs"
+                        class="btn-link"
+                        invisible="vault_state in ('queued', 'building')"/>
+                <button name="action_rebuild_now"
+                        type="object"
+                        string="Rebuild now"
+                        icon="fa-refresh"
+                        class="btn-link text-warning"
+                        invisible="vault_state in ('queued', 'building')"
+                        groups="base.group_no_one"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_case_vault_batch_form" model="ir.ui.view">
+        <field name="name">bharat.case.vault.batch.form</field>
+        <field name="model">bharat.case.vault.batch</field>
+        <field name="arch" type="xml">
+            <form string="Case Vault batch">
+                <header>
+                    <button name="action_queue_build"
+                            type="object"
+                            string="Build / rebuild PDFs"
+                            class="btn-primary"
+                            invisible="vault_state in ('queued', 'building')"/>
+                    <button name="action_download_notice_1"
+                            type="object"
+                            string="Download Notice 1"
+                            class="btn-secondary"
+                            invisible="not notice_1_pdf"/>
+                    <button name="action_download_interim_order_1"
+                            type="object"
+                            string="Download Interim Order 1"
+                            class="btn-secondary"
+                            invisible="not interim_order_1_pdf"/>
+                    <button name="action_download_award"
+                            type="object"
+                            string="Download Award"
+                            class="btn-secondary"
+                            invisible="not award_pdf"/>
+                    <field name="vault_state" widget="statusbar"
+                           statusbar_visible="empty,queued,building,ready"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="batch_number" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="case_count"/>
+                            <field name="last_built_at"/>
+                            <field name="process_run_id"/>
+                        </group>
+                        <group>
+                            <field name="notice_1_case_count"/>
+                            <field name="interim_order_1_case_count"/>
+                            <field name="award_case_count"/>
+                        </group>
+                    </group>
+                    <group string="Build log">
+                        <field name="build_message" nolabel="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bharat_case_vault_batch_search" model="ir.ui.view">
+        <field name="name">bharat.case.vault.batch.search</field>
+        <field name="model">bharat.case.vault.batch</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="batch_number"/>
+                <filter string="Ready" name="ready" domain="[('vault_state', '=', 'ready')]"/>
+                <filter string="Building" name="building" domain="[('vault_state', 'in', ('queued', 'building'))]"/>
+                <filter string="Failed" name="failed" domain="[('vault_state', '=', 'failed')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_state" context="{'group_by': 'vault_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bharat_case_vault_batch" model="ir.actions.act_window">
+        <field name="name">Case Vault</field>
+        <field name="res_model">bharat.case.vault.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_case_vault_batch_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Store merged Notice 1, Interim Order 1, and Award PDFs per import batch.
+            </p>
+            <p>
+                Click <strong>Sync batches from cases</strong> to create vault rows for existing batches,
+                then <strong>Build</strong> to generate downloadable PDF packs.
+            </p>
+        </field>
+    </record>
+</odoo>

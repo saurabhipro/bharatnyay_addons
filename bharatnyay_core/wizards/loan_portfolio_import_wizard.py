@@ -53,11 +53,47 @@ EXCEL_COLUMN_MAP = {
     'deliver status': ('deliver_status', 'char'),
 }
 
+POD_COLUMN_MAP = {
+    'loan number': 'loan_number',
+    'loan no': 'loan_number',
+    'loan no.': 'loan_number',
+    'notice number': 'document_type',
+    'notice no': 'document_type',
+    'notice no.': 'document_type',
+    'document': 'document_type',
+    'document type': 'document_type',
+    'notice/document': 'document_type',
+    'notice': 'document_type',
+    'pod': 'pod',
+    'pod number': 'pod',
+    'pod no': 'pod',
+    'pod no.': 'pod',
+    'tracking no': 'pod',
+    'tracking no.': 'pod',
+    'tracking number': 'pod',
+    'deliver status': 'status',
+    'delivery status': 'status',
+    'status': 'status',
+    'post office status': 'status',
+    'deliver date': 'delivery_date',
+    'delivery date': 'delivery_date',
+    'dispatch date': 'dispatch_date',
+}
+
 
 class BharatLoanPortfolioImportWizard(models.TransientModel):
     _name = 'bharat.loan.portfolio.import.wizard'
-    _description = 'Import portfolio / Lok Adalat Excel into cases'
+    _description = 'Import portfolio Excel or POD status into cases'
 
+    import_type = fields.Selection(
+        [
+            ('portfolio', 'Portfolio / Lok Adalat Excel'),
+            ('pod_status', 'POD status (Notice 1 / Interim Order 1 / Award)'),
+        ],
+        string='Import type',
+        default='portfolio',
+        required=True,
+    )
     data_file = fields.Binary(string='Excel file (.xlsx)', required=True)
     filename = fields.Char(string='Filename')
     update_existing = fields.Boolean(
@@ -150,6 +186,46 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         return mapping, unknown
 
     @classmethod
+    def _build_pod_column_index_map(cls, header_row):
+        mapping = {}
+        unknown = []
+        for idx, header in enumerate(header_row):
+            key = _normalize_header(header)
+            if not key:
+                continue
+            field_name = POD_COLUMN_MAP.get(key)
+            if not field_name:
+                unknown.append(header)
+                continue
+            mapping[idx] = field_name
+        return mapping, unknown
+
+    @classmethod
+    def _pod_row_to_vals(cls, row, column_map, PostalDispatch):
+        vals = {}
+        for idx, field_name in column_map.items():
+            if idx >= len(row):
+                continue
+            raw = row[idx]
+            if raw in (None, '', False):
+                continue
+            if field_name in ('dispatch_date', 'delivery_date'):
+                parsed = PostalDispatch._import_parse_date(raw)
+                if parsed:
+                    vals[field_name] = parsed
+            elif field_name == 'document_type':
+                if isinstance(raw, float) and raw == int(raw):
+                    raw = int(raw)
+                vals[field_name] = str(raw).strip()
+            else:
+                if isinstance(raw, float) and raw == int(raw):
+                    raw = int(raw)
+                text = str(raw).strip()
+                if text:
+                    vals[field_name] = text
+        return vals
+
+    @classmethod
     def _row_to_vals(cls, row, column_map):
         vals = {}
         for idx, (field_name, kind) in column_map.items():
@@ -212,7 +288,57 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
             )
         return rows[1:], column_map, unknown_headers
 
+    def _parse_pod_workbook(self):
+        if not self.data_file:
+            raise UserError(_('Upload an Excel (.xlsx) file.'))
+        if self.filename and not str(self.filename).lower().endswith('.xlsx'):
+            raise UserError(
+                _('Upload a modern Excel workbook (.xlsx). Legacy .xls files are not supported.')
+            )
+        try:
+            raw = base64.b64decode(self.data_file)
+        except Exception as exc:
+            raise UserError(_('Could not decode the uploaded file.')) from exc
+        if not raw:
+            raise UserError(_('The uploaded file is empty.'))
+        if len(raw) > self._MAX_IMPORT_BYTES:
+            raise UserError(
+                _('File is too large (%(size)s MB). Maximum is %(max)s MB.')
+                % {'size': round(len(raw) / (1024 * 1024), 1), 'max': round(self._MAX_IMPORT_BYTES / (1024 * 1024))}
+            )
+        try:
+            rows = read_xlsx_rows(io.BytesIO(raw))
+        except MemoryError as exc:
+            raise UserError(
+                _('Not enough memory to read this workbook. '
+                  'In Excel, delete unused rows/columns below your data, save as .xlsx, and try again.')
+            ) from exc
+        except Exception as exc:
+            raise UserError(_('Could not read the Excel workbook: %s') % exc) from exc
+        if not rows:
+            raise UserError(_('The workbook has no rows.'))
+        column_map, unknown_headers = self._build_pod_column_index_map(rows[0])
+        mapped_fields = set(column_map.values())
+        if 'loan_number' not in mapped_fields:
+            raise UserError(
+                _('Missing required column “Loan Number”. Found headers: %s')
+                % ', '.join(str(h) for h in rows[0] if h)
+            )
+        if 'document_type' not in mapped_fields:
+            raise UserError(
+                _('Missing required column for notice/document (e.g. “Notice Number” or “Document”). '
+                 'Found headers: %s')
+                % ', '.join(str(h) for h in rows[0] if h)
+            )
+        return rows[1:], column_map, unknown_headers
+
     def action_import(self):
+        self.ensure_one()
+        if self.import_type == 'pod_status':
+            return self._import_pod_status()
+        return self._import_portfolio()
+
+    def _import_portfolio(self):
         self.ensure_one()
         data_rows, column_map, unknown_headers = self._parse_workbook()
 
@@ -253,6 +379,8 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
                 try:
                     existing.write(vals)
                     updated += 1
+                    if not last_batch and existing.batch_number:
+                        last_batch = existing.batch_number
                 except Exception as exc:
                     errors.append(
                         _('Row %(row)s | Loan %(loan)s | %(error)s')
@@ -330,6 +458,15 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
                   'or update those cases manually.'),
             ])
 
+        if not self.dry_run and last_batch and imported_ok:
+            self.env['bharat.case.vault.batch'].queue_build_for_batch(last_batch)
+            summary_lines.extend([
+                '',
+                _('Case Vault build queued for batch %(batch)s — merged Notice 1, Interim Order 1, '
+                  'and Award PDFs will be ready under Case Vault.')
+                % {'batch': last_batch},
+            ])
+
         self.write({
             'import_state': 'done' if not self.dry_run else 'idle',
             'result_summary': '\n'.join(summary_lines),
@@ -339,6 +476,142 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         return {
             'type': 'ir.actions.act_window',
             'name': _('Portfolio import'),
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
+
+    def _import_pod_status(self):
+        self.ensure_one()
+        data_rows, column_map, unknown_headers = self._parse_pod_workbook()
+        PostalDispatch = self.env['bharat.loan.postal.dispatch']
+        Loan = self.env['bharat.loan']
+
+        updated = 0
+        skipped_blank = 0
+        locked = 0
+        not_found = 0
+        errors = []
+
+        for row_idx, row in enumerate(data_rows, start=2):
+            vals = self._pod_row_to_vals(row, column_map, PostalDispatch)
+            loan_number = self._normalize_loan_number(vals.get('loan_number'))
+            if not loan_number:
+                skipped_blank += 1
+                continue
+
+            doc_type = PostalDispatch._import_normalize_document_type(
+                vals.get('document_type')
+            )
+            if not doc_type:
+                errors.append(
+                    _('Row %(row)s | Loan %(loan)s | Unknown notice/document “%(doc)s” '
+                      '(use Notice 1, Interim Order 1, or Award)')
+                    % {
+                        'row': row_idx,
+                        'loan': loan_number,
+                        'doc': vals.get('document_type') or '-',
+                    }
+                )
+                continue
+
+            pod = (vals.get('pod') or '').strip()
+            status_text = (vals.get('status') or '').strip()
+            if not pod and not status_text:
+                errors.append(
+                    _('Row %(row)s | Loan %(loan)s | Provide POD/tracking or delivery status')
+                    % {'row': row_idx, 'loan': loan_number}
+                )
+                continue
+
+            loan = Loan.search([('loan_number', '=', loan_number)], limit=1)
+            if not loan:
+                not_found += 1
+                errors.append(
+                    _('Row %(row)s | Loan %(loan)s | Case not found')
+                    % {'row': row_idx, 'loan': loan_number}
+                )
+                continue
+            if loan.is_case_locked:
+                locked += 1
+                errors.append(
+                    _('Row %(row)s | Loan %(loan)s | Case locked (Final Award) — skipped')
+                    % {'row': row_idx, 'loan': loan_number}
+                )
+                continue
+
+            if self.dry_run:
+                updated += 1
+                continue
+            try:
+                PostalDispatch.import_pod_status_row(
+                    loan,
+                    doc_type,
+                    pod,
+                    vals.get('dispatch_date'),
+                    vals.get('delivery_date'),
+                    status_text,
+                    dry_run=False,
+                )
+                updated += 1
+            except Exception as exc:
+                errors.append(
+                    _('Row %(row)s | Loan %(loan)s | %(error)s')
+                    % {'row': row_idx, 'loan': loan_number, 'error': exc}
+                )
+
+        if self.dry_run:
+            headline = _('PREVIEW ONLY — no POD data was saved.')
+        elif errors:
+            headline = _(
+                'POD import finished with errors — %(ok)s row(s) updated, %(bad)s row(s) failed.'
+            )
+            headline = headline % {'ok': updated, 'bad': len(errors)}
+        else:
+            headline = _('POD import completed — %(ok)s row(s) updated.') % {'ok': updated}
+
+        summary_lines = [
+            headline,
+            '',
+            _('File: %s') % (self.filename or _('(unnamed)')),
+            _('Rows in sheet: %s') % len(data_rows),
+        ]
+        if self.dry_run:
+            summary_lines.append(_('Would update: %s') % updated)
+        else:
+            summary_lines.append(_('Updated: %s') % updated)
+        summary_lines.extend([
+            _('Skipped (blank loan number): %s') % skipped_blank,
+            _('Skipped (case not found): %s') % not_found,
+            _('Skipped (case locked): %s') % locked,
+            _('Failed: %s') % len(errors),
+        ])
+        if unknown_headers:
+            summary_lines.append(
+                _('Ignored columns: %s')
+                % ', '.join(str(h) for h in unknown_headers if h)
+            )
+        if self.dry_run:
+            summary_lines.extend([
+                '',
+                _('Uncheck “Preview only” and click Import again to save POD updates.'),
+            ])
+        elif updated and not errors:
+            summary_lines.extend([
+                '',
+                _('Open Cases to review Notice 1, Interim Order 1, and Award delivery status.'),
+            ])
+
+        self.write({
+            'import_state': 'done' if not self.dry_run else 'idle',
+            'result_summary': '\n'.join(summary_lines),
+            'error_log': '\n'.join(errors) if errors else False,
+        })
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('POD status import'),
             'res_model': self._name,
             'res_id': self.id,
             'view_mode': 'form',

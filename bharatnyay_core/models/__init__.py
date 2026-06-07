@@ -18,3 +18,5 @@ from . import loan_stage
 from . import loan_milestone
 from . import res_company
 from . import loan
+from . import process_run
+from . import case_vault
