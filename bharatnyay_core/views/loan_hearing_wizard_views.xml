@@ -29,13 +29,18 @@
                            placeholder="Tap a green slot above"/>
                     <field name="hearing_datetime" invisible="not use_manual_time"/>
                 </group>
-                <group string="Meeting link">
-                    <field name="hearing_link_type" widget="radio" options="{'horizontal': true}"/>
-                    <field name="hearing_video_url" placeholder="https://meet.google.com/..."
-                           widget="url" invisible="hearing_link_type == 'odoo'"/>
+                <group string="Odoo meeting">
+                    <div class="text-muted" colspan="2">
+                        An Odoo Calendar event with Discuss video call is created automatically.
+                        Attendees receive a calendar invitation by email.
+                    </div>
                     <field name="invite_user_ids" widget="many2many_tags"
                            options="{'no_create': True}"
-                           placeholder="Internal users to notify…"/>
+                           placeholder="Odoo users…"/>
+                    <field name="external_attendee_partner_ids" widget="many2many_tags"
+                           placeholder="External contacts…"/>
+                    <field name="external_attendee_emails"
+                           placeholder="borrower@example.com, counsel@firm.com"/>
                 </group>
                 <group string="Outcome" invisible="hearing_reschedule">
                     <field name="was_user_present"/>

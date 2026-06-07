@@ -93,34 +93,31 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         help='Lean label like 09:30–10:00 after you pick a grid slot.',
     )
 
-    hearing_link_type = fields.Selection(
-        [
-            ('external', 'External conferencing URL'),
-            ('odoo', 'Odoo case link'),
-        ],
-        string='Link type',
-        default='external',
-        required=True,
-        help='External: paste Teams / Zoom / Meet. Odoo: store a URL that opens this loan in Odoo '
-        '(use Discuss or phone for live audio/video alongside if needed).',
-    )
     hearing_datetime = fields.Datetime(
         string='Hearing date & time',
         required=True,
         help='When the hearing will begin (shown in invitations).',
-    )
-    hearing_video_url = fields.Char(
-        string='External video URL',
-        help='Teams, Zoom, Meet, … — used when Link type is External.',
     )
     invite_user_ids = fields.Many2many(
         comodel_name='res.users',
         relation='bharat_ln_hearwiz_inv_users_rel',
         column1='wizard_id',
         column2='user_id',
-        string='Also email these users',
-        help='Odoo internal users whose email addresses should receive hearing invitations '
-        '(in addition to borrower email and arbitrator).',
+        string='Internal attendees',
+        help='Odoo users added to the calendar meeting (arbitrator is added automatically).',
+    )
+    external_attendee_partner_ids = fields.Many2many(
+        comodel_name='res.partner',
+        relation='bharat_ln_hearwiz_ext_attendee_rel',
+        column1='wizard_id',
+        column2='partner_id',
+        string='External attendees (contacts)',
+        help='Existing contacts who are not Odoo users. Each needs a valid email.',
+    )
+    external_attendee_emails = fields.Text(
+        string='External attendee emails',
+        help='Paste one or more emails (comma, semicolon, or line-separated). '
+        'A contact is created automatically when needed.',
     )
     is_final_award = fields.Boolean(string='Is final award', default=False)
     was_user_present = fields.Boolean(string='Was user present', default=False)
@@ -398,6 +395,19 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'invite_user_ids',
                     [(6, 0, loan.arbitrator_id.ids)],
                 )
+            external = loan.hearing_external_attendee_ids
+            if (loan.borrower_email or '').strip():
+                borrower_partner = loan._hearing_ensure_partner_for_email(
+                    loan.borrower_email,
+                    name=loan.customer_name or loan.borrower_email,
+                )
+                if borrower_partner:
+                    external |= borrower_partner
+            if external:
+                vals.setdefault(
+                    'external_attendee_partner_ids',
+                    [(6, 0, external.ids)],
+                )
             if reschedule and loan.hearing_datetime:
                 vals.setdefault('hearing_datetime', loan.hearing_datetime)
                 uz = self._user_timezone()
@@ -478,24 +488,22 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         if not self.hearing_datetime:
             raise UserError(_('Set a hearing date and time.'))
 
-        link_type = self.hearing_link_type or 'external'
-        if link_type == 'odoo':
-            vid = ((loan._hearing_build_odoo_case_url()) or '').strip() or False
-            if not vid:
-                raise UserError(
-                    _(
-                        'Could not build an Odoo case link. Set the '
-                        '`web.base.url` system parameter (Settings ▸ Technical ▸ System Parameters).'
-                    )
-                )
-        else:
-            vid = ((self.hearing_video_url or '').strip() or False)
+        external_partners = self.external_attendee_partner_ids
+        if (self.external_attendee_emails or '').strip():
+            external_partners |= loan._hearing_partners_from_emails(
+                self.external_attendee_emails,
+            )
+        calendar_event = loan._hearing_upsert_calendar_event(
+            self.hearing_datetime,
+            self.invite_user_ids,
+            external_partners,
+        )
 
         vals_loan = {
             'hearing_datetime': self.hearing_datetime,
-            'hearing_link_type': link_type,
-            'hearing_video_url': vid,
             'hearing_invite_user_ids': [(6, 0, self.invite_user_ids.ids)],
+            'hearing_external_attendee_ids': [(6, 0, external_partners.ids)],
+            'calendar_event_id': calendar_event.id,
         }
         if not self.hearing_reschedule:
             if self.is_final_award:
@@ -513,7 +521,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         local = fields.Datetime.context_timestamp(loan, loan.hearing_datetime)
         dt_human = escape(str(local))
 
-        link_disp = escape((loan.hearing_video_url or '').strip() or _('(not set)'))
+        meeting_url = escape((calendar_event.videocall_location or '').strip() or _('(not set)'))
         if self.is_final_award and not self.hearing_reschedule:
             header = _('<p><b>Final award — hearing logged</b></p>')
         elif self.hearing_reschedule:
@@ -521,26 +529,35 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         else:
             header = _('<p><b>Hearing scheduled</b></p>')
         chunks = [header + _('<p>When (your timezone): %s</p>') % dt_human]
-        if link_type == 'odoo':
-            chunks.append(_('<p>Odoo case link: %s</p>') % link_disp)
-        else:
-            chunks.append(_('<p>External meeting link: %s</p>') % link_disp)
+        chunks.append(_('<p>Odoo meeting: %s</p>') % meeting_url)
         if self.invite_user_ids:
             chunks.append(
                 '<p><b>%s</b> %s</p>'
                 % (
-                    escape(_('Invitation list (internal users):')),
+                    escape(_('Internal attendees:')),
                     escape(', '.join(self.invite_user_ids.mapped('name'))),
+                )
+            )
+        if external_partners:
+            chunks.append(
+                '<p><b>%s</b> %s</p>'
+                % (
+                    escape(_('External attendees:')),
+                    escape(', '.join(external_partners.mapped('display_name'))),
                 )
             )
         loan.message_post(body=''.join(chunks))
 
-        invitees = ', '.join(self.invite_user_ids.mapped('name'))
+        invitee_names = list(self.invite_user_ids.mapped('name')) + list(
+            external_partners.mapped('display_name')
+        )
+        invitees = ', '.join(invitee_names)
         loan.env['bharat.loan.hearing.line'].create({
             'loan_id': loan.id,
             'hearing_datetime': self.hearing_datetime,
-            'link_type': link_type,
-            'meeting_link': loan.hearing_video_url or '',
+            'calendar_event_id': calendar_event.id,
+            'link_type': 'odoo',
+            'meeting_link': calendar_event.videocall_location or '',
             'notes': '',
             'invitees': invitees,
             'status': 'conducted' if self.was_user_present else 'scheduled',

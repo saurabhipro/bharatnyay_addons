@@ -369,13 +369,28 @@ class BharatLoan(models.Model):
         help='External: paste a third-party video URL. Odoo case link: store a direct link to open this loan '
         'record in the Odoo web app (coordinate live video via Discuss or an external tool separately if needed).',
     )
+    calendar_event_id = fields.Many2one(
+        'calendar.event',
+        string='Odoo meeting',
+        copy=False,
+        help='Calendar event with Odoo Discuss video call for the current hearing.',
+    )
     hearing_invite_user_ids = fields.Many2many(
         'res.users',
         'bharat_loan_hearing_invite_user_rel',
         'loan_id',
         'user_id',
-        string='Also email (Odoo users)',
-        help='These internal users receive the same hearing invitation by email (their user email address).',
+        string='Internal attendees (Odoo users)',
+        help='Odoo users added as calendar attendees and emailed the meeting invitation.',
+    )
+    hearing_external_attendee_ids = fields.Many2many(
+        'res.partner',
+        'bharat_loan_hearing_ext_attendee_rel',
+        'loan_id',
+        'partner_id',
+        string='External attendees',
+        help='Contacts outside Odoo (borrower, counsel, …) added as calendar attendees. '
+        'Each must have a valid email to receive the invitation.',
     )
     interim_award_date = fields.Datetime(string='Interim award recorded on', copy=False)
     interim_award_notes = fields.Text(string='Interim award summary', copy=False)
@@ -1412,8 +1427,7 @@ class BharatLoan(models.Model):
                 loan._set_milestone(milestone)
             loan.write({
                 'hearing_datetime': line.hearing_datetime,
-                'hearing_link_type': line.link_type,
-                'hearing_video_url': line.meeting_link or False,
+                'calendar_event_id': line.calendar_event_id.id,
             })
 
     def web_read(self, specification):
@@ -1801,6 +1815,98 @@ class BharatLoan(models.Model):
             },
         }
 
+    _HEARING_MEETING_MINUTES = 30
+
+    @api.model
+    def _hearing_parse_email_list(self, text):
+        if not text:
+            return []
+        return [
+            part.strip()
+            for part in re.split(r'[,;\s\n]+', str(text).strip())
+            if part.strip() and '@' in part
+        ]
+
+    def _hearing_ensure_partner_for_email(self, email, name=None):
+        """Find or create a lightweight contact so Calendar can email an external guest."""
+        self.ensure_one()
+        email = (email or '').strip()
+        if not email:
+            return self.env['res.partner']
+        Partner = self.env['res.partner'].sudo()
+        partner = Partner.search([('email', '=ilike', email)], limit=1)
+        if not partner:
+            partner = Partner.create({
+                'name': (name or '').strip() or email,
+                'email': email,
+                'company_type': 'person',
+            })
+        return partner
+
+    def _hearing_partners_from_emails(self, emails_text, default_name=None):
+        self.ensure_one()
+        partners = self.env['res.partner']
+        for email in self._hearing_parse_email_list(emails_text):
+            partners |= self._hearing_ensure_partner_for_email(email, name=default_name)
+        return partners
+
+    def _hearing_partner_ids_for_meeting(self, invite_users=None, external_partners=None):
+        self.ensure_one()
+        partners = self.env.user.partner_id
+        if self.arbitrator_id and self.arbitrator_id.partner_id:
+            partners |= self.arbitrator_id.partner_id
+        users = invite_users if invite_users is not None else self.hearing_invite_user_ids
+        partners |= users.mapped('partner_id').filtered(lambda p: p)
+        external = (
+            external_partners
+            if external_partners is not None
+            else self.hearing_external_attendee_ids
+        )
+        partners |= external.filtered('email')
+        borrower = self._resolve_borrower_partner()
+        if borrower and borrower.email:
+            partners |= borrower
+        elif (self.borrower_email or '').strip():
+            partners |= self._hearing_ensure_partner_for_email(
+                self.borrower_email,
+                name=self.customer_name or self.borrower_email,
+            )
+        return partners
+
+    def _hearing_calendar_event(self):
+        self.ensure_one()
+        if self.calendar_event_id:
+            return self.calendar_event_id
+        line = self.hearing_line_ids.filtered('calendar_event_id').sorted('hearing_datetime', reverse=True)[:1]
+        return line.calendar_event_id
+
+    def _hearing_upsert_calendar_event(self, start_dt, invite_users=None, external_partners=None):
+        """Create or update an Odoo Calendar event with Discuss videocall."""
+        self.ensure_one()
+        Calendar = self.env['calendar.event'].sudo()
+        start = fields.Datetime.to_datetime(start_dt) if isinstance(start_dt, str) else start_dt
+        stop = start + timedelta(minutes=self._HEARING_MEETING_MINUTES)
+        case_ref = self.case_number or self.loan_number or self.display_name
+        partner_ids = self._hearing_partner_ids_for_meeting(
+            invite_users, external_partners,
+        ).ids
+        vals = {
+            'name': _('Hearing — %s') % case_ref,
+            'start': fields.Datetime.to_string(start),
+            'stop': fields.Datetime.to_string(stop),
+            'partner_ids': [(6, 0, partner_ids)],
+            'res_model': 'bharat.loan',
+            'res_id': self.id,
+            'description': _('Arbitration hearing for case %s') % case_ref,
+        }
+        event = self.calendar_event_id
+        if event:
+            event.write(vals)
+        else:
+            event = Calendar.create(vals)
+        event._set_discuss_videocall_location()
+        return event
+
     def _hearing_invitation_html(self):
         self.ensure_one()
         when = ''
@@ -1826,11 +1932,9 @@ class BharatLoan(models.Model):
                 escape(when or _('Not set')),
             ),
         ]
-        url = (self.hearing_video_url or '').strip()
-        if self.hearing_link_type == 'odoo':
-            link_intro = escape(_('Open this case in Odoo (bookmark or click):'))
-        else:
-            link_intro = escape(_('Join online (video / conference):'))
+        event = self._hearing_calendar_event()
+        url = (event.videocall_location or '').strip() if event else ''
+        link_intro = escape(_('Join Odoo meeting (video / conference):'))
         parts.append(
             '<p><b>%s</b><br/><a href="%s">%s</a></p>'
             % (
@@ -1857,16 +1961,10 @@ class BharatLoan(models.Model):
                 )
             if not rec.hearing_datetime:
                 raise UserError(_('Set a hearing date and time before sending invitations.'))
-            url = (rec.hearing_video_url or '').strip()
-            if rec.hearing_link_type == 'odoo':
-                canonical = (rec._hearing_build_odoo_case_url() or '').strip()
-                if canonical:
-                    url = canonical
-                    rec.sudo().write({'hearing_video_url': canonical})
-            if not url:
+            event = rec._hearing_calendar_event()
+            if not event or not (event.videocall_location or '').strip():
                 raise UserError(
-                    _('Add a meeting link on the Hearing tab. For Odoo links, set `web.base.url` '
-                      'and upgrade BharatNyay Core so the Loan sheet action exposes a URL path.')
+                    _('No Odoo meeting is scheduled. Use Schedule or Reschedule hearing first.')
                 )
 
             body_html = rec._hearing_invitation_html()
@@ -1935,34 +2033,18 @@ class BharatLoan(models.Model):
         return True
 
     def action_join_hearing_meeting(self):
-        """Open meeting join target in a new browser tab (never duplicate this form dialog)."""
+        """Join the Odoo Discuss videocall linked to this hearing."""
         self.ensure_one()
         if not self._is_hearing_milestone():
             raise UserError(_('Join online is available during hearing milestones.'))
-
-        base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
-        mode = self.hearing_link_type or 'external'
-
-        if mode == 'odoo':
-            # Always rebuild — old links used invalid path segments such as ``bharat.loan``.
-            jump = (self._hearing_build_odoo_case_url() or '').strip()
-        else:
-            raw = (self.hearing_video_url or '').strip()
-            jump = self._hearing_normalize_external_meeting_url(raw).strip()
-            if jump.startswith('/') and base:
-                jump = base + jump
-
-        if not jump:
-            raise UserError(_('No video meeting URL is set. Add one on the Hearing tab or reschedule.'))
-
-        if not jump.lower().startswith(('http://', 'https://')):
+        event = self._hearing_calendar_event()
+        if not event:
             raise UserError(
-                _('Could not resolve a valid meeting URL. For external links include the full '
-                  'address (e.g. https://meet.google.com/…); for Odoo links upgrade BharatNyay Core '
-                  '(Loan sheet action must define a URL path), and ensure `web.base.url` is set.')
+                _('No Odoo meeting is scheduled. Use Schedule or Reschedule hearing first.')
             )
-
-        return {'type': 'ir.actions.act_url', 'url': jump, 'target': 'new'}
+        if not (event.videocall_location or '').strip():
+            event._set_discuss_videocall_location()
+        return event.action_join_video_call()
 
     def action_pass_interim_award(self):
         self.ensure_one()
@@ -3049,7 +3131,11 @@ class BharatLoan(models.Model):
                 'loan_number': loan.loan_number or '',
                 'customer_name': loan.customer_name or '',
                 'hearing_datetime': fields.Datetime.to_string(line.hearing_datetime),
-                'meeting_link': line.meeting_link or '',
+                'meeting_link': (
+                    (line.calendar_event_id.videocall_location if line.calendar_event_id else '')
+                    or line.meeting_link
+                    or ''
+                ),
             })
         return rows
 
@@ -3531,6 +3617,12 @@ class BharatLoanHearingLine(models.Model):
         default='external',
         required=True,
     )
+    calendar_event_id = fields.Many2one(
+        'calendar.event',
+        string='Odoo meeting',
+        ondelete='set null',
+        copy=False,
+    )
     meeting_link = fields.Char(string='Meeting/case link')
     notes = fields.Text(string='Hearing instructions')
     invitees = fields.Char(string='Invitees')
@@ -3574,20 +3666,16 @@ class BharatLoanHearingLine(models.Model):
         return result
 
     def action_join_meeting(self):
-        """Open video URL or Odoo loan link in a browser tab."""
+        """Join the Odoo Discuss videocall for this hearing."""
         self.ensure_one()
-        loan = self.loan_id.sudo()
-        url = (self.meeting_link or '').strip()
-        if self.link_type == 'odoo' or not url:
-            url = (loan._hearing_build_odoo_case_url() or '').strip()
-        if not url:
-            raise UserError(_('No meeting link is stored on this hearing.'))
-        normalized = loan._hearing_normalize_external_meeting_url(url)
-        return {
-            'type': 'ir.actions.act_url',
-            'url': normalized,
-            'target': 'new',
-        }
+        event = self.calendar_event_id or self.loan_id._hearing_calendar_event()
+        if not event:
+            raise UserError(
+                _('No Odoo meeting is linked to this hearing. Schedule or reschedule first.')
+            )
+        if not (event.videocall_location or '').strip():
+            event._set_discuss_videocall_location()
+        return event.action_join_video_call()
 
     def action_reschedule_hearing(self):
         """Open schedule wizard for this loan while staying in Hearing stage."""
