@@ -327,9 +327,87 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             })
         return {'slots': slots}
 
+    @api.model
+    def _slot_board_json_dumps(self, board_dict):
+        return json.dumps(board_dict, sort_keys=True, separators=(',', ':'))
+
     def _sync_slot_board_json(self):
         for wiz in self:
-            wiz.slot_board_json = json.dumps(wiz._slot_board_dict())
+            payload = wiz._slot_board_json_dumps(wiz._slot_board_dict())
+            if wiz.slot_board_json != payload:
+                wiz.slot_board_json = payload
+
+    def _revalidate_grid_selection(self):
+        """Keep or clear grid selection after the board payload changes."""
+        self.ensure_one()
+        idx = self.grid_selected_index
+        if not idx or self.use_manual_time or not self.scheduler_date:
+            if not idx:
+                self.selected_slot_range_display = ''
+            return
+        try:
+            payload = json.loads(self.slot_board_json or '{}')
+        except json.JSONDecodeError:
+            self.grid_selected_index = 0
+            self.selected_slot_range_display = ''
+            return
+        for slot in payload.get('slots', []):
+            if slot.get('index') != idx:
+                continue
+            if slot.get('status') == 'free':
+                self.selected_slot_range_display = self._slot_range_label_from_index(
+                    self.scheduler_date, idx
+                )
+                return
+            break
+        self.grid_selected_index = 0
+        self.selected_slot_range_display = ''
+
+    def _refresh_slot_board_if_ready(self):
+        self.ensure_one()
+        if self.use_manual_time or not self.loan_id or not self.scheduler_date or not self.loan_id.arbitrator_id:
+            self.slot_board_json = '{}'
+            return
+        self._sync_slot_board_json()
+
+    @api.onchange('scheduler_date')
+    def _onchange_scheduler_date(self):
+        self.selected_slot_id = False
+        prev_index = self.grid_selected_index
+        self._refresh_slot_board_if_ready()
+        if prev_index:
+            self.grid_selected_index = prev_index
+            self._revalidate_grid_selection()
+        elif self.hearing_reschedule and self.hearing_datetime and self.scheduler_date:
+            gidx = self._grid_index_for_datetime_on_day(
+                self.scheduler_date,
+                self._as_naive_datetime(self.hearing_datetime),
+            )
+            if gidx:
+                self.grid_selected_index = gidx
+                self.selected_slot_range_display = self._slot_range_label_from_index(
+                    self.scheduler_date, gidx
+                )
+        else:
+            self.grid_selected_index = 0
+            self.selected_slot_range_display = ''
+
+    @api.onchange('loan_id', 'use_manual_time')
+    def _onchange_loan_or_manual_time(self):
+        self.selected_slot_id = False
+        if self.use_manual_time:
+            self.slot_board_json = '{}'
+            self.grid_selected_index = 0
+            self.selected_slot_range_display = ''
+            return
+        prev_index = self.grid_selected_index
+        self._refresh_slot_board_if_ready()
+        if prev_index:
+            self.grid_selected_index = prev_index
+            self._revalidate_grid_selection()
+        else:
+            self.grid_selected_index = 0
+            self.selected_slot_range_display = ''
 
     def _utc_naive_for_grid_index(self, scheduler_date, index):
         self.ensure_one()
@@ -341,44 +419,6 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             return None
         local_start = starts[index - 1]
         return local_start.astimezone(pytz.UTC).replace(tzinfo=None)
-
-    @api.onchange('scheduler_date', 'loan_id', 'use_manual_time')
-    def _onchange_refresh_slots(self):
-        self.selected_slot_id = False
-        self.grid_selected_index = 0
-        self.selected_slot_range_display = ''
-        if self.use_manual_time:
-            self.slot_board_json = '{}'
-            return
-        if not self.loan_id or not self.scheduler_date or not self.loan_id.arbitrator_id:
-            self.slot_board_json = '{}'
-            return
-        self._sync_slot_board_json()
-
-    @api.onchange('grid_selected_index', 'scheduler_date', 'slot_board_json')
-    def _onchange_grid_selected_index(self):
-        self.ensure_one()
-        if self.use_manual_time or not self.grid_selected_index or not self.scheduler_date:
-            return
-        try:
-            payload = json.loads(self.slot_board_json or '{}')
-        except json.JSONDecodeError:
-            return
-        for slot in payload.get('slots', []):
-            if slot.get('index') == self.grid_selected_index:
-                if slot.get('status') != 'free':
-                    self.grid_selected_index = 0
-                    st = slot.get('status')
-                    if st == 'booked':
-                        msg = _('That slot is already booked for this arbitrator.')
-                    else:
-                        msg = _('That slot is unavailable (for example it is in the past).')
-                    return {'warning': {'title': _('Cannot select this slot'), 'message': msg}}
-                self.hearing_datetime = slot.get('utc')
-                self.selected_slot_range_display = self._slot_range_label_from_index(
-                    self.scheduler_date, self.grid_selected_index
-                )
-                break
 
     @api.model
     def default_get(self, fields_list):
@@ -441,7 +481,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 'loan_id': loan.id,
                 'scheduler_date': vals['scheduler_date'],
             })
-            vals['slot_board_json'] = json.dumps(wiz_stub._slot_board_dict())
+            vals['slot_board_json'] = self._slot_board_json_dumps(wiz_stub._slot_board_dict())
             if reschedule and vals.get('hearing_datetime'):
                 hd = self._as_naive_datetime(vals['hearing_datetime'])
                 gidx = self._grid_index_for_datetime_on_day(day, hd)

@@ -161,21 +161,26 @@
                            readonly="1"
                            options="{'clickable': '0'}"/>
                     <button name="action_move_to_next_stage" type="object"
-                            string="Move to next stage" class="oe_highlight"
+                            string="Move to next stage" class="oe_highlight" icon="fa-arrow-right"
                             invisible="is_case_locked or not can_move_to_next_stage"
                             confirm="Advance this case to the next workflow milestone?"/>
                     <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"
+                            icon="fa-calendar"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
+                            icon="fa-paper-plane"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_join_hearing_meeting" type="object" string="Join Odoo Meeting"
+                            icon="fa-video-camera"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
+                            icon="fa-gavel"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_download_award_letter" type="object" string="Download award letter"
-                            class="oe_highlight"
+                            class="oe_highlight" icon="fa-download"
                             invisible="milestone_code != 'award'"/>
                     <button name="action_upload_signed_award" type="object" string="Upload signed award"
+                            icon="fa-upload"
                             invisible="milestone_code != 'award'"/>
                 </header>
                 <sheet>
@@ -197,7 +202,7 @@
                             <field name="arbitration_invoice_count" widget="statinfo" string="Invoices"/>
                         </button>
                         <button name="action_open_unbilled_bills" type="object" class="oe_stat_button" icon="fa-clock-o">
-                            <field name="pending_billing_count" widget="statinfo" string="Unbilled bills"/>
+                            <field name="pending_billing_count" widget="statinfo" string="Unbilled charges"/>
                         </button>
                         <button name="action_open_postal_dispatch" type="object" class="oe_stat_button" icon="fa-truck">
                             <div class="o_stat_info">
@@ -220,6 +225,14 @@
                                         <span class="bn-id-pill__k">Batch</span>
                                         <field name="batch_number" readonly="1" nolabel="1"/>
                                     </span>
+                                    <span class="bn-id-pill">
+                                        <span class="bn-id-pill__k">Loan</span>
+                                        <field name="loan_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-id-pill bn-id-pill--hearing" invisible="not hearing_datetime">
+                                        <span class="bn-id-pill__k">Hearing</span>
+                                        <field name="hearing_datetime" readonly="1" nolabel="1" widget="datetime"/>
+                                    </span>
                                 </div>
                                 <span class="bn-stage-pill">
                                     <field name="state_display" readonly="1" nolabel="1"/>
@@ -230,11 +243,6 @@
                                     <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name"/>
                                 </div>
                                 <div class="bn-hero-sub">
-                                    <span class="bn-hero-sub__item">
-                                        <i class="fa fa-file-text-o" title="Loan number" aria-hidden="true"/>
-                                        <field name="loan_number" readonly="1" nolabel="1"/>
-                                    </span>
-                                    <span class="bn-hero-sub__dot" aria-hidden="true">·</span>
                                     <span class="bn-hero-sub__item">
                                         <i class="fa fa-map-marker" title="Location" aria-hidden="true"/>
                                         <field name="location_id" readonly="1" nolabel="1"/>
@@ -416,12 +424,7 @@
                                         <field name="notice_label" readonly="1"/>
                                         <field name="sent_on"/>
                                         <field name="sent_by_id"/>
-                                        <field name="recipient_partner_id"/>
-                                        <field name="sent_to"/>
                                         <field name="subject"/>
-                                        <field name="notice_pdf_filename"/>
-                                        <field name="response_received_on" readonly="1"/>
-                                        <field name="response_pdf_filename" readonly="1"/>
                                         <button name="action_record_response" type="object" string="Record reply"
                                                 class="btn-link" icon="fa-inbox"
                                                 invisible="parent.is_case_locked"/>
@@ -598,7 +601,7 @@
                                 </form>
                             </field>
                         </page>
-                        <page string="Unbilled bills" name="page_unbilled_bills">
+                        <page string="Unbilled charges" name="page_unbilled_bills">
                             <group>
                                 <p class="text-muted mb-0">
                                     Pending arbitration charges for this case — included on the next consolidated batch invoice.

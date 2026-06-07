@@ -85,16 +85,17 @@
         border-bottom: 1px solid color-mix(in srgb, var(--bn-border) 70%, transparent);
 
         &--admin {
-            margin-left: -0.25rem;
-            margin-right: -0.25rem;
+            margin-left: 0;
+            margin-right: 0;
             margin-bottom: 1rem;
-            padding: 0.5rem 0.85rem;
+            padding: 0.5rem 0;
             min-height: 0;
             border: none;
-            border-radius: 10px;
-            background: var(--bn-header-primary);
-            color: var(--bn-header-primary-text);
-            box-shadow: 0 2px 12px color-mix(in srgb, var(--bn-header-primary) 28%, transparent);
+            border-bottom: 1px solid color-mix(in srgb, var(--bn-border) 80%, transparent);
+            border-radius: 0;
+            background: transparent;
+            color: var(--bn-text);
+            box-shadow: none;
             gap: 0.65rem;
         }
     }
@@ -109,8 +110,8 @@
 
     .bn-header__icon-inline {
         font-size: 1rem;
-        color: var(--bn-header-primary-text);
-        opacity: 0.92;
+        color: var(--bn-text);
+        opacity: 0.85;
         flex-shrink: 0;
     }
 
@@ -125,7 +126,7 @@
     .bn-header__tagline {
         font-size: 0.74rem;
         font-weight: 500;
-        color: color-mix(in srgb, var(--bn-header-primary-text) 78%, transparent);
+        color: var(--bn-muted);
         line-height: 1.2;
 
         @media (max-width: 767px) {
@@ -134,7 +135,7 @@
     }
 
     .bn-header--admin .bn-title-block h1 {
-        color: var(--bn-header-primary-text);
+        color: var(--bn-text);
         font-size: 1.02rem;
         font-weight: 700;
         margin: 0;
@@ -154,22 +155,22 @@
             margin: 0;
             padding: 0 0.5rem 0 0.4rem;
             border-radius: 8px;
-            border: 1px solid color-mix(in srgb, var(--bn-header-primary-text) 32%, transparent);
-            background: color-mix(in srgb, var(--bn-header-primary-text) 16%, transparent);
-            box-shadow: none;
+            border: 1px solid var(--bn-border);
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
             cursor: pointer;
         }
 
         .bn-filter-ico {
-            color: var(--bn-header-primary-text);
+            color: var(--bn-text);
             font-size: 0.72rem;
-            opacity: 0.92;
+            opacity: 0.72;
             flex-shrink: 0;
         }
 
         .bn-filter-k {
-            color: var(--bn-header-primary-text);
-            opacity: 0.88;
+            color: var(--bn-muted);
+            opacity: 1;
             font-size: 0.58rem;
             font-weight: 700;
             letter-spacing: 0.06em;
@@ -177,8 +178,8 @@
         }
 
         .bn-filter-select--compact {
-            color: var(--bn-header-primary-text) !important;
-            -webkit-text-fill-color: var(--bn-header-primary-text);
+            color: var(--bn-text) !important;
+            -webkit-text-fill-color: var(--bn-text);
             font-size: 0.76rem;
             font-weight: 700;
             min-width: 2.5rem;
@@ -191,7 +192,7 @@
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ffffff' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%231e293b' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 0 center;
             background-size: 0.55rem auto;
@@ -207,37 +208,38 @@
         min-width: 10.5rem;
         max-width: 14rem;
         height: 32px;
-        border: none;
+        border: 1px solid var(--bn-border);
         border-radius: 8px;
-        background: color-mix(in srgb, var(--bn-header-primary-text) 94%, transparent);
-        color: #0f172a;
+        background: #ffffff;
+        color: var(--bn-text);
         padding: 0 0.7rem;
         font-size: 0.8rem;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 
         &::placeholder {
-            color: #64748b;
+            color: var(--bn-muted);
         }
 
         &:focus {
             outline: none;
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--bn-header-primary-text) 85%, transparent);
+            border-color: color-mix(in srgb, var(--bn-accent) 45%, var(--bn-border));
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--bn-accent) 18%, transparent);
         }
     }
 
     .bn-icon-btn--admin {
         width: 32px;
         height: 32px;
-        border: 1px solid color-mix(in srgb, var(--bn-header-primary-text) 24%, transparent);
+        border: 1px solid var(--bn-border);
         border-radius: 8px;
-        background: color-mix(in srgb, var(--bn-header-primary-text) 14%, transparent);
-        color: var(--bn-header-primary-text);
-        box-shadow: none;
+        background: #ffffff;
+        color: var(--bn-text);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 
         &:hover {
-            background: color-mix(in srgb, var(--bn-header-primary-text) 94%, transparent);
-            color: var(--bn-header-primary);
-            border-color: transparent;
+            background: var(--bn-accent-soft);
+            color: var(--bn-accent);
+            border-color: color-mix(in srgb, var(--bn-accent) 35%, var(--bn-border));
         }
     }
 

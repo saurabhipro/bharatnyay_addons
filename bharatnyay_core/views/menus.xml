@@ -142,7 +142,7 @@
               sequence="18"/>
 
     <menuitem id="menu_bharatnyay_unbilled_bills"
-              name="Unbilled bills"
+              name="Unbilled charges"
               parent="menu_bharatnyay_billing_root"
               action="action_bharat_loan_billing_event_pending"
               sequence="10"/>

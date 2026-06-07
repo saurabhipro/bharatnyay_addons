@@ -36,6 +36,53 @@
         padding: 0;
     }
 
+    > header,
+    .o_form_statusbar {
+        padding: 0.45rem 24px 0.6rem;
+        margin: 0;
+        gap: 0.35rem;
+
+        .btn,
+        button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+
+            &:hover,
+            &:focus,
+            &:active {
+                opacity: 1;
+            }
+
+            .fa,
+            .oi {
+                font-size: 0.92em;
+                line-height: 1;
+                opacity: 0.95;
+            }
+        }
+
+        .oe_highlight,
+        .btn-primary,
+        .btn.btn-primary {
+            &:hover,
+            &:focus {
+                color: #ffffff !important;
+                -webkit-text-fill-color: #ffffff;
+            }
+        }
+
+        .btn-secondary,
+        .btn-light,
+        button.btn-secondary {
+            &:hover,
+            &:focus {
+                color: var(--bn-ink) !important;
+                -webkit-text-fill-color: var(--bn-ink);
+            }
+        }
+    }
+
     .o_form_sheet {
         background: var(--bn-canvas);
         border: none;
@@ -43,7 +90,7 @@
         max-width: none;
         width: 100%;
         margin: 0;
-        padding: 0 16px 24px;
+        padding: 0 24px 24px;
     }
 
     // Stat buttons in a flat row — no float (float caused empty left gutter / vertical gap).
@@ -78,8 +125,14 @@
     }
 
     @media (max-width: 767px) {
+        > header,
+        .o_form_statusbar {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
         .o_form_sheet {
-            padding: 0 10px 20px;
+            padding: 0 14px 20px;
         }
     }
 
@@ -158,6 +211,11 @@
                 font-weight: 700;
                 font-size: 0.88rem;
                 color: var(--bn-header-primary-text);
+            }
+
+            &--hearing .o_field_widget {
+                font-size: 0.8rem;
+                font-weight: 650;
             }
         }
 
@@ -854,10 +912,14 @@
         border-radius: 0;
         padding: 0;
         box-shadow: none;
-        margin-top: 4px;
+        margin-top: 8px;
+        overflow: visible !important;
 
         .o_notebook_headers {
+            overflow: visible !important;
             margin-bottom: 12px;
+            padding: 6px 10px 2px;
+            min-height: 0;
         }
 
         .nav-tabs,
@@ -865,18 +927,20 @@
             display: inline-flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             margin: 0;
-            padding: 5px;
+            padding: 2px 0;
             border: none !important;
             border-bottom: none !important;
-            background: color-mix(in srgb, var(--bn-primary) 8%, #eef2f7);
-            border-radius: 999px;
-            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible !important;
         }
 
         .nav-item {
             margin: 0;
+            overflow: visible;
         }
 
         .nav-link,
@@ -887,15 +951,23 @@
             font-weight: 650;
             font-size: 0.82rem;
             letter-spacing: 0.01em;
-            color: var(--bn-sub);
+            color: var(--bn-ink) !important;
+            -webkit-text-fill-color: var(--bn-ink);
             background: transparent !important;
-            border: none !important;
+            border: 1px solid transparent !important;
             outline: none !important;
             box-shadow: none !important;
             border-radius: 999px !important;
             padding: 8px 18px;
             line-height: 1.2;
-            transition: color 0.15s, background 0.15s, box-shadow 0.15s;
+            transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+            span,
+            .o_tab_text {
+                color: inherit !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
 
             &::before {
                 font-family: FontAwesome;
@@ -904,9 +976,22 @@
                 line-height: 1;
             }
 
-            &:hover:not(.active) {
-                color: var(--bn-primary-dk);
-                background: rgba(255, 255, 255, 0.72) !important;
+            &:hover:not(.active):not([aria-selected="true"]) {
+                color: var(--bn-ink) !important;
+                -webkit-text-fill-color: var(--bn-ink);
+                background: #ffffff !important;
+                border-color: color-mix(in srgb, var(--bn-primary) 35%, var(--bn-line)) !important;
+
+                &::before {
+                    opacity: 1;
+                }
+
+                span,
+                .o_tab_text {
+                    color: var(--bn-ink) !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                }
             }
 
             &:focus-visible {
@@ -914,14 +999,25 @@
             }
 
             &.active,
-            &.active:hover {
+            &.active:hover,
+            &[aria-selected="true"],
+            &[aria-selected="true"]:hover {
                 color: var(--bn-primary-text) !important;
+                -webkit-text-fill-color: var(--bn-primary-text);
                 background: linear-gradient(135deg, var(--bn-primary-dk) 0%, var(--bn-primary) 100%) !important;
+                border-color: transparent !important;
                 box-shadow: 0 2px 10px color-mix(in srgb, var(--bn-primary) 32%, transparent);
 
                 &::before {
                     opacity: 1;
                     color: var(--bn-primary-text);
+                }
+
+                span,
+                .o_tab_text {
+                    color: var(--bn-primary-text) !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
                 }
             }
         }
@@ -984,26 +1080,60 @@
             gap: 7px;
             font-weight: 650;
             font-size: 0.82rem;
-            color: var(--bn-sub);
+            color: var(--bn-ink) !important;
+            -webkit-text-fill-color: var(--bn-ink);
             background: transparent !important;
-            border: none !important;
+            border: 1px solid transparent !important;
             outline: none !important;
             box-shadow: none !important;
             border-radius: 999px !important;
             padding: 8px 18px;
-            transition: color 0.15s, background 0.15s, box-shadow 0.15s;
+            margin: 2px 0;
+            transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+            span,
+            .o_tab_text {
+                color: inherit !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
 
             &.active,
-            &[aria-selected="true"] {
+            &[aria-selected="true"],
+            &.active:hover,
+            &[aria-selected="true"]:hover {
                 color: var(--bn-primary-text) !important;
+                -webkit-text-fill-color: var(--bn-primary-text);
                 background: linear-gradient(135deg, var(--bn-primary-dk) 0%, var(--bn-primary) 100%) !important;
+                border-color: transparent !important;
                 box-shadow: 0 2px 10px color-mix(in srgb, var(--bn-primary) 32%, transparent);
+
+                span,
+                .o_tab_text {
+                    color: var(--bn-primary-text) !important;
+                }
             }
 
             &:hover:not(.active):not([aria-selected="true"]) {
-                color: var(--bn-primary-dk);
-                background: rgba(255, 255, 255, 0.72) !important;
+                color: var(--bn-ink) !important;
+                -webkit-text-fill-color: var(--bn-ink);
+                background: #ffffff !important;
+                border-color: color-mix(in srgb, var(--bn-primary) 35%, var(--bn-line)) !important;
+
+                span,
+                .o_tab_text {
+                    color: var(--bn-ink) !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                }
             }
+        }
+
+        // Odoo / Spiffy scroll wrappers must not clip pill tabs
+        .o_notebook_headers > *,
+        .o_notebook_headers .nav,
+        .o_notebook_headers .nav-tabs {
+            overflow: visible !important;
         }
     }
 

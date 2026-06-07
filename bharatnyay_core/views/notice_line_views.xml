@@ -9,12 +9,7 @@
                 <field name="notice_label" readonly="1"/>
                 <field name="sent_on"/>
                 <field name="sent_by_id"/>
-                <field name="recipient_partner_id"/>
-                <field name="sent_to"/>
                 <field name="subject"/>
-                <field name="notice_pdf_filename"/>
-                <field name="response_received_on" readonly="1"/>
-                <field name="response_pdf_filename" readonly="1"/>
                 <button name="action_record_response" type="object" string="Record reply" class="btn-link" icon="fa-inbox"/>
             </list>
         </field>

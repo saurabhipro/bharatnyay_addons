@@ -81,19 +81,45 @@ export class HearingSlotGridField extends Component {
         return `Slot ${slot.index} (${slot.label}) — free`;
     }
 
-    onSelectClick(slot) {
-        return this.onSelect(slot);
+    slotRangeLabel(slot) {
+        const parts = (slot.label || "").split(":");
+        if (parts.length !== 2) {
+            return slot.label || "";
+        }
+        const h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        if (Number.isNaN(h) || Number.isNaN(m)) {
+            return slot.label || "";
+        }
+        const endMin = h * 60 + m + 30;
+        const eh = Math.floor(endMin / 60);
+        const em = endMin % 60;
+        const end = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
+        return `${slot.label}–${end}`;
     }
 
-    async onSelect(slot) {
+    onSelectClick(slot) {
+        return (ev) => {
+            ev.preventDefault();
+            this.onSelect(slot);
+        };
+    }
+
+    onSelect(slot) {
         if (!this.isFree(slot) || this.readonly) {
             return;
         }
-        // Only update the integer field — Odoo 18 serializes datetimes as Luxon.
-        // Server onchange sets hearing_datetime from slot_board_json.
-        await this.props.record.update({
-            grid_selected_index: slot.index,
-        });
+        if (this.props.record.data.grid_selected_index === slot.index) {
+            return;
+        }
+        // Client-side only — server onchange on grid index caused infinite RPC loops.
+        this.props.record.update(
+            {
+                grid_selected_index: slot.index,
+                selected_slot_range_display: this.slotRangeLabel(slot),
+            },
+            { withoutOnchange: true }
+        );
     }
 }
 

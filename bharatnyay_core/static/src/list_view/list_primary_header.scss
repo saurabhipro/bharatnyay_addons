@@ -1,10 +1,23 @@
-// BharatNyay list headers — follow Spiffy theme primary on all backend tables.
+// BharatNyay list headers — Spiffy primary via Odoo 18 ListRenderer variables.
 $o-bn-row-even: #ffffff;
 $o-bn-row-odd: #f3f4f6;
 $o-bn-row-hover: #e8edff;
 $o-bn-row-selected: #dfe7ff;
 
 body.o_web_client {
+    // Odoo 18 paints list headers from these vars (default = white webclient bg).
+    .o_list_renderer,
+    .o_field_x2many .o_list_renderer,
+    .o_field_x2many_list .o_list_renderer {
+        --ListRenderer-thead-bg-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
+        --ListRenderer-thead-bg-active-color: color-mix(
+            in srgb,
+            var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) 88%,
+            #0f172a
+        );
+        --ListRenderer-thead-border-end-color: rgba(255, 255, 255, 0.15);
+    }
+
     .o_list_renderer .o_list_table thead,
     .o_list_renderer .o_list_table thead tr,
     .o_list_renderer .o_list_table thead th,
@@ -13,26 +26,24 @@ body.o_web_client {
     .o_field_x2many .o_list_renderer .o_list_table thead th,
     .o_field_x2many_list .o_list_renderer .o_list_table thead th,
     table.o_list_table thead th {
-        background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+        background-color: var(--ListRenderer-thead-bg-color) !important;
         color: var(--biz-theme-primary-text-color, var(--light-theme-primary-text-color, #ffffff)) !important;
         border-color: rgba(255, 255, 255, 0.15) !important;
         font-weight: 600;
         --bs-table-color: var(--biz-theme-primary-text-color, #ffffff);
-        --bs-table-bg: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
+        --bs-table-bg: var(--ListRenderer-thead-bg-color);
     }
 
     .o_list_renderer .o_list_table thead th.table-active,
     .o_list_renderer .o_list_table thead th:focus,
     .o_list_renderer .o_list_table thead th:hover {
-        background-color: color-mix(
-            in srgb,
-            var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) 88%,
-            #0f172a
-        ) !important;
+        background-color: var(--ListRenderer-thead-bg-active-color) !important;
         color: var(--biz-theme-primary-text-color, #ffffff) !important;
     }
 
     .o_list_renderer .o_list_table thead {
+        background-color: var(--ListRenderer-thead-bg-color) !important;
+
         .o_list_sortable_caret,
         .fa,
         .oi,
@@ -46,21 +57,25 @@ body.o_web_client {
             color: var(--biz-theme-primary-text-color, #ffffff) !important;
         }
 
+        .o_column_sortable.table-active .o_list_sortable_caret {
+            background: var(--ListRenderer-thead-bg-active-color) !important;
+        }
+
         .o_list_actions_header,
         .o_list_record_selector,
         .o_list_record_selector_header {
-            background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+            background-color: var(--ListRenderer-thead-bg-color) !important;
             border-color: rgba(255, 255, 255, 0.15) !important;
         }
     }
 
-    // Sticky header clone (Odoo 18)
+    // Sticky header clone (Odoo 18 / Bootstrap table-light)
     .o_list_renderer .o_list_table thead.table-light,
     .o_list_renderer .o_list_table thead.table-light th {
-        background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+        background-color: var(--ListRenderer-thead-bg-color) !important;
         color: var(--biz-theme-primary-text-color, #ffffff) !important;
-        --table-bg: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
-        --bs-table-bg: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
+        --table-bg: var(--ListRenderer-thead-bg-color);
+        --bs-table-bg: var(--ListRenderer-thead-bg-color);
         --bs-table-color: var(--biz-theme-primary-text-color, #ffffff);
     }
 
@@ -135,7 +150,7 @@ body.o_web_client {
 
         .o_list_renderer .o_list_table thead th,
         .o_field_x2many .o_list_renderer .o_list_table thead th {
-            background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
+            background-color: var(--ListRenderer-thead-bg-color) !important;
             color: var(--biz-theme-primary-text-color, #ffffff) !important;
         }
 

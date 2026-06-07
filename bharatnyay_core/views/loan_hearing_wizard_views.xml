@@ -6,7 +6,6 @@
         <field name="arch" type="xml">
             <form string="Schedule Hearing">
                 <field name="hearing_reschedule" invisible="1"/>
-                <field name="hearing_datetime" invisible="1"/>
                 <group>
                     <field name="loan_id"/>
                 </group>
