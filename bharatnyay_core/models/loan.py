@@ -152,6 +152,23 @@ class BharatLoan(models.Model):
     pod = fields.Char(string='POD')
     deliver_date = fields.Date(string='Deliver date')
     deliver_status = fields.Char(string='Deliver status')
+    post_office_status_id = fields.Many2one(
+        'bharat.post.office.status',
+        string='Post office status',
+        index=True,
+        help='Latest postal delivery status (from dispatch import or manual update).',
+    )
+    postal_case_locked = fields.Boolean(
+        string='Postal lock',
+        default=False,
+        copy=False,
+        help='Case locked after a post office status with “Lock case” (e.g. RRN locked).',
+    )
+    postal_dispatch_ids = fields.One2many(
+        'bharat.loan.postal.dispatch',
+        'loan_id',
+        string='Postal dispatches',
+    )
 
     STAGE_ICONS = {
         'commencement': '🚀',
@@ -197,6 +214,12 @@ class BharatLoan(models.Model):
     next_milestone_label = fields.Char(
         string='Next milestone',
         compute='_compute_next_milestone_label',
+    )
+    milestone_entered_on = fields.Date(
+        string='Stage entered on',
+        index=True,
+        copy=False,
+        help='Date the case entered the current workflow stage (used by auto-advance scheduler).',
     )
     can_move_to_next_stage = fields.Boolean(
         compute='_compute_can_move_to_next_stage',
@@ -437,6 +460,7 @@ class BharatLoan(models.Model):
             raise UserError(_('Unknown workflow milestone.'))
         self.write({
             'milestone_id': milestone.id,
+            'milestone_entered_on': fields.Date.context_today(self),
             'workflow_section': milestone.section or 1,
             'workflow_phase': milestone.phase or milestone.name,
         })
@@ -779,11 +803,14 @@ class BharatLoan(models.Model):
         if milestone.code == 'award':
             doc = self._get_or_create_final_award_document()
             doc._attach_draft_award_letter()
+        self.env['bharat.loan.postal.dispatch'].ensure_for_milestone_entry(self, milestone.code)
 
     def _milestone_accrue_billing_event(self, milestone):
         """Queue a pending charge when exiting a billable milestone (consolidated billing)."""
         self.ensure_one()
         if milestone.code == 'commencement':
+            return self.env['bharat.loan.billing.event']
+        if not milestone.bill_on_milestone_exit:
             return self.env['bharat.loan.billing.event']
         if milestone.auto_invoice_on_exit:
             return self.env['account.move'].bharat_create_case_milestone_invoice(
@@ -995,11 +1022,13 @@ class BharatLoan(models.Model):
         for rec in self:
             rec.state_is_arbitrator = bool(rec.milestone_id.is_arbitrator)
 
-    @api.depends('milestone_id', 'milestone_id.locks_case', 'milestone_id.code')
+    @api.depends('milestone_id', 'milestone_id.locks_case', 'milestone_id.code', 'postal_case_locked')
     def _compute_is_case_locked(self):
         for rec in self:
             rec.is_case_locked = bool(
-                rec.milestone_id.locks_case or rec._milestone_code() == 'award'
+                rec.postal_case_locked
+                or rec.milestone_id.locks_case
+                or rec._milestone_code() == 'award'
             )
 
     @staticmethod
@@ -1198,6 +1227,63 @@ class BharatLoan(models.Model):
                 vals.setdefault('milestone_id', default.id)
                 vals.setdefault('workflow_section', default.section or 1)
                 vals.setdefault('workflow_phase', default.phase or default.name)
+        if vals.get('milestone_id') and not vals.get('milestone_entered_on'):
+            vals.setdefault('milestone_entered_on', fields.Date.context_today(self))
+
+    @api.model
+    def _backfill_milestone_entered_on(self):
+        """One-time helper: set stage entered date for legacy cases."""
+        for loan in self.search([('milestone_entered_on', '=', False)]):
+            entered = (
+                fields.Date.to_date(loan.create_date)
+                if loan.create_date
+                else fields.Date.context_today(self)
+            )
+            loan.milestone_entered_on = entered
+
+    @api.model
+    def _cron_auto_advance_workflow_milestones(self):
+        """Daily job: move cases to the next stage when stay period elapses."""
+        self._backfill_milestone_entered_on()
+        today = fields.Date.context_today(self)
+        candidates = self.search([
+            ('is_case_locked', '=', False),
+            ('milestone_entered_on', '!=', False),
+            ('milestone_id.stay_days', '>', 0),
+        ])
+        advanced = 0
+        for loan in candidates:
+            milestone = loan.milestone_id
+            if not milestone or not milestone.stay_days:
+                continue
+            if not loan._next_milestone_record():
+                continue
+            deadline = loan.milestone_entered_on + timedelta(days=milestone.stay_days)
+            if deadline > today:
+                continue
+            try:
+                next_name, skip_reason = loan._advance_one_milestone()
+            except Exception:
+                _logger.exception(
+                    'Auto-advance failed for loan %s', loan.id,
+                )
+                continue
+            if skip_reason:
+                _logger.info(
+                    'Auto-advance skipped for %s: %s',
+                    loan.loan_number or loan.id,
+                    skip_reason,
+                )
+                continue
+            advanced += 1
+            _logger.info(
+                'Auto-advanced %s to %s after %s days in %s',
+                loan.loan_number or loan.id,
+                next_name,
+                milestone.stay_days,
+                milestone.name,
+            )
+        return advanced
 
     @api.depends(
         'notice_line_ids',
@@ -2491,6 +2577,10 @@ class BharatLoan(models.Model):
                 'color': pcolor,
             })
 
+        postal_pending = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pending_postal_status_stats(scope_domain)
+
         return {
             'currency_id': Currency.id,
             'currency_symbol': Currency.symbol or '₹',
@@ -2500,6 +2590,7 @@ class BharatLoan(models.Model):
                 ('state', '=', 'pending'),
                 ('loan_id', 'in', loan_ids or [0]),
             ],
+            'postal_pending_status_domain': postal_pending['domain'],
             'filters': {
                 'region_id': int(region_id) if region_id else False,
                 'state_id': int(state_id) if state_id else False,
@@ -2508,6 +2599,10 @@ class BharatLoan(models.Model):
             'kpis': {
                 'total_loans': total,
                 'total_batches': len(batch_keys),
+                'postal_status_pending_count': postal_pending['count'],
+                'postal_status_pending_notice_1': postal_pending['notice_1_count'],
+                'postal_status_pending_interim_1': postal_pending['interim_order_1_count'],
+                'postal_status_pending_amount': postal_pending['estimated_amount'],
                 'active_exposure_rows': active_followup,
                 'delivered_or_lok': lok_done,
                 'pos_ratio_pct': pos_ratio,
@@ -2927,6 +3022,9 @@ class BharatLoan(models.Model):
             billing.get('posted_unpaid_invoices', 0),
             billing.get('draft_invoices', 0),
         )
+        postal_pending = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pending_postal_status_stats(domain)
 
         return {
             'currency_id': Currency.id,
@@ -2943,6 +3041,10 @@ class BharatLoan(models.Model):
                 'total_cases': total_cases,
                 'total_loans': total_cases,
                 'total_batches': len(batch_keys),
+                'postal_status_pending_count': postal_pending['count'],
+                'postal_status_pending_notice_1': postal_pending['notice_1_count'],
+                'postal_status_pending_interim_1': postal_pending['interim_order_1_count'],
+                'postal_status_pending_amount': postal_pending['estimated_amount'],
                 'hearings_today': self._hearings_today_count(domain),
                 'unbilled_cases': len(pending_billing.mapped('loan_id')),
                 'pending_billing_charges': len(pending_billing),
@@ -2958,6 +3060,7 @@ class BharatLoan(models.Model):
                 ('state', '=', 'pending'),
                 ('loan_id', 'in', loans.ids or [0]),
             ],
+            'postal_pending_status_domain': postal_pending['domain'],
             'loan_domain': domain,
             'filters': {
                 'region_id': int(region_id) if region_id else False,

@@ -6,6 +6,7 @@ BHARAT_ARBITRATION_STAGE_SELECTION = [
     ('notice_1', 'Notice 1'),
     ('notice_2', 'Notice 2'),
     ('notice_3', 'Notice 3'),
+    ('interim_order_1', 'Interim Order 1'),
     ('hearing_1', 'Hearing 1'),
     ('hearing_2', 'Hearing 2'),
     ('hearing_3', 'Hearing 3'),

@@ -1,4 +1,6 @@
 from . import region
+from . import post_office_status
+from . import postal_dispatch
 from . import res_country_state
 from . import branch
 from . import loan_location

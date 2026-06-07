@@ -363,6 +363,10 @@
                                         </div>
                                         <div class="bn-import-row">
                                             <span class="bn-import-row__k">Deliver status</span>
+                                            <field name="post_office_status_id" readonly="is_case_locked" nolabel="1" class="bn-import-row__v" options="{'no_create': True}"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Deliver status (text)</span>
                                             <field name="deliver_status" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
                                         </div>
                                     </div>
@@ -445,6 +449,23 @@
                                     </form>
                                 </field>
                             </group>
+                        </page>
+                        <page string="Postal dispatch" name="page_postal_dispatch">
+                            <group>
+                                <field name="postal_case_locked" readonly="1"/>
+                                <field name="pod" readonly="is_case_locked"/>
+                            </group>
+                            <field name="postal_dispatch_ids" nolabel="1" readonly="is_case_locked">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="document_label" readonly="1"/>
+                                    <field name="pod"/>
+                                    <field name="dispatch_date"/>
+                                    <field name="delivery_date"/>
+                                    <field name="post_office_status_id" options="{'no_create': True}"/>
+                                    <field name="billing_milestone_code" readonly="1" optional="hide"/>
+                                    <field name="billing_accrued" readonly="1"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Hearing" name="page_hearing">
                             <group>

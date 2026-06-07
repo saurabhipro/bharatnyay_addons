@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="post_office_status_dispatched" model="bharat.post.office.status">
+        <field name="name">Dispatched</field>
+        <field name="code">dispatched</field>
+        <field name="sequence">10</field>
+        <field name="is_delivered" eval="False"/>
+        <field name="triggers_billing" eval="False"/>
+        <field name="locks_case" eval="False"/>
+        <field name="description">Document handed over to post office; tracking active.</field>
+    </record>
+    <record id="post_office_status_in_transit" model="bharat.post.office.status">
+        <field name="name">In transit</field>
+        <field name="code">in_transit</field>
+        <field name="sequence">20</field>
+        <field name="is_delivered" eval="False"/>
+        <field name="triggers_billing" eval="False"/>
+        <field name="locks_case" eval="False"/>
+    </record>
+    <record id="post_office_status_pod_received" model="bharat.post.office.status">
+        <field name="name">POD received</field>
+        <field name="code">pod_received</field>
+        <field name="sequence">30</field>
+        <field name="is_delivered" eval="True"/>
+        <field name="triggers_billing" eval="False"/>
+        <field name="locks_case" eval="False"/>
+        <field name="description">Proof of delivery received; billing not yet triggered.</field>
+    </record>
+    <record id="post_office_status_delivered" model="bharat.post.office.status">
+        <field name="name">Delivered</field>
+        <field name="code">delivered</field>
+        <field name="sequence">40</field>
+        <field name="is_delivered" eval="True"/>
+        <field name="triggers_billing" eval="True"/>
+        <field name="locks_case" eval="False"/>
+        <field name="description">Delivered to addressee — accrues unbilled charge for the document.</field>
+    </record>
+    <record id="post_office_status_rrn_locked" model="bharat.post.office.status">
+        <field name="name">RRN locked</field>
+        <field name="code">rrn_locked</field>
+        <field name="sequence">50</field>
+        <field name="is_delivered" eval="True"/>
+        <field name="triggers_billing" eval="True"/>
+        <field name="locks_case" eval="True"/>
+        <field name="description">Delivery confirmed and case locked (RRN locked).</field>
+    </record>
+    <record id="post_office_status_returned" model="bharat.post.office.status">
+        <field name="name">Returned undelivered</field>
+        <field name="code">returned</field>
+        <field name="sequence">60</field>
+        <field name="is_delivered" eval="False"/>
+        <field name="triggers_billing" eval="False"/>
+        <field name="locks_case" eval="False"/>
+    </record>
+</odoo>

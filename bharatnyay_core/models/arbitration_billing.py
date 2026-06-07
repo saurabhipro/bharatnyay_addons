@@ -73,6 +73,23 @@ class BharatLoanBillingEvent(models.Model):
         ondelete='set null',
         copy=False,
     )
+    accrual_trigger = fields.Selection(
+        [
+            ('milestone_exit', 'Workflow milestone exit'),
+            ('delivery', 'Postal delivery (POD)'),
+        ],
+        string='Accrual trigger',
+        default='milestone_exit',
+        required=True,
+        index=True,
+    )
+    postal_dispatch_id = fields.Many2one(
+        'bharat.loan.postal.dispatch',
+        string='Postal dispatch',
+        ondelete='set null',
+        copy=False,
+        index=True,
+    )
     loan_number = fields.Char(related='loan_id.loan_number', store=True, readonly=True)
     case_number = fields.Char(related='loan_id.case_number', store=True, readonly=True)
     customer_name = fields.Char(related='loan_id.customer_name', readonly=True)
@@ -119,8 +136,10 @@ class BharatLoanBillingEvent(models.Model):
         return product.with_company(company).lst_price
 
     @api.model
-    def bharat_accrue_for_loan(self, loan, milestone):
-        """Queue one pending billing row when a case exits a billable milestone."""
+    def bharat_accrue_for_loan(
+        self, loan, milestone, accrual_trigger='milestone_exit', postal_dispatch=False,
+    ):
+        """Queue one pending billing row for a case milestone or postal delivery."""
         loan.ensure_one()
         code = milestone.code
         if code not in BILLABLE_MILESTONE_CODES:
@@ -144,7 +163,11 @@ class BharatLoanBillingEvent(models.Model):
         product = self._bharat_billing_product_for_milestone(code)
         unit_price = self._bharat_unit_price_for_partner(product, partner, loan.company_id)
         labels = self._bharat_milestone_labels()
-        return self.create({
+        accrual_dt = fields.Datetime.now()
+        if postal_dispatch and postal_dispatch.delivery_date:
+            accrual_dt = fields.Datetime.to_datetime(postal_dispatch.delivery_date)
+
+        event = self.create({
             'loan_id': loan.id,
             'milestone_code': code,
             'milestone_label': labels.get(code, milestone.name or code),
@@ -152,7 +175,34 @@ class BharatLoanBillingEvent(models.Model):
             'unit_price': unit_price,
             'currency_id': loan.company_id.currency_id.id,
             'state': 'pending',
+            'accrual_trigger': accrual_trigger,
+            'postal_dispatch_id': postal_dispatch.id if postal_dispatch else False,
+            'accrual_date': accrual_dt,
         })
+        if postal_dispatch:
+            postal_dispatch.billing_event_id = event.id
+        return event
+
+    @api.model
+    def bharat_accrue_for_postal_dispatch(self, dispatch):
+        """Queue pending charge when a postal dispatch reaches a billable status."""
+        dispatch.ensure_one()
+        code = dispatch.billing_milestone_code
+        if not code or code not in BILLABLE_MILESTONE_CODES:
+            return self.browse()
+        Milestone = self.env['bharat.loan.milestone'].sudo()
+        milestone = Milestone.search([('code', '=', code)], limit=1)
+        if not milestone:
+            milestone = Milestone.new({
+                'code': code,
+                'name': self._bharat_milestone_labels().get(code, code),
+            })
+        return self.bharat_accrue_for_loan(
+            dispatch.loan_id,
+            milestone,
+            accrual_trigger='delivery',
+            postal_dispatch=dispatch,
+        )
 
     @api.model
     def bharat_pending_for_batch_milestone(self, batch_number, milestone_code, company_id=False):

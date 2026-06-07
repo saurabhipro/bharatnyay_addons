@@ -51,7 +51,7 @@
                 </t>
 
                 <t t-elif="state.data">
-                    <div class="bn-kpi-grid bn-kpi-grid--6">
+                    <div class="bn-kpi-grid bn-kpi-grid--7">
                         <div class="bn-kpi-card bn-kpi-card--tone-blue">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-briefcase" title="Total cases"/></span>
@@ -66,6 +66,16 @@
                             </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_batches || 0)"/>
                             <div class="bn-kpi-trend">Distinct import batches</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-cyan"
+                             t-on-click="openPendingPostalStatus">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-envelope-o" title="Awaiting POD status"/></span>
+                                <div class="bn-kpi-label">Awaiting POD status</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.postal_status_pending_count || 0)"/>
+                            <div class="bn-kpi-trend"
+                                 t-out="fmtMoney(state.data.kpis.postal_status_pending_amount || 0) + ' · ' + fmtInt(state.data.kpis.postal_status_pending_notice_1 || 0) + ' N1, ' + fmtInt(state.data.kpis.postal_status_pending_interim_1 || 0) + ' IO1'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
                              data-filter="paid"

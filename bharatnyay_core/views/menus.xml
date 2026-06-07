@@ -123,21 +123,33 @@
               sequence="9"/>
 
     <menuitem id="menu_bharatnyay_billing_root"
-              name="Billing &amp; ops"
+              name="Billing"
               parent="menu_bharatnyay_root"
-              active="False"
               sequence="18"/>
+
+    <menuitem id="menu_bharatnyay_unbilled_bills"
+              name="Unbilled bills"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_loan_billing_event_pending"
+              sequence="10"/>
+
+    <menuitem id="menu_bharatnyay_invoices"
+              name="Invoices"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_arbitration_invoices"
+              sequence="20"/>
 
     <menuitem id="menu_bharatnyay_arbitration_products"
               name="Arbitration billing products"
               parent="menu_bharatnyay_billing_root"
               action="action_product_template_arbitration_billing"
-              sequence="20"/>
+              sequence="30"/>
     <menuitem id="menu_bharatnyay_customer_invoices"
-              name="Customer invoices"
+              name="All customer invoices"
               parent="menu_bharatnyay_billing_root"
               action="account.action_move_out_invoice_type"
-              sequence="30"/>
+              active="False"
+              sequence="35"/>
     <menuitem id="menu_bharatnyay_arbitrator_blockout_menu"
               name="Arbitrator block-outs"
               parent="menu_bharatnyay_billing_root"
@@ -155,6 +167,12 @@
               action="action_bharat_loan_stage"
               active="False"
               sequence="45"/>
+    <menuitem id="menu_bharatnyay_post_office_status"
+              name="Post office status"
+              parent="menu_bharatnyay_masters"
+              action="action_bharat_post_office_status"
+              sequence="47"/>
+
     <menuitem id="menu_bharatnyay_loan_milestone"
               name="Workflow milestones"
               parent="menu_bharatnyay_masters"

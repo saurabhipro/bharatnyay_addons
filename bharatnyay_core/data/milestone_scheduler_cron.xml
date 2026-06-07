@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="ir_cron_bharat_auto_advance_milestones" model="ir.cron">
+        <field name="name">BharatNyay: auto-advance workflow stages</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_auto_advance_workflow_milestones()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

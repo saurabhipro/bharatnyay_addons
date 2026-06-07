@@ -201,6 +201,18 @@ export class CaseManagerDashboard extends Component {
         });
     }
 
+    openPendingPostalStatus() {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Awaiting POD status",
+            res_model: "bharat.loan.postal.dispatch",
+            views: [[false, "list"], [false, "form"]],
+            domain: this.state.data?.postal_pending_status_domain || [],
+            context: { create: false },
+            target: "current",
+        });
+    }
+
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
         const domain = [

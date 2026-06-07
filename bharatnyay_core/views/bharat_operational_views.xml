@@ -132,4 +132,11 @@
             </form>
         </field>
     </record>
+
+    <record id="action_bharat_consolidated_billing_wizard" model="ir.actions.act_window">
+        <field name="name">Bill batch (consolidated)</field>
+        <field name="res_model">bharat.arbitration.invoice.line.loader.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
 </odoo>

@@ -196,6 +196,18 @@ export class BharatnyayDashboard extends Component {
         });
     }
 
+    openPendingPostalStatus() {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Awaiting POD status",
+            res_model: "bharat.loan.postal.dispatch",
+            views: [[false, "list"], [false, "form"]],
+            domain: this.state.data?.postal_pending_status_domain || [],
+            context: { create: false },
+            target: "current",
+        });
+    }
+
     openBillBatchWizard() {
         this.action.doAction("bharatnyay_core.action_bharat_consolidated_billing_wizard");
     }

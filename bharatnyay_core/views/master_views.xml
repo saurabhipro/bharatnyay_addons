@@ -458,20 +458,14 @@
         <field name="name">bharat.loan.milestone.list</field>
         <field name="model">bharat.loan.milestone</field>
         <field name="arch" type="xml">
-            <list string="Workflow milestones">
+            <list string="Workflow milestones" editable="bottom" class="o_bharat_milestone_list">
                 <field name="sequence" widget="handle"/>
-                <field name="name"/>
-                <field name="code"/>
-                <field name="section" optional="show"/>
-                <field name="phase" optional="show"/>
-                <field name="currency_id" column_invisible="1"/>
-                <field name="price" optional="show"/>
-                <field name="auto_invoice_on_exit" widget="boolean_toggle"/>
-                <field name="auto_assign_case_manager" widget="boolean_toggle" optional="show"/>
-                <field name="auto_assign_arbitrator" widget="boolean_toggle" optional="show"/>
-                <field name="is_arbitrator" widget="boolean_toggle" optional="hide"/>
-                <field name="locks_case" widget="boolean_toggle" optional="show"/>
-                <field name="active" widget="boolean_toggle"/>
+                <field name="icon_html" string="" readonly="1" widget="html"/>
+                <field name="name" string="Stage name"/>
+                <field name="code" string="Stage ID" readonly="1"/>
+                <field name="stay_days" string="Stay (days)"/>
+                <field name="icon" column_invisible="1"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
             </list>
         </field>
     </record>
@@ -479,29 +473,59 @@
         <field name="name">bharat.loan.milestone.form</field>
         <field name="model">bharat.loan.milestone</field>
         <field name="arch" type="xml">
-            <form string="Workflow milestone">
+            <form string="Workflow milestone" class="o_bharat_milestone_form">
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="d-flex align-items-center mb-3">
+                        <field name="icon_html" widget="html" readonly="1" nolabel="1"/>
+                        <div class="flex-grow-1">
+                            <label for="name" class="mb-1">Stage name</label>
+                            <h1 class="mb-0"><field name="name" placeholder="e.g. Notice 1"/></h1>
+                        </div>
+                    </div>
                     <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="code"/>
+                        <group string="Stage">
+                            <field name="code" string="Stage ID"/>
+                            <field name="icon" placeholder="fa-envelope-o"/>
+                            <field name="stay_days" string="Stay period (days)"/>
                             <field name="sequence"/>
-                            <field name="section"/>
-                            <field name="phase"/>
-                            <field name="currency_id" invisible="1"/>
-                            <field name="price"/>
-                            <field name="fold"/>
-                            <field name="is_arbitrator"/>
-                            <field name="locks_case"/>
-                            <field name="active"/>
+                            <field name="active" widget="boolean_toggle"/>
                         </group>
-                        <group string="Automation on entry / exit">
-                            <field name="auto_invoice_on_exit"/>
-                            <field name="auto_assign_case_manager"/>
-                            <field name="auto_assign_arbitrator"/>
+                        <group string="Scheduler">
+                            <div class="text-muted" colspan="2">
+                                Set <b>Stay period</b> to the number of days a case should remain in this stage.
+                                The daily scheduler auto-advances to the next stage when that period ends.
+                                Use <b>0</b> to keep manual “Move to next stage” only.
+                            </div>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Automation" name="automation">
+                            <group>
+                                <group string="On exit">
+                                    <field name="bill_on_milestone_exit"/>
+                                    <field name="auto_invoice_on_exit"/>
+                                </group>
+                                <group string="On entry">
+                                    <field name="auto_assign_case_manager"/>
+                                    <field name="auto_assign_arbitrator"/>
+                                    <field name="locks_case"/>
+                                    <field name="is_arbitrator"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Advanced" name="advanced">
+                            <group>
+                                <group>
+                                    <field name="section"/>
+                                    <field name="phase"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="price"/>
+                                    <field name="fold"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -513,7 +537,7 @@
         <field name="search_view_id" ref="view_bharat_loan_milestone_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Configure the “Move to next stage” pipeline: invoice on exit, auto-assign case manager / arbitrator on entry.
+                Configure workflow stages, icons, and how long cases stay before auto-advance.
             </p>
         </field>
     </record>
