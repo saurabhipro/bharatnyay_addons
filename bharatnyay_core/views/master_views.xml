@@ -458,7 +458,7 @@
         <field name="name">bharat.loan.milestone.list</field>
         <field name="model">bharat.loan.milestone</field>
         <field name="arch" type="xml">
-            <list string="Workflow milestones" editable="bottom" class="o_bharat_milestone_list">
+            <list string="Workflow milestones" class="o_bharat_milestone_list">
                 <field name="sequence" widget="handle"/>
                 <field name="icon_html" string="" readonly="1" widget="html"/>
                 <field name="name" string="Stage name"/>

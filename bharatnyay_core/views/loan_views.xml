@@ -168,7 +168,7 @@
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
-                    <button name="action_join_hearing_meeting" type="object" string="Join Meeting Online"
+                    <button name="action_join_hearing_meeting" type="object" string="Join Odoo Meeting"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
                     <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
                             invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
@@ -475,11 +475,10 @@
                             <group>
                                 <group string="Schedule">
                                     <field name="hearing_datetime"/>
-                                    <field name="hearing_link_type"/>
-                                    <field name="hearing_video_url" widget="url"
-                                           invisible="hearing_link_type == 'odoo'"/>
+                                    <field name="calendar_event_id" readonly="1"/>
                                     <field name="hearing_invite_user_ids" widget="many2many_tags"
                                            options="{'no_create': True}"/>
+                                    <field name="hearing_external_attendee_ids" widget="many2many_tags"/>
                                     <field name="hearing_notes"/>
                                 </group>
                                 <group string="Interim award">
@@ -491,18 +490,22 @@
                             <separator string="Hearing log"/>
                             <field name="hearing_line_ids" nolabel="1" readonly="is_case_locked">
                                 <list create="0" delete="0" edit="0">
+                                    <button name="action_join_meeting" type="object" string="Join"
+                                            class="btn-link" title="Join Odoo meeting"/>
                                     <field name="hearing_datetime"/>
-                                    <field name="link_type"/>
-                                    <field name="meeting_link" widget="url"/>
+                                    <field name="calendar_event_id" optional="show"/>
                                     <field name="invitees"/>
                                     <field name="created_by_id"/>
                                 </list>
                                 <form string="Hearing detail" create="0" edit="0" delete="0">
+                                    <header>
+                                        <button name="action_join_meeting" type="object"
+                                                string="Join meeting" class="btn-primary"/>
+                                    </header>
                                     <group>
                                         <group>
                                             <field name="hearing_datetime"/>
-                                            <field name="link_type"/>
-                                            <field name="meeting_link" widget="url"/>
+                                            <field name="calendar_event_id" readonly="1"/>
                                             <field name="invitees"/>
                                             <field name="created_by_id"/>
                                         </group>

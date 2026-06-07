@@ -2,18 +2,107 @@
 import base64
 import io
 import logging
+import os
 import resource
+import subprocess
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import closing
+
+import lxml.html
 
 from odoo import _, api, models
+from odoo.addons.base.models.ir_actions_report import _get_wkhtmltopdf_bin, _split_table
 from odoo.exceptions import UserError
-from odoo.modules.registry import Registry
 from odoo.tools import split_every
 
 from ..tools.pdf_render import read_fast_mode, read_merge_chunk, read_parallel_workers
 
 _logger = logging.getLogger(__name__)
+
+
+def _bharat_run_wkhtmltopdf_subprocess(command_args, bodies, header, footer):
+    """Convert prepared HTML to PDF via wkhtmltopdf (no ORM — safe in thread pool)."""
+    files_command_args = []
+    temporary_files = []
+
+    if header:
+        head_file_fd, head_file_path = tempfile.mkstemp(suffix='.html', prefix='report.header.tmp.')
+        with closing(os.fdopen(head_file_fd, 'wb')) as head_file:
+            head_file.write(header.encode())
+        temporary_files.append(head_file_path)
+        files_command_args.extend(['--header-html', head_file_path])
+    if footer:
+        foot_file_fd, foot_file_path = tempfile.mkstemp(suffix='.html', prefix='report.footer.tmp.')
+        with closing(os.fdopen(foot_file_fd, 'wb')) as foot_file:
+            foot_file.write(footer.encode())
+        temporary_files.append(foot_file_path)
+        files_command_args.extend(['--footer-html', foot_file_path])
+
+    paths = []
+    for i, body in enumerate(bodies):
+        prefix = '%s%d.' % ('report.body.tmp.', i)
+        body_file_fd, body_file_path = tempfile.mkstemp(suffix='.html', prefix=prefix)
+        with closing(os.fdopen(body_file_fd, 'wb')) as body_file:
+            if len(body) < 4 * 1024 * 1024:
+                body_file.write(body.encode())
+            else:
+                tree = lxml.html.fromstring(body)
+                _split_table(tree, 500)
+                body_file.write(lxml.html.tostring(tree))
+        paths.append(body_file_path)
+        temporary_files.append(body_file_path)
+
+    pdf_report_fd, pdf_report_path = tempfile.mkstemp(suffix='.pdf', prefix='report.tmp.')
+    os.close(pdf_report_fd)
+    temporary_files.append(pdf_report_path)
+
+    try:
+        wkhtmltopdf = (
+            [_get_wkhtmltopdf_bin()]
+            + list(command_args)
+            + files_command_args
+            + paths
+            + [pdf_report_path]
+        )
+        process = subprocess.Popen(
+            wkhtmltopdf,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding='utf-8',
+        )
+        _out, err = process.communicate()
+
+        if process.returncode not in (0, 1):
+            if process.returncode == -11:
+                message = _(
+                    'Wkhtmltopdf failed (error code: %(error_code)s). Memory limit too low or '
+                    'maximum file number of subprocess reached. Message : %(message)s',
+                    error_code=process.returncode,
+                    message=err[-1000:],
+                )
+            else:
+                message = _(
+                    'Wkhtmltopdf failed (error code: %(error_code)s). Message: %(message)s',
+                    error_code=process.returncode,
+                    message=err[-1000:],
+                )
+            _logger.warning(message)
+            raise UserError(message)
+        if err:
+            _logger.warning('wkhtmltopdf: %s', err)
+
+        with open(pdf_report_path, 'rb') as pdf_document:
+            pdf_content = pdf_document.read()
+    finally:
+        for temporary_file in temporary_files:
+            try:
+                os.unlink(temporary_file)
+            except OSError:
+                _logger.error('Error when trying to remove file %s', temporary_file)
+
+    return pdf_content
 
 
 def _raise_file_descriptor_limit(min_limit=4096):
@@ -124,63 +213,74 @@ class IrActionsReport(models.Model):
             )
         return None
 
-    def _render_one_loan_pdf_thread(self, report_ref, res_id, uid, ctx, data):
-        """Render a single record PDF in its own DB cursor (thread-safe)."""
-        dbname = self.env.cr.dbname
-        with Registry(dbname).cursor() as cr:
-            env = api.Environment(cr, uid, ctx)
-            report_model = env['ir.actions.report']
+    def _prepare_single_loan_pdf(self, report_ref, res_id, data=None):
+        """QWeb HTML + wkhtmltopdf args for one loan (must run on main ORM thread)."""
+        additional_context = {'debug': False, 'bharat_light_pdf': True}
+        payload = dict(data or {})
+        payload.setdefault('debug', False)
+        report_sudo = self._get_report(report_ref)
+        report_ctx = self.with_context(**additional_context)
+
+        html = report_ctx._render_qweb_html(report_ref, [res_id], data=payload)[0]
+        bodies, _html_ids, header, footer, specific_paperformat_args = report_sudo.with_context(
+            **additional_context,
+        )._prepare_html(html, report_model=report_sudo.model)
+
+        command_args = report_ctx._build_wkhtmltopdf_args(
+            report_sudo.get_paperformat(),
+            self.env.context.get('landscape'),
+            specific_paperformat_args=specific_paperformat_args,
+            set_viewport_size=self.env.context.get('set_viewport_size'),
+        )
+        return {
+            'res_id': res_id,
+            'command_args': command_args,
+            'bodies': bodies,
+            'header': header,
+            'footer': footer,
+        }
+
+    def _render_loan_pdf_streams_ordered(self, report_ref, res_ids, data=None):
+        """Render per-loan PDFs; QWeb sequential, wkhtmltopdf parallel when batch > 1."""
+        workers = self._bharat_pdf_parallel_workers()
+        prepared = []
+        for res_id in res_ids:
             try:
-                pdf_bytes, report_type = super(
-                    IrActionsReport, report_model,
-                )._render_qweb_pdf(report_ref, res_ids=[res_id], data=data)
+                prepared.append(self._prepare_single_loan_pdf(report_ref, res_id, data=data))
             except UserError as err:
-                friendly = report_model._bharat_wkhtmltopdf_user_error(err)
+                friendly = self._bharat_wkhtmltopdf_user_error(err)
                 if friendly:
                     raise friendly from err
                 raise
-            if report_type != 'pdf':
-                raise UserError(_('Expected PDF output from report %s') % report_ref)
-            return res_id, pdf_bytes
 
-    def _render_loan_pdf_streams_ordered(self, report_ref, res_ids, data=None):
-        """Render per-loan PDFs; parallelize wkhtmltopdf when batch size > 1."""
-        workers = self._bharat_pdf_parallel_workers()
-        ctx = dict(self.env.context or {}, bharat_light_pdf=True)
-        uid = self.env.uid
+        def _run_one(pkg):
+            return pkg['res_id'], _bharat_run_wkhtmltopdf_subprocess(
+                pkg['command_args'],
+                pkg['bodies'],
+                pkg['header'],
+                pkg['footer'],
+            )
 
-        if workers <= 1 or len(res_ids) <= 1:
-            streams = []
-            for res_id in res_ids:
-                _rid, pdf_bytes = self._render_one_loan_pdf_thread(
-                    report_ref, res_id, uid, ctx, data,
-                )
-                streams.append(io.BytesIO(pdf_bytes))
-            return streams
+        if workers <= 1 or len(prepared) <= 1:
+            results = {}
+            for pkg in prepared:
+                res_id, pdf_bytes = _run_one(pkg)
+                results[res_id] = pdf_bytes
+            return [io.BytesIO(results[res_id]) for res_id in res_ids]
 
         _raise_file_descriptor_limit(max(4096, workers * 32))
         results = {}
-        max_workers = min(workers, len(res_ids))
+        max_workers = min(workers, len(prepared))
         t0 = time.time()
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            futures = [
-                pool.submit(
-                    self._render_one_loan_pdf_thread,
-                    report_ref,
-                    res_id,
-                    uid,
-                    ctx,
-                    data,
-                )
-                for res_id in res_ids
-            ]
+            futures = [pool.submit(_run_one, pkg) for pkg in prepared]
             for fut in as_completed(futures):
                 res_id, pdf_bytes = fut.result()
                 results[res_id] = pdf_bytes
 
         elapsed = time.time() - t0
         _logger.info(
-            'bharatnyay_core: parallel PDF rendered %s case(s) in %.1fs (%s workers)',
+            'bharatnyay_core: parallel wkhtmltopdf for %s case(s) in %.1fs (%s workers)',
             len(res_ids), elapsed, max_workers,
         )
         return [io.BytesIO(results[res_id]) for res_id in res_ids]
