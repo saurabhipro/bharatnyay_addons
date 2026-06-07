@@ -116,15 +116,16 @@ class AccountMove(models.Model):
         return dict(BHARAT_ARBITRATION_STAGE_SELECTION)
 
     @api.model
-    def bharat_create_consolidated_from_events(self, events, batch_number, milestone_code, move=None):
+    def bharat_create_consolidated_from_events(
+        self, events, batch_names=None, milestone_codes=None, move=None,
+    ):
         """Create or fill one consolidated customer invoice from pending billing events."""
         Event = self.env['bharat.loan.billing.event']
         events = events.filtered(lambda e: e.state == 'pending')
         if not events:
             raise UserError(_('No pending billing charges to invoice.'))
 
-        loans = events.mapped('loan_id')
-        companies = loans.mapped('company_id')
+        companies = events.mapped('company_id')
         if len(companies) != 1:
             raise UserError(_('All cases in one invoice must belong to the same lender company.'))
         company = companies[0]
@@ -134,25 +135,51 @@ class AccountMove(models.Model):
                 _('Company “%s” has no linked partner for invoicing.') % company.display_name
             )
 
-        products = events.mapped('product_id')
-        if len(products) != 1:
-            raise UserError(_('All pending charges must use the same billing product.'))
-
-        product = products[0]
-        prices = {round(p, 2) for p in events.mapped('unit_price')}
-        if len(prices) > 1:
-            raise UserError(
-                _('Mixed rates on pending charges — use one pricelist per batch or re-accrue charges.')
-            )
-        unit_price = events[0].unit_price
-        qty = len(events)
         labels = self._bharat_milestone_labels()
-        task_label = labels.get(milestone_code, milestone_code)
-        batch_display = (batch_number or '').strip()
-        line_name = _('%(task)s — Batch %(batch)s — %(count)s case(s)') % {
-            'task': task_label,
-            'batch': batch_display or '-',
-            'count': qty,
+        batch_display = ', '.join(sorted({
+            n for n in (batch_names or events.mapped('batch_number')) if (n or '').strip()
+        })) or '-'
+        milestone_set = sorted(set(milestone_codes or events.mapped('milestone_code')))
+
+        groups = {}
+        for event in events:
+            key = (event.milestone_code, event.product_id.id, round(event.unit_price or 0.0, 2))
+            groups.setdefault(key, Event.browse())
+            groups[key] |= event
+
+        def _stage_sort(item):
+            code = item[0][0]
+            return STAGE_LINE_ORDER.index(code) if code in STAGE_LINE_ORDER else 999
+
+        line_cmds = []
+        for (m_code, _prod_id, _price), group in sorted(groups.items(), key=_stage_sort):
+            product = group[0].product_id
+            if not product:
+                raise UserError(_('Billing product missing on pending charge for %s.') % m_code)
+            qty = len(group)
+            unit_price = group[0].unit_price
+            task_label = labels.get(m_code, m_code)
+            line_name = _('%(task)s — %(count)s case(s)') % {'task': task_label, 'count': qty}
+            if batch_display != '-':
+                line_name = _('%(task)s — Batch %(batch)s — %(count)s case(s)') % {
+                    'task': task_label,
+                    'batch': batch_display,
+                    'count': qty,
+                }
+            line_cmds.append((0, 0, {
+                'product_id': product.id,
+                'quantity': qty,
+                'price_unit': unit_price,
+                'name': line_name,
+            }))
+
+        if len(milestone_set) == 1:
+            ref_task = labels.get(milestone_set[0], milestone_set[0])
+        else:
+            ref_task = _('Mixed stages')
+        ref = _('BharatNyay batch %(batch)s — %(task)s') % {
+            'batch': batch_display,
+            'task': ref_task,
         }
 
         vals = {
@@ -160,19 +187,11 @@ class AccountMove(models.Model):
             'partner_id': partner.id,
             'company_id': company.id,
             'invoice_date': fields.Date.context_today(self),
-            'ref': _('BharatNyay batch %(batch)s — %(task)s') % {
-                'batch': batch_display or '-',
-                'task': task_label,
-            },
+            'ref': ref,
             'bharat_arbitration_invoice': True,
             'bharat_invoice_batch_ref': batch_display,
-            'bharat_milestone_code': milestone_code,
-            'invoice_line_ids': [(0, 0, {
-                'product_id': product.id,
-                'quantity': qty,
-                'price_unit': unit_price,
-                'name': line_name,
-            })],
+            'bharat_milestone_code': milestone_set[0] if len(milestone_set) == 1 else False,
+            'invoice_line_ids': line_cmds,
         }
 
         if move:
@@ -184,8 +203,8 @@ class AccountMove(models.Model):
                 'ref': move.ref or vals['ref'],
                 'bharat_arbitration_invoice': True,
                 'bharat_invoice_batch_ref': batch_display,
-                'bharat_milestone_code': milestone_code,
-                'invoice_line_ids': [(5, 0, 0)] + vals['invoice_line_ids'],
+                'bharat_milestone_code': vals['bharat_milestone_code'],
+                'invoice_line_ids': [(5, 0, 0)] + line_cmds,
             })
             invoice = move
         else:
@@ -193,7 +212,7 @@ class AccountMove(models.Model):
 
         annexure_cmds = []
         seq = 10
-        for event in events.sorted(key=lambda e: (e.loan_number or '', e.case_number or '', e.id)):
+        for event in events.sorted(key=lambda e: (e.batch_number or '', e.loan_number or '', e.id)):
             loan = event.loan_id
             annexure_cmds.append((0, 0, {
                 'sequence': seq,

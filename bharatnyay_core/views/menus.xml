@@ -147,6 +147,19 @@
               action="action_bharat_loan_billing_event_pending"
               sequence="10"/>
 
+    <menuitem id="menu_bharatnyay_consolidated_billing"
+              name="Create consolidated invoice"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_consolidated_billing_wizard"
+              sequence="15"/>
+
+    <menuitem id="menu_bharatnyay_billing_test"
+              name="Accrue unbilled charge (test)"
+              parent="menu_bharatnyay_billing_root"
+              action="action_bharat_loan_billing_test_wizard"
+              groups="bharatnyay_core.group_bharat_admin,base.group_system"
+              sequence="12"/>
+
     <menuitem id="menu_bharatnyay_invoices"
               name="Invoices"
               parent="menu_bharatnyay_billing_root"

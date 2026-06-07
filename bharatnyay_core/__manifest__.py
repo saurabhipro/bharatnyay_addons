@@ -1,6 +1,6 @@
 {
     'name': 'BharatNyay Core',
-    'version': '18.0.31.0.100',
+    'version': '18.0.31.0.104',
     'icon': '/bharatnyay_core/static/description/icon.png',
     'summary': 'Loan portfolio aligned to Excel import template',
     'description': """
@@ -16,6 +16,7 @@
         'security/ir.model.access.csv',
         'data/post_office_status_data.xml',
         'data/postal_dispatch_backfill.xml',
+        'data/billing_batch_sync.xml',
         'data/loan_sequence_data.xml',
         'data/loan_stage_data.xml',
         'data/loan_stage_award_update.xml',

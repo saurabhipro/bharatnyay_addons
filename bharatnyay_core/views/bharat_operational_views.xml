@@ -154,24 +154,28 @@
         <field name="name">bharat.arbitration.invoice.line.loader.wizard.form</field>
         <field name="model">bharat.arbitration.invoice.line.loader.wizard</field>
         <field name="arch" type="xml">
-            <form string="Bill batch (consolidated)">
+            <form string="Create consolidated invoice">
                 <group>
                     <group>
-                        <field name="batch_number" placeholder="e.g. BN-2026-001"/>
-                        <field name="milestone_code"/>
+                        <field name="company_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                        <field name="batch_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                        <field name="milestone_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
                     </group>
                     <group>
-                        <field name="preview_case_count" readonly="1" string="Pending cases"/>
+                        <field name="preview_case_count" readonly="1"/>
                         <field name="preview_total_amount" readonly="1"/>
                         <field name="currency_id" invisible="1"/>
-                        <field name="move_id" placeholder="Optional — leave empty to create new invoice"/>
+                        <field name="move_id" placeholder="Optional — single lender only"/>
                     </group>
                 </group>
                 <field name="preview_hint" readonly="1" nolabel="1" class="text-muted"/>
                 <div class="alert alert-info" role="alert">
-                    Creates <b>one posted invoice</b> with a single summary line (qty = case count)
-                    and a full <b>annexure</b> listing every loan, case number, borrower, and rate per action.
-                    Charges accrue automatically when cases exit each milestone (Move to next stage).
+                    Bills all <b>pending</b> unbilled charges matching your selection.
+                    Already invoiced rows are never included again.
+                    One posted invoice per lender with summary lines per billing stage and a full case annexure.
                 </div>
                 <footer>
                     <button name="action_apply" string="Create consolidated invoice" type="object" class="btn-primary"/>
@@ -182,8 +186,44 @@
     </record>
 
     <record id="action_bharat_consolidated_billing_wizard" model="ir.actions.act_window">
-        <field name="name">Bill batch (consolidated)</field>
+        <field name="name">Create consolidated invoice</field>
         <field name="res_model">bharat.arbitration.invoice.line.loader.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_bharat_loan_billing_test_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.billing.test.wizard.form</field>
+        <field name="model">bharat.loan.billing.test.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Accrue unbilled charge (test)">
+                <group>
+                    <group>
+                        <field name="batch_id" options="{'no_create': True}"/>
+                        <field name="loan_ids" widget="many2many_tags"/>
+                        <field name="milestone_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="preview_count" readonly="1"/>
+                        <field name="preview_hint" readonly="1" nolabel="1" colspan="2"/>
+                    </group>
+                </group>
+                <div class="alert alert-warning" role="alert">
+                    <b>Testing only.</b> Queues pending unbilled charges without moving the case
+                    workflow or postal delivery. Configure one billing product per stage under
+                    <i>Arbitration billing products</i>.
+                </div>
+                <footer>
+                    <button name="action_apply" string="Create unbilled charges" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_loan_billing_test_wizard" model="ir.actions.act_window">
+        <field name="name">Accrue unbilled charge (test)</field>
+        <field name="res_model">bharat.loan.billing.test.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>

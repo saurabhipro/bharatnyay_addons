@@ -9,6 +9,47 @@ BILLABLE_MILESTONE_CODES = frozenset(
 )
 
 
+class BharatLoanBatch(models.Model):
+    _name = 'bharat.loan.batch'
+    _description = 'Loan import batch'
+    _rec_name = 'name'
+    _order = 'name desc, id desc'
+
+    name = fields.Char(string='Batch number', required=True, index=True)
+    case_count = fields.Integer(compute='_compute_stats', string='Cases')
+    company_ids = fields.Many2many(
+        'res.company',
+        compute='_compute_stats',
+        string='Lenders',
+    )
+
+    _sql_constraints = [
+        ('name_uniq', 'unique(name)', 'Batch number must be unique.'),
+    ]
+
+    @api.depends('name')
+    def _compute_stats(self):
+        Loan = self.env['bharat.loan'].sudo()
+        for rec in self:
+            loans = Loan.search([('batch_number', '=', rec.name)])
+            rec.case_count = len(loans)
+            rec.company_ids = loans.mapped('company_id')
+
+    @api.model
+    def _sync_from_loans(self):
+        """Ensure one registry row per distinct loan batch_number."""
+        Batch = self.sudo()
+        self.env.cr.execute("""
+            SELECT DISTINCT batch_number
+            FROM bharat_loan
+            WHERE batch_number IS NOT NULL AND batch_number != ''
+        """)
+        names = {row[0] for row in self.env.cr.fetchall()}
+        existing = set(Batch.search([]).mapped('name'))
+        Batch.create([{'name': name} for name in sorted(names - existing)])
+        return True
+
+
 class BharatLoanBillingEvent(models.Model):
     _name = 'bharat.loan.billing.event'
     _description = 'Pending / invoiced arbitration charge per case milestone'
@@ -207,15 +248,16 @@ class BharatLoanBillingEvent(models.Model):
         )
 
     @api.model
-    def bharat_pending_for_batch_milestone(self, batch_number, milestone_code, company_id=False):
-        domain = [
-            ('batch_number', '=', (batch_number or '').strip()),
-            ('milestone_code', '=', milestone_code),
-            ('state', '=', 'pending'),
-        ]
-        if company_id:
-            domain.append(('company_id', '=', company_id))
-        return self.search(domain, order='loan_number, case_number, id')
+    def bharat_search_pending(self, company_ids=None, batch_names=None, milestone_codes=None):
+        """Pending charges filtered by admin selection (empty filter = all pending)."""
+        domain = [('state', '=', 'pending')]
+        if company_ids:
+            domain.append(('company_id', 'in', company_ids))
+        if batch_names:
+            domain.append(('batch_number', 'in', list(batch_names)))
+        if milestone_codes:
+            domain.append(('milestone_code', 'in', list(milestone_codes)))
+        return self.search(domain, order='batch_number, loan_number, case_number, id')
 
 
 class BharatArbitrationInvoiceAnnexureLine(models.Model):

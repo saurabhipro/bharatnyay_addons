@@ -617,23 +617,37 @@ class BharatLoan(models.Model):
             'context': {'default_loan_id': self.id, 'create': False},
         }
 
-    def action_open_consolidated_billing_wizard(self):
-        """Open consolidated batch billing (finance)."""
-        batch = ''
-        if len(self) == 1 and self.batch_number:
-            batch = self.batch_number
-        elif self:
-            batches = set((self.mapped('batch_number') or ['']))
-            batch = batches.pop() if len(batches) == 1 else ''
+    def action_open_billing_test_wizard(self):
+        """Open test wizard to manually queue unbilled charges (admin)."""
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Bill batch (consolidated)'),
+            'name': _('Accrue unbilled charge (test)'),
+            'res_model': 'bharat.loan.billing.test.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_loan_ids': [(6, 0, self.ids)]},
+        }
+
+    def action_open_consolidated_billing_wizard(self):
+        """Open consolidated billing wizard with batch/lender pre-filled when possible."""
+        Batch = self.env['bharat.loan.batch'].sudo()
+        Batch._sync_from_loans()
+        batch_names = sorted({b for b in self.mapped('batch_number') if (b or '').strip()})
+        ctx = {}
+        if batch_names:
+            batch_ids = Batch.search([('name', 'in', batch_names)]).ids
+            if batch_ids:
+                ctx['default_batch_ids'] = [(6, 0, batch_ids)]
+        company_ids = list(set(self.mapped('company_id').ids))
+        if len(company_ids) == 1:
+            ctx['default_company_ids'] = [(6, 0, company_ids)]
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create consolidated invoice'),
             'res_model': 'bharat.arbitration.invoice.line.loader.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': {
-                'default_batch_number': batch,
-            },
+            'context': ctx,
         }
 
     def _resolve_borrower_partner(self):

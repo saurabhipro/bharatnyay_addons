@@ -4,7 +4,8 @@
     <record id="menu_bharatnyay_workflow" model="ir.ui.menu">
         <field name="active" eval="False"/>
     </record>
+    <!-- Billing was hidden during early rollout; re-enable for unbilled charges + invoicing. -->
     <record id="menu_bharatnyay_billing_root" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
     </record>
 </odoo>

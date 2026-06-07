@@ -112,6 +112,18 @@
     </record>
 
     <!-- Unbilled bills + billing events -->
+    <record id="view_bharat_loan_batch_tree" model="ir.ui.view">
+        <field name="name">bharat.loan.batch.list</field>
+        <field name="model">bharat.loan.batch</field>
+        <field name="arch" type="xml">
+            <list string="Loan batches" create="0" delete="0">
+                <field name="name"/>
+                <field name="case_count"/>
+                <field name="company_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
     <record id="view_bharat_loan_billing_event_search" model="ir.ui.view">
         <field name="name">bharat.loan.billing.event.search</field>
         <field name="model">bharat.loan.billing.event</field>
@@ -121,7 +133,9 @@
                 <field name="case_number"/>
                 <field name="customer_name"/>
                 <field name="batch_number"/>
+                <field name="company_id"/>
                 <field name="milestone_code"/>
+                <field name="milestone_label"/>
                 <filter string="Pending invoice" name="pending" domain="[('state', '=', 'pending')]"/>
                 <filter string="Invoiced" name="invoiced" domain="[('state', '=', 'invoiced')]"/>
                 <filter string="Postal delivery" name="delivery" domain="[('accrual_trigger', '=', 'delivery')]"/>
@@ -139,12 +153,26 @@
         <field name="model">bharat.loan.billing.event</field>
         <field name="arch" type="xml">
             <list create="0" delete="0">
+                <header>
+                    <button name="%(bharatnyay_core.action_bharat_consolidated_billing_wizard)d"
+                            type="action"
+                            string="Create consolidated invoice"
+                            class="btn-primary"
+                            display="always"/>
+                    <button name="%(bharatnyay_core.action_bharat_loan_billing_test_wizard)d"
+                            type="action"
+                            string="Accrue test charge"
+                            class="btn-secondary"
+                            display="always"
+                            groups="bharatnyay_core.group_bharat_admin,base.group_system"/>
+                </header>
                 <field name="accrual_date"/>
                 <field name="loan_number"/>
                 <field name="case_number" optional="show"/>
                 <field name="customer_name" optional="hide"/>
+                <field name="company_id" optional="show"/>
                 <field name="batch_number"/>
-                <field name="milestone_label"/>
+                <field name="milestone_label" string="Billing stage"/>
                 <field name="accrual_trigger" optional="show"/>
                 <field name="unit_price" widget="monetary"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -168,8 +196,9 @@
                     <group>
                         <group>
                             <field name="loan_id" readonly="1"/>
+                            <field name="company_id" readonly="1"/>
                             <field name="batch_number" readonly="1"/>
-                            <field name="milestone_label" readonly="1"/>
+                            <field name="milestone_label" string="Billing stage" readonly="1"/>
                             <field name="milestone_code" readonly="1"/>
                             <field name="accrual_trigger" readonly="1"/>
                         </group>
@@ -186,17 +215,16 @@
         </field>
     </record>
     <record id="action_bharat_loan_billing_event_pending" model="ir.actions.act_window">
-        <field name="name">Unbilled bills</field>
+        <field name="name">Unbilled charges</field>
         <field name="res_model">bharat.loan.billing.event</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('state', '=', 'pending')]</field>
         <field name="context">{'search_default_pending': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Pending arbitration charges waiting for consolidated batch invoicing.
+                No unbilled charges yet.
             </p>
-            <p>Charges accrue when a case exits a workflow milestone, or when a postal dispatch
-            reaches a status marked “Accrue unbilled charge” in Post office status master.</p>
+            <p>Charges accrue when a case exits a billable milestone or when postal delivery
+            reaches a billable status. Use <b>Create consolidated invoice</b> to bill pending rows.</p>
         </field>
     </record>
     <record id="action_bharat_loan_billing_event_all" model="ir.actions.act_window">

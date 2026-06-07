@@ -62,7 +62,7 @@
                 <header>
                     <button name="%(bharatnyay_core.action_bharat_consolidated_billing_wizard)d"
                             type="action"
-                            string="Bill batch (consolidated)"
+                            string="Create consolidated invoice"
                             class="btn-primary"
                             display="always"
                             icon="fa-file-text-o"/>
@@ -604,16 +604,20 @@
                         <page string="Unbilled charges" name="page_unbilled_bills">
                             <group>
                                 <p class="text-muted mb-0">
-                                    Pending arbitration charges for this case — included on the next consolidated batch invoice.
+                                    Arbitration charges for this case. Pending rows are included on the next consolidated invoice.
                                 </p>
                             </group>
+                            <div groups="bharatnyay_core.group_bharat_admin,base.group_system">
+                                <button name="action_open_billing_test_wizard" type="object"
+                                        string="Accrue test charge" class="btn-secondary mb-2"
+                                        icon="fa-flask"/>
+                            </div>
                             <field name="billing_event_ids"
                                    nolabel="1"
-                                   readonly="1"
-                                   domain="[('state', '=', 'pending')]">
+                                   readonly="1">
                                 <list create="0" delete="0" edit="0">
                                     <field name="accrual_date"/>
-                                    <field name="milestone_label"/>
+                                    <field name="milestone_label" string="Billing stage"/>
                                     <field name="milestone_code" optional="hide"/>
                                     <field name="accrual_trigger"/>
                                     <field name="unit_price" widget="monetary"/>
@@ -622,7 +626,8 @@
                                            decoration-warning="state == 'pending'"
                                            decoration-success="state == 'invoiced'"
                                            decoration-muted="state == 'cancelled'"/>
-                                    <field name="postal_dispatch_id" optional="show"/>
+                                    <field name="move_id" string="Invoice" optional="show"/>
+                                    <field name="postal_dispatch_id" optional="hide"/>
                                 </list>
                                 <form string="Billing charge" create="0" delete="0" edit="0">
                                     <sheet>

@@ -6,3 +6,4 @@ from . import loan_assign_arbitrator_wizard
 from . import postal_import_wizard
 from . import loan_portfolio_import_wizard
 from . import arbitration_invoice_loader_wizard
+from . import billing_test_wizard

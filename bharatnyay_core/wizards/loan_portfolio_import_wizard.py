@@ -460,6 +460,7 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
 
         if not self.dry_run and last_batch and imported_ok:
             self.env['bharat.case.vault.batch'].queue_build_for_batch(last_batch)
+            self.env['bharat.loan.batch']._sync_from_loans()
             summary_lines.extend([
                 '',
                 _('Case Vault build queued for batch %(batch)s — merged Notice 1, Interim Order 1, '
