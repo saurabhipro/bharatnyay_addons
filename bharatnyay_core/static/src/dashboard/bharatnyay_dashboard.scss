@@ -35,24 +35,30 @@
     --bn-radius: 12px;
     --bn-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 24px rgba(15, 23, 42, 0.04);
     --bn-card-ring: 0 0 0 1px rgba(255, 255, 255, 0.9), 0 1px 0 rgba(15, 23, 42, 0.04);
-    --bn-pattern-blue: url("/bharatnyay_core/static/img/blue_pattern.jpg");
-    --bn-pattern-green: url("/bharatnyay_core/static/img/green_pattern.jpg");
-    --bn-pattern-orange: url("/bharatnyay_core/static/img/orange_pattern.jpg");
-    --bn-pattern-pink: url("/bharatnyay_core/static/img/pink_pattern.jpg");
-    --bn-pattern-purple: url("/bharatnyay_core/static/img/purple_pattern.jpg");
-    --bn-pattern-yellow: url("/bharatnyay_core/static/img/yellow_pattern.jpg");
-    /* Light veil — pattern JPG stays visible; tint layer adds card color */
+    --bn-pattern-blue: url("../../img/blue_pattern.jpg");
+    --bn-pattern-green: url("../../img/green_pattern.jpg");
+    --bn-pattern-orange: url("../../img/orange_pattern.jpg");
+    --bn-pattern-pink: url("../../img/pink_pattern.jpg");
+    --bn-pattern-purple: url("../../img/purple_pattern.jpg");
+    --bn-pattern-yellow: url("../../img/yellow_pattern.jpg");
+    /* Light veil — keep JPG texture visible through the card */
     --bn-veil-kpi: linear-gradient(
-        165deg,
-        rgba(255, 255, 255, 0.36) 0%,
-        rgba(255, 255, 255, 0.16) 48%,
+        135deg,
+        rgba(255, 255, 255, 0.58) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
         rgba(255, 255, 255, 0.06) 100%
+    );
+    --bn-veil-stage: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.32) 52%,
+        rgba(255, 255, 255, 0.08) 100%
     );
     --bn-veil-panel: linear-gradient(
         165deg,
-        rgba(255, 255, 255, 0.72) 0%,
-        rgba(255, 255, 255, 0.45) 55%,
-        rgba(255, 255, 255, 0.32) 100%
+        rgba(255, 255, 255, 0.55) 0%,
+        rgba(255, 255, 255, 0.28) 55%,
+        rgba(255, 255, 255, 0.1) 100%
     );
     --bn-section-gap: 1.35rem;
     --bn-card-gap: 0.65rem;
@@ -653,16 +659,18 @@
 
     .bn-stage-card {
         --stg: var(--bn-palette-1);
+        --stg-pattern: var(--bn-pattern-blue);
+        --bn-card-pattern: var(--stg-pattern);
+        --bn-card-veil: var(--bn-veil-stage);
+        --bn-card-accent: var(--stg);
         position: relative;
+        isolation: isolate;
+        overflow: hidden;
         appearance: none;
         border-radius: var(--bn-radius);
         border: 1px solid color-mix(in srgb, var(--stg) 22%, var(--bn-border));
         border-top: 3px solid var(--stg);
-        background: linear-gradient(
-            165deg,
-            color-mix(in srgb, var(--stg) 11%, #ffffff) 0%,
-            color-mix(in srgb, var(--stg) 5%, #f8fafc) 100%
-        );
+        background: #ffffff;
         padding: var(--bn-card-pad);
         box-shadow: var(--bn-card-shadow);
         cursor: pointer;
@@ -673,6 +681,40 @@
         flex-direction: column;
         gap: 0.35rem;
 
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border-radius: inherit;
+            background-image: var(--bn-card-pattern);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background-image:
+                radial-gradient(
+                    circle at 100% 100%,
+                    color-mix(in srgb, var(--bn-card-accent) 16%, transparent) 0%,
+                    transparent 58%
+                ),
+                var(--bn-card-veil);
+        }
+
+        > * {
+            position: relative;
+            z-index: 1;
+        }
+
         &:hover {
             transform: translateY(-2px);
             box-shadow: var(--bn-card-hover-shadow);
@@ -681,23 +723,18 @@
 
         &--billable {
             border-color: color-mix(in srgb, var(--bn-bill-accent) 38%, var(--bn-border));
-            background: linear-gradient(
-                165deg,
-                color-mix(in srgb, var(--bn-bill-accent) 10%, #ffffff) 0%,
-                color-mix(in srgb, var(--stg) 6%, #ffffff) 100%
-            );
             padding-bottom: 0.55rem;
         }
     }
 
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 1) { --stg: var(--bn-palette-1); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 2) { --stg: var(--bn-palette-2); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 3) { --stg: var(--bn-palette-3); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 4) { --stg: var(--bn-palette-4); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 5) { --stg: var(--bn-palette-5); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 6) { --stg: var(--bn-palette-6); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 7) { --stg: var(--bn-palette-7); }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 8) { --stg: var(--bn-palette-8); }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 1) { --stg: var(--bn-palette-1); --stg-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 2) { --stg: var(--bn-palette-2); --stg-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 3) { --stg: var(--bn-palette-3); --stg-pattern: var(--bn-pattern-orange); &::before { background-image: url("../../img/orange_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 4) { --stg: var(--bn-palette-4); --stg-pattern: var(--bn-pattern-pink); &::before { background-image: url("../../img/pink_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 5) { --stg: var(--bn-palette-5); --stg-pattern: var(--bn-pattern-purple); &::before { background-image: url("../../img/purple_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 6) { --stg: var(--bn-palette-6); --stg-pattern: var(--bn-pattern-yellow); &::before { background-image: url("../../img/yellow_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 7) { --stg: var(--bn-palette-7); --stg-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
+    .bn-stage-strip .bn-stage-card:nth-child(8n + 8) { --stg: var(--bn-palette-8); --stg-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
 
     .bn-stage-bill-badge {
         position: absolute;
@@ -796,24 +833,59 @@
 
     .bn-kpi-card {
         --kpi-accent: var(--bn-accent);
+        --kpi-pattern: var(--bn-pattern-blue);
+        --bn-card-pattern: var(--kpi-pattern);
+        --bn-card-veil: var(--bn-veil-kpi);
+        --bn-card-accent: var(--kpi-accent);
         --kpi-icon-bg: color-mix(in srgb, var(--kpi-accent) 10%, #ffffff);
         --kpi-icon-fg: color-mix(in srgb, var(--kpi-accent) 78%, #0f172a);
         position: relative;
+        isolation: isolate;
         overflow: hidden;
         border-radius: var(--bn-radius);
         border: 1px solid color-mix(in srgb, var(--kpi-accent) 22%, var(--bn-border));
         border-top: 3px solid var(--kpi-accent);
-        background: linear-gradient(
-            165deg,
-            color-mix(in srgb, var(--kpi-accent) 12%, #ffffff) 0%,
-            color-mix(in srgb, var(--kpi-accent) 5%, #f8fafc) 100%
-        );
+        background: #ffffff;
         padding: var(--bn-card-pad);
         box-shadow: var(--bn-card-shadow);
         display: flex;
         flex-direction: column;
         gap: 0.35rem;
         min-height: 92px;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border-radius: inherit;
+            background-image: var(--bn-card-pattern);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background-image:
+                radial-gradient(
+                    circle at 100% 100%,
+                    color-mix(in srgb, var(--bn-card-accent) 14%, transparent) 0%,
+                    transparent 58%
+                ),
+                var(--bn-card-veil);
+        }
+
+        > * {
+            position: relative;
+            z-index: 1;
+        }
 
         &__head {
             display: flex;
@@ -834,13 +906,13 @@
         }
     }
 
-    .bn-kpi-card:nth-child(7n + 1) { --kpi-accent: var(--bn-palette-1); }
-    .bn-kpi-card:nth-child(7n + 2) { --kpi-accent: var(--bn-palette-2); }
-    .bn-kpi-card:nth-child(7n + 3) { --kpi-accent: var(--bn-palette-3); }
-    .bn-kpi-card:nth-child(7n + 4) { --kpi-accent: var(--bn-palette-4); }
-    .bn-kpi-card:nth-child(7n + 5) { --kpi-accent: var(--bn-palette-5); }
-    .bn-kpi-card:nth-child(7n + 6) { --kpi-accent: var(--bn-palette-6); }
-    .bn-kpi-card:nth-child(7n + 7) { --kpi-accent: var(--bn-palette-7); }
+    .bn-kpi-card:nth-child(7n + 1) { --kpi-accent: var(--bn-palette-1); --kpi-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
+    .bn-kpi-card:nth-child(7n + 2) { --kpi-accent: var(--bn-palette-2); --kpi-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
+    .bn-kpi-card:nth-child(7n + 3) { --kpi-accent: var(--bn-palette-3); --kpi-pattern: var(--bn-pattern-orange); &::before { background-image: url("../../img/orange_pattern.jpg"); } }
+    .bn-kpi-card:nth-child(7n + 4) { --kpi-accent: var(--bn-palette-4); --kpi-pattern: var(--bn-pattern-pink); &::before { background-image: url("../../img/pink_pattern.jpg"); } }
+    .bn-kpi-card:nth-child(7n + 5) { --kpi-accent: var(--bn-palette-5); --kpi-pattern: var(--bn-pattern-purple); &::before { background-image: url("../../img/purple_pattern.jpg"); } }
+    .bn-kpi-card:nth-child(7n + 6) { --kpi-accent: var(--bn-palette-6); --kpi-pattern: var(--bn-pattern-yellow); &::before { background-image: url("../../img/yellow_pattern.jpg"); } }
+    .bn-kpi-card:nth-child(7n + 7) { --kpi-accent: var(--bn-palette-7); --kpi-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
 
     .bn-kpi-icon {
         width: 1.85rem;
@@ -1423,12 +1495,32 @@
         isolation: isolate;
         border-radius: var(--bn-radius);
         border: 2px solid var(--entity-border);
-        background-image: var(--bn-veil-panel), var(--entity-pattern);
-        background-repeat: no-repeat;
-        background-position: center, center center;
-        background-size: auto, cover;
+        background: #ffffff;
         box-shadow: var(--bn-shadow);
         padding: 1rem;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border-radius: inherit;
+            background-image: var(--entity-pattern);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            pointer-events: none;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            border-radius: inherit;
+            background: var(--bn-veil-panel);
+            pointer-events: none;
+        }
 
         > * {
             position: relative;
@@ -1497,26 +1589,32 @@
     .bn-entity-card:nth-child(6n + 1) {
         --entity-pattern: var(--bn-pattern-green);
         --entity-border: #5cb87a;
+        &::before { background-image: url("../../img/green_pattern.jpg"); }
     }
     .bn-entity-card:nth-child(6n + 2) {
         --entity-pattern: var(--bn-pattern-blue);
         --entity-border: #5b9fd4;
+        &::before { background-image: url("../../img/blue_pattern.jpg"); }
     }
     .bn-entity-card:nth-child(6n + 3) {
         --entity-pattern: var(--bn-pattern-orange);
         --entity-border: #e09850;
+        &::before { background-image: url("../../img/orange_pattern.jpg"); }
     }
     .bn-entity-card:nth-child(6n + 4) {
         --entity-pattern: var(--bn-pattern-pink);
         --entity-border: #d97aa0;
+        &::before { background-image: url("../../img/pink_pattern.jpg"); }
     }
     .bn-entity-card:nth-child(6n + 5) {
         --entity-pattern: var(--bn-pattern-purple);
         --entity-border: #9b7ad9;
+        &::before { background-image: url("../../img/purple_pattern.jpg"); }
     }
     .bn-entity-card:nth-child(6n + 6) {
         --entity-pattern: var(--bn-pattern-yellow);
         --entity-border: #d4b84a;
+        &::before { background-image: url("../../img/yellow_pattern.jpg"); }
     }
 
     .bn-ops-section {

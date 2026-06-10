@@ -24,10 +24,10 @@
     --bn-surface:   #ffffff;
     --bn-canvas:    #f8fafc;
     --bn-blue-soft: color-mix(in srgb, var(--bn-primary) 10%, #ffffff);
-    --bn-pattern-blue: url("/bharatnyay_core/static/img/blue_pattern.jpg");
-    --bn-pattern-green: url("/bharatnyay_core/static/img/green_pattern.jpg");
-    --bn-pattern-orange: url("/bharatnyay_core/static/img/orange_pattern.jpg");
-    --bn-pattern-yellow: url("/bharatnyay_core/static/img/yellow_pattern.jpg");
+    --bn-pattern-blue: url("../../img/blue_pattern.jpg");
+    --bn-pattern-green: url("../../img/green_pattern.jpg");
+    --bn-pattern-orange: url("../../img/orange_pattern.jpg");
+    --bn-pattern-yellow: url("../../img/yellow_pattern.jpg");
 
     background: var(--bn-canvas);
 

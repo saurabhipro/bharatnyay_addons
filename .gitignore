@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.identifier
+*:Zone.Identifier
+**/*:Zone.Identifier

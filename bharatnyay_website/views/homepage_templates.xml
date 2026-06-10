@@ -113,21 +113,55 @@
                     </div>
                 </section>
 
-                <section class="bn-trusted-strip">
+                <section class="bn-trusted-strip" aria-labelledby="bn-trusted-heading">
                     <div class="container">
                         <div class="bn-trusted-head">
                             <span class="bn-trusted-line" aria-hidden="true"/>
-                            <p class="bn-trusted-label mb-0">Trusted across India’s lending ecosystem</p>
+                            <p id="bn-trusted-heading" class="bn-trusted-label mb-0">Trusted across India’s lending ecosystem</p>
                             <span class="bn-trusted-line" aria-hidden="true"/>
                         </div>
-                        <div class="bn-trusted-grid">
-                            <div class="bn-trusted-brand"><span class="bn-trusted-mark">BF</span><span class="bn-trusted-name">Bajaj Finance</span></div>
-                            <div class="bn-trusted-brand"><span class="bn-trusted-mark">HDFC</span><span class="bn-trusted-name">HDFC Bank</span></div>
-                            <div class="bn-trusted-brand"><span class="bn-trusted-mark">SBI</span><span class="bn-trusted-name">State Bank of India</span></div>
-                            <div class="bn-trusted-brand"><span class="bn-trusted-mark">ICICI</span><span class="bn-trusted-name">ICICI Bank</span></div>
-                            <div class="bn-trusted-brand"><span class="bn-trusted-mark">AXIS</span><span class="bn-trusted-name">Axis Bank</span></div>
-                            <div class="bn-trusted-brand"><span class="bn-trusted-mark">KM</span><span class="bn-trusted-name">Kotak Mahindra</span></div>
-                        </div>
+                        <ul class="bn-trusted-logos" role="list">
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/sbin/logo.png"
+                                     alt="State Bank of India" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/hdfc/logo.png"
+                                     alt="HDFC Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/icic/logo.png"
+                                     alt="ICICI Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/barb/logo.png"
+                                     alt="Bank of Baroda" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/punb/logo.png"
+                                     alt="Punjab National Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/utib/logo.png"
+                                     alt="Axis Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/kkbk/logo.png"
+                                     alt="Kotak Mahindra Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/cnrb/logo.png"
+                                     alt="Canara Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/bkid/logo.png"
+                                     alt="Bank of India" loading="lazy" width="220" height="64"/>
+                            </li>
+                            <li class="bn-trusted-logo">
+                                <img src="/bharatnyay_website/static/src/img/logos/yesb/logo.png"
+                                     alt="Yes Bank" loading="lazy" width="220" height="64"/>
+                            </li>
+                        </ul>
                     </div>
                 </section>
 
