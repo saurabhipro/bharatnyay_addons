@@ -53,6 +53,9 @@
             &--booked {
                 background: #f87171;
             }
+            &--own {
+                background: #fca5a5;
+            }
             &--unavailable {
                 background: #cbd5e1;
             }
@@ -136,6 +139,11 @@
         &--selected:not(:disabled) {
             outline: none;
             box-shadow: inset 0 0 0 2px #166534;
+        }
+
+        &--own:not(:disabled) {
+            box-shadow: inset 0 0 0 2px #991b1b;
+            cursor: pointer;
         }
     }
 

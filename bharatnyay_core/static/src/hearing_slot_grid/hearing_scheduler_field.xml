@@ -23,6 +23,7 @@
                         <div class="bn-slot-week-cal__legend">
                             <span><i class="sq sq--free"/> Free</span>
                             <span><i class="sq sq--booked"/> Booked</span>
+                            <span><i class="sq sq--own"/> Your hearing</span>
                             <span><i class="sq sq--unavailable"/> Unavailable</span>
                         </div>
                         <div class="bn-slot-week-cal__grid">
@@ -43,7 +44,7 @@
                                                 t-att-disabled="isDisabled(slot)"
                                                 t-att-title="slotTitle(slot, day)"
                                                 t-on-click="(ev) => this.onWeekCellClick(ev, slot, day)">
-                                            <span t-if="slotKind(slot) === 'booked' and slot.loan_number"
+                                            <span t-if="(slotKind(slot) === 'booked' or slotKind(slot) === 'own') and slot.loan_number"
                                                   class="bn-slot-week-cal__booked-label"
                                                   t-esc="slot.loan_number"/>
                                         </button>
@@ -70,7 +71,7 @@
                                     t-att-title="slotTitle(slot, null)"
                                     t-on-click.stop="(ev) => this.onDayCellClick(ev, slot)">
                                 <i t-att-class="slotIconClass(slot)" aria-hidden="true"/>
-                                <span t-if="slotKind(slot) === 'booked' and slot.loan_number"
+                                <span t-if="(slotKind(slot) === 'booked' or slotKind(slot) === 'own') and slot.loan_number"
                                       class="bn-slot-loan"
                                       t-esc="slot.loan_number"/>
                                 <span t-else="" class="bn-slot-num" t-esc="slot.index"/>

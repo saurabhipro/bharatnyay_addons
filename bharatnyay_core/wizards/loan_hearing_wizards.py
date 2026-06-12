@@ -115,6 +115,10 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         string='Week calendar start',
         help='ISO date of the Monday shown in the week calendar (widget-managed).',
     )
+    scheduler_selection_label = fields.Char(
+        string='Selected slot',
+        default=lambda self: _('Choose a time on the calendar below'),
+    )
 
     hearing_datetime = fields.Datetime(
         string='Hearing date & time',
@@ -138,9 +142,8 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         help='Existing contacts who are not Odoo users. Each needs a valid email.',
     )
     external_attendee_emails = fields.Text(
-        string='External attendee emails',
-        help='Paste one or more emails (comma, semicolon, or line-separated). '
-        'A contact is created automatically when needed.',
+        string='Attendees',
+        help='Email addresses invited to the video hearing (comma, semicolon, or line-separated).',
     )
     is_final_award = fields.Boolean(string='Is final award', default=False)
     was_user_present = fields.Boolean(string='Was user present', default=False)
@@ -272,7 +275,11 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         labels = list(by_loan.values())
         if not labels:
             return None
-        return {'loan_number': labels[0] if len(labels) == 1 else ', '.join(labels)}
+        loan_ids = list(by_loan.keys())
+        return {
+            'loan_number': labels[0] if len(labels) == 1 else ', '.join(labels),
+            'loan_id': loan_ids[0] if len(loan_ids) == 1 else False,
+        }
 
     @api.model
     def _slot_interval_overlaps(self, slot_start_utc_naive, busy_starts_utc_naive, slot_minutes=SLOT_MINUTES):
@@ -423,7 +430,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'utc': utc_str,
                 })
             return {'slots': slots}
-        busy_entries = self._busy_hearing_entries_utc(au, exclude_loan=self.loan_id)
+        busy_entries = self._busy_hearing_entries_utc(au, exclude_loan=None)
         tz = self._user_timezone()
         slots = []
         now_local = datetime.now(tz)
@@ -434,7 +441,9 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             booking = self._slot_booking_for_interval(utc_naive, busy_entries)
             booked = bool(booking)
             unavailable_time = local_start < now_local
-            if booked:
+            if booked and self.loan_id and booking.get('loan_id') == self.loan_id.id:
+                status = 'own'
+            elif booked:
                 status = 'booked'
             elif unavailable_time:
                 status = 'unavailable'
@@ -444,11 +453,15 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 'index': idx,
                 'label': label,
                 'status': status,
-                'available': status == 'free',
+                'available': status in ('free', 'own'),
                 'utc': utc_str,
             }
             if booked and booking.get('loan_number'):
                 slot_data['loan_number'] = booking['loan_number']
+            elif status == 'own' and self.loan_id:
+                slot_data['loan_number'] = (
+                    self.loan_id.loan_number or self.loan_id.display_name or ''
+                ).strip()
             slots.append(slot_data)
         return {'slots': slots}
 
@@ -486,7 +499,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         for slot in payload.get('slots', []):
             if slot.get('index') != idx:
                 continue
-            if slot.get('status') == 'free':
+            if slot.get('status') in ('free', 'own'):
                 self.selected_slot_range_display = self._slot_range_label_from_index(
                     sched_day, idx
                 )
@@ -603,6 +616,14 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'external_attendee_partner_ids',
                     [(6, 0, external.ids)],
                 )
+            invite_emails = []
+            if (loan.borrower_email or '').strip():
+                invite_emails.append(loan.borrower_email.strip())
+            for partner in external:
+                if partner.email and partner.email.strip() not in invite_emails:
+                    invite_emails.append(partner.email.strip())
+            if invite_emails:
+                vals.setdefault('external_attendee_emails', ', '.join(invite_emails))
             if reschedule and loan.hearing_datetime:
                 vals.setdefault('hearing_datetime', loan.hearing_datetime)
                 uz = self._user_timezone()
@@ -657,9 +678,15 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 gidx = self._grid_index_for_datetime_on_day(day, hd)
                 if gidx:
                     vals['grid_selected_index'] = gidx
+                    vals['grid_selected_date'] = vals['scheduler_date']
             if vals.get('grid_selected_index'):
                 vals['selected_slot_range_display'] = wiz_stub._slot_range_label_from_index(
                     day, vals['grid_selected_index']
+                )
+                day_label = day.strftime('%a %d %b')
+                vals['scheduler_selection_label'] = '%s · %s' % (
+                    day_label,
+                    vals['selected_slot_range_display'],
                 )
 
         return vals

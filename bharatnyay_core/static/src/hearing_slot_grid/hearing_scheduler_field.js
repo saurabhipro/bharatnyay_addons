@@ -63,7 +63,8 @@ export class HearingSchedulerField extends Component {
     }
 
     isFree(slot) {
-        return this.slotKind(slot) === "free";
+        const kind = this.slotKind(slot);
+        return kind === "free" || kind === "own";
     }
 
     isDisabled(slot) {
@@ -123,6 +124,8 @@ export class HearingSchedulerField extends Component {
         const kind = this.slotKind(slot);
         if (kind === "booked") {
             classes.push("bn-slot-cell--booked");
+        } else if (kind === "own") {
+            classes.push("bn-slot-cell--own");
         } else if (kind === "unavailable") {
             classes.push("bn-slot-cell--unavailable");
         } else {
@@ -165,9 +168,10 @@ export class HearingSchedulerField extends Component {
         }
         const kind = this.slotKind(slot);
         const prefix = day?.label ? `${day.label} ` : "";
-        if (kind === "booked") {
+        if (kind === "booked" || kind === "own") {
             const loan = slot.loan_number ? ` · ${slot.loan_number}` : "";
-            return `${prefix}${slot.label} — booked${loan}`;
+            const tag = kind === "own" ? "your hearing" : "booked";
+            return `${prefix}${slot.label} — ${tag}${loan}`;
         }
         if (kind === "unavailable") {
             return `${prefix}${slot.label} — unavailable`;
@@ -217,12 +221,15 @@ export class HearingSchedulerField extends Component {
         const range = dayMeta
             ? this.displayLabel(slot, dayMeta)
             : this.slotRangeLabel(slot);
-        // Only Char/Integer fields — never touch Date fields from JS (avoids serializeDate crashes).
+        const selectionLabel = dayMeta
+            ? `${dayMeta.label} · ${this.slotRangeLabel(slot)}`
+            : `${dateIso} · ${range}`;
         this.props.record.update(
             {
                 grid_selected_index: slot.index,
                 grid_selected_date: dateIso,
                 selected_slot_range_display: range,
+                scheduler_selection_label: selectionLabel,
             },
             { withoutOnchange: true }
         );
@@ -244,6 +251,7 @@ export class HearingSchedulerField extends Component {
                 grid_selected_index: 0,
                 grid_selected_date: "",
                 selected_slot_range_display: "",
+                scheduler_selection_label: "Choose a time on the calendar below",
             },
             { withoutOnchange: true }
         );

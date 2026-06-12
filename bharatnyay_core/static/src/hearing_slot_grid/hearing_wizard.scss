@@ -1,0 +1,181 @@
+.o_dialog .modal-body:has(.bn-hearing-wizard) {
+    padding-top: 0.75rem;
+}
+
+.bn-hearing-wizard {
+    max-width: 960px;
+
+    &__panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+        &--top {
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            padding: 10px 14px;
+        }
+
+        &--calendar {
+            padding-bottom: 10px;
+        }
+
+        &--attendees {
+            background: #f8fafc;
+        }
+
+        &--outcome {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+    }
+
+    &__topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 14px;
+    }
+
+    &__topbar-divider {
+        width: 1px;
+        align-self: stretch;
+        min-height: 32px;
+        background: #e2e8f0;
+        flex-shrink: 0;
+    }
+
+    &__topbar-block {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+        min-width: 0;
+
+        &--case {
+            flex-shrink: 0;
+        }
+
+        &--selection {
+            flex: 1 1 auto;
+            min-width: 180px;
+        }
+
+        &--controls {
+            flex: 0 1 auto;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-left: auto;
+        }
+    }
+
+    &__panel-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 8px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    &__kicker {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    &__case-name {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+        white-space: nowrap;
+
+        .o_field_widget {
+            font-size: inherit;
+            font-weight: inherit;
+        }
+    }
+
+    &__selection-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: #ecfdf3;
+        border: 1px solid #86efac;
+        color: #14532d;
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .o_field_widget {
+            color: inherit;
+            font-weight: inherit;
+        }
+    }
+
+    &__teams-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1e293b;
+
+        .fa {
+            color: #5b5fc7;
+            font-size: 1rem;
+        }
+    }
+
+    &__email-input textarea {
+        min-height: 72px;
+        border-radius: 10px !important;
+        border-color: #cbd5e1 !important;
+        padding: 10px 12px !important;
+        font-size: 0.92rem;
+        background: #ffffff;
+    }
+
+    &__hint {
+        margin-top: 6px;
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
+    &__footer {
+        border-top: none;
+        padding-top: 4px;
+    }
+
+    .o_field_widget.o_field_radio {
+        margin-bottom: 0;
+    }
+
+    &__topbar-block--controls .o_field_widget.o_field_date input {
+        max-width: 118px;
+        min-height: 32px;
+    }
+}
+
+@media (max-width: 760px) {
+    .bn-hearing-wizard__topbar-divider {
+        display: none;
+    }
+
+    .bn-hearing-wizard__topbar-block--controls {
+        margin-left: 0;
+        width: 100%;
+    }
+}

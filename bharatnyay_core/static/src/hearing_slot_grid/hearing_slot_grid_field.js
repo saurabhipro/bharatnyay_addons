@@ -20,9 +20,10 @@ export class HearingSlotGridField extends Component {
         return slot.available ? "free" : "booked";
     }
 
-    /** Server sends status: free | booked | unavailable */
+    /** Server sends status: free | booked | own | unavailable */
     isFree(slot) {
-        return this.slotKind(slot) === "free";
+        const kind = this.slotKind(slot);
+        return kind === "free" || kind === "own";
     }
 
     isDisabled(slot) {
@@ -43,8 +44,8 @@ export class HearingSlotGridField extends Component {
         const selected = this.props.record.data.grid_selected_index;
         const classes = ["bn-slot-cell"];
         const kind = this.slotKind(slot);
-        if (kind === "booked") {
-            classes.push("bn-slot-cell--booked");
+        if (kind === "booked" || kind === "own") {
+            classes.push(kind === "own" ? "bn-slot-cell--own" : "bn-slot-cell--booked");
         } else if (kind === "unavailable") {
             classes.push("bn-slot-cell--unavailable");
         } else {
