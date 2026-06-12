@@ -180,6 +180,9 @@ export class HearingSchedulerField extends Component {
     }
 
     slotRangeLabel(slot) {
+        if (slot?.time_range) {
+            return slot.time_range;
+        }
         const parts = (slot.label || "").split(":");
         if (parts.length !== 2) {
             return slot.label || "";

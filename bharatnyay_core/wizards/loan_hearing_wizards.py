@@ -249,6 +249,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 'start': dt,
                 'loan_number': (row.loan_number or row.display_name or '').strip(),
                 'loan_id': row.id,
+                'customer_name': (row.customer_name or '').strip(),
             })
 
         return entries
@@ -276,9 +277,18 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         if not labels:
             return None
         loan_ids = list(by_loan.keys())
+        customer_names = []
+        for entry in busy_entries:
+            b = entry['start']
+            bend = b + timedelta(minutes=slot_minutes)
+            if slot_start_utc_naive < bend and slot_end > b:
+                cname = (entry.get('customer_name') or '').strip()
+                if cname and cname not in customer_names:
+                    customer_names.append(cname)
         return {
             'loan_number': labels[0] if len(labels) == 1 else ', '.join(labels),
             'loan_id': loan_ids[0] if len(loan_ids) == 1 else False,
+            'customer_name': customer_names[0] if len(customer_names) == 1 else '',
         }
 
     @api.model
@@ -438,6 +448,8 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             utc_naive = local_start.astimezone(pytz.UTC).replace(tzinfo=None)
             utc_str = fields.Datetime.to_string(utc_naive)
             label = local_start.strftime('%H:%M')
+            end_local = local_start + timedelta(minutes=self.SLOT_MINUTES)
+            time_range = '%s–%s' % (label, end_local.strftime('%H:%M'))
             booking = self._slot_booking_for_interval(utc_naive, busy_entries)
             booked = bool(booking)
             unavailable_time = local_start < now_local
@@ -452,6 +464,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             slot_data = {
                 'index': idx,
                 'label': label,
+                'time_range': time_range,
                 'status': status,
                 'available': status in ('free', 'own'),
                 'utc': utc_str,
@@ -462,6 +475,10 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 slot_data['loan_number'] = (
                     self.loan_id.loan_number or self.loan_id.display_name or ''
                 ).strip()
+            if booked and booking.get('customer_name'):
+                slot_data['customer_name'] = booking['customer_name']
+            elif status == 'own' and self.loan_id:
+                slot_data['customer_name'] = (self.loan_id.customer_name or '').strip()
             slots.append(slot_data)
         return {'slots': slots}
 
@@ -598,32 +615,19 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         if loan:
             vals.setdefault('loan_id', loan.id)
             vals['hearing_reschedule'] = reschedule
-            if loan.arbitrator_id:
-                vals.setdefault(
-                    'invite_user_ids',
-                    [(6, 0, loan.arbitrator_id.ids)],
-                )
-            external = loan.hearing_external_attendee_ids
-            if (loan.borrower_email or '').strip():
-                borrower_partner = loan._hearing_ensure_partner_for_email(
-                    loan.borrower_email,
-                    name=loan.customer_name or loan.borrower_email,
-                )
-                if borrower_partner:
-                    external |= borrower_partner
+            invite_users = loan._hearing_default_invite_users()
+            if loan.hearing_invite_user_ids:
+                invite_users |= loan.hearing_invite_user_ids
+            if invite_users:
+                vals.setdefault('invite_user_ids', [(6, 0, invite_users.ids)])
+            external = loan._hearing_default_external_partners()
+            if loan.hearing_external_attendee_ids:
+                external |= loan.hearing_external_attendee_ids
             if external:
                 vals.setdefault(
                     'external_attendee_partner_ids',
                     [(6, 0, external.ids)],
                 )
-            invite_emails = []
-            if (loan.borrower_email or '').strip():
-                invite_emails.append(loan.borrower_email.strip())
-            for partner in external:
-                if partner.email and partner.email.strip() not in invite_emails:
-                    invite_emails.append(partner.email.strip())
-            if invite_emails:
-                vals.setdefault('external_attendee_emails', ', '.join(invite_emails))
             if reschedule and loan.hearing_datetime:
                 vals.setdefault('hearing_datetime', loan.hearing_datetime)
                 uz = self._user_timezone()

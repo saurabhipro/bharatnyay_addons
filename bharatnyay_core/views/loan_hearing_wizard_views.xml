@@ -12,8 +12,6 @@
                 <field name="slot_board_json" invisible="1"/>
                 <field name="week_board_json" invisible="1"/>
                 <field name="selected_slot_range_display" invisible="1"/>
-                <field name="invite_user_ids" invisible="1"/>
-                <field name="external_attendee_partner_ids" invisible="1"/>
 
                 <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--top">
                     <div class="bn-hearing-wizard__topbar">
@@ -48,28 +46,76 @@
                             <field name="use_manual_time" nolabel="1"/>
                             <field name="hearing_datetime"
                                    invisible="not use_manual_time"
-                                   nolabel="1"/>
+                                   nolabel="1"
+                                   force_save="1"/>
                         </div>
                     </div>
                 </div>
 
-                <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--calendar" invisible="use_manual_time">
-                    <div class="bn-hearing-wizard__panel-title">Pick a slot · Mon–Fri · 09:00–17:00 · 30 min</div>
-                    <field name="grid_selected_index"
-                           widget="bn_hearing_scheduler"
-                           nolabel="1"/>
+                <div class="bn-hearing-wizard__split" invisible="use_manual_time">
+                    <div class="bn-hearing-wizard__split-col bn-hearing-wizard__split-col--calendar">
+                        <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--calendar">
+                            <div class="bn-hearing-wizard__panel-title">Pick a slot · Mon–Fri · 09:00–17:00 · 30 min</div>
+                            <field name="grid_selected_index"
+                                   widget="bn_hearing_scheduler"
+                                   nolabel="1"/>
+                        </div>
+                    </div>
+
+                    <div class="bn-hearing-wizard__split-col bn-hearing-wizard__split-col--side">
+                        <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--attendees">
+                            <div class="bn-hearing-wizard__teams-header">
+                                <i class="fa fa-video-camera" title="Video hearing"/>
+                                <span>Video hearing invitees</span>
+                            </div>
+
+                            <div class="bn-hearing-wizard__attendee-block">
+                                <div class="bn-hearing-wizard__attendee-label">
+                                    <i class="fa fa-gavel"/> Arbitrator &amp; lender team
+                                </div>
+                                <field name="invite_user_ids"
+                                       widget="many2many_tags"
+                                       nolabel="1"
+                                       options="{'no_create': True}"
+                                       placeholder="Select Odoo users…"/>
+                            </div>
+
+                            <div class="bn-hearing-wizard__attendee-block">
+                                <div class="bn-hearing-wizard__attendee-label">
+                                    <i class="fa fa-users"/> Borrower &amp; lender contacts
+                                </div>
+                                <field name="external_attendee_partner_ids"
+                                       widget="many2many_tags"
+                                       nolabel="1"
+                                       placeholder="Select contacts…"/>
+                            </div>
+
+                            <div class="bn-hearing-wizard__attendee-block">
+                                <div class="bn-hearing-wizard__attendee-label">
+                                    <i class="fa fa-envelope-o"/> Additional emails
+                                </div>
+                                <field name="external_attendee_emails"
+                                       nolabel="1"
+                                       placeholder="counsel@firm.com"
+                                       class="bn-hearing-wizard__email-input"/>
+                            </div>
+
+                            <div class="bn-hearing-wizard__hint">
+                                Defaults: arbitrator, case manager (lender), borrower and lender company.
+                                Remove tags or add more before saving.
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--attendees">
+                <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--attendees" invisible="not use_manual_time">
                     <div class="bn-hearing-wizard__teams-header">
-                        <i class="fa fa-video-camera" title="Video hearing"/>
-                        <span>Invite people to the video hearing</span>
+                        <i class="fa fa-video-camera"/>
+                        <span>Video hearing invitees</span>
                     </div>
-                    <field name="external_attendee_emails"
-                           nolabel="1"
-                           placeholder="name@company.com, counsel@firm.com"
-                           class="bn-hearing-wizard__email-input"/>
-                    <div class="bn-hearing-wizard__hint">Separate multiple emails with commas or new lines. Calendar invites are sent automatically.</div>
+                    <field name="invite_user_ids" widget="many2many_tags" nolabel="1" options="{'no_create': True}"/>
+                    <field name="external_attendee_partner_ids" widget="many2many_tags" nolabel="1"/>
+                    <field name="external_attendee_emails" nolabel="1" class="bn-hearing-wizard__email-input"/>
                 </div>
 
                 <div class="bn-hearing-wizard__panel bn-hearing-wizard__panel--outcome" invisible="hearing_reschedule">

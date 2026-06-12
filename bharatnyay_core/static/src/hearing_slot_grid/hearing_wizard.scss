@@ -3,7 +3,55 @@
 }
 
 .bn-hearing-wizard {
-    max-width: 960px;
+    max-width: 1100px;
+
+    &__split {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.75fr);
+        gap: 12px;
+        align-items: start;
+    }
+
+    &__split-col {
+        min-width: 0;
+
+        &--calendar .bn-hearing-wizard__panel--calendar {
+            margin-bottom: 0;
+        }
+
+        &--side .bn-hearing-wizard__panel--attendees {
+            margin-bottom: 0;
+            height: 100%;
+        }
+    }
+
+    &__attendee-block {
+        margin-bottom: 12px;
+
+        .o_field_many2many_tags {
+            width: 100%;
+        }
+
+        .o_tag_color {
+            font-size: 0.78rem;
+        }
+    }
+
+    &__attendee-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+
+        .fa {
+            color: #5b5fc7;
+        }
+    }
 
     &__panel {
         background: #ffffff;
@@ -140,7 +188,7 @@
     }
 
     &__email-input textarea {
-        min-height: 72px;
+        min-height: 52px;
         border-radius: 10px !important;
         border-color: #cbd5e1 !important;
         padding: 10px 12px !important;
@@ -166,6 +214,12 @@
     &__topbar-block--controls .o_field_widget.o_field_date input {
         max-width: 118px;
         min-height: 32px;
+    }
+}
+
+@media (max-width: 960px) {
+    .bn-hearing-wizard__split {
+        grid-template-columns: 1fr;
     }
 }
 

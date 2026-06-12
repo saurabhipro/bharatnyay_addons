@@ -179,9 +179,21 @@ class BharatLoanPostalDispatch(models.Model):
             if status.locks_case and not loan.postal_case_locked:
                 loan.sudo().write({'postal_case_locked': True})
             if status.triggers_billing and not rec.billing_accrued:
-                event = Event.bharat_accrue_for_postal_dispatch(rec)
-                if event:
-                    rec.billing_event_id = event.id
+                try:
+                    event = Event.bharat_accrue_for_postal_dispatch(rec)
+                except UserError as exc:
+                    rec.loan_id.message_post(
+                        body=_(
+                            'Delivery status saved for %(doc)s. '
+                            'Billing was not accrued: %(err)s'
+                        ) % {
+                            'doc': rec.document_label or rec.document_type,
+                            'err': exc.args[0],
+                        },
+                    )
+                else:
+                    if event:
+                        rec.billing_event_id = event.id
             if status.is_delivered and rec.delivery_date:
                 loan.sudo().write({
                     'deliver_date': rec.delivery_date,

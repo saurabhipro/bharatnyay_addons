@@ -44,9 +44,21 @@
                                                 t-att-disabled="isDisabled(slot)"
                                                 t-att-title="slotTitle(slot, day)"
                                                 t-on-click="(ev) => this.onWeekCellClick(ev, slot, day)">
-                                            <span t-if="(slotKind(slot) === 'booked' or slotKind(slot) === 'own') and slot.loan_number"
-                                                  class="bn-slot-week-cal__booked-label"
-                                                  t-esc="slot.loan_number"/>
+                                            <div class="bn-slot-week-cal__cell-body">
+                                                <t t-if="slotKind(slot) === 'free'">
+                                                    <span class="bn-slot-week-cal__cell-time" t-esc="slot.time_range or slotRangeLabel(slot)"/>
+                                                </t>
+                                                <t t-elif="slotKind(slot) === 'booked' or slotKind(slot) === 'own'">
+                                                    <span class="bn-slot-week-cal__booked-label" t-esc="slot.loan_number"/>
+                                                    <span t-if="slot.customer_name"
+                                                          class="bn-slot-week-cal__booked-sub"
+                                                          t-esc="slot.customer_name"/>
+                                                    <span class="bn-slot-week-cal__booked-time" t-esc="slot.time_range or slotRangeLabel(slot)"/>
+                                                </t>
+                                                <t t-elif="slotKind(slot) === 'unavailable'">
+                                                    <span class="bn-slot-week-cal__cell-muted">—</span>
+                                                </t>
+                                            </div>
                                         </button>
                                         <div t-else="" class="bn-slot-week-cal__empty-cell"/>
                                     </t>

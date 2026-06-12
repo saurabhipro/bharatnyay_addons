@@ -4,20 +4,43 @@
         <field name="name">bharat.loan.postal.status.wizard.form</field>
         <field name="model">bharat.loan.postal.status.wizard</field>
         <field name="arch" type="xml">
-            <form string="Update POD status">
-                <group string="Document">
+            <form string="Update POD status" class="bn-postal-wizard">
+                <sheet>
                     <field name="loan_id" invisible="1"/>
                     <field name="document_type" invisible="1"/>
                     <field name="dispatch_id" invisible="1"/>
-                    <field name="loan_display"/>
-                    <field name="document_label"/>
-                </group>
-                <group string="Postal tracking">
-                    <field name="pod" placeholder="Tracking / POD number"/>
-                    <field name="post_office_status_id" options="{'no_create': True}"/>
-                    <field name="dispatch_date"/>
-                    <field name="delivery_date"/>
-                </group>
+
+                    <div class="bn-postal-wizard__hero">
+                        <div class="bn-postal-wizard__icon">
+                            <i class="fa fa-truck"/>
+                        </div>
+                        <div>
+                            <h2 class="bn-postal-wizard__title">Update POD status</h2>
+                            <p class="bn-postal-wizard__subtitle mb-0">
+                                Case <field name="loan_display" readonly="1" nolabel="1" class="oe_inline fw-semibold"/>
+                                ·
+                                <field name="document_label" readonly="1" nolabel="1" class="oe_inline fw-semibold"/>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bn-postal-wizard__panel">
+                        <div class="bn-postal-wizard__panel-title">Postal tracking</div>
+                        <group>
+                            <group>
+                                <field name="pod" placeholder="Tracking / POD number"/>
+                                <field name="dispatch_date"/>
+                                <field name="delivery_date"/>
+                            </group>
+                        </group>
+                        <div class="bn-postal-wizard__status">
+                            <field name="post_office_status_id"
+                                   string="Post office status"
+                                   widget="radio"
+                                   options="{'no_create': True}"/>
+                        </div>
+                    </div>
+                </sheet>
                 <footer>
                     <button string="Save" type="object" name="action_save" class="btn-primary"/>
                     <button string="Cancel" special="cancel" class="btn-secondary"/>

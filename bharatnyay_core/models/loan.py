@@ -15,7 +15,7 @@ from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools.misc import format_date
+from odoo.tools.misc import format_date, format_datetime
 from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
@@ -1441,7 +1441,11 @@ class BharatLoan(models.Model):
         if self.env.context.get('skip_hearing_countdown'):
             return self
         loans = self.with_context(skip_hearing_countdown=True).filtered(
-            lambda l: not l._is_hearing_milestone() and l.hearing_line_ids
+            lambda l: (
+                not l.is_case_locked
+                and not l._is_hearing_milestone()
+                and l.hearing_line_ids
+            )
         )
         for loan in loans:
             if loan.hearing_minutes_remaining != 0:
@@ -1457,7 +1461,7 @@ class BharatLoan(models.Model):
         """Move case to the matching hearing milestone when countdown reaches zero."""
         now = fields.Datetime.now()
         for loan in self.with_context(skip_hearing_countdown=True):
-            if loan._is_hearing_milestone():
+            if loan.is_case_locked or loan._is_hearing_milestone():
                 continue
             due_lines = loan.hearing_line_ids.filtered(
                 lambda l: l.hearing_datetime and l.hearing_datetime <= now
@@ -1709,6 +1713,10 @@ class BharatLoan(models.Model):
             'name': _('Notice history'),
             'res_model': 'bharat.loan.notice.line',
             'view_mode': 'list,form',
+            'views': [
+                (self.env.ref('bharatnyay_core.view_bharat_loan_notice_line_tree').id, 'list'),
+                (self.env.ref('bharatnyay_core.view_bharat_loan_notice_line_form').id, 'form'),
+            ],
             'domain': [('loan_id', '=', self.id)],
             'context': {'default_loan_id': self.id},
         }
@@ -1975,6 +1983,33 @@ class BharatLoan(models.Model):
             partners |= self._hearing_ensure_partner_for_email(email, name=default_name)
         return partners
 
+    def _hearing_default_invite_users(self):
+        """Odoo users invited by default: arbitrator + case manager (lender side)."""
+        self.ensure_one()
+        users = self.env['res.users']
+        if self.arbitrator_id:
+            users |= self.arbitrator_id
+        if self.case_manager_id:
+            users |= self.case_manager_id
+        return users
+
+    def _hearing_default_external_partners(self):
+        """External calendar guests by default: borrower + lender company contact."""
+        self.ensure_one()
+        partners = self.env['res.partner']
+        borrower = self._resolve_borrower_partner()
+        if not borrower and (self.borrower_email or '').strip():
+            borrower = self._hearing_ensure_partner_for_email(
+                self.borrower_email,
+                name=self.customer_name or self.borrower_email,
+            )
+        if borrower:
+            partners |= borrower
+        company_partner = self.company_id.partner_id
+        if company_partner and (company_partner.email or '').strip():
+            partners |= company_partner
+        return partners
+
     def _hearing_partner_ids_for_meeting(self, invite_users=None, external_partners=None):
         self.ensure_one()
         partners = self.env.user.partner_id
@@ -2004,6 +2039,43 @@ class BharatLoan(models.Model):
             return self.calendar_event_id
         line = self.hearing_line_ids.filtered('calendar_event_id').sorted('hearing_datetime', reverse=True)[:1]
         return line.calendar_event_id
+
+    def _hearing_ensure_calendar_event(self, create_if_missing=True):
+        """Return the Discuss calendar event for this hearing, creating one when needed."""
+        self.ensure_one()
+        event = self._hearing_calendar_event()
+        if event:
+            return event
+        if not create_if_missing or not self.hearing_datetime:
+            return self.env['calendar.event']
+        invite_users = (
+            self.hearing_invite_user_ids
+            if self.hearing_invite_user_ids
+            else self._hearing_default_invite_users()
+        )
+        external_partners = (
+            self.hearing_external_attendee_ids
+            if self.hearing_external_attendee_ids
+            else self._hearing_default_external_partners()
+        )
+        event = self._hearing_upsert_calendar_event(
+            self.hearing_datetime,
+            invite_users,
+            external_partners,
+        )
+        line = self.hearing_line_ids.filtered(
+            lambda l, dt=self.hearing_datetime: l.hearing_datetime == dt
+        )[:1]
+        if not line:
+            line = self.hearing_line_ids.sorted('hearing_datetime', reverse=True)[:1]
+        if line and not line.calendar_event_id:
+            line.write({
+                'calendar_event_id': event.id,
+                'link_type': 'odoo',
+                'meeting_link': event.videocall_location or '',
+            })
+        self.write({'calendar_event_id': event.id})
+        return event
 
     def _hearing_upsert_calendar_event(self, start_dt, invite_users=None, external_partners=None):
         """Create or update an Odoo Calendar event with Discuss videocall."""
@@ -2086,7 +2158,7 @@ class BharatLoan(models.Model):
                 )
             if not rec.hearing_datetime:
                 raise UserError(_('Set a hearing date and time before sending invitations.'))
-            event = rec._hearing_calendar_event()
+            event = rec._hearing_ensure_calendar_event()
             if not event or not (event.videocall_location or '').strip():
                 raise UserError(
                     _('No Odoo meeting is scheduled. Use Schedule or Reschedule hearing first.')
@@ -2162,10 +2234,14 @@ class BharatLoan(models.Model):
         self.ensure_one()
         if not self._is_hearing_milestone():
             raise UserError(_('Join online is available during hearing milestones.'))
-        event = self._hearing_calendar_event()
+        if not self.hearing_datetime:
+            raise UserError(
+                _('Set a hearing date and time before joining. Use Schedule or Reschedule hearing.')
+            )
+        event = self._hearing_ensure_calendar_event()
         if not event:
             raise UserError(
-                _('No Odoo meeting is scheduled. Use Schedule or Reschedule hearing first.')
+                _('No Odoo meeting could be created. Use Schedule or Reschedule hearing first.')
             )
         if not (event.videocall_location or '').strip():
             event._set_discuss_videocall_location()
@@ -3829,6 +3905,89 @@ class BharatLoanNoticeLine(models.Model):
     response_notes = fields.Text(string='Response notes')
     response_received_on = fields.Datetime(string='Response received on')
 
+    has_pod_tracking = fields.Boolean(
+        string='Postal POD tracking',
+        compute='_compute_delivery_info',
+        store=True,
+    )
+    postal_dispatch_id = fields.Many2one(
+        'bharat.loan.postal.dispatch',
+        string='Postal dispatch',
+        compute='_compute_delivery_info',
+        store=True,
+    )
+    delivery_status = fields.Char(
+        string='Delivery status',
+        compute='_compute_delivery_info',
+        store=True,
+    )
+    delivery_status_key = fields.Char(
+        compute='_compute_delivery_info',
+        store=True,
+    )
+    delivery_meta = fields.Char(
+        string='Delivery details',
+        compute='_compute_delivery_info',
+        store=True,
+    )
+    pod = fields.Char(related='postal_dispatch_id.pod', string='POD / tracking no.', readonly=True)
+    post_office_status_id = fields.Many2one(
+        related='postal_dispatch_id.post_office_status_id',
+        string='Post office status',
+        readonly=True,
+    )
+    dispatch_date = fields.Date(related='postal_dispatch_id.dispatch_date', readonly=True)
+    delivery_date = fields.Date(related='postal_dispatch_id.delivery_date', readonly=True)
+
+    @api.depends(
+        'notice_number',
+        'sent_on',
+        'loan_id',
+        'loan_id.milestone_id',
+        'loan_id.postal_dispatch_ids.pod',
+        'loan_id.postal_dispatch_ids.post_office_status_id',
+        'loan_id.postal_dispatch_ids.dispatch_date',
+        'loan_id.postal_dispatch_ids.delivery_date',
+        'loan_id.postal_dispatch_ids.billing_accrued',
+    )
+    def _compute_delivery_info(self):
+        for rec in self:
+            rec.has_pod_tracking = (rec.notice_number or 0) == 1
+            rec.postal_dispatch_id = False
+            rec.delivery_status = ''
+            rec.delivery_status_key = 'neutral'
+            rec.delivery_meta = ''
+            loan = rec.loan_id
+            if not loan:
+                continue
+            if rec.notice_number == 1:
+                dispatch = loan.postal_dispatch_ids.filtered(
+                    lambda d: d.document_type == 'notice_1'
+                )[:1]
+                rec.postal_dispatch_id = dispatch.id if dispatch else False
+                _state, label, meta = loan._postal_delivery_summary(
+                    'notice_1',
+                    'Notice 1',
+                    'notice_1',
+                )
+                rec.delivery_status = label
+                rec.delivery_status_key = _state
+                rec.delivery_meta = meta or ''
+            else:
+                rec.delivery_status = _('Email dispatched') if rec.sent_on else _('Not sent')
+                rec.delivery_status_key = 'email' if rec.sent_on else 'neutral'
+                if rec.sent_on:
+                    rec.delivery_meta = _('Digital notice sent %s') % format_datetime(
+                        self.env, rec.sent_on,
+                    )
+
+    def action_update_pod(self):
+        """Open POD wizard for Notice 1 postal delivery."""
+        self.ensure_one()
+        if not self.has_pod_tracking:
+            raise UserError(_('Postal POD tracking applies to Notice 1 only.'))
+        return self.loan_id.action_open_postal_status_wizard('notice_1')
+
     @api.depends('qr_access_token')
     def _compute_notice_microsite_links(self):
         base = (self.env['ir.config_parameter'].sudo().get_param('web.base.url') or '').rstrip('/')
@@ -3983,10 +4142,23 @@ class BharatLoanHearingLine(models.Model):
     def action_join_meeting(self):
         """Join the Odoo Discuss videocall for this hearing."""
         self.ensure_one()
-        event = self.calendar_event_id or self.loan_id._hearing_calendar_event()
+        loan = self.loan_id
+        event = self.calendar_event_id
+        if not event:
+            if not loan.hearing_datetime and self.hearing_datetime:
+                loan.with_context(skip_hearing_countdown=True).write({
+                    'hearing_datetime': self.hearing_datetime,
+                })
+            event = loan._hearing_ensure_calendar_event()
+            if event and not self.calendar_event_id:
+                self.write({
+                    'calendar_event_id': event.id,
+                    'link_type': 'odoo',
+                    'meeting_link': event.videocall_location or '',
+                })
         if not event:
             raise UserError(
-                _('No Odoo meeting is linked to this hearing. Schedule or reschedule first.')
+                _('No Odoo meeting could be created. Schedule or reschedule first.')
             )
         if not (event.videocall_location or '').strip():
             event._set_discuss_videocall_location()

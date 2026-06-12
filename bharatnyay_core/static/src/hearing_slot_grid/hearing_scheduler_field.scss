@@ -4,7 +4,7 @@
 
 .bn-slot-week-cal {
     width: 100%;
-    max-width: 920px;
+    max-width: none;
 
     &__toolbar {
         display: flex;
@@ -119,16 +119,17 @@
     }
 
     .bn-slot-cell {
-        min-height: 28px;
+        min-height: 44px;
         border-radius: 0;
         border: none;
         border-left: 1px solid #f1f5f9;
         box-shadow: none;
-        padding: 2px 3px;
+        padding: 3px 4px;
         display: flex;
-        align-items: center;
+        align-items: stretch;
         justify-content: center;
         text-align: center;
+        flex-direction: column;
 
         &:hover:not(:disabled) {
             transform: none;
@@ -147,18 +148,55 @@
         }
     }
 
-    &__booked-label {
+    &__cell-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        width: 100%;
+        min-height: 100%;
+    }
+
+    &__cell-time {
         font-size: 0.58rem;
+        font-weight: 700;
+        color: #166534;
+        line-height: 1.1;
+    }
+
+    &__cell-muted {
+        font-size: 0.62rem;
+        color: #94a3b8;
+    }
+
+    &__booked-label {
+        font-size: 0.62rem;
         font-weight: 800;
-        line-height: 1.15;
+        line-height: 1.1;
         color: #7f1d1d;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
         word-break: break-word;
         max-width: 100%;
+    }
+
+    &__booked-sub {
+        font-size: 0.52rem;
+        font-weight: 650;
+        line-height: 1.1;
+        color: #991b1b;
+        opacity: 0.92;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    &__booked-time {
+        font-size: 0.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #7f1d1d;
+        opacity: 0.85;
     }
 }
 

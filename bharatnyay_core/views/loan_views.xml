@@ -430,54 +430,13 @@
                                         <field name="notice_number"/>
                                         <field name="notice_label" readonly="1"/>
                                         <field name="sent_on"/>
+                                        <field name="delivery_status" string="Delivery"/>
                                         <field name="sent_by_id"/>
                                         <field name="subject"/>
                                         <button name="action_record_response" type="object" string="Record reply"
                                                 class="btn-link" icon="fa-inbox"
                                                 invisible="parent.is_case_locked"/>
                                     </list>
-                                    <form string="Notice" create="0" edit="0" delete="0">
-                                        <header>
-                                            <button name="action_record_response" type="object"
-                                                    string="Record respondent reply" class="btn-primary"
-                                                    invisible="parent.is_case_locked"/>
-                                        </header>
-                                        <sheet>
-                                            <field name="notice_label" invisible="1"/>
-                                            <field name="notice_number" invisible="1"/>
-                                            <div class="bn-notice-meta">
-                                                <span class="bn-notice-meta__item">
-                                                    <span class="bn-notice-meta__k">Sent</span>
-                                                    <field name="sent_on" readonly="1" nolabel="1"/>
-                                                </span>
-                                                <span class="bn-notice-meta__sep">·</span>
-                                                <span class="bn-notice-meta__item">
-                                                    <span class="bn-notice-meta__k">To</span>
-                                                    <field name="sent_to" readonly="1" nolabel="1"/>
-                                                </span>
-                                                <span class="bn-notice-meta__sep" invisible="not response_received_on">·</span>
-                                                <span class="bn-notice-meta__item bn-notice-meta__item--replied" invisible="not response_received_on">
-                                                    <i class="fa fa-check-circle"/>
-                                                    <span class="bn-notice-meta__k">Replied</span>
-                                                    <field name="response_received_on" readonly="1" nolabel="1"/>
-                                                </span>
-                                            </div>
-
-                                            <!-- PDFs side by side -->
-                                            <div class="bn-notice-pdfs">
-                                                <div class="bn-notice-pdf-col">
-                                                    <div class="bn-notice-pdf-col__label">Notice PDF</div>
-                                                    <field name="notice_pdf" filename="notice_pdf_filename" widget="pdf_viewer" nolabel="1"/>
-                                                    <field name="notice_pdf_filename" invisible="1"/>
-                                                </div>
-                                                <div class="bn-notice-pdf-col" invisible="not response_pdf">
-                                                    <div class="bn-notice-pdf-col__label">Response PDF</div>
-                                                    <field name="response_pdf" filename="response_pdf_filename" widget="pdf_viewer" readonly="1" nolabel="1"/>
-                                                    <field name="response_pdf_filename" invisible="1"/>
-                                                </div>
-                                            </div>
-                                        </sheet>
-                                    </form>
                                 </field>
                             </group>
                         </page>
