@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bharatnyay_core.PostalDeliveryCardsField">
+        <div class="bn-postal-delivery__grid">
+            <t t-foreach="cards" t-as="card" t-key="card.document_type">
+                <t t-if="card.clickable">
+                    <button type="button"
+                            t-att-class="cardClass(card)"
+                            t-on-click="onCardClick(card)">
+                        <div class="bn-postal-card__head">
+                            <span class="bn-postal-card__icon">
+                                <i t-attf-class="fa {{ card.icon }}" aria-hidden="true"/>
+                            </span>
+                            <span class="bn-postal-card__title" t-out="card.title"/>
+                            <span class="bn-postal-card__badge" t-out="card.badge"/>
+                        </div>
+                        <div class="bn-postal-card__status" t-out="card.status_label"/>
+                        <div class="bn-postal-card__meta" t-out="card.meta"/>
+                    </button>
+                </t>
+                <t t-else="">
+                    <article t-att-class="cardClass(card)">
+                        <div class="bn-postal-card__head">
+                            <span class="bn-postal-card__icon">
+                                <i t-attf-class="fa {{ card.icon }}" aria-hidden="true"/>
+                            </span>
+                            <span class="bn-postal-card__title" t-out="card.title"/>
+                            <span class="bn-postal-card__badge" t-out="card.badge"/>
+                        </div>
+                        <div class="bn-postal-card__status" t-out="card.status_label"/>
+                        <div class="bn-postal-card__meta" t-out="card.meta"/>
+                    </article>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>

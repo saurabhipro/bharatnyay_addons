@@ -17,6 +17,7 @@ import {
     batchVolumeRows,
     batchBarHeight as batchBarHeightHelper,
     batchSegPctCount as batchSegPctCountHelper,
+    openRoleInvoices,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -122,6 +123,19 @@ export class CaseManagerDashboard extends Component {
         await this.load();
     }
 
+    hearingDtLabel(iso) {
+        if (!iso) {
+            return "";
+        }
+        const d = new Date(iso.replace(" ", "T") + "Z");
+        return d.toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
+
     openMyCases() {
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -219,33 +233,20 @@ export class CaseManagerDashboard extends Component {
 
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
-        const domain = [
-            ["move_type", "=", "out_invoice"],
-            ["bharat_arbitration_invoice", "=", true],
-        ];
-        if (this.state.date_from) {
-            domain.push(["invoice_date", ">=", this.state.date_from]);
-        }
-        if (this.state.date_to) {
-            domain.push(["invoice_date", "<=", this.state.date_to]);
-        }
-        if (mode === "draft") {
-            domain.push(["state", "=", "draft"]);
-        } else if (mode === "paid") {
-            domain.push(["state", "=", "posted"]);
-            domain.push(["payment_state", "in", ["paid", "in_payment"]]);
-        } else if (mode === "unpaid") {
-            domain.push(["state", "=", "posted"]);
-            domain.push(["payment_state", "not in", ["paid", "in_payment"]]);
-            domain.push(["amount_residual", ">", 0]);
+        openRoleInvoices(this.action, this.state, mode);
+    }
+
+    openLoan(ev) {
+        const id = parseInt(ev.currentTarget?.dataset?.loanId, 10);
+        if (!id) {
+            return;
         }
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Arbitration invoices",
-            res_model: "account.move",
-            views: [[false, "list"], [false, "form"]],
-            domain,
-            context: { default_move_type: "out_invoice" },
+            name: "Case",
+            res_model: "bharat.loan",
+            views: [[false, "form"]],
+            res_id: id,
             target: "current",
         });
     }

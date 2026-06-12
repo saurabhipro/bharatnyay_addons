@@ -129,6 +129,26 @@ export async function onDashboardFilterBatchChange(orm, state, ev, reloadFn) {
     await reloadFn();
 }
 
+export function openRoleInvoices(action, state, mode = "all") {
+    const domains = state.data?.invoice_domains || {};
+    const domain = domains[mode] || domains.all || [["id", "=", 0]];
+    const titles = {
+        all: "Invoices (my cases)",
+        paid: "Paid invoices (my cases)",
+        unpaid: "Unpaid invoices (my cases)",
+        draft: "Draft invoices (my cases)",
+    };
+    action.doAction({
+        type: "ir.actions.act_window",
+        name: titles[mode] || titles.all,
+        res_model: "account.move",
+        views: [[false, "list"], [false, "form"]],
+        domain,
+        context: { default_move_type: "out_invoice" },
+        target: "current",
+    });
+}
+
 export function batchVolumeRows(state) {
     if (state.batchVolumeMode === "stage") {
         return state.data?.batch_volume_stages || [];

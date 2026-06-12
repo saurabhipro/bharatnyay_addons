@@ -175,6 +175,10 @@ class BharatLoan(models.Model):
         compute='_compute_postal_delivery_cards_html',
         sanitize=False,
     )
+    postal_delivery_cards_json = fields.Json(
+        string='Postal delivery cards',
+        compute='_compute_postal_delivery_cards_json',
+    )
 
     POSTAL_DELIVERY_DOCUMENTS = (
         {
@@ -1551,9 +1555,57 @@ class BharatLoan(models.Model):
             _('Add tracking number or import postal status'),
         )
 
+    def _postal_delivery_card_rows(self):
+        """Structured card data for loan form postal delivery widget."""
+        self.ensure_one()
+        state_labels = {
+            'not_started': _('Not started'),
+            'awaiting': _('Pending'),
+            'dispatched': _('Dispatched'),
+            'in_progress': _('In progress'),
+            'delivered': _('Delivered'),
+            'billed': _('Billed'),
+        }
+        rows = []
+        for spec in self.POSTAL_DELIVERY_DOCUMENTS:
+            state, status_label, meta = self._postal_delivery_summary(
+                spec['type'],
+                spec['title'],
+                spec['milestone_code'],
+            )
+            rows.append({
+                'document_type': spec['type'],
+                'title': spec['title'],
+                'icon': spec['icon'],
+                'state': state,
+                'badge': state_labels.get(state, status_label),
+                'status_label': status_label,
+                'meta': meta or '—',
+                'clickable': state != 'not_started' and not self.is_case_locked,
+            })
+        return rows
+
     @api.depends(
         'milestone_id',
         'milestone_id.code',
+        'is_case_locked',
+        'postal_dispatch_ids',
+        'postal_dispatch_ids.pod',
+        'postal_dispatch_ids.dispatch_date',
+        'postal_dispatch_ids.delivery_date',
+        'postal_dispatch_ids.post_office_status_id',
+        'postal_dispatch_ids.post_office_status_id.is_delivered',
+        'postal_dispatch_ids.post_office_status_id.triggers_billing',
+        'postal_dispatch_ids.billing_accrued',
+    )
+    def _compute_postal_delivery_cards_json(self):
+        for loan in self:
+            loan.postal_delivery_cards_json = {'cards': loan._postal_delivery_card_rows()}
+
+    @api.depends(
+        'milestone_id',
+        'milestone_id.code',
+        'is_case_locked',
         'postal_dispatch_ids',
         'postal_dispatch_ids.pod',
         'postal_dispatch_ids.dispatch_date',
@@ -1564,26 +1616,22 @@ class BharatLoan(models.Model):
         'postal_dispatch_ids.billing_accrued',
     )
     def _compute_postal_delivery_cards_html(self):
-        state_labels = {
-            'not_started': _('Not started'),
-            'awaiting': _('Pending'),
-            'dispatched': _('Dispatched'),
-            'in_progress': _('In progress'),
-            'delivered': _('Delivered'),
-            'billed': _('Billed'),
-        }
         for loan in self:
             cards = []
-            for spec in loan.POSTAL_DELIVERY_DOCUMENTS:
-                state, status_label, meta = loan._postal_delivery_summary(
-                    spec['type'],
-                    spec['title'],
-                    spec['milestone_code'],
+            for row in loan._postal_delivery_card_rows():
+                doc_type = row['document_type']
+                state = row['state']
+                clickable = row['clickable']
+                tag = 'button' if clickable else 'article'
+                click_class = ' bn-postal-card--clickable' if clickable else ''
+                click_attrs = (
+                    f' type="button" data-document-type="{escape(doc_type)}"'
+                    if clickable else ''
                 )
-                badge = state_labels.get(state, status_label)
                 cards.append(
                     Markup(
-                        '<article class="bn-postal-card bn-postal-card--%(state)s">'
+                        '<%(tag)s class="bn-postal-card bn-postal-card--%(state)s '
+                        'bn-postal-card--%(doc_type)s%(click_class)s"%(click_attrs)s>'
                         '<div class="bn-postal-card__head">'
                         '<span class="bn-postal-card__icon"><i class="fa %(icon)s" aria-hidden="true"></i></span>'
                         '<span class="bn-postal-card__title">%(title)s</span>'
@@ -1591,19 +1639,60 @@ class BharatLoan(models.Model):
                         '</div>'
                         '<div class="bn-postal-card__status">%(status)s</div>'
                         '<div class="bn-postal-card__meta">%(meta)s</div>'
-                        '</article>'
+                        '</%(tag)s>'
                     ) % {
+                        'tag': tag,
                         'state': escape(state),
-                        'icon': escape(spec['icon']),
-                        'title': escape(spec['title']),
-                        'badge': escape(badge),
-                        'status': escape(status_label),
-                        'meta': escape(meta or '—'),
+                        'doc_type': escape(doc_type),
+                        'click_class': click_class,
+                        'click_attrs': Markup(click_attrs),
+                        'icon': escape(row['icon']),
+                        'title': escape(row['title']),
+                        'badge': escape(row['badge']),
+                        'status': escape(row['status_label']),
+                        'meta': escape(row['meta']),
                     }
                 )
             loan.postal_delivery_cards_html = Markup(
                 '<div class="bn-postal-delivery__grid">%s</div>'
             ) % Markup('').join(cards)
+
+    def action_open_postal_status_wizard(self, document_type):
+        """Open popup to update POD number and post office status for one document."""
+        self.ensure_one()
+        if self.is_case_locked:
+            raise UserError(_('This case is locked and cannot be updated.'))
+        valid_types = {spec['type'] for spec in self.POSTAL_DELIVERY_DOCUMENTS}
+        if document_type not in valid_types:
+            raise UserError(_('Invalid document type.'))
+        spec = next(s for s in self.POSTAL_DELIVERY_DOCUMENTS if s['type'] == document_type)
+        state, _, _ = self._postal_delivery_summary(
+            document_type,
+            spec['title'],
+            spec['milestone_code'],
+        )
+        if state == 'not_started':
+            raise UserError(_('This document is not at a stage where postal tracking applies yet.'))
+
+        dispatch = self.env['bharat.loan.postal.dispatch'].ensure_for_loan(
+            self, document_type,
+        )
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Update POD status'),
+            'res_model': 'bharat.loan.postal.status.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_loan_id': self.id,
+                'default_document_type': document_type,
+                'default_dispatch_id': dispatch.id,
+                'default_pod': dispatch.pod or False,
+                'default_post_office_status_id': dispatch.post_office_status_id.id or False,
+                'default_dispatch_date': dispatch.dispatch_date or False,
+                'default_delivery_date': dispatch.delivery_date or False,
+            },
+        }
 
     def action_open_postal_dispatch(self):
         self.ensure_one()
@@ -3156,31 +3245,17 @@ class BharatLoan(models.Model):
 
     @api.model
     def _billing_stats_for_loans(self, loans, date_from=None, date_to=None):
-        """Arbitration invoice KPIs (optionally scoped to loans via line text)."""
-        Move = self.env['account.move'].sudo()
+        """Arbitration invoice KPIs scoped to the given loan set."""
         date_from, date_to = self._dashboard_parse_dates(date_from, date_to)
-
-        loan_numbers = {n for n in loans.mapped('loan_number') if n}
-
-        def _move_matches_loans(move):
-            if not loan_numbers:
-                return False
-            blob = ' '.join(move.invoice_line_ids.mapped('name') or [])
-            return any(num in blob for num in loan_numbers)
-
-        inv_domain = [
-            ('move_type', '=', 'out_invoice'),
-            ('bharat_arbitration_invoice', '=', True),
-        ]
+        extra = []
         if date_from:
-            inv_domain.append(('invoice_date', '>=', date_from))
+            extra.append(('invoice_date', '>=', date_from))
         if date_to:
-            inv_domain.append(('invoice_date', '<=', date_to))
+            extra.append(('invoice_date', '<=', date_to))
 
-        moves = Move.search(inv_domain)
-        if loan_numbers:
-            moves = moves.filtered(_move_matches_loans)
-
+        moves = self._dashboard_arbitration_moves_for_loans(
+            loans, extra_domain=extra or None,
+        )
         draft = moves.filtered(lambda m: m.state == 'draft')
         posted = moves.filtered(lambda m: m.state == 'posted')
         paid = posted.filtered(lambda m: m.payment_state in ('paid', 'in_payment'))
@@ -3189,15 +3264,22 @@ class BharatLoan(models.Model):
             and (m.amount_residual or 0) > 0
         )
 
-        all_invoices = Move.search([
-            ('move_type', '=', 'out_invoice'),
-            ('bharat_arbitration_invoice', '=', True),
-        ])
+        all_moves = self._dashboard_arbitration_moves_for_loans(loans)
         cases_due = 0
         for loan in loans:
             if loan._case_progress_bucket_code() == 'commencement':
                 continue
-            if not any(_move_matches_loans(m) for m in all_invoices):
+            loan_moves = all_moves.filtered(
+                lambda m, lid=loan.id: (
+                    (m.bharat_loan_id and m.bharat_loan_id.id == lid)
+                    or lid in m.bharat_annexure_line_ids.mapped('loan_id').ids
+                    or (
+                        loan.loan_number
+                        and loan.loan_number in ' '.join(m.invoice_line_ids.mapped('name') or [])
+                    )
+                )
+            )
+            if not loan_moves:
                 cases_due += 1
 
         return {
@@ -3212,6 +3294,77 @@ class BharatLoan(models.Model):
             ),
             'total_invoiced_amount': round(sum(posted.mapped('amount_total')), 2),
         }
+
+    @api.model
+    def _dashboard_invoice_domains_for_loans(self, loans, date_from=None, date_to=None):
+        """Account.move domains for role-dashboard invoice drill-down."""
+        date_from, date_to = self._dashboard_parse_dates(date_from, date_to)
+        extra = []
+        if date_from:
+            extra.append(('invoice_date', '>=', date_from))
+        if date_to:
+            extra.append(('invoice_date', '<=', date_to))
+        base_moves = self._dashboard_arbitration_moves_for_loans(
+            loans, extra_domain=extra or None,
+        )
+
+        def _domain(moves):
+            return [('id', 'in', moves.ids or [0])]
+
+        paid = base_moves.filtered(
+            lambda m: m.state == 'posted' and m.payment_state in ('paid', 'in_payment')
+        )
+        unpaid = base_moves.filtered(
+            lambda m: m.state == 'posted'
+            and m.payment_state not in ('paid', 'in_payment')
+            and (m.amount_residual or 0) > 0
+        )
+        draft = base_moves.filtered(lambda m: m.state == 'draft')
+        return {
+            'all': _domain(base_moves),
+            'paid': _domain(paid),
+            'unpaid': _domain(unpaid),
+            'draft': _domain(draft),
+        }
+
+    @api.model
+    def _dashboard_hearing_award_cards(self, bucket_cards):
+        """Hearing 1–3 and final award cards for arbitrator dashboard."""
+        cards = []
+        for card in bucket_cards:
+            if card['key'] not in ('hearing_1', 'hearing_2', 'hearing_3', 'award'):
+                continue
+            row = dict(card)
+            if row['key'] == 'award':
+                row['label'] = _('Final Award')
+            cards.append(row)
+        return cards
+
+    @api.model
+    def _dashboard_recent_cases(self, loans, limit=12):
+        """Recently touched cases for role dashboards."""
+        spec_map = {s[0]: s for s in self.PROGRESS_BUCKET_SPECS}
+        ordered = loans.sorted(
+            key=lambda l: l.write_date or l.create_date or fields.Datetime.now(),
+            reverse=True,
+        )
+        rows = []
+        for loan in ordered[:limit]:
+            code = loan._case_progress_bucket_code()
+            spec = spec_map.get(code)
+            rows.append({
+                'id': loan.id,
+                'loan_number': loan.loan_number or loan.case_number or '',
+                'customer_name': loan.customer_name or '',
+                'milestone_code': code or '',
+                'milestone_label': spec[1] if spec else (code or '—'),
+                'milestone_color': spec[2] if spec else '#64748b',
+                'hearing_datetime': (
+                    fields.Datetime.to_string(loan.hearing_datetime)
+                    if loan.hearing_datetime else ''
+                ),
+            })
+        return rows
 
     @api.model
     def _bucket_cards_from_loans(self, loans):
@@ -3545,6 +3698,11 @@ class BharatLoan(models.Model):
             ],
             'postal_pending_status_domain': postal_pending['domain'],
             'loan_domain': domain,
+            'recent_cases': self._dashboard_recent_cases(loans),
+            'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
+            'invoice_domains': self._dashboard_invoice_domains_for_loans(
+                loans, date_from, date_to,
+            ),
             'filters': {
                 'region_id': int(region_id) if region_id else False,
                 'state_id': int(state_id) if state_id else False,
@@ -3613,6 +3771,11 @@ class BharatLoan(models.Model):
             'payment_mix': payment_mix,
             'upcoming_hearings': upcoming,
             'loan_domain': domain,
+            'recent_cases': self._dashboard_recent_cases(loans),
+            'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
+            'invoice_domains': self._dashboard_invoice_domains_for_loans(
+                loans, date_from, date_to,
+            ),
             'filters': {
                 'region_id': int(region_id) if region_id else False,
                 'state_id': int(state_id) if state_id else False,

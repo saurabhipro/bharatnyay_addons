@@ -28,6 +28,32 @@
     --bn-pattern-green: url("../../img/green_pattern.jpg");
     --bn-pattern-orange: url("../../img/orange_pattern.jpg");
     --bn-pattern-yellow: url("../../img/yellow_pattern.jpg");
+    --bn-pattern-pink: url("../../img/pink_pattern.jpg");
+    --bn-pattern-purple: url("../../img/purple_pattern.jpg");
+    --bn-veil-metric: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.72) 0%,
+        rgba(255, 255, 255, 0.48) 55%,
+        rgba(255, 255, 255, 0.2) 100%
+    );
+    --bn-veil-postal: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.72) 0%,
+        rgba(255, 255, 255, 0.46) 52%,
+        rgba(255, 255, 255, 0.14) 100%
+    );
+    --bn-veil-postal-pending: linear-gradient(
+        145deg,
+        rgba(255, 251, 235, 0.82) 0%,
+        rgba(255, 247, 214, 0.58) 52%,
+        rgba(254, 240, 138, 0.22) 100%
+    );
+    --bn-veil-postal-done: linear-gradient(
+        145deg,
+        rgba(236, 253, 245, 0.82) 0%,
+        rgba(209, 250, 229, 0.58) 52%,
+        rgba(134, 239, 172, 0.22) 100%
+    );
 
     background: var(--bn-canvas);
 
@@ -285,6 +311,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                flex-wrap: wrap;
                 gap: 8px;
                 margin-bottom: 8px;
             }
@@ -318,8 +345,16 @@
                 }
             }
 
+            &__hint {
+                font-size: 0.68rem;
+                font-weight: 600;
+                color: var(--bn-muted);
+                margin-left: auto;
+            }
+
             .o_field_widget.o_readonly_modifier,
-            .o_field_html {
+            .o_field_html,
+            .o_field_widget.o_field_bn_postal_delivery_cards {
                 width: 100%;
                 border: none !important;
                 background: transparent !important;
@@ -341,6 +376,14 @@
 
         .bn-postal-card {
             --postal-accent: #64748b;
+            --postal-pattern: var(--bn-pattern-blue);
+            --postal-veil: var(--bn-veil-postal);
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            appearance: none;
+            width: 100%;
+            font: inherit;
             border-radius: 10px;
             border: 1px solid color-mix(in srgb, var(--postal-accent) 22%, var(--bn-line));
             border-top: 3px solid var(--postal-accent);
@@ -351,6 +394,57 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            text-align: left;
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                border-radius: inherit;
+                background-image: var(--postal-pattern);
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                pointer-events: none;
+            }
+
+            &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                border-radius: inherit;
+                pointer-events: none;
+                background:
+                    radial-gradient(
+                        circle at 100% 100%,
+                        color-mix(in srgb, var(--postal-accent) 16%, transparent) 0%,
+                        transparent 58%
+                    ),
+                    var(--postal-veil, var(--bn-veil-postal));
+            }
+
+            > * {
+                position: relative;
+                z-index: 1;
+            }
+
+            &--clickable {
+                cursor: pointer;
+                transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
+                    border-color: color-mix(in srgb, var(--postal-accent) 38%, var(--bn-line));
+                }
+
+                &:focus-visible {
+                    outline: 2px solid color-mix(in srgb, var(--postal-accent) 55%, #ffffff);
+                    outline-offset: 2px;
+                }
+            }
 
             &__head {
                 display: flex;
@@ -412,22 +506,33 @@
 
             &--not_started {
                 --postal-accent: #94a3b8;
-                background: #f8fafc;
+                --postal-pattern: var(--bn-pattern-blue);
+                --postal-veil: var(--bn-veil-postal);
             }
-            &--awaiting {
-                --postal-accent: var(--bn-bill-accent);
-            }
-            &--dispatched {
-                --postal-accent: #2563eb;
-            }
+            &--awaiting,
+            &--dispatched,
             &--in_progress {
-                --postal-accent: #0891b2;
+                --postal-accent: #ca8a04;
+                --postal-pattern: var(--bn-pattern-yellow);
+                --postal-veil: var(--bn-veil-postal-pending);
+
+                .bn-postal-card__badge {
+                    background: #fef9c3;
+                    color: #854d0e;
+                    border-color: #fde047;
+                }
             }
-            &--delivered {
-                --postal-accent: #059669;
-            }
+            &--delivered,
             &--billed {
-                --postal-accent: #7c3aed;
+                --postal-accent: #059669;
+                --postal-pattern: var(--bn-pattern-green);
+                --postal-veil: var(--bn-veil-postal-done);
+
+                .bn-postal-card__badge {
+                    background: #d1fae5;
+                    color: #065f46;
+                    border-color: #6ee7b7;
+                }
             }
         }
 
@@ -446,13 +551,54 @@
 
         .bn-metric {
             --metric-accent: var(--bn-palette-1);
+            --metric-pattern: var(--bn-pattern-green);
             position: relative;
             overflow: hidden;
             isolation: isolate;
             border-radius: 10px;
             padding: 10px 12px;
-            border: none;
-            box-shadow: 0 2px 8px color-mix(in srgb, var(--metric-accent) 24%, rgba(15, 23, 42, 0.14));
+            border: 1px solid color-mix(in srgb, var(--metric-accent) 18%, var(--bn-line));
+            border-top: 3px solid var(--metric-accent);
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                border-radius: inherit;
+                background-image: var(--metric-pattern);
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                pointer-events: none;
+            }
+
+            &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                border-radius: inherit;
+                pointer-events: none;
+                background: var(--bn-veil-metric);
+            }
+
+            &__icon {
+                position: relative;
+                z-index: 1;
+                display: inline-grid;
+                place-items: center;
+                width: 1.55rem;
+                height: 1.55rem;
+                margin-bottom: 4px;
+                border-radius: 7px;
+                background: color-mix(in srgb, var(--metric-accent) 12%, #ffffff);
+                border: 1px solid color-mix(in srgb, var(--metric-accent) 22%, var(--bn-line));
+                color: var(--metric-accent);
+                font-size: 0.78rem;
+            }
 
             &__label,
             &__value {
@@ -467,8 +613,7 @@
                 text-transform: uppercase;
                 letter-spacing: 0.06em;
                 margin-bottom: 3px;
-                color: rgba(255, 255, 255, 0.92);
-                text-shadow: 0 1px 3px rgba(15, 23, 42, 0.45);
+                color: var(--bn-sub);
             }
 
             &__value,
@@ -476,8 +621,7 @@
                 font-size: 1.05rem;
                 font-weight: 800;
                 line-height: 1.2;
-                color: #ffffff;
-                text-shadow: 0 1px 4px rgba(15, 23, 42, 0.5);
+                color: var(--bn-ink);
             }
 
             // transparent inputs inside metric tiles
@@ -496,43 +640,19 @@
 
             &--financed {
                 --metric-accent: var(--bn-palette-1);
-                background:
-                    linear-gradient(
-                        160deg,
-                        color-mix(in srgb, var(--metric-accent) 58%, rgba(15, 23, 42, 0.35)) 0%,
-                        color-mix(in srgb, var(--metric-accent) 78%, rgba(15, 23, 42, 0.62)) 100%
-                    ),
-                    var(--bn-pattern-green) center / cover no-repeat;
+                --metric-pattern: var(--bn-pattern-green);
             }
             &--pos {
                 --metric-accent: var(--bn-palette-2);
-                background:
-                    linear-gradient(
-                        160deg,
-                        color-mix(in srgb, var(--metric-accent) 58%, rgba(15, 23, 42, 0.35)) 0%,
-                        color-mix(in srgb, var(--metric-accent) 78%, rgba(15, 23, 42, 0.62)) 100%
-                    ),
-                    var(--bn-pattern-blue) center / cover no-repeat;
+                --metric-pattern: var(--bn-pattern-blue);
             }
             &--claim {
                 --metric-accent: var(--bn-palette-3);
-                background:
-                    linear-gradient(
-                        160deg,
-                        color-mix(in srgb, var(--metric-accent) 58%, rgba(15, 23, 42, 0.35)) 0%,
-                        color-mix(in srgb, var(--metric-accent) 78%, rgba(15, 23, 42, 0.62)) 100%
-                    ),
-                    var(--bn-pattern-orange) center / cover no-repeat;
+                --metric-pattern: var(--bn-pattern-orange);
             }
             &--disbursed {
                 --metric-accent: var(--bn-palette-4);
-                background:
-                    linear-gradient(
-                        160deg,
-                        color-mix(in srgb, var(--metric-accent) 58%, rgba(15, 23, 42, 0.35)) 0%,
-                        color-mix(in srgb, var(--metric-accent) 78%, rgba(15, 23, 42, 0.62)) 100%
-                    ),
-                    var(--bn-pattern-yellow) center / cover no-repeat;
+                --metric-pattern: var(--bn-pattern-purple);
             }
         }
     }

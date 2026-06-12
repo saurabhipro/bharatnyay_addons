@@ -264,23 +264,31 @@
                                             class="btn btn-link bn-postal-delivery__link">
                                         Manage tracking
                                     </button>
+                                    <span class="bn-postal-delivery__hint">Click a card to update POD</span>
                                 </div>
-                                <field name="postal_delivery_cards_html" nolabel="1" readonly="1"/>
+                                <field name="postal_delivery_cards_json"
+                                       widget="bn_postal_delivery_cards"
+                                       nolabel="1"
+                                       readonly="1"/>
                             </div>
                             <div class="bn-hero-metrics">
                                 <div class="bn-metric bn-metric--financed">
+                                    <span class="bn-metric__icon"><i class="fa fa-inr" title="Financed" aria-hidden="true"/></span>
                                     <span class="bn-metric__label">Financed</span>
                                     <field name="hero_financed_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
                                 <div class="bn-metric bn-metric--pos">
+                                    <span class="bn-metric__icon"><i class="fa fa-balance-scale" title="Current POS" aria-hidden="true"/></span>
                                     <span class="bn-metric__label">Current POS</span>
                                     <field name="hero_pos_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
                                 <div class="bn-metric bn-metric--claim">
+                                    <span class="bn-metric__icon"><i class="fa fa-gavel" title="Claim" aria-hidden="true"/></span>
                                     <span class="bn-metric__label">Claim</span>
                                     <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
                                 <div class="bn-metric bn-metric--disbursed">
+                                    <span class="bn-metric__icon"><i class="fa fa-calendar" title="Disbursed" aria-hidden="true"/></span>
                                     <span class="bn-metric__label">Disbursed</span>
                                     <field name="hero_disburse_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>

@@ -97,6 +97,105 @@
         </div>
     </t>
 
+    <t t-name="bharatnyay_core.DashboardHearingAwardStrip">
+        <div class="bn-section-title mt-2">Interim proceedings</div>
+        <p class="bn-stage-strip-hint">
+            Your assigned cases at hearing milestones and final award stage — click a card to open the list.
+        </p>
+        <div class="bn-stage-strip bn-stage-strip--hearing">
+            <t t-foreach="state.data.hearing_stage_cards || []" t-as="s" t-key="s.key">
+                <button type="button"
+                        class="bn-stage-card"
+                        t-att-class="{'bn-stage-card--billable': s.creates_unbilled_charge}"
+                        t-att-data-stage="s.key"
+                        t-on-click="openStageCases">
+                    <span t-if="s.creates_unbilled_charge"
+                          class="bn-stage-bill-badge"
+                          t-att-title="s.billing_badge_title">
+                        <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
+                    </span>
+                    <div class="bn-stage-top">
+                        <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
+                        <span class="bn-stage-name" t-out="s.label"/>
+                    </div>
+                    <div class="bn-stage-value">
+                        <span class="n" t-out="fmtInt(s.count)"/>
+                        <span class="p" t-out="s.percent + '%'"/>
+                    </div>
+                    <div class="bn-stage-meter">
+                        <span t-attf-style="width: {{ s.percent }}%"/>
+                    </div>
+                </button>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelRecentCases">
+        <div class="bn-panel">
+            <div class="bn-panel-head">
+                <div class="bn-panel-head__title">
+                    <span class="bn-panel-icon"><i class="fa fa-list-ul"/></span>
+                    <h2>My cases</h2>
+                </div>
+                <button type="button" class="btn btn-link btn-sm p-0" t-on-click="openMyCases">View all</button>
+            </div>
+            <div class="bn-panel-body bn-panel-body--list">
+                <t t-if="!(state.data.recent_cases || []).length">
+                    <div class="bn-muted-empty bn-muted-empty--sm">No assigned cases yet.</div>
+                </t>
+                <t t-else="">
+                    <t t-foreach="state.data.recent_cases" t-as="c" t-key="c.id">
+                        <button type="button" class="bn-case-row"
+                                t-att-data-loan-id="c.id"
+                                t-on-click="openLoan">
+                            <div class="bn-case-row__main">
+                                <strong t-out="c.loan_number"/>
+                                <span t-out="c.customer_name"/>
+                            </div>
+                            <div class="bn-case-row__meta">
+                                <span class="bn-case-row__stage"
+                                      t-attf-style="--stage-color: {{ c.milestone_color }}"
+                                      t-out="c.milestone_label"/>
+                                <span t-if="c.hearing_datetime" class="bn-case-row__dt"
+                                      t-out="hearingDtLabel(c.hearing_datetime)"/>
+                            </div>
+                        </button>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardPanelInvoiceSummary">
+        <div class="bn-panel">
+            <div class="bn-panel-head">
+                <div class="bn-panel-head__title">
+                    <span class="bn-panel-icon"><i class="fa fa-money"/></span>
+                    <h2>My invoices</h2>
+                </div>
+                <span class="hint">Scoped to your assigned cases</span>
+            </div>
+            <div class="bn-panel-body">
+                <div class="bn-invoice-summary">
+                    <button type="button" class="bn-invoice-summary__card bn-invoice-summary__card--paid"
+                            data-filter="paid"
+                            t-on-click="openInvoices">
+                        <span class="bn-invoice-summary__label">Paid</span>
+                        <span class="bn-invoice-summary__amount" t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
+                        <span class="bn-invoice-summary__sub" t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
+                    </button>
+                    <button type="button" class="bn-invoice-summary__card bn-invoice-summary__card--unpaid"
+                            data-filter="unpaid"
+                            t-on-click="openInvoices">
+                        <span class="bn-invoice-summary__label">Unpaid</span>
+                        <span class="bn-invoice-summary__amount" t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0)"/>
+                        <span class="bn-invoice-summary__sub" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
     <t t-name="bharatnyay_core.DashboardPipeline">
         <div class="bn-section-title mt-2">Case pipeline</div>
         <p class="bn-stage-strip-hint">
@@ -381,7 +480,7 @@
         <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
             <div class="bn-wrap">
                 <t t-set="title" t-value="'Case Manager dashboard'"/>
-                <t t-set="subtitle" t-value="state.data?.scope_label || 'My assigned cases, pipeline, and billing'"/>
+                <t t-set="subtitle" t-value="state.data?.scope_label || 'Cases assigned to you — pipeline, hearings, and billing'"/>
                 <t t-set="showMyCasesBtn" t-value="true"/>
                 <t t-call="bharatnyay_core.DashboardRoleHeader"/>
 
@@ -458,6 +557,11 @@
                         </div>
                     </div>
 
+                    <div class="bn-chart-row bn-chart-row--2 mt-2">
+                        <t t-call="bharatnyay_core.DashboardPanelRecentCases"/>
+                        <t t-call="bharatnyay_core.DashboardPanelInvoiceSummary"/>
+                    </div>
+
                     <t t-call="bharatnyay_core.DashboardPipeline"/>
 
                     <div class="bn-section-title mt-3">Portfolio breakdown</div>
@@ -476,7 +580,7 @@
         <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
             <div class="bn-wrap">
                 <t t-set="title" t-value="'Arbitrator dashboard'"/>
-                <t t-set="subtitle" t-value="state.data?.scope_label || 'My cases, hearings, and awards'"/>
+                <t t-set="subtitle" t-value="state.data?.scope_label || 'Cases assigned to you — hearings, awards, and invoices'"/>
                 <t t-set="showMyCasesBtn" t-value="true"/>
                 <t t-call="bharatnyay_core.DashboardRoleHeader"/>
 
@@ -511,42 +615,50 @@
                                 <div class="bn-kpi-label">Upcoming hearings</div>
                             </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.upcoming_hearings_count || 0)"/>
-                            <div class="bn-kpi-trend">Scheduled ahead</div>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--tone-amber">
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
+                             data-filter="paid"
+                             t-on-click="openInvoices">
                             <div class="bn-kpi-card__head">
-                                <span class="bn-kpi-icon"><i class="fa fa-legal"/></span>
-                                <div class="bn-kpi-label">In hearing</div>
+                                <span class="bn-kpi-icon"><i class="fa fa-check-circle"/></span>
+                                <div class="bn-kpi-label">Paid invoices</div>
                             </div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearing_cases || 0)"/>
-                            <div class="bn-kpi-trend">Hearing 1–3 stages</div>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--tone-teal">
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-amber"
+                             data-filter="unpaid"
+                             t-on-click="openInvoices">
                             <div class="bn-kpi-card__head">
-                                <span class="bn-kpi-icon"><i class="fa fa-upload"/></span>
-                                <div class="bn-kpi-label">Awards uploaded</div>
+                                <span class="bn-kpi-icon"><i class="fa fa-file-text-o"/></span>
+                                <div class="bn-kpi-label">Unpaid invoices</div>
                             </div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_uploaded || 0)"/>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--tone-indigo">
                             <div class="bn-kpi-card__head">
-                                <span class="bn-kpi-icon"><i class="fa fa-hourglass-half"/></span>
-                                <div class="bn-kpi-label">Award pending</div>
+                                <span class="bn-kpi-icon"><i class="fa fa-trophy"/></span>
+                                <div class="bn-kpi-label">Final awards</div>
                             </div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_pending || 0)"/>
-                            <div class="bn-kpi-trend">At award stage</div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.awards_uploaded || 0)"/>
+                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.awards_pending || 0) + ' pending upload'"/>
                         </div>
+                    </div>
+
+                    <t t-call="bharatnyay_core.DashboardHearingAwardStrip"/>
+
+                    <div class="bn-chart-row bn-chart-row--2 mt-2">
+                        <t t-call="bharatnyay_core.DashboardPanelRecentCases"/>
+                        <t t-call="bharatnyay_core.DashboardPanelUpcomingHearings"/>
                     </div>
 
                     <t t-call="bharatnyay_core.DashboardPipeline"/>
 
-                    <div class="bn-section-title mt-3">Case breakdown</div>
-                    <div class="bn-chart-row bn-chart-row--3">
-                        <t t-call="bharatnyay_core.DashboardPanelUpcomingHearings"/>
-                        <t t-call="bharatnyay_core.DashboardPanelCaseStatus"/>
-                        <t t-call="bharatnyay_core.DashboardPanelPaymentStatus"/>
+                    <div class="bn-section-title mt-3">Billing</div>
+                    <div class="bn-chart-row bn-chart-row--2 mt-2">
+                        <t t-call="bharatnyay_core.DashboardPanelInvoiceSummary"/>
                     </div>
-                    <t t-call="bharatnyay_core.DashboardBreakdownRow2"/>
                 </t>
             </div>
         </div>

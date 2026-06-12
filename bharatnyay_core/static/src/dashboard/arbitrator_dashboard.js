@@ -6,7 +6,6 @@ import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { formatMonetary } from "@web/views/fields/formatters";
 import {
-    pieGradient,
     dashboardFilterFields,
     dashboardFilterRpcArgs,
     loadDashboardFilterOptions,
@@ -14,6 +13,7 @@ import {
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
+    openRoleInvoices,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -40,25 +40,12 @@ export class ArbitratorDashboard extends Component {
             data: null,
             date_from: dr.date_from,
             date_to: dr.date_to,
-            pieStyle: pieGradient([]),
-            branchPieStyle: pieGradient([]),
-            locationPieStyle: pieGradient([]),
-            workflowPieStyle: pieGradient([]),
-            paymentPieStyle: pieGradient([]),
             ...dashboardFilterFields(),
         });
         onWillStart(async () => {
             await loadDashboardFilterOptions(this.orm, this.state, "arbitrator");
             await this.load();
         });
-    }
-
-    _applyPieStyles(data) {
-        this.state.pieStyle = pieGradient(data.product_mix || []);
-        this.state.branchPieStyle = pieGradient(data.branch_mix || []);
-        this.state.locationPieStyle = pieGradient(data.location_mix || []);
-        this.state.workflowPieStyle = pieGradient(data.workflow_mix || []);
-        this.state.paymentPieStyle = pieGradient(data.payment_mix || []);
     }
 
     async load() {
@@ -76,7 +63,6 @@ export class ArbitratorDashboard extends Component {
                 }
             );
             this.state.data = data;
-            this._applyPieStyles(data);
         } catch (e) {
             this.state.data = null;
             this.state.error = e?.message || String(e);
@@ -220,35 +206,7 @@ export class ArbitratorDashboard extends Component {
 
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
-        const domain = [
-            ["move_type", "=", "out_invoice"],
-            ["bharat_arbitration_invoice", "=", true],
-        ];
-        if (this.state.date_from) {
-            domain.push(["invoice_date", ">=", this.state.date_from]);
-        }
-        if (this.state.date_to) {
-            domain.push(["invoice_date", "<=", this.state.date_to]);
-        }
-        if (mode === "draft") {
-            domain.push(["state", "=", "draft"]);
-        } else if (mode === "paid") {
-            domain.push(["state", "=", "posted"]);
-            domain.push(["payment_state", "in", ["paid", "in_payment"]]);
-        } else if (mode === "unpaid") {
-            domain.push(["state", "=", "posted"]);
-            domain.push(["payment_state", "not in", ["paid", "in_payment"]]);
-            domain.push(["amount_residual", ">", 0]);
-        }
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Invoices (my cases)",
-            res_model: "account.move",
-            views: [[false, "list"], [false, "form"]],
-            domain,
-            context: { default_move_type: "out_invoice" },
-            target: "current",
-        });
+        openRoleInvoices(this.action, this.state, mode);
     }
 
     fmtInt(n) {

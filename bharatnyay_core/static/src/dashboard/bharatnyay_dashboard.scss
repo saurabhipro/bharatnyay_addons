@@ -628,10 +628,146 @@
         font-size: 0.85rem;
     }
 
+    .bn-case-row {
+        appearance: none;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0.65rem;
+        border: 1px solid var(--bn-border);
+        border-radius: 8px;
+        background: #ffffff;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+
+        &:hover {
+            border-color: color-mix(in srgb, var(--bn-accent) 35%, var(--bn-border));
+            box-shadow: var(--bn-card-shadow);
+            transform: translateY(-1px);
+        }
+
+        &__main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+            min-width: 0;
+
+            strong {
+                font-size: 0.78rem;
+                font-weight: 700;
+                color: var(--bn-text);
+            }
+
+            span {
+                font-size: 0.72rem;
+                color: var(--bn-muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        &__meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        &__stage {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.12rem 0.45rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--stage-color, var(--bn-accent)) 14%, #ffffff);
+            color: color-mix(in srgb, var(--stage-color, var(--bn-accent)) 82%, #0f172a);
+            border: 1px solid color-mix(in srgb, var(--stage-color, var(--bn-accent)) 28%, transparent);
+        }
+
+        &__dt {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--bn-muted);
+        }
+    }
+
+    .bn-invoice-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.65rem;
+
+        &__card {
+            appearance: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+            padding: 0.85rem 0.9rem;
+            border-radius: var(--bn-radius);
+            border: 1px solid var(--bn-border);
+            background: linear-gradient(165deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: var(--bn-card-shadow);
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--bn-card-hover-shadow);
+            }
+
+            &--paid {
+                border-color: color-mix(in srgb, var(--bn-success) 28%, var(--bn-border));
+                border-top: 3px solid var(--bn-success);
+            }
+
+            &--unpaid {
+                border-color: color-mix(in srgb, #f59e0b 28%, var(--bn-border));
+                border-top: 3px solid #f59e0b;
+            }
+        }
+
+        &__label {
+            font-size: var(--bn-label-size);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--bn-muted);
+        }
+
+        &__amount {
+            font-size: 1.15rem;
+            font-weight: 750;
+            color: var(--bn-text);
+            line-height: 1.2;
+        }
+
+        &__sub {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--bn-muted);
+        }
+    }
+
     .bn-stage-strip {
         display: grid;
         grid-template-columns: repeat(8, minmax(0, 1fr));
         gap: var(--bn-card-gap);
+
+        &--hearing {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+
+            @media (max-width: 991px) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            @media (max-width: 575px) {
+                grid-template-columns: 1fr;
+            }
+        }
 
         @media (max-width: 1399px) {
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -971,6 +1107,14 @@
         grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
         gap: var(--bn-card-gap);
         margin-bottom: var(--bn-section-gap);
+
+        &--2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            @media (max-width: 991px) {
+                grid-template-columns: 1fr;
+            }
+        }
 
         @media (max-width: 991px) {
             grid-template-columns: 1fr;
