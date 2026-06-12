@@ -61,6 +61,18 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         string='Pick a day',
         help='Shows 30-minute slots for the arbitrator that are still free on this day.',
     )
+    scheduler_view_mode = fields.Selection(
+        [
+            ('week', 'Week calendar'),
+            ('day', 'Day grid'),
+        ],
+        string='View',
+        default='week',
+    )
+    scheduler_week_start = fields.Date(
+        string='Week starting',
+        help='Monday of the week shown in the calendar view.',
+    )
     use_manual_time = fields.Boolean(
         string='Enter time manually',
         help='Skip suggested slots and type any date & time below.',
@@ -80,6 +92,11 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         default='{}',
         help='JSON consumed by the scheduling grid widget.',
     )
+    week_board_json = fields.Char(
+        string='Week calendar payload',
+        default='{}',
+        help='JSON for the Outlook-style week scheduler widget.',
+    )
     grid_selected_index = fields.Integer(
         string='Selected grid slot',
         default=0,
@@ -89,6 +106,14 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         string='Selected time',
         default='',
         help='Lean label like 09:30–10:00 after you pick a grid slot.',
+    )
+    grid_selected_date = fields.Char(
+        string='Selected calendar day',
+        help='ISO date (YYYY-MM-DD) of the tapped grid cell; avoids JS Date field serialization.',
+    )
+    calendar_week_start = fields.Char(
+        string='Week calendar start',
+        help='ISO date of the Monday shown in the week calendar (widget-managed).',
     )
 
     hearing_datetime = fields.Datetime(
@@ -154,6 +179,26 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         b = a + timedelta(minutes=self.SLOT_MINUTES)
         return '%s–%s' % (a.strftime('%H:%M'), b.strftime('%H:%M'))
 
+    def _active_scheduler_date(self):
+        """Day used to resolve the selected half-hour slot."""
+        self.ensure_one()
+        picked = (self.grid_selected_date or '').strip()
+        if picked:
+            return fields.Date.from_string(picked)
+        return self.scheduler_date
+
+    def _active_week_start(self):
+        """Monday of the week shown in the week calendar."""
+        self.ensure_one()
+        raw = (self.calendar_week_start or '').strip()
+        if raw:
+            return fields.Date.from_string(raw)
+        if self.scheduler_week_start:
+            return self.scheduler_week_start
+        if self.scheduler_date:
+            return self._monday_of_week(self.scheduler_date)
+        return False
+
     # ── Slot helpers ────────────────────────────────────────────────────
 
     @api.model
@@ -162,47 +207,72 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         return pytz.timezone(tz_name)
 
     @api.model
+    def _monday_of_week(self, day_date):
+        if isinstance(day_date, str):
+            day_date = fields.Date.from_string(day_date)
+        if not day_date:
+            return False
+        return day_date - timedelta(days=day_date.weekday())
+
+    @api.model
     def _default_scheduler_date_for_loan(self, loan):
         tz = self._user_timezone()
         now_local = datetime.now(tz)
         return now_local.date() + timedelta(days=1)
 
     @api.model
-    def _busy_hearing_starts_utc(self, arbitrator_user, exclude_loan):
-        """Naive UTC datetimes marking occupied 30-minute blocks (block starts at each returned time)."""
-        Loan = self.env['bharat.loan']
-        Line = self.env['bharat.loan.hearing.line']
-        busy = []
+    def _busy_hearing_entries_utc(self, arbitrator_user, exclude_loan):
+        """Occupied 30-minute blocks with loan reference for calendar display.
 
-        line_domain = [('loan_id.arbitrator_id', '=', arbitrator_user.id)]
-        if exclude_loan:
-            line_domain.append(('loan_id', '!=', exclude_loan.id))
-        for line in Line.search(line_domain):
-            dt = self._as_naive_datetime(line.hearing_datetime)
-            if dt:
-                busy.append(dt)
+        Only confirmed Odoo calendar hearings count. Auto-provisioned placeholder rows
+        (+1 / +10 / +30 days on arbitrator assign, link_type external, no meeting) are
+        ignored so the grid does not show many loan numbers in one slot.
+        """
+        Loan = self.env['bharat.loan']
+        entries = []
 
         loan_domain = [
             ('arbitrator_id', '=', arbitrator_user.id),
-            ('milestone_code', 'in', ['hearing_1', 'hearing_2', 'hearing_3']),
             ('hearing_datetime', '!=', False),
+            ('calendar_event_id', '!=', False),
         ]
         if exclude_loan:
             loan_domain.append(('id', '!=', exclude_loan.id))
         for row in Loan.search(loan_domain):
             dt = self._as_naive_datetime(row.hearing_datetime)
-            if dt:
-                busy.append(dt)
+            if not dt:
+                continue
+            entries.append({
+                'start': dt,
+                'loan_number': (row.loan_number or row.display_name or '').strip(),
+                'loan_id': row.id,
+            })
 
-        # De-dupe identical starts (minute precision)
-        seen = set()
-        out = []
-        for dt in busy:
-            key = fields.Datetime.to_string(dt.replace(second=0, microsecond=0))
-            if key not in seen:
-                seen.add(key)
-                out.append(dt)
-        return out
+        return entries
+
+    @api.model
+    def _busy_hearing_starts_utc(self, arbitrator_user, exclude_loan):
+        """Naive UTC datetimes marking occupied 30-minute blocks (block starts at each returned time)."""
+        return [entry['start'] for entry in self._busy_hearing_entries_utc(arbitrator_user, exclude_loan)]
+
+    @api.model
+    def _slot_booking_for_interval(self, slot_start_utc_naive, busy_entries, slot_minutes=SLOT_MINUTES):
+        slot_end = slot_start_utc_naive + timedelta(minutes=slot_minutes)
+        by_loan = {}
+        for entry in busy_entries:
+            b = entry['start']
+            bend = b + timedelta(minutes=slot_minutes)
+            if slot_start_utc_naive < bend and slot_end > b:
+                loan_id = entry.get('loan_id')
+                label = entry.get('loan_number') or ''
+                if loan_id and label:
+                    by_loan[loan_id] = label
+                elif label and label not in by_loan.values():
+                    by_loan[label] = label
+        labels = list(by_loan.values())
+        if not labels:
+            return None
+        return {'loan_number': labels[0] if len(labels) == 1 else ', '.join(labels)}
 
     @api.model
     def _slot_interval_overlaps(self, slot_start_utc_naive, busy_starts_utc_naive, slot_minutes=SLOT_MINUTES):
@@ -259,6 +329,20 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         return wiz._slot_board_dict()
 
     @api.model
+    def get_week_board_json_for_context(self, loan_id, week_start):
+        """Rebuild week calendar JSON without a full form onchange (week navigation)."""
+        if not loan_id or not week_start:
+            return '{}'
+        if isinstance(week_start, str):
+            week_start = fields.Date.from_string(week_start)
+        wiz = self.new({
+            'loan_id': int(loan_id),
+            'calendar_week_start': fields.Date.to_string(week_start),
+            'scheduler_date': week_start,
+        })
+        return self._slot_board_json_dumps(wiz._week_board_dict())
+
+    @api.model
     def public_slot_entry(self, loan_id, arbitrator_id, scheduler_date, grid_index):
         """Return the slot dict if index is a free slot, else None."""
         try:
@@ -272,6 +356,43 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             if slot.get('index') == grid_index and slot.get('status') == 'free':
                 return slot
         return None
+
+    def _slot_board_dict_for_date(self, day_date):
+        """Slot board for one calendar day without mutating this wizard row."""
+        self.ensure_one()
+        stub = self.new({
+            'loan_id': self.loan_id.id,
+            'scheduler_date': day_date,
+        })
+        return stub._slot_board_dict()
+
+    def _week_board_dict(self):
+        self.ensure_one()
+        au = self._arbitrator_for_slot_board()
+        week_start = self._active_week_start()
+        if not week_start or not au:
+            return {
+                'days': [],
+                'arbitrator_name': au.name if au else '',
+                'week_start': '',
+                'week_end': '',
+            }
+        days = []
+        for offset in range(5):
+            day = week_start + timedelta(days=offset)
+            board = self._slot_board_dict_for_date(day)
+            days.append({
+                'date': fields.Date.to_string(day),
+                'label': '%s %s' % (day.strftime('%a'), day.day),
+                'slots': board.get('slots', []),
+            })
+        week_end = week_start + timedelta(days=4)
+        return {
+            'week_start': fields.Date.to_string(week_start),
+            'week_end': fields.Date.to_string(week_end),
+            'arbitrator_name': au.name,
+            'days': days,
+        }
 
     def _slot_board_dict(self):
         self.ensure_one()
@@ -302,7 +423,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'utc': utc_str,
                 })
             return {'slots': slots}
-        busy = self._busy_hearing_starts_utc(au, exclude_loan=self.loan_id)
+        busy_entries = self._busy_hearing_entries_utc(au, exclude_loan=self.loan_id)
         tz = self._user_timezone()
         slots = []
         now_local = datetime.now(tz)
@@ -310,7 +431,8 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             utc_naive = local_start.astimezone(pytz.UTC).replace(tzinfo=None)
             utc_str = fields.Datetime.to_string(utc_naive)
             label = local_start.strftime('%H:%M')
-            booked = self._slot_interval_overlaps(utc_naive, busy)
+            booking = self._slot_booking_for_interval(utc_naive, busy_entries)
+            booked = bool(booking)
             unavailable_time = local_start < now_local
             if booked:
                 status = 'booked'
@@ -318,13 +440,16 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 status = 'unavailable'
             else:
                 status = 'free'
-            slots.append({
+            slot_data = {
                 'index': idx,
                 'label': label,
                 'status': status,
                 'available': status == 'free',
                 'utc': utc_str,
-            })
+            }
+            if booked and booking.get('loan_number'):
+                slot_data['loan_number'] = booking['loan_number']
+            slots.append(slot_data)
         return {'slots': slots}
 
     @api.model
@@ -337,11 +462,18 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             if wiz.slot_board_json != payload:
                 wiz.slot_board_json = payload
 
+    def _sync_week_board_json(self):
+        for wiz in self:
+            payload = wiz._slot_board_json_dumps(wiz._week_board_dict())
+            if wiz.week_board_json != payload:
+                wiz.week_board_json = payload
+
     def _revalidate_grid_selection(self):
         """Keep or clear grid selection after the board payload changes."""
         self.ensure_one()
         idx = self.grid_selected_index
-        if not idx or self.use_manual_time or not self.scheduler_date:
+        sched_day = self._active_scheduler_date()
+        if not idx or self.use_manual_time or not sched_day:
             if not idx:
                 self.selected_slot_range_display = ''
             return
@@ -356,7 +488,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 continue
             if slot.get('status') == 'free':
                 self.selected_slot_range_display = self._slot_range_label_from_index(
-                    self.scheduler_date, idx
+                    sched_day, idx
                 )
                 return
             break
@@ -365,14 +497,38 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
 
     def _refresh_slot_board_if_ready(self):
         self.ensure_one()
-        if self.use_manual_time or not self.loan_id or not self.scheduler_date or not self.loan_id.arbitrator_id:
+        if self.use_manual_time or not self.loan_id or not self.loan_id.arbitrator_id:
             self.slot_board_json = '{}'
+            self.week_board_json = '{}'
             return
-        self._sync_slot_board_json()
+        if self.scheduler_date:
+            self._sync_slot_board_json()
+        if not self.scheduler_week_start and self.scheduler_date:
+            self.scheduler_week_start = self._monday_of_week(self.scheduler_date)
+        if self.scheduler_week_start and not self.calendar_week_start:
+            self.calendar_week_start = fields.Date.to_string(self.scheduler_week_start)
+        week_start = self._active_week_start()
+        if week_start:
+            self._sync_week_board_json()
+
+    @api.onchange('scheduler_view_mode')
+    def _onchange_scheduler_view_mode(self):
+        self._refresh_slot_board_if_ready()
+
+    @api.onchange('scheduler_week_start')
+    def _onchange_scheduler_week_start(self):
+        if self.use_manual_time:
+            return
+        self._sync_week_board_json()
 
     @api.onchange('scheduler_date')
     def _onchange_scheduler_date(self):
         self.selected_slot_id = False
+        self.grid_selected_date = False
+        if self.scheduler_date:
+            monday = self._monday_of_week(self.scheduler_date)
+            self.scheduler_week_start = monday
+            self.calendar_week_start = fields.Date.to_string(monday)
         prev_index = self.grid_selected_index
         self._refresh_slot_board_if_ready()
         if prev_index:
@@ -397,6 +553,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         self.selected_slot_id = False
         if self.use_manual_time:
             self.slot_board_json = '{}'
+            self.week_board_json = '{}'
             self.grid_selected_index = 0
             self.selected_slot_range_display = ''
             return
@@ -461,6 +618,12 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'scheduler_date',
                     fields.Date.to_string(self._default_scheduler_date_for_loan(loan)),
                 )
+            vals.setdefault('scheduler_view_mode', 'week')
+            sched_day = vals.get('scheduler_date')
+            if sched_day:
+                monday = self._monday_of_week(fields.Date.from_string(sched_day))
+                vals.setdefault('scheduler_week_start', fields.Date.to_string(monday))
+                vals.setdefault('calendar_week_start', fields.Date.to_string(monday))
             if (
                 not reschedule
                 and 'hearing_datetime' in fields_list
@@ -482,6 +645,13 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 'scheduler_date': vals['scheduler_date'],
             })
             vals['slot_board_json'] = self._slot_board_json_dumps(wiz_stub._slot_board_dict())
+            week_stub = self.new({
+                'loan_id': loan.id,
+                'scheduler_date': vals['scheduler_date'],
+                'calendar_week_start': vals.get('calendar_week_start')
+                or fields.Date.to_string(self._monday_of_week(day)),
+            })
+            vals['week_board_json'] = self._slot_board_json_dumps(week_stub._week_board_dict())
             if reschedule and vals.get('hearing_datetime'):
                 hd = self._as_naive_datetime(vals['hearing_datetime'])
                 gidx = self._grid_index_for_datetime_on_day(day, hd)
@@ -510,9 +680,12 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         if not self.use_manual_time:
             if not self.grid_selected_index:
                 raise UserError(
-                    _('Tap a free slot on the grid, or enable “Enter time manually”.')
+                    _('Tap a free slot on the calendar, or enable “Enter time manually”.')
                 )
-            utc_naive = self._utc_naive_for_grid_index(self.scheduler_date, self.grid_selected_index)
+            utc_naive = self._utc_naive_for_grid_index(
+                self._active_scheduler_date(),
+                self.grid_selected_index,
+            )
             if not utc_naive:
                 raise UserError(_('Could not resolve the selected slot.'))
             tz = self._user_timezone()

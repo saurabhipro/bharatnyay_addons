@@ -1666,7 +1666,7 @@ class BharatLoan(models.Model):
         if document_type not in valid_types:
             raise UserError(_('Invalid document type.'))
         spec = next(s for s in self.POSTAL_DELIVERY_DOCUMENTS if s['type'] == document_type)
-        state, _, _ = self._postal_delivery_summary(
+        state, _status_label, _meta = self._postal_delivery_summary(
             document_type,
             spec['title'],
             spec['milestone_code'],
@@ -1682,15 +1682,12 @@ class BharatLoan(models.Model):
             'name': _('Update POD status'),
             'res_model': 'bharat.loan.postal.status.wizard',
             'view_mode': 'form',
+            'views': [(False, 'form')],
             'target': 'new',
             'context': {
                 'default_loan_id': self.id,
                 'default_document_type': document_type,
                 'default_dispatch_id': dispatch.id,
-                'default_pod': dispatch.pod or False,
-                'default_post_office_status_id': dispatch.post_office_status_id.id or False,
-                'default_dispatch_date': dispatch.dispatch_date or False,
-                'default_delivery_date': dispatch.delivery_date or False,
             },
         }
 

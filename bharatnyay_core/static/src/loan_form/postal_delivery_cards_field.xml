@@ -6,7 +6,7 @@
                 <t t-if="card.clickable">
                     <button type="button"
                             t-att-class="cardClass(card)"
-                            t-on-click="onCardClick(card)">
+                            t-on-click="(ev) => this.onCardClick(ev, card)">
                         <div class="bn-postal-card__head">
                             <span class="bn-postal-card__icon">
                                 <i t-attf-class="fa {{ card.icon }}" aria-hidden="true"/>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bharatnyay_core.HearingSchedulerField">
+        <div class="bn-hearing-scheduler">
+            <t t-if="isWeekView">
+                <div class="bn-slot-week-cal">
+                    <div class="bn-slot-week-cal__toolbar">
+                        <div class="bn-slot-week-cal__title" t-out="weekTitle"/>
+                        <div class="bn-slot-week-cal__nav">
+                            <button type="button" class="btn btn-sm btn-light" t-on-click="onPrevWeek">
+                                <i class="fa fa-chevron-left"/> Prev week
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light" t-on-click="onNextWeek">
+                                Next week <i class="fa fa-chevron-right"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div t-if="!weekDays.length" class="bn-slot-grid-empty text-muted">
+                        Pick a week and ensure an arbitrator is assigned to load the calendar
+                        (Mon–Fri · 09:00–17:00 · 30 min slots).
+                    </div>
+                    <t t-else="">
+                        <div class="bn-slot-week-cal__legend">
+                            <span><i class="sq sq--free"/> Free</span>
+                            <span><i class="sq sq--booked"/> Booked</span>
+                            <span><i class="sq sq--unavailable"/> Unavailable</span>
+                        </div>
+                        <div class="bn-slot-week-cal__grid">
+                            <div class="bn-slot-week-cal__head">
+                                <div class="bn-slot-week-cal__time-gutter"/>
+                                <t t-foreach="weekDays" t-as="day" t-key="day.date">
+                                    <div class="bn-slot-week-cal__day-head" t-out="day.label"/>
+                                </t>
+                            </div>
+                            <t t-foreach="timeRows" t-as="row" t-key="row.index">
+                                <div class="bn-slot-week-cal__row">
+                                    <div class="bn-slot-week-cal__time-label" t-out="row.label"/>
+                                    <t t-foreach="weekDays" t-as="day" t-key="day.date + '-' + row.index">
+                                        <t t-set="slot" t-value="slotAt(day, row.index)"/>
+                                        <button t-if="slot"
+                                                type="button"
+                                                t-att-class="cellClass(slot, day.date)"
+                                                t-att-disabled="isDisabled(slot)"
+                                                t-att-title="slotTitle(slot, day)"
+                                                t-on-click="(ev) => this.onWeekCellClick(ev, slot, day)">
+                                            <span t-if="slotKind(slot) === 'booked' and slot.loan_number"
+                                                  class="bn-slot-week-cal__booked-label"
+                                                  t-esc="slot.loan_number"/>
+                                        </button>
+                                        <div t-else="" class="bn-slot-week-cal__empty-cell"/>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="bn-slot-grid-field">
+                    <div t-if="!daySlots.length" class="bn-slot-grid-empty text-muted">
+                        Pick a day and ensure an arbitrator is set on the loan to load the grid
+                        (16 slots, 09:00–17:00, 8 per row).
+                    </div>
+                    <div t-else="" class="bn-slot-grid" role="grid" aria-label="Hearing time slots">
+                        <t t-foreach="daySlots" t-as="slot" t-key="slot.index">
+                            <button type="button"
+                                    role="gridcell"
+                                    t-att-class="cellClass(slot, props.record.data.scheduler_date)"
+                                    t-att-disabled="isDisabled(slot)"
+                                    t-att-title="slotTitle(slot, null)"
+                                    t-on-click.stop="(ev) => this.onDayCellClick(ev, slot)">
+                                <i t-att-class="slotIconClass(slot)" aria-hidden="true"/>
+                                <span t-if="slotKind(slot) === 'booked' and slot.loan_number"
+                                      class="bn-slot-loan"
+                                      t-esc="slot.loan_number"/>
+                                <span t-else="" class="bn-slot-num" t-esc="slot.index"/>
+                                <span class="bn-slot-time" t-esc="slot.label"/>
+                            </button>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

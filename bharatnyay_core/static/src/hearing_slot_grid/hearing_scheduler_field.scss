@@ -1,0 +1,162 @@
+.bn-hearing-scheduler {
+    width: 100%;
+}
+
+.bn-slot-week-cal {
+    width: 100%;
+    max-width: 920px;
+
+    &__toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    &__title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    &__nav {
+        display: inline-flex;
+        gap: 6px;
+    }
+
+    &__legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 8px;
+        font-size: 0.72rem;
+        font-weight: 650;
+        color: #64748b;
+
+        span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sq {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            display: inline-block;
+
+            &--free {
+                background: #86efac;
+            }
+            &--booked {
+                background: #f87171;
+            }
+            &--unavailable {
+                background: #cbd5e1;
+            }
+        }
+    }
+
+    &__grid {
+        border: 1px solid #dbe3ef;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    &__head,
+    &__row {
+        display: grid;
+        grid-template-columns: 56px repeat(5, minmax(0, 1fr));
+    }
+
+    &__head {
+        background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+        border-bottom: 1px solid #dbe3ef;
+    }
+
+    &__day-head {
+        padding: 8px 6px;
+        text-align: center;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #334155;
+        border-left: 1px solid #e8edf4;
+    }
+
+    &__time-gutter {
+        border-right: 1px solid #e8edf4;
+    }
+
+    &__row {
+        border-bottom: 1px solid #eef2f7;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__time-label {
+        padding: 4px 6px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-right: 1px solid #e8edf4;
+        background: #fafbfc;
+    }
+
+    &__empty-cell {
+        min-height: 28px;
+        border-left: 1px solid #f1f5f9;
+    }
+
+    .bn-slot-cell {
+        min-height: 28px;
+        border-radius: 0;
+        border: none;
+        border-left: 1px solid #f1f5f9;
+        box-shadow: none;
+        padding: 2px 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+
+        &:hover:not(:disabled) {
+            transform: none;
+            filter: brightness(0.98);
+            box-shadow: inset 0 0 0 2px rgba(22, 101, 52, 0.25);
+        }
+
+        &--selected:not(:disabled) {
+            outline: none;
+            box-shadow: inset 0 0 0 2px #166534;
+        }
+    }
+
+    &__booked-label {
+        font-size: 0.58rem;
+        font-weight: 800;
+        line-height: 1.15;
+        color: #7f1d1d;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 860px) {
+    .bn-slot-week-cal__head,
+    .bn-slot-week-cal__row {
+        grid-template-columns: 44px repeat(5, minmax(0, 1fr));
+    }
+}

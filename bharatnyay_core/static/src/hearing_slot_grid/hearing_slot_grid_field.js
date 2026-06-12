@@ -70,7 +70,8 @@ export class HearingSlotGridField extends Component {
     slotTitle(slot) {
         const kind = this.slotKind(slot);
         if (kind === "booked") {
-            return `Slot ${slot.index} (${slot.label}) — booked`;
+            const loan = slot.loan_number ? ` · ${slot.loan_number}` : "";
+            return `Slot ${slot.index} (${slot.label}) — booked${loan}`;
         }
         if (kind === "unavailable") {
             return `Slot ${slot.index} (${slot.label}) — unavailable`;

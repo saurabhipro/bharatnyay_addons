@@ -42,30 +42,38 @@ export class PostalDeliveryCardsField extends Component {
         return classes.join(" ");
     }
 
-    async onCardClick(card) {
-        return async (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (!card?.clickable) {
+    onCardClick(ev, card) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        void this._openPostalWizard(card);
+    }
+
+    async _openPostalWizard(card) {
+        if (!card?.clickable) {
+            return;
+        }
+        const loanId = this.props.record.resId;
+        if (!loanId || !card.document_type) {
+            return;
+        }
+        try {
+            const act = await this.orm.call(
+                "bharat.loan",
+                "action_open_postal_status_wizard",
+                [[loanId], card.document_type]
+            );
+            if (!act) {
                 return;
             }
-            const loanId = this.props.record.resId;
-            if (!loanId || !card.document_type) {
-                return;
+            if (!act.views && act.view_mode) {
+                act.views = act.view_mode.split(",").map((mode) => [false, mode.trim()]);
             }
-            try {
-                const act = await this.orm.call(
-                    "bharat.loan",
-                    "action_open_postal_status_wizard",
-                    [[loanId], card.document_type]
-                );
-                await this.action.doAction(act, {
-                    onClose: () => this.props.record.load(),
-                });
-            } catch (e) {
-                this.notification.add(e.message || String(e), { type: "danger" });
-            }
-        };
+            await this.action.doAction(act, {
+                onClose: () => this.props.record.load(),
+            });
+        } catch (e) {
+            this.notification.add(e.message || String(e), { type: "danger" });
+        }
     }
 }
 

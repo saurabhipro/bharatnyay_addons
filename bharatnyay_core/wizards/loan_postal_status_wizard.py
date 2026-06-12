@@ -42,6 +42,28 @@ class BharatLoanPostalStatusWizard(models.TransientModel):
     dispatch_date = fields.Date(string='Dispatch date')
     delivery_date = fields.Date(string='Delivery date')
 
+    @api.model
+    def default_get(self, fields_list):
+        vals = super().default_get(fields_list)
+        dispatch = self.env['bharat.loan.postal.dispatch'].browse(
+            self.env.context.get('default_dispatch_id')
+        )
+        if not dispatch.exists():
+            return vals
+        if 'pod' in fields_list and not vals.get('pod') and dispatch.pod:
+            vals['pod'] = dispatch.pod
+        if (
+            'post_office_status_id' in fields_list
+            and not vals.get('post_office_status_id')
+            and dispatch.post_office_status_id
+        ):
+            vals['post_office_status_id'] = dispatch.post_office_status_id.id
+        if 'dispatch_date' in fields_list and not vals.get('dispatch_date') and dispatch.dispatch_date:
+            vals['dispatch_date'] = dispatch.dispatch_date
+        if 'delivery_date' in fields_list and not vals.get('delivery_date') and dispatch.delivery_date:
+            vals['delivery_date'] = dispatch.delivery_date
+        return vals
+
     @api.depends('loan_id', 'document_type')
     def _compute_labels(self):
         labels = dict(POSTAL_DOCUMENT_TYPES)

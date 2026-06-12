@@ -14,7 +14,10 @@
                             t-att-title="slotTitle(slot)"
                             t-on-click.stop="onSelectClick(slot)">
                         <i t-att-class="slotIconClass(slot)" aria-hidden="true"/>
-                        <span class="bn-slot-num" t-esc="slot.index"/>
+                        <span t-if="slotKind(slot) === 'booked' and slot.loan_number"
+                              class="bn-slot-loan"
+                              t-esc="slot.loan_number"/>
+                        <span t-else="" class="bn-slot-num" t-esc="slot.index"/>
                         <span class="bn-slot-time" t-esc="slot.label"/>
                     </button>
                 </t>

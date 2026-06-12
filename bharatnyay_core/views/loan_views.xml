@@ -287,11 +287,6 @@
                                     <span class="bn-metric__label">Claim</span>
                                     <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-metric__value"/>
                                 </div>
-                                <div class="bn-metric bn-metric--disbursed">
-                                    <span class="bn-metric__icon"><i class="fa fa-calendar" title="Disbursed" aria-hidden="true"/></span>
-                                    <span class="bn-metric__label">Disbursed</span>
-                                    <field name="hero_disburse_display" readonly="1" nolabel="1" class="bn-metric__value"/>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -359,6 +354,10 @@
                                         <div class="bn-import-row">
                                             <span class="bn-import-row__k">Law firm</span>
                                             <field name="law_firm_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Disbursed</span>
+                                            <field name="disbursement_date" readonly="1" nolabel="1" class="bn-import-row__v"/>
                                         </div>
                                     </div>
                                 </div>

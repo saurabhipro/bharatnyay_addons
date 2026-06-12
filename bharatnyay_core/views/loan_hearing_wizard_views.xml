@@ -6,18 +6,24 @@
         <field name="arch" type="xml">
             <form string="Schedule Hearing">
                 <field name="hearing_reschedule" invisible="1"/>
+                <field name="grid_selected_date" invisible="1"/>
+                <field name="calendar_week_start" invisible="1"/>
                 <group>
                     <field name="loan_id"/>
                 </group>
                 <group string="Schedule">
+                    <field name="scheduler_view_mode" widget="radio" options="{'horizontal': true}"
+                           invisible="use_manual_time"/>
                     <field name="scheduler_date" invisible="use_manual_time"/>
+                    <field name="scheduler_week_start" invisible="1"/>
                     <field name="use_manual_time"/>
                 </group>
-                <group string="Pick a slot (09:00–17:00 · 30 min · 16 slots · 8 per row)"
+                <group string="Arbitrator availability (09:00–17:00 · 30 min · Mon–Fri)"
                        invisible="use_manual_time">
                     <field name="slot_board_json" invisible="1"/>
+                    <field name="week_board_json" invisible="1"/>
                     <field name="grid_selected_index"
-                           widget="bn_hearing_slot_grid"
+                           widget="bn_hearing_scheduler"
                            colspan="2"
                            nolabel="1"/>
                 </group>
@@ -26,7 +32,7 @@
                            readonly="1"
                            invisible="use_manual_time"
                            placeholder="Tap a green slot above"/>
-                    <field name="hearing_datetime" invisible="not use_manual_time"/>
+                    <field name="hearing_datetime" invisible="not use_manual_time" force_save="1"/>
                 </group>
                 <group string="Odoo meeting">
                     <div class="text-muted" colspan="2">
