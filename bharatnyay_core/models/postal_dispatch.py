@@ -325,14 +325,14 @@ class BharatLoanPostalDispatch(models.Model):
                 'domain': [('id', 'in', records.ids or [0])],
             }
         if doc_type == 'award':
-            records = self.env['bharat.loan.award.document'].sudo().search([
+            dispatches = self.sudo().search([
+                ('document_type', '=', 'award'),
                 ('loan_id', 'in', ids),
-                ('award_type', '=', 'final'),
             ])
             return {
-                'res_model': 'bharat.loan.award.document',
+                'res_model': 'bharat.loan.postal.dispatch',
                 'name': title,
-                'domain': [('id', 'in', records.ids or [0])],
+                'domain': [('id', 'in', dispatches.ids or [0])],
             }
         return {
             'res_model': 'bharat.loan',

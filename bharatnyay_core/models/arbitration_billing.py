@@ -3,6 +3,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 from .product_template import BHARAT_ARBITRATION_STAGE_SELECTION
+from .loan_milestone import POSTAL_BILLING_MILESTONE_CODES
 
 BILLABLE_MILESTONE_CODES = frozenset(
     code for code, _label in BHARAT_ARBITRATION_STAGE_SELECTION
@@ -187,6 +188,9 @@ class BharatLoanBillingEvent(models.Model):
         code = milestone.code
         if code not in BILLABLE_MILESTONE_CODES:
             return self.browse()
+        if code in POSTAL_BILLING_MILESTONE_CODES and accrual_trigger != 'delivery':
+            # Notice 1 / Hearing 1 / Award bill only when POD status is billable.
+            return self.browse()
 
         existing = self.search([
             ('loan_id', '=', loan.id),
@@ -230,6 +234,9 @@ class BharatLoanBillingEvent(models.Model):
     def bharat_accrue_for_postal_dispatch(self, dispatch):
         """Queue pending charge when a postal dispatch reaches a billable status."""
         dispatch.ensure_one()
+        status = dispatch.post_office_status_id
+        if not status or not status.triggers_billing:
+            return self.browse()
         code = dispatch.billing_milestone_code
         if not code or code not in BILLABLE_MILESTONE_CODES:
             return self.browse()
@@ -246,6 +253,53 @@ class BharatLoanBillingEvent(models.Model):
             accrual_trigger='delivery',
             postal_dispatch=dispatch,
         )
+
+    @api.model
+    def dashboard_pending_charges_pipeline(self, loan_ids=None):
+        """Stage-wise pending charges for dashboard pipeline (Notice 1 → Hearing 1 → Award → Total)."""
+        domain = [('state', '=', 'pending')]
+        if loan_ids is not None:
+            domain.append(('loan_id', 'in', loan_ids or [0]))
+        events = self.sudo().search(domain)
+
+        specs = (
+            ('notice_1', _('Notice 1'), '#3b82f6', 'fa-envelope-o'),
+            ('hearing_1', _('Hearing 1'), '#8b5cf6', 'fa-video-camera'),
+            ('award', _('Award'), '#ef4444', 'fa-trophy'),
+        )
+        total_count = len(events)
+        stages = []
+        for code, label, color, icon in specs:
+            stage_events = events.filtered(
+                lambda e, c=code: (
+                    e.milestone_code == c and e.accrual_trigger == 'delivery'
+                ),
+            )
+            count = len(stage_events)
+            stages.append({
+                'key': code,
+                'label': label,
+                'color': color,
+                'icon': icon,
+                'count': count,
+                'cases': len(stage_events.mapped('loan_id')),
+                'amount': round(sum(stage_events.mapped('unit_price')), 2),
+                'percent': round(100.0 * count / total_count, 1) if total_count else 0.0,
+                'domain': domain + [('milestone_code', '=', code)],
+            })
+
+        total_amount = round(sum(events.mapped('unit_price')), 2)
+        return {
+            'stages': stages,
+            'total': {
+                'key': 'total',
+                'label': _('Total unbilled'),
+                'count': total_count,
+                'cases': len(events.mapped('loan_id')),
+                'amount': total_amount,
+                'domain': domain,
+            },
+        }
 
     @api.model
     def bharat_search_pending(self, company_ids=None, batch_names=None, milestone_codes=None):

@@ -13,6 +13,17 @@ BHARAT_ARBITRATION_STAGE_SELECTION = [
     ('award', 'Award'),
 ]
 
+DEFAULT_BILLING_PRODUCTS = (
+    ('notice_1', 'ODR — Notice 1', 25.0),
+    ('notice_2', 'ODR — Notice 2', 25.0),
+    ('notice_3', 'ODR — Notice 3', 25.0),
+    ('interim_order_1', 'ODR — Interim Order 1', 35.0),
+    ('hearing_1', 'ODR — Hearing 1', 50.0),
+    ('hearing_2', 'ODR — Hearing 2', 50.0),
+    ('hearing_3', 'ODR — Hearing 3', 50.0),
+    ('award', 'ODR — Award', 75.0),
+)
+
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -39,3 +50,23 @@ class ProductTemplate(models.Model):
                     _('Only one product can be assigned to arbitration stage “%s”.')
                     % dict(BHARAT_ARBITRATION_STAGE_SELECTION).get(st, st)
                 )
+
+    @api.model
+    def _sync_default_billing_products(self):
+        """Create one service SKU per arbitration stage when missing (sample rates)."""
+        labels = dict(BHARAT_ARBITRATION_STAGE_SELECTION)
+        for stage, name, price in DEFAULT_BILLING_PRODUCTS:
+            if stage not in labels:
+                continue
+            existing = self.search([('bharat_arbitration_stage', '=', stage)], limit=1)
+            if existing:
+                continue
+            self.create({
+                'name': name,
+                'type': 'service',
+                'sale_ok': True,
+                'purchase_ok': False,
+                'bharat_arbitration_stage': stage,
+                'list_price': price,
+            })
+        return True

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_award_document_search" model="ir.ui.view">
+        <field name="name">bharat.loan.award.document.search</field>
+        <field name="model">bharat.loan.award.document</field>
+        <field name="arch" type="xml">
+            <search string="Awards">
+                <field name="loan_number"/>
+                <field name="case_number"/>
+                <field name="loan_id"/>
+                <field name="pod"/>
+                <separator/>
+                <filter string="Final award" name="final" domain="[('award_type', '=', 'final')]"/>
+                <filter string="Signed" name="signed" domain="[('is_signed', '=', True)]"/>
+                <filter string="Unsigned" name="unsigned" domain="[('is_signed', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_award_document_list" model="ir.ui.view">
+        <field name="name">bharat.loan.award.document.list</field>
+        <field name="model">bharat.loan.award.document</field>
+        <field name="arch" type="xml">
+            <list string="Awards" default_order="award_date desc">
+                <field name="loan_number"/>
+                <field name="case_number" optional="hide"/>
+                <field name="award_date"/>
+                <field name="award_type"/>
+                <field name="is_signed"/>
+                <field name="pod"/>
+                <field name="dispatch_date"/>
+                <field name="delivery_date"/>
+                <field name="post_office_status_id"/>
+                <field name="loan_id" optional="hide"/>
+                <field name="created_by_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_award_document_form" model="ir.ui.view">
+        <field name="name">bharat.loan.award.document.form</field>
+        <field name="model">bharat.loan.award.document</field>
+        <field name="arch" type="xml">
+            <form string="Award">
+                <header>
+                    <button name="action_download_award_letter" type="object"
+                            string="Download draft letter" class="btn-secondary"
+                            icon="fa-file-pdf-o"
+                            invisible="award_type != 'final'"/>
+                    <button name="action_upload_signed_award" type="object"
+                            string="Upload signed award" class="btn-primary"
+                            icon="fa-upload"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Case">
+                            <field name="loan_id"/>
+                            <field name="loan_number" readonly="1"/>
+                            <field name="case_number" readonly="1"/>
+                            <field name="award_type"/>
+                            <field name="award_date"/>
+                            <field name="is_signed"/>
+                            <field name="created_by_id" readonly="1"/>
+                        </group>
+                        <group string="Postal delivery">
+                            <field name="postal_dispatch_id" readonly="1"/>
+                            <field name="pod"/>
+                            <field name="dispatch_date"/>
+                            <field name="delivery_date"/>
+                            <field name="post_office_status_id"/>
+                        </group>
+                    </group>
+                    <group string="Documents">
+                        <field name="award_notes"/>
+                        <field name="draft_award_pdf" filename="draft_award_pdf_filename" widget="pdf_viewer"/>
+                        <field name="draft_award_pdf_filename" invisible="1"/>
+                        <field name="award_pdf" filename="award_pdf_filename" widget="pdf_viewer"/>
+                        <field name="award_pdf_filename" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

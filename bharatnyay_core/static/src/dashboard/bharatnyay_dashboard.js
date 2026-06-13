@@ -16,6 +16,7 @@ import {
     openLoanCases,
     openPodStatusRecords,
     openStageBucketCases,
+    openUnbilledChargesStage,
     guardEmptyDashboardCard,
     guardEmptyInvoiceCard,
     onDashboardFilterRegionChange,
@@ -34,6 +35,7 @@ export class BharatnyayDashboard extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
+        this.dialog = useService("dialog");
 
         this.state = useState({
             loading: true,
@@ -180,6 +182,67 @@ export class BharatnyayDashboard extends Component {
         this._openLoanListAction();
     }
 
+    openImportBatch() {
+        this.action.doAction("bharatnyay_core.action_bharat_loan_portfolio_import_wizard", {
+            onClose: () => this.load(),
+        });
+    }
+
+    openCaseManagers() {
+        this.action.doAction("bharatnyay_core.action_bharat_case_managers");
+    }
+
+    openNewCaseManager() {
+        this.action.doAction("bharatnyay_core.action_bharat_new_case_manager", {
+            onClose: () => this.load(),
+        });
+    }
+
+    openArbitrators() {
+        this.action.doAction("bharatnyay_core.action_bharat_arbitrators");
+    }
+
+    openNewArbitrator() {
+        this.action.doAction("bharatnyay_core.action_bharat_new_arbitrator", {
+            onClose: () => this.load(),
+        });
+    }
+
+    moveCasesToNextStage() {
+        const count = this.state.data?.kpis?.movable_cases || 0;
+        if (!count) {
+            this.notification.add("No cases in the current filter can be advanced.", {
+                type: "warning",
+            });
+            return;
+        }
+        this.action.doAction("bharatnyay_core.action_bharat_loan_milestone_advance_wizard", {
+            additionalContext: {
+                dashboard_region_id: this.state.filter_region || false,
+                dashboard_state_id: this.state.filter_state || false,
+                dashboard_batch_number: this.state.filter_batch || false,
+            },
+            onClose: () => {
+                if (this._processPollTimer) {
+                    clearInterval(this._processPollTimer);
+                }
+                this._processPollTimer = setInterval(() => this.load(true), 5000);
+                void this.load(true);
+                this._scheduleProcessPoll();
+            },
+        });
+    }
+
+    openRunningJobs() {
+        if (!this.processActiveCount()) {
+            this.notification.add("No background jobs are running or queued.", {
+                type: "info",
+            });
+            return;
+        }
+        this.openProcessRunsActive();
+    }
+
     _openLoanListAction() {
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -245,22 +308,25 @@ export class BharatnyayDashboard extends Component {
     }
 
     openUnbilledCases() {
-        if (
-            !guardEmptyDashboardCard(this.notification, {
-                count: this.state.data?.kpis?.unbilled_cases,
-                label: "Unbilled cases",
-            })
-        ) {
+        openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            "total",
+        );
+    }
+
+    openUnbilledChargesStage(ev) {
+        const key = ev.currentTarget?.dataset?.chargeKey;
+        if (!key) {
             return;
         }
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Pending billing",
-            res_model: "bharat.loan.billing.event",
-            views: [[false, "list"]],
-            domain: this.state.data?.pending_billing_domain || [["state", "=", "pending"]],
-            target: "current",
-        });
+        openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            key,
+        );
     }
 
     openPendingPostalStatus() {
@@ -290,6 +356,7 @@ export class BharatnyayDashboard extends Component {
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
         const titles = {
+            all: "Total invoices",
             paid: "Invoices paid",
             unpaid: "Invoices unpaid",
             draft: "Draft invoices",

@@ -2,13 +2,13 @@
 """Module install/upgrade hooks."""
 
 
-def pre_init_hook(cr):
+def pre_init_hook(env):
     """Clean milestone_code selection metadata before field-type migrations.
 
     Odoo 18 raises AttributeError when unlinking ir.model.fields.selection rows
     after milestone_code was briefly defined as Char (Selection.ondelete missing).
     """
-    cr.execute(
+    env.cr.execute(
         """
         DELETE FROM ir_model_fields_selection
         WHERE field_id IN (
@@ -17,7 +17,7 @@ def pre_init_hook(cr):
         )
         """
     )
-    cr.execute(
+    env.cr.execute(
         """
         UPDATE ir_model_fields
         SET ttype = 'selection'

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_milestone_advance_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.milestone.advance.wizard.form</field>
+        <field name="model">bharat.loan.milestone.advance.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Move to next stage">
+                <sheet>
+                    <div class="oe_title mb-3">
+                        <h1>Move to next stage</h1>
+                        <p class="text-muted mb-0">
+                            Advance <field name="case_count" readonly="1" nolabel="1" class="oe_inline fw-bold"/>
+                            case(s) matching the current dashboard filters by one workflow stage.
+                        </p>
+                    </div>
+                    <group>
+                        <group string="Optional actions (unchecked by default for testing)">
+                            <field name="generate_pdfs"/>
+                            <field name="send_email"/>
+                            <field name="send_sms"/>
+                        </group>
+                        <group string="Current filter" invisible="not filter_region_id and not filter_state_id and not filter_batch_number">
+                            <field name="filter_region_id"/>
+                            <field name="filter_state_id"/>
+                            <field name="filter_batch_number"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_confirm" type="object" string="Move to next stage" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_loan_milestone_advance_wizard" model="ir.actions.act_window">
+        <field name="name">Move to next stage</field>
+        <field name="res_model">bharat.loan.milestone.advance.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

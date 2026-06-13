@@ -99,6 +99,7 @@
                 <field name="post_office_status_id"/>
                 <filter string="Notice 1" name="notice_1" domain="[('document_type', '=', 'notice_1')]"/>
                 <filter string="Interim order 1" name="interim_1" domain="[('document_type', '=', 'interim_order_1')]"/>
+                <filter string="Award" name="award" domain="[('document_type', '=', 'award')]"/>
                 <filter string="Awaiting billable status" name="pending_status"
                         domain="[('billing_accrued', '=', False), '|', ('post_office_status_id', '=', False), ('post_office_status_id.triggers_billing', '=', False)]"/>
             </search>
@@ -223,8 +224,10 @@
             <p class="o_view_nocontent_smiling_face">
                 No unbilled charges yet.
             </p>
-            <p>Charges accrue when a case exits a billable milestone or when postal delivery
-            reaches a billable status. Use <b>Create consolidated invoice</b> to bill pending rows.</p>
+            <p>Notice 1, Hearing 1, and Award charges accrue only when POD post office status
+            is set to a <b>billable</b> status (Excel POD import or Update POD on the case).
+            Other milestones may accrue when the case leaves that stage.
+            Use <b>Create consolidated invoice</b> to bill pending rows.</p>
         </field>
     </record>
     <record id="action_bharat_loan_billing_event_all" model="ir.actions.act_window">

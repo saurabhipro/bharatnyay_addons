@@ -23,6 +23,10 @@
         <field name="arch" type="xml">
             <form string="Notice" create="0" edit="0" delete="0" class="bn-notice-form">
                 <header>
+                    <button name="action_regenerate_notice_pdf" type="object"
+                            string="Generate PDF" class="btn-secondary"
+                            icon="fa-file-pdf-o"
+                            invisible="notice_pdf"/>
                     <button name="action_update_pod" type="object"
                             string="Update POD" class="btn-primary"
                             icon="fa-truck"
@@ -37,146 +41,129 @@
                     <field name="delivery_status_key" invisible="1"/>
                     <field name="notice_number" invisible="1"/>
 
-                    <div class="bn-notice-hero">
-                        <div class="bn-notice-hero__main">
-                            <div class="bn-notice-hero__icon">
-                                <i class="fa fa-envelope-o" title="Notice"/>
-                            </div>
-                            <div class="bn-notice-hero__text">
-                                <field name="notice_label" readonly="1" nolabel="1" class="bn-notice-hero__title"/>
+                    <div class="bn-notice-layout">
+                        <div class="bn-notice-layout__main bn-notice-sidebar">
+                            <div class="bn-notice-hero">
+                                <div class="bn-notice-hero__top">
+                                    <field name="notice_label" readonly="1" nolabel="1" class="bn-notice-hero__title"/>
+                                    <div class="bn-notice-hero__status">
+                                        <span class="bn-notice-delivery__badge bn-notice-delivery__badge--ok"
+                                              invisible="delivery_status_key not in ('delivered', 'billed', 'email')">
+                                            <field name="delivery_status" readonly="1" nolabel="1"/>
+                                        </span>
+                                        <span class="bn-notice-delivery__badge bn-notice-delivery__badge--pending"
+                                              invisible="delivery_status_key not in ('awaiting', 'dispatched', 'in_progress', 'not_started')">
+                                            <field name="delivery_status" readonly="1" nolabel="1"/>
+                                        </span>
+                                        <span class="bn-notice-delivery__badge bn-notice-delivery__badge--neutral"
+                                              invisible="delivery_status_key != 'neutral'">
+                                            <field name="delivery_status" readonly="1" nolabel="1"/>
+                                        </span>
+                                    </div>
+                                </div>
                                 <div class="bn-notice-hero__case">
-                                    <span>Case</span>
                                     <field name="loan_id" readonly="1" nolabel="1" class="oe_inline"/>
                                 </div>
+                                <ul class="bn-notice-meta">
+                                    <li>
+                                        <span class="bn-notice-meta__k">Sent</span>
+                                        <field name="sent_on" readonly="1" nolabel="1"/>
+                                    </li>
+                                    <li>
+                                        <span class="bn-notice-meta__k">By</span>
+                                        <field name="sent_by_id" readonly="1" nolabel="1"/>
+                                    </li>
+                                    <li>
+                                        <span class="bn-notice-meta__k">To</span>
+                                        <field name="sent_to" readonly="1" nolabel="1"/>
+                                    </li>
+                                    <li invisible="not response_received_on">
+                                        <span class="bn-notice-meta__k">Reply</span>
+                                        <field name="response_received_on" readonly="1" nolabel="1"/>
+                                    </li>
+                                </ul>
                             </div>
-                        </div>
-                        <div class="bn-notice-hero__status">
-                            <span class="bn-notice-delivery__badge bn-notice-delivery__badge--ok"
-                                  invisible="delivery_status_key not in ('delivered', 'billed', 'email')">
-                                <field name="delivery_status" readonly="1" nolabel="1"/>
-                            </span>
-                            <span class="bn-notice-delivery__badge bn-notice-delivery__badge--pending"
-                                  invisible="delivery_status_key not in ('awaiting', 'dispatched', 'in_progress', 'not_started')">
-                                <field name="delivery_status" readonly="1" nolabel="1"/>
-                            </span>
-                            <span class="bn-notice-delivery__badge bn-notice-delivery__badge--neutral"
-                                  invisible="delivery_status_key != 'neutral'">
-                                <field name="delivery_status" readonly="1" nolabel="1"/>
-                            </span>
-                        </div>
-                    </div>
 
-                    <div class="bn-notice-chips">
-                        <span class="bn-notice-chip">
-                            <i class="fa fa-clock-o" title="Sent on"/>
-                            <field name="sent_on" readonly="1" nolabel="1"/>
-                        </span>
-                        <span class="bn-notice-chip">
-                            <i class="fa fa-user" title="Sent by"/>
-                            <field name="sent_by_id" readonly="1" nolabel="1"/>
-                        </span>
-                        <span class="bn-notice-chip">
-                            <i class="fa fa-at" title="Sent to"/>
-                            <field name="sent_to" readonly="1" nolabel="1"/>
-                        </span>
-                        <span class="bn-notice-chip bn-notice-chip--ok" invisible="not response_received_on">
-                            <i class="fa fa-check-circle" title="Response received"/>
-                            <field name="response_received_on" readonly="1" nolabel="1"/>
-                        </span>
-                    </div>
+                            <section class="bn-notice-section">
+                                <h3 class="bn-notice-section__title">Email</h3>
+                                <field name="subject" readonly="1" nolabel="1" class="bn-notice-subject"/>
+                                <field name="recipient_partner_id" readonly="1" nolabel="1"
+                                       class="bn-notice-contact" invisible="not recipient_partner_id"/>
+                                <field name="body_html" readonly="1" nolabel="1"
+                                       class="bn-notice-prose" invisible="not body_html"/>
+                            </section>
 
-                    <div class="bn-notice-grid">
-                        <div class="bn-notice-card bn-notice-card--email">
-                            <div class="bn-notice-card__head">
-                                <i class="fa fa-envelope" title="Email"/>
-                                <span>Email dispatch</span>
-                            </div>
-                            <div class="bn-notice-kv">
-                                <span class="bn-notice-kv__k">Subject</span>
-                                <field name="subject" readonly="1" nolabel="1"/>
-                            </div>
-                            <div class="bn-notice-kv" invisible="not recipient_partner_id">
-                                <span class="bn-notice-kv__k">Contact</span>
-                                <field name="recipient_partner_id" readonly="1" nolabel="1"/>
-                            </div>
-                            <div class="bn-notice-body" invisible="not body_html">
-                                <span class="bn-notice-body__label">Body</span>
-                                <field name="body_html" readonly="1" nolabel="1"/>
-                            </div>
-                        </div>
-
-                        <div class="bn-notice-card bn-notice-card--delivery">
-                            <div class="bn-notice-card__head">
-                                <i class="fa fa-paper-plane-o" title="Delivery"/>
-                                <span>Delivery</span>
-                            </div>
-                            <div class="bn-notice-delivery__meta" invisible="not delivery_meta">
-                                <field name="delivery_meta" readonly="1" nolabel="1"/>
-                            </div>
-                            <div class="bn-notice-delivery__pod" invisible="not has_pod_tracking">
-                                <div class="bn-notice-delivery__pod-grid">
-                                    <div class="bn-notice-delivery__pod-item">
-                                        <span class="bn-notice-delivery__pod-k">POD</span>
+                            <section class="bn-notice-section">
+                                <h3 class="bn-notice-section__title">Delivery</h3>
+                                <field name="delivery_meta" readonly="1" nolabel="1"
+                                       class="bn-notice-hint" invisible="not delivery_meta"/>
+                                <div class="bn-notice-fields" invisible="not has_pod_tracking">
+                                    <div class="bn-notice-field">
+                                        <span class="bn-notice-field__k">POD</span>
                                         <field name="pod" readonly="1" nolabel="1" placeholder="—"/>
                                     </div>
-                                    <div class="bn-notice-delivery__pod-item">
-                                        <span class="bn-notice-delivery__pod-k">Status</span>
+                                    <div class="bn-notice-field">
+                                        <span class="bn-notice-field__k">Status</span>
                                         <field name="post_office_status_id" readonly="1" nolabel="1"/>
                                     </div>
-                                    <div class="bn-notice-delivery__pod-item">
-                                        <span class="bn-notice-delivery__pod-k">Dispatched</span>
+                                    <div class="bn-notice-field">
+                                        <span class="bn-notice-field__k">Dispatched</span>
                                         <field name="dispatch_date" readonly="1" nolabel="1"/>
                                     </div>
-                                    <div class="bn-notice-delivery__pod-item">
-                                        <span class="bn-notice-delivery__pod-k">Delivered</span>
+                                    <div class="bn-notice-field">
+                                        <span class="bn-notice-field__k">Delivered</span>
                                         <field name="delivery_date" readonly="1" nolabel="1"/>
                                     </div>
                                 </div>
-                            </div>
-                            <p class="bn-notice-delivery__hint" invisible="has_pod_tracking">
-                                Digital notice — email delivery only.
-                            </p>
+                                <p class="bn-notice-hint" invisible="has_pod_tracking">
+                                    Digital notice — email delivery only.
+                                </p>
+                            </section>
+
+                            <section class="bn-notice-section"
+                                     invisible="not response_received_on and not response_pdf and not response_notes">
+                                <h3 class="bn-notice-section__title">Respondent reply</h3>
+                                <field name="response_received_on" readonly="1" nolabel="1"
+                                       class="bn-notice-hint" invisible="not response_received_on"/>
+                                <field name="response_notes" readonly="1" nolabel="1"
+                                       class="bn-notice-prose" invisible="not response_notes"/>
+                            </section>
+
+                            <notebook class="bn-notice-tabs">
+                                <page string="Microsite" name="page_microsite">
+                                    <group col="2">
+                                        <field name="notice_microsite_url" widget="url" readonly="1"/>
+                                        <field name="microsite_otp_code" readonly="1"/>
+                                        <field name="microsite_last_submit_at" readonly="1"/>
+                                        <field name="borrower_slot_preference" readonly="1"/>
+                                        <field name="notice_microsite_url_encoded" readonly="1"/>
+                                        <field name="qr_access_token" readonly="1"/>
+                                    </group>
+                                </page>
+                            </notebook>
                         </div>
 
-                        <div class="bn-notice-card bn-notice-card--reply"
-                             invisible="not response_received_on and not response_pdf and not response_notes">
-                            <div class="bn-notice-card__head">
-                                <i class="fa fa-inbox" title="Reply"/>
-                                <span>Respondent reply</span>
+                        <aside class="bn-notice-layout__preview bn-notice-preview">
+                            <div class="bn-notice-pdfs">
+                                <div class="bn-notice-pdf-col bn-notice-pdf-col--primary">
+                                    <div class="bn-notice-pdf-col__label">
+                                        <i class="fa fa-file-pdf-o" title="Notice PDF"/>
+                                        <span>Notice PDF</span>
+                                    </div>
+                                    <field name="notice_pdf" filename="notice_pdf_filename" widget="pdf_viewer" nolabel="1"/>
+                                    <field name="notice_pdf_filename" invisible="1"/>
+                                </div>
+                                <div class="bn-notice-pdf-col" invisible="not response_pdf">
+                                    <div class="bn-notice-pdf-col__label">
+                                        <i class="fa fa-file-pdf-o" title="Response PDF"/>
+                                        <span>Response PDF</span>
+                                    </div>
+                                    <field name="response_pdf" filename="response_pdf_filename" widget="pdf_viewer" readonly="1" nolabel="1"/>
+                                    <field name="response_pdf_filename" invisible="1"/>
+                                </div>
                             </div>
-                            <div class="bn-notice-kv" invisible="not response_received_on">
-                                <span class="bn-notice-kv__k">Received</span>
-                                <field name="response_received_on" readonly="1" nolabel="1"/>
-                            </div>
-                            <field name="response_notes" readonly="1" nolabel="1" invisible="not response_notes"/>
-                        </div>
+                        </aside>
                     </div>
-
-                    <div class="bn-notice-pdfs">
-                        <div class="bn-notice-pdf-col">
-                            <div class="bn-notice-pdf-col__label">Notice PDF</div>
-                            <field name="notice_pdf" filename="notice_pdf_filename" widget="pdf_viewer" nolabel="1"/>
-                            <field name="notice_pdf_filename" invisible="1"/>
-                        </div>
-                        <div class="bn-notice-pdf-col" invisible="not response_pdf">
-                            <div class="bn-notice-pdf-col__label">Response PDF</div>
-                            <field name="response_pdf" filename="response_pdf_filename" widget="pdf_viewer" readonly="1" nolabel="1"/>
-                            <field name="response_pdf_filename" invisible="1"/>
-                        </div>
-                    </div>
-
-                    <notebook>
-                        <page string="Microsite" name="page_microsite">
-                            <group col="2">
-                                <field name="notice_microsite_url" widget="url" readonly="1"/>
-                                <field name="microsite_otp_code" readonly="1"/>
-                                <field name="microsite_last_submit_at" readonly="1"/>
-                                <field name="borrower_slot_preference" readonly="1"/>
-                                <field name="notice_microsite_url_encoded" readonly="1"/>
-                                <field name="qr_access_token" readonly="1"/>
-                            </group>
-                        </page>
-                    </notebook>
                 </sheet>
             </form>
         </field>

@@ -674,6 +674,53 @@ class BharatLoan(models.Model):
             partner = Partner.search([('child_ids.email', '=ilike', email)], limit=1)
         return partner
 
+    def _milestone_send_notice_email(self, line):
+        """Email the borrower when the user opted in during milestone advance."""
+        self.ensure_one()
+        line.ensure_one()
+        email = (line.sent_to or self.borrower_email or '').strip()
+        if not email or email == 'noreply@bharatnyay.local':
+            return False
+        mail_vals = {
+            'subject': line.subject or _('Notice %s') % (line.notice_number or 1),
+            'body_html': line.body_html or '',
+            'email_to': email,
+            'auto_delete': False,
+        }
+        mail = self.env['mail.mail'].sudo().create(mail_vals)
+        if line.notice_pdf and line.notice_pdf_filename:
+            self.env['ir.attachment'].sudo().create({
+                'name': line.notice_pdf_filename,
+                'datas': line.notice_pdf,
+                'mimetype': 'application/pdf',
+                'res_model': 'mail.mail',
+                'res_id': mail.id,
+            })
+        mail.send()
+        return True
+
+    def _milestone_send_notice_sms(self, line):
+        """SMS placeholder — logs on the case until an SMS gateway is configured."""
+        self.ensure_one()
+        line.ensure_one()
+        phone = (self.borrower_phone or '').strip()
+        if not phone:
+            return False
+        message = _(
+            'Notice %(num)s — loan %(loan)s. OTP: %(otp)s'
+        ) % {
+            'num': line.notice_number or 1,
+            'loan': self.loan_number or self.case_number or self.display_name,
+            'otp': line.microsite_otp_code or '—',
+        }
+        self.message_post(
+            body=_('SMS sent to %(phone)s: %(message)s') % {
+                'phone': phone,
+                'message': message,
+            },
+        )
+        return True
+
     def _milestone_create_notice_line(self, notice_number):
         """Create a notice history row and render the stage PDF (Notice 1–3 templates)."""
         self.ensure_one()
@@ -702,7 +749,12 @@ class BharatLoan(models.Model):
             'qr_access_token': uuid.uuid4().hex,
             'microsite_otp_code': '%06d' % secrets.randbelow(1000000),
         })
-        line._attach_notice_pdf()
+        if not self.env.context.get('bharat_defer_milestone_pdf'):
+            line._attach_notice_pdf()
+        if not self.env.context.get('bharat_skip_milestone_email'):
+            self._milestone_send_notice_email(line)
+        if not self.env.context.get('bharat_skip_milestone_sms'):
+            self._milestone_send_notice_sms(line)
         return line
 
     def _milestone_attach_hearing_pdf(self, hearing_number):
@@ -781,21 +833,8 @@ class BharatLoan(models.Model):
         if ICP.get_param('bharatnyay_core.notice_pdf_backfill_done'):
             return True
         NoticeLine = self.env['bharat.loan.notice.line']
-        lines = NoticeLine.search([('notice_pdf', '=', False)], limit=limit)
-        for line in lines:
-            if not line.qr_access_token:
-                line.qr_access_token = uuid.uuid4().hex
-            if not line.microsite_otp_code:
-                line.microsite_otp_code = '%06d' % secrets.randbelow(1000000)
-            try:
-                line._attach_notice_pdf()
-            except Exception:
-                _logger.exception(
-                    'Notice PDF backfill failed for notice line %s (loan %s)',
-                    line.id,
-                    line.loan_id.id,
-                )
-        if not NoticeLine.search_count([('notice_pdf', '=', False)]):
+        done = NoticeLine._backfill_all_missing_notice_pdfs(limit=limit)
+        if done and not NoticeLine.search_count([('notice_pdf', '=', False)]):
             ICP.set_param('bharatnyay_core.notice_pdf_backfill_done', '1')
         return True
 
@@ -870,8 +909,12 @@ class BharatLoan(models.Model):
             location_id = self.location_id.id if self.location_id else False
             cm_id = self.env['res.users']._find_case_manager_for_scope(branch_id, location_id)
             if not cm_id:
+                branch_name = self.branch_id.name if self.branch_id else _('(no branch)')
+                location_name = self.location_id.name if self.location_id else _('(no location)')
                 raise UserError(
-                    _('No case manager found for branch/location scope. Configure case managers in Users.')
+                    _('No case manager found for branch “%s” / location “%s”. '
+                      'Add a case manager under Masters, or widen their branch/location scope.')
+                    % (branch_name, location_name)
                 )
             self.write({'case_manager_manual': False, 'case_manager_id': cm_id})
         if milestone.auto_assign_arbitrator and not self.arbitrator_id:
@@ -886,18 +929,23 @@ class BharatLoan(models.Model):
                 self._milestone_create_notice_line(notice_number)
         if milestone.code == 'hearing_1' and self.arbitrator_id and not self.hearing_line_ids:
             self._provision_hearing_lines_on_arbitrator_assign()
-        if milestone.code.startswith('hearing_'):
-            hearing_number = int(milestone.code.split('_')[1])
-            self._milestone_attach_hearing_pdf(hearing_number)
         if milestone.code == 'award':
             doc = self._get_or_create_final_award_document()
-            doc._attach_draft_award_letter()
+            if not self.env.context.get('bharat_defer_milestone_pdf'):
+                doc._attach_draft_award_letter()
+        elif not self.env.context.get('bharat_defer_milestone_pdf') and milestone.code.startswith('hearing_'):
+            hearing_number = int(milestone.code.split('_')[1])
+            self._milestone_attach_hearing_pdf(hearing_number)
         self.env['bharat.loan.postal.dispatch'].ensure_for_milestone_entry(self, milestone.code)
 
     def _milestone_accrue_billing_event(self, milestone):
         """Queue a pending charge when exiting a billable milestone (consolidated billing)."""
         self.ensure_one()
         if milestone.code == 'commencement':
+            return self.env['bharat.loan.billing.event']
+        from .loan_milestone import POSTAL_BILLING_MILESTONE_CODES
+        if milestone.code in POSTAL_BILLING_MILESTONE_CODES:
+            # Accrues from postal POD status (Excel import or Update POD wizard).
             return self.env['bharat.loan.billing.event']
         if not milestone.bill_on_milestone_exit:
             return self.env['bharat.loan.billing.event']
@@ -965,40 +1013,113 @@ class BharatLoan(models.Model):
             },
         }
 
-    def action_move_to_next_stage(self):
+    def action_move_to_next_stage(
+        self, generate_pdfs=False, send_email=False, send_sms=False,
+    ):
         """Advance each selected case by one milestone (bulk-safe, per-case logic)."""
+        Run = self.env['bharat.process.run']
+        total = len(self)
+        track_job = total > 1
+        run = Run.browse()
+        if track_job:
+            run = Run.start(
+                'milestone_advance',
+                _('Milestone advance — %(n)s case(s)') % {'n': total},
+            )
+            run.update_progress(0, total, _('Starting…'))
+            self.env.cr.commit()
+
         advanced = []
         skipped = []
         failed = []
         advanced_batches = set()
+        advance_ctx = {}
+        if not generate_pdfs:
+            advance_ctx['bharat_defer_milestone_pdf'] = True
+        if not send_email:
+            advance_ctx['bharat_skip_milestone_email'] = True
+        if not send_sms:
+            advance_ctx['bharat_skip_milestone_sms'] = True
 
-        for rec in self:
-            try:
-                next_name, skip_reason = rec._advance_one_milestone()
-            except UserError as exc:
-                case_ref = rec.case_number or rec.loan_number or rec.display_name
-                failed.append('%s — %s' % (case_ref, exc.args[0]))
-                continue
-            except Exception as exc:
-                case_ref = rec.case_number or rec.loan_number or rec.display_name
-                failed.append('%s — %s' % (case_ref, exc))
-                _logger.exception('Move to next stage failed for loan %s', rec.id)
-                continue
+        try:
+            for idx, rec in enumerate(self, start=1):
+                if track_job and run.is_cancelled():
+                    break
+                try:
+                    next_name, skip_reason = rec.with_context(
+                        **advance_ctx,
+                    )._advance_one_milestone()
+                except UserError as exc:
+                    case_ref = rec.case_number or rec.loan_number or rec.display_name
+                    failed.append('%s — %s' % (case_ref, exc.args[0]))
+                    continue
+                except Exception as exc:
+                    case_ref = rec.case_number or rec.loan_number or rec.display_name
+                    failed.append('%s — %s' % (case_ref, exc))
+                    _logger.exception('Move to next stage failed for loan %s', rec.id)
+                    continue
 
-            case_ref = rec.case_number or rec.loan_number or rec.display_name
-            if skip_reason:
-                skipped.append(skip_reason)
-            else:
-                advanced.append('%s → %s' % (case_ref, next_name))
-                batch_no = (rec.batch_number or '').strip()
-                if batch_no:
-                    advanced_batches.add(batch_no)
+                case_ref = rec.case_number or rec.loan_number or rec.display_name
+                if skip_reason:
+                    skipped.append(skip_reason)
+                else:
+                    advanced.append('%s → %s' % (case_ref, next_name))
+                    batch_no = (rec.batch_number or '').strip()
+                    if batch_no:
+                        advanced_batches.add(batch_no)
+
+                if track_job and idx % 20 == 0:
+                    run.update_progress(
+                        idx,
+                        total,
+                        _('Processed %(i)s / %(n)s') % {'i': idx, 'n': total},
+                    )
+                    self.env.cr.commit()
+        except Exception as exc:
+            if track_job and run:
+                run.fail(str(exc))
+                self.env.cr.commit()
+            raise
 
         vault_queued = []
         if advanced_batches:
             vault_queued = self.env['bharat.case.vault.batch'].queue_refresh_for_batches(
                 advanced_batches,
             )
+
+        if track_job and run:
+            job_lines = []
+            if advanced:
+                job_lines.append(_('Advanced %(n)s case(s).') % {'n': len(advanced)})
+            if skipped:
+                job_lines.append(_('Skipped %(n)s case(s).') % {'n': len(skipped)})
+            if failed:
+                job_lines.append(_('Failed %(n)s case(s).') % {'n': len(failed)})
+            if vault_queued:
+                job_lines.append(
+                    _('Case Vault rebuild queued: %s') % ', '.join(vault_queued)
+                )
+            if track_job and advance_ctx.get('bharat_defer_milestone_pdf'):
+                job_lines.append(
+                    _('PDFs deferred — open each notice to generate, or re-run with “Generate PDFs”.')
+                )
+            if send_email or send_sms:
+                extras = []
+                if send_email:
+                    extras.append(_('email'))
+                if send_sms:
+                    extras.append(_('SMS'))
+                job_lines.append(
+                    _('Borrower notifications enabled: %s') % ', '.join(extras)
+                )
+            if run.is_cancelled():
+                run._do_cancel(_('Stopped by user.'))
+            elif failed and not advanced:
+                run.fail('\n'.join(job_lines) if job_lines else _('No cases were advanced.'))
+            else:
+                run.update_progress(total, total)
+                run.finish('\n'.join(job_lines) if job_lines else _('Completed.'))
+            self.env.cr.commit()
 
         title = _('Move to next stage')
         if len(self) == 1 and advanced:
@@ -1049,6 +1170,31 @@ class BharatLoan(models.Model):
 
         notif_type = 'warning' if (skipped or failed) else 'success'
         return self._milestone_action_notification(title, '\n'.join(lines), notif_type)
+
+    @api.model
+    def action_dashboard_move_to_next_stage(
+        self, region_id=False, state_id=False, batch_number=False,
+        generate_pdfs=False, send_email=False, send_sms=False,
+    ):
+        """Advance all eligible cases in the admin dashboard scope."""
+        domain = self._dashboard_apply_scope_filters(
+            [], region_id=region_id, state_id=state_id, batch_number=batch_number,
+        )
+        loans = self.search(domain)
+        eligible = loans.filtered(
+            lambda l: not l.is_case_locked and l._next_milestone_record()
+        )
+        if not eligible:
+            return self._milestone_action_notification(
+                _('Move to next stage'),
+                _('No cases in the current filter can be advanced.'),
+                'warning',
+            )
+        return eligible.action_move_to_next_stage(
+            generate_pdfs=generate_pdfs,
+            send_email=send_email,
+            send_sms=send_sms,
+        )
 
     @api.model
     def _bharat_cleanup_action_menu(self):
@@ -2989,6 +3135,22 @@ class BharatLoan(models.Model):
 
         scoped_loans = self.search(scope_domain)
         loan_ids = scoped_loans.ids
+        movable_cases = len(scoped_loans.filtered(
+            lambda l: not l.is_case_locked and l._next_milestone_record()
+        ))
+        running_jobs = self.env['bharat.process.run'].search_count([
+            ('state', 'in', ('queued', 'running')),
+        ])
+        total_case_managers = self.env['res.users'].sudo().search_count([
+            ('share', '=', False),
+            ('bharat_role', '=', 'case_manager'),
+            ('active', '=', True),
+        ])
+        total_arbitrators = self.env['res.users'].sudo().search_count([
+            ('share', '=', False),
+            ('bharat_role', '=', 'arbitrator'),
+            ('active', '=', True),
+        ])
         batch_pay = self._dashboard_batch_payment_breakdown(
             scoped_loans, no_batch_label=no_batch_label,
         )
@@ -3125,21 +3287,27 @@ class BharatLoan(models.Model):
         )
         paid_invoice_count = len(paid_moves)
         unpaid_invoice_count = len(unpaid_moves)
+        total_invoices = len(posted_arb) + len(draft_moves)
         paid_invoice_amount = round(
             sum((m.amount_total or 0) - (m.amount_residual or 0) for m in paid_moves),
             2,
         )
         unpaid_invoice_amount = round(sum(unpaid_moves.mapped('amount_residual')), 2)
+        total_invoice_amount = round(
+            sum(posted_arb.mapped('amount_total')) + sum(draft_moves.mapped('amount_total')),
+            2,
+        )
         draft_invoices_count = len(draft_moves)
 
         pending_billing_domain = [('state', '=', 'pending')]
         if scope_active:
             pending_billing_domain.append(('loan_id', 'in', loan_ids or [0]))
-        pending_billing = self.env['bharat.loan.billing.event'].sudo().search(
-            pending_billing_domain,
-        )
-        unbilled_cases = len(pending_billing.mapped('loan_id'))
-        pending_billing_charges = len(pending_billing)
+        unbilled_charges_pipeline = self.env[
+            'bharat.loan.billing.event'
+        ].dashboard_pending_charges_pipeline(loan_ids if scope_active else None)
+        unbilled_cases = unbilled_charges_pipeline['total']['cases']
+        pending_billing_charges = unbilled_charges_pipeline['total']['count']
+        pending_billing_amount = unbilled_charges_pipeline['total']['amount']
 
         stage_cards, _stage_card_total = self._bucket_cards_from_loans(
             scoped_loans, base_domain=scope_domain,
@@ -3232,6 +3400,10 @@ class BharatLoan(models.Model):
             'kpis': {
                 'total_loans': total,
                 'total_batches': len(batch_keys),
+                'running_jobs': running_jobs,
+                'total_case_managers': total_case_managers,
+                'total_arbitrators': total_arbitrators,
+                'movable_cases': movable_cases,
                 'postal_status_pending_count': postal_pending['count'],
                 'postal_status_pending_notice_1': postal_pending['notice_1_count'],
                 'postal_status_pending_interim_1': postal_pending['interim_order_1_count'],
@@ -3250,11 +3422,15 @@ class BharatLoan(models.Model):
                 'loan_activities_due': activities_open,
                 'paid_invoices': paid_invoice_count,
                 'unpaid_invoices': unpaid_invoice_count,
+                'total_invoices': total_invoices,
+                'total_invoice_amount': total_invoice_amount,
                 'paid_invoice_amount': paid_invoice_amount,
                 'unpaid_invoice_amount': unpaid_invoice_amount,
                 'unbilled_cases': unbilled_cases,
                 'pending_billing_charges': pending_billing_charges,
+                'pending_billing_amount': pending_billing_amount,
             },
+            'unbilled_charges_pipeline': unbilled_charges_pipeline,
             'monthly_created': monthly_series,
             'batch_volume': batch_volume,
             'batch_volume_stages': batch_volume_stages['batches'],
@@ -3362,6 +3538,8 @@ class BharatLoan(models.Model):
             'draft_invoices': len(draft),
             'paid_invoices': len(paid),
             'posted_unpaid_invoices': len(unpaid),
+            'total_invoices': len(moves),
+            'total_invoice_amount': round(sum(moves.mapped('amount_total')), 2),
             'total_due_amount': round(sum(unpaid.mapped('amount_residual')), 2),
             'total_received_amount': round(
                 sum(paid.mapped(lambda m: (m.amount_total or 0) - (m.amount_residual or 0))),
@@ -3729,10 +3907,9 @@ class BharatLoan(models.Model):
         breakdown = self._dashboard_breakdown_from_loans(loans, base_domain=domain)
         Currency = self.env.company.currency_id
 
-        pending_billing = self.env['bharat.loan.billing.event'].sudo().search([
-            ('state', '=', 'pending'),
-            ('loan_id', 'in', loans.ids),
-        ])
+        unbilled_charges_pipeline = self.env[
+            'bharat.loan.billing.event'
+        ].dashboard_pending_charges_pipeline(loans.ids)
         batch_keys = {b for b in loans.mapped('batch_number') if b}
 
         payment_mix = self._dashboard_payment_mix(
@@ -3770,8 +3947,9 @@ class BharatLoan(models.Model):
                 'postal_status_pending_interim_1': postal_pending['interim_order_1_count'],
                 'postal_status_pending_amount': postal_pending['estimated_amount'],
                 'hearings_today': self._hearings_today_count(domain),
-                'unbilled_cases': len(pending_billing.mapped('loan_id')),
-                'pending_billing_charges': len(pending_billing),
+                'unbilled_cases': unbilled_charges_pipeline['total']['cases'],
+                'pending_billing_charges': unbilled_charges_pipeline['total']['count'],
+                'pending_billing_amount': unbilled_charges_pipeline['total']['amount'],
                 'paid_invoice_amount': billing.get('total_received_amount', 0),
                 'unpaid_invoice_amount': billing.get('total_due_amount', 0),
                 'paid_invoices': billing.get('paid_invoices', 0),
@@ -3784,6 +3962,7 @@ class BharatLoan(models.Model):
                 ('state', '=', 'pending'),
                 ('loan_id', 'in', loans.ids or [0]),
             ],
+            'unbilled_charges_pipeline': unbilled_charges_pipeline,
             'postal_pending_status_domain': postal_pending['domain'],
             'loan_domain': domain,
             'recent_cases': self._dashboard_recent_cases(loans),
@@ -4037,6 +4216,68 @@ class BharatLoanNoticeLine(models.Model):
         }
         return mapping.get(self.notice_number or 1, 'bharatnyay_core.action_report_bharat_notice_line_notice')
 
+    def _ensure_notice_qr_tokens(self):
+        self.ensure_one()
+        vals = {}
+        if not self.qr_access_token:
+            vals['qr_access_token'] = uuid.uuid4().hex
+        if not self.microsite_otp_code:
+            vals['microsite_otp_code'] = '%06d' % secrets.randbelow(1000000)
+        if vals:
+            self.write(vals)
+
+    @api.model
+    def _backfill_all_missing_notice_pdfs(self, limit=100, loan_ids=None):
+        """Render stored PDFs for notice lines that have email history but no attachment."""
+        domain = [('notice_pdf', '=', False)]
+        if loan_ids:
+            domain.append(('loan_id', 'in', loan_ids))
+        lines = self.search(domain, limit=limit)
+        done = 0
+        for line in lines:
+            try:
+                line._ensure_notice_qr_tokens()
+                if line._attach_notice_pdf():
+                    done += 1
+            except Exception:
+                _logger.exception(
+                    'Notice PDF backfill failed for notice line %s (loan %s)',
+                    line.id,
+                    line.loan_id.id,
+                )
+        return done
+
+    def _web_read_wants_field(self, specification, field_name):
+        if not specification:
+            return True
+        if isinstance(specification, dict):
+            return field_name in specification
+        if isinstance(specification, (list, tuple)):
+            return field_name in specification
+        return False
+
+    def web_read(self, specification):
+        """Generate deferred notice PDFs when a notice form is opened."""
+        if len(self) == 1 and self._web_read_wants_field(specification, 'notice_pdf'):
+            if not self.notice_pdf:
+                try:
+                    self._ensure_notice_qr_tokens()
+                    self._attach_notice_pdf()
+                except Exception:
+                    _logger.exception(
+                        'Notice PDF render failed for notice line %s (loan %s)',
+                        self.id,
+                        self.loan_id.id,
+                    )
+        return super().web_read(specification)
+
+    def action_regenerate_notice_pdf(self):
+        """Manual fallback when the PDF preview is empty."""
+        for line in self:
+            line._ensure_notice_qr_tokens()
+            line._attach_notice_pdf()
+        return True
+
     def _attach_notice_pdf(self):
         """Render and store the notice PDF on this history line."""
         self.ensure_one()
@@ -4270,6 +4511,22 @@ class BharatLoanAwardDocument(models.Model):
     _order = 'award_date desc, id desc'
 
     loan_id = fields.Many2one('bharat.loan', required=True, ondelete='cascade', index=True)
+    loan_number = fields.Char(related='loan_id.loan_number', store=True, readonly=True)
+    case_number = fields.Char(related='loan_id.case_number', store=True, readonly=True)
+    postal_dispatch_id = fields.Many2one(
+        'bharat.loan.postal.dispatch',
+        string='Postal dispatch',
+        compute='_compute_postal_dispatch_id',
+        store=True,
+        index=True,
+    )
+    pod = fields.Char(related='postal_dispatch_id.pod', readonly=True)
+    dispatch_date = fields.Date(related='postal_dispatch_id.dispatch_date', readonly=True)
+    delivery_date = fields.Date(related='postal_dispatch_id.delivery_date', readonly=True)
+    post_office_status_id = fields.Many2one(
+        related='postal_dispatch_id.post_office_status_id',
+        readonly=True,
+    )
     award_type = fields.Selection(
         [('interim', 'Interim award'), ('final', 'Final award')],
         default='final',
@@ -4285,6 +4542,24 @@ class BharatLoanAwardDocument(models.Model):
     signed_on = fields.Datetime(string='Signed on', copy=False)
     is_signed = fields.Boolean(string='Signed copy uploaded', compute='_compute_is_signed', store=True)
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    @api.depends(
+        'loan_id',
+        'loan_id.postal_dispatch_ids.document_type',
+        'loan_id.postal_dispatch_ids.pod',
+        'loan_id.postal_dispatch_ids.post_office_status_id',
+        'loan_id.postal_dispatch_ids.dispatch_date',
+        'loan_id.postal_dispatch_ids.delivery_date',
+    )
+    def _compute_postal_dispatch_id(self):
+        for rec in self:
+            rec.postal_dispatch_id = False
+            if not rec.loan_id:
+                continue
+            dispatch = rec.loan_id.postal_dispatch_ids.filtered(
+                lambda d: d.document_type == 'award',
+            )[:1]
+            rec.postal_dispatch_id = dispatch.id if dispatch else False
 
     @api.depends('award_pdf')
     def _compute_is_signed(self):

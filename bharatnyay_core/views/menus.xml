@@ -167,10 +167,10 @@
               sequence="20"/>
 
     <menuitem id="menu_bharatnyay_arbitration_products"
-              name="Arbitration billing products"
-              parent="menu_bharatnyay_billing_root"
+              name="Products"
+              parent="menu_bharatnyay_masters"
               action="action_product_template_arbitration_billing"
-              sequence="30"/>
+              sequence="48"/>
     <menuitem id="menu_bharatnyay_customer_invoices"
               name="All customer invoices"
               parent="menu_bharatnyay_billing_root"

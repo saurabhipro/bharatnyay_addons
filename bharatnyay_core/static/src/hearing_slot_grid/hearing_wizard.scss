@@ -1,9 +1,6 @@
-.o_dialog .modal-body:has(.bn-hearing-wizard) {
-    padding-top: 0.75rem;
-}
-
 .bn-hearing-wizard {
     max-width: 1100px;
+    padding-top: 0.75rem;
 
     &__split {
         display: grid;

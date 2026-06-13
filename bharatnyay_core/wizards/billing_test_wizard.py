@@ -3,6 +3,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 from ..models.arbitration_billing import BILLABLE_MILESTONE_CODES
+from ..models.loan_milestone import POSTAL_BILLING_MILESTONE_CODES
 
 
 class BharatLoanBillingTestWizard(models.TransientModel):
@@ -65,6 +66,12 @@ class BharatLoanBillingTestWizard(models.TransientModel):
         self.ensure_one()
         if not self.milestone_id:
             raise UserError(_('Select a billing stage.'))
+        if self.milestone_id.code in POSTAL_BILLING_MILESTONE_CODES:
+            raise UserError(
+                _('Notice 1, Hearing 1, and Award charges accrue only when POD post office '
+                  'status is set to a billable status — use Excel POD import or '
+                  'Update POD on the case.')
+            )
         loans = self._target_loans()
         if not loans:
             raise UserError(_('Pick a batch or at least one case.'))

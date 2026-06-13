@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
+    <t t-name="bharatnyay_core.DashboardLoadingState">
+        <div class="bn-dashboard-loading" role="status" aria-live="polite">
+            <div class="bn-dashboard-loading__panel">
+                <div class="bn-dashboard-loading__spinner" aria-hidden="true"/>
+                <div class="bn-dashboard-loading__title" t-out="loadingTitle || 'Loading dashboard…'"/>
+                <div class="bn-dashboard-loading__hint" t-out="loadingHint || 'Fetching your latest metrics'"/>
+            </div>
+        </div>
+    </t>
+
     <t t-name="bharatnyay_core.DashboardFilterBar">
         <div t-att-class="'bn-filter-bar bn-filter-bar--inline ' + (filterBarClass or '')">
             <label class="bn-filter-pill" title="Notice region">
@@ -78,14 +88,14 @@
                             t-attf-style="--bn-tank-fill: {{ s.percent }}%;"
                             t-att-data-stage="s.key"
                             t-on-click="openStageCases">
-                        <span t-if="s.creates_unbilled_charge"
-                              class="bn-stage-bill-badge"
-                              t-att-title="s.billing_badge_title">
-                            <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
-                        </span>
                         <div class="bn-stage-top">
                             <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
                             <span class="bn-stage-name" t-out="s.label"/>
+                            <span t-if="s.creates_unbilled_charge"
+                                  class="bn-stage-bill-badge"
+                                  t-att-title="s.billing_badge_title">
+                                <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
+                            </span>
                         </div>
                         <div class="bn-stage-value">
                             <span class="n" t-out="fmtInt(s.count)"/>
@@ -109,9 +119,6 @@
 
     <t t-name="bharatnyay_core.DashboardHearingAwardStrip">
         <div class="bn-section-title mt-2">Interim proceedings</div>
-        <p class="bn-stage-strip-hint">
-            Your assigned cases at hearing milestones and final award stage — click a card to open the list.
-        </p>
         <div class="bn-stage-strip bn-stage-strip--hearing">
             <t t-foreach="state.data.hearing_stage_cards || []" t-as="s" t-key="s.key">
                 <button type="button"
@@ -123,14 +130,14 @@
                         t-attf-style="--bn-tank-fill: {{ s.percent }}%;"
                         t-att-data-stage="s.key"
                         t-on-click="openStageCases">
-                    <span t-if="s.creates_unbilled_charge"
-                          class="bn-stage-bill-badge"
-                          t-att-title="s.billing_badge_title">
-                        <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
-                    </span>
                     <div class="bn-stage-top">
                         <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
                         <span class="bn-stage-name" t-out="s.label"/>
+                        <span t-if="s.creates_unbilled_charge"
+                              class="bn-stage-bill-badge"
+                              t-att-title="s.billing_badge_title">
+                            <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
+                        </span>
                     </div>
                     <div class="bn-stage-value">
                         <span class="n" t-out="fmtInt(s.count)"/>
@@ -210,20 +217,34 @@
         </div>
     </t>
 
+    <t t-name="bharatnyay_core.DashboardKpiTotalInvoices">
+        <div t-attf-class="bn-kpi-card bn-kpi-card--click #{toneClass || ''}"
+             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_invoices || 0)}"
+             data-filter="all"
+             t-on-click="openInvoices">
+            <div class="bn-kpi-card__head">
+                <span class="bn-kpi-icon"><i class="fa fa-files-o" title="Total invoices"/></span>
+                <div class="bn-kpi-label" t-out="labelText || 'Total invoices'"/>
+            </div>
+            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_invoices || 0)"/>
+            <div class="bn-kpi-trend" t-out="fmtMoney(state.data.kpis.total_invoice_amount || 0) + ' invoiced'"/>
+        </div>
+    </t>
+
     <t t-name="bharatnyay_core.DashboardPodStatusCard">
         <button type="button"
                 t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--pod bn-stage-card--pod-{{ p.document_type }} {{ p.pod_status === 'pending' ? 'bn-stage-card--pod-pending' : 'bn-stage-card--pod-done' }} {{ p.billable ? 'bn-stage-card--billable' : '' }} {{ !p.count ? 'bn-stage-card--empty' : '' }}"
                 t-attf-style="--bn-tank-fill: {{ p.percent }}%;"
                 t-att-data-pod-key="p.key"
                 t-on-click="openPodStatusCases">
-            <span t-if="p.billable"
-                  class="bn-stage-bill-badge"
-                  title="Delivery confirmed — billable">
-                <i class="fa fa-check"/>
-            </span>
             <div class="bn-stage-top">
                 <span class="bn-stage-ico"><i t-attf-class="fa {{ p.icon }}"/></span>
                 <span class="bn-stage-name" t-out="p.label"/>
+                <span t-if="p.billable"
+                      class="bn-stage-bill-badge"
+                      title="Delivery confirmed — billable">
+                    <i class="fa fa-check"/>
+                </span>
             </div>
             <div class="bn-pod-status" t-out="p.status_label"/>
             <div class="bn-stage-value">
@@ -241,10 +262,6 @@
 
     <t t-name="bharatnyay_core.DashboardPodStatusStrip">
         <div class="bn-section-title mt-2">Postal delivery (POD)</div>
-        <p class="bn-stage-strip-hint">
-            Notice 1, Hearing 1 &amp; Award — pending vs confirmed delivery (billable when POD is done).
-            <span class="bn-stage-flow-hint">Pending → done within each milestone.</span>
-        </p>
         <div class="bn-stage-strip bn-stage-strip--pod bn-stage-strip--pod-flow">
             <t t-foreach="state.data.pod_status_groups || []" t-as="g" t-key="g.key">
                 <div class="bn-pod-flow__group">
@@ -261,13 +278,68 @@
         </div>
     </t>
 
+    <t t-name="bharatnyay_core.DashboardUnbilledChargeCard">
+        <button type="button"
+                t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--charge bn-stage-card--charge-{{ c.key }} {{ !c.count ? 'bn-stage-card--empty' : '' }}"
+                t-attf-style="--bn-tank-fill: {{ c.percent || 0 }}%; --stg: {{ c.color }};"
+                t-att-data-charge-key="c.key"
+                t-on-click="openUnbilledChargesStage">
+            <div class="bn-stage-top">
+                <span class="bn-stage-ico"><i t-attf-class="fa {{ c.icon }}"/></span>
+                <span class="bn-stage-name" t-out="c.label"/>
+            </div>
+            <div class="bn-charge-amount" t-out="fmtMoney(c.amount || 0)"/>
+            <div class="bn-stage-value">
+                <span class="n" t-out="fmtInt(c.count || 0)"/>
+                <span class="p" t-out="(c.percent || 0) + '%'"/>
+            </div>
+            <div class="bn-stage-meter">
+                <span t-attf-style="width: {{ c.percent || 0 }}%"/>
+            </div>
+            <span class="bn-stage-bill-caption"
+                  t-out="fmtInt(c.cases || 0) + ' cases'"/>
+        </button>
+    </t>
+
+    <t t-name="bharatnyay_core.DashboardUnbilledChargesStrip">
+        <div class="bn-charges-pipeline" t-if="state.data.unbilled_charges_pipeline">
+            <div class="bn-section-title">Unbilled charges pipeline</div>
+            <div class="bn-stage-strip bn-stage-strip--charges bn-stage-strip--flow">
+                <t t-foreach="state.data.unbilled_charges_pipeline.stages || []" t-as="c" t-key="c.key">
+                    <div class="bn-stage-flow__step">
+                        <t t-call="bharatnyay_core.DashboardUnbilledChargeCard"/>
+                        <span class="bn-stage-flow__connector bn-charges-pipeline__connector" aria-hidden="true">
+                            <span class="bn-stage-flow__pipe"/>
+                            <i class="fa fa-chevron-right"/>
+                        </span>
+                    </div>
+                </t>
+                <div class="bn-stage-flow__step bn-charges-pipeline__total">
+                    <button type="button"
+                            class="bn-stage-card bn-stage-card--fill bn-stage-card--charge bn-stage-card--charge-total"
+                            t-att-class="{'bn-stage-card--empty': !(state.data.unbilled_charges_pipeline.total.count || 0)}"
+                            data-charge-key="total"
+                            t-on-click="openUnbilledChargesStage">
+                        <div class="bn-stage-top">
+                            <span class="bn-stage-ico"><i class="fa fa-money"/></span>
+                            <span class="bn-stage-name">Total unbilled</span>
+                        </div>
+                        <div class="bn-charge-amount"
+                             t-out="fmtMoney(state.data.unbilled_charges_pipeline.total.amount || 0)"/>
+                        <div class="bn-stage-value">
+                            <span class="n" t-out="fmtInt(state.data.unbilled_charges_pipeline.total.count || 0)"/>
+                            <span class="p">charges</span>
+                        </div>
+                        <span class="bn-stage-bill-caption"
+                              t-out="fmtInt(state.data.unbilled_charges_pipeline.total.cases || 0) + ' cases'"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
     <t t-name="bharatnyay_core.DashboardPipeline">
         <div class="bn-section-title mt-2">Case pipeline</div>
-        <p class="bn-stage-strip-hint">
-            <i class="fa fa-file-text-o" title="Unbilled billing"/>
-            Badge — unbilled charge when leaving milestone. Background fill height = share of total caseload.
-            <span class="bn-stage-flow-hint">Cases move left → right through the pipeline.</span>
-        </p>
         <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
         <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
     </t>
@@ -545,23 +617,22 @@
 
     <t t-name="bharatnyay_core.CaseManagerDashboard">
         <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
-            <div class="bn-wrap">
+            <div class="bn-wrap" t-att-class="{ 'bn-wrap--loading': state.loading }">
                 <t t-set="title" t-value="'Case Manager dashboard'"/>
                 <t t-set="subtitle" t-value="state.data?.scope_label || 'Cases assigned to you — pipeline, hearings, and billing'"/>
                 <t t-set="showMyCasesBtn" t-value="true"/>
                 <t t-call="bharatnyay_core.DashboardRoleHeader"/>
 
                 <t t-if="state.loading">
-                    <div class="bn-muted-empty">
-                        <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
-                        <div>Loading dashboard…</div>
-                    </div>
+                    <t t-set="loadingTitle" t-value="'Loading dashboard…'"/>
+                    <t t-set="loadingHint" t-value="'Pipeline, hearings, and billing'"/>
+                    <t t-call="bharatnyay_core.DashboardLoadingState"/>
                 </t>
                 <t t-elif="state.error">
                     <div class="bn-muted-empty bn-error"><span t-out="state.error"/></div>
                 </t>
                 <t t-elif="state.data">
-                    <div class="bn-kpi-grid bn-kpi-grid--7">
+                    <div class="bn-kpi-grid bn-kpi-grid--8">
                         <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-blue"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_cases || 0)}"
                              t-on-click="openMyCases">
@@ -592,6 +663,8 @@
                             <div class="bn-kpi-trend"
                                  t-out="fmtMoney(state.data.kpis.postal_status_pending_amount || 0) + ' · ' + fmtInt(state.data.kpis.postal_status_pending_notice_1 || 0) + ' N1, ' + fmtInt(state.data.kpis.postal_status_pending_interim_1 || 0) + ' IO1'"/>
                         </div>
+                        <t t-set="toneClass" t-value="'bn-kpi-card--tone-purple'"/>
+                        <t t-call="bharatnyay_core.DashboardKpiTotalInvoices"/>
                         <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.paid_invoice_amount || 0) and !(state.data.kpis.paid_invoices || 0)}"
                              data-filter="paid"
@@ -615,14 +688,15 @@
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-rose"
-                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.unbilled_cases || 0)}"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.pending_billing_charges || 0)}"
                              t-on-click="openUnbilledCases">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-clock-o"/></span>
-                                <div class="bn-kpi-label">Unbilled cases</div>
+                                <div class="bn-kpi-label">Unbilled charges</div>
                             </div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unbilled_cases || 0)"/>
-                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' pending charges'"/>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.pending_billing_amount || 0)"/>
+                            <div class="bn-kpi-trend"
+                                 t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' charges · ' + fmtInt(state.data.kpis.unbilled_cases || 0) + ' cases'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--tone-purple"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.hearings_today || 0)}">
@@ -633,6 +707,8 @@
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
                         </div>
                     </div>
+
+                    <t t-call="bharatnyay_core.DashboardUnbilledChargesStrip"/>
 
                     <div class="bn-chart-row bn-chart-row--2 mt-2">
                         <t t-call="bharatnyay_core.DashboardPanelRecentCases"/>
@@ -655,23 +731,22 @@
 
     <t t-name="bharatnyay_core.ArbitratorDashboard">
         <div class="o_bharatnyay_dashboard o_bn_role_dashboard">
-            <div class="bn-wrap">
+            <div class="bn-wrap" t-att-class="{ 'bn-wrap--loading': state.loading }">
                 <t t-set="title" t-value="'Arbitrator dashboard'"/>
                 <t t-set="subtitle" t-value="state.data?.scope_label || 'Cases assigned to you — hearings, awards, and invoices'"/>
                 <t t-set="showMyCasesBtn" t-value="true"/>
                 <t t-call="bharatnyay_core.DashboardRoleHeader"/>
 
                 <t t-if="state.loading">
-                    <div class="bn-muted-empty">
-                        <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
-                        <div>Loading dashboard…</div>
-                    </div>
+                    <t t-set="loadingTitle" t-value="'Loading dashboard…'"/>
+                    <t t-set="loadingHint" t-value="'Hearings, awards, and assigned cases'"/>
+                    <t t-call="bharatnyay_core.DashboardLoadingState"/>
                 </t>
                 <t t-elif="state.error">
                     <div class="bn-muted-empty bn-error"><span t-out="state.error"/></div>
                 </t>
                 <t t-elif="state.data">
-                    <div class="bn-kpi-grid bn-kpi-grid--6">
+                    <div class="bn-kpi-grid bn-kpi-grid--7">
                         <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-blue"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_cases || 0)}"
                              t-on-click="openMyCases">
@@ -697,6 +772,8 @@
                             </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.upcoming_hearings_count || 0)"/>
                         </div>
+                        <t t-set="toneClass" t-value="'bn-kpi-card--tone-cyan'"/>
+                        <t t-call="bharatnyay_core.DashboardKpiTotalInvoices"/>
                         <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--tone-teal"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.paid_invoice_amount || 0) and !(state.data.kpis.paid_invoices || 0)}"
                              data-filter="paid"

@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
     <t t-name="bharatnyay_core.BharatnyayDashboard">
         <div class="o_bharatnyay_dashboard">
-            <div class="bn-wrap">
+            <div class="bn-wrap" t-att-class="{ 'bn-wrap--loading': state.loading }">
                 <div class="bn-header bn-header--admin">
                     <div class="bn-header__brand">
                         <i class="fa fa-shield bn-header__icon-inline" aria-hidden="true"/>
@@ -42,10 +42,9 @@
                 </div>
 
                 <t t-if="state.loading">
-                    <div class="bn-muted-empty">
-                        <i class="fa fa-spinner fa-spin fa-2x mb-2"/>
-                        <div>Loading admin dashboard…</div>
-                    </div>
+                    <t t-set="loadingTitle" t-value="'Loading admin dashboard…'"/>
+                    <t t-set="loadingHint" t-value="'Cases, exposure, and workflow metrics'"/>
+                    <t t-call="bharatnyay_core.DashboardLoadingState"/>
                 </t>
 
                 <t t-elif="state.error">
@@ -56,7 +55,7 @@
 
                 <t t-elif="state.data">
                     <div class="bn-dashboard-section">
-                    <div class="bn-kpi-grid bn-kpi-grid--7">
+                    <div class="bn-kpi-grid bn-kpi-grid--11">
                         <div class="bn-kpi-card" t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_loans || 0)}">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-briefcase" title="Total cases"/></span>
@@ -75,6 +74,54 @@
                             <div class="bn-kpi-trend">Distinct import batches</div>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_case_managers || 0)}"
+                             t-on-click="openCaseManagers">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-user-circle-o" title="Case managers"/></span>
+                                <div class="bn-kpi-label">Case managers</div>
+                                <button type="button"
+                                        class="bn-kpi-card__action"
+                                        title="Add case manager"
+                                        t-on-click.stop="openNewCaseManager">
+                                    <i class="fa fa-plus"/>
+                                </button>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_case_managers || 0)"/>
+                            <div class="bn-kpi-trend">Active operational users</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click bn-kpi-card--arbitrators"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_arbitrators || 0)}"
+                             t-on-click="openArbitrators">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon"><i class="fa fa-gavel" title="Arbitrators"/></span>
+                                <div class="bn-kpi-label">Arbitrators</div>
+                                <button type="button"
+                                        class="bn-kpi-card__action"
+                                        title="Add arbitrator"
+                                        t-on-click.stop="openNewArbitrator">
+                                    <i class="fa fa-plus"/>
+                                </button>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_arbitrators || 0)"/>
+                            <div class="bn-kpi-trend">Active panel members</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{
+                                 'bn-kpi-card--empty': !processActiveCount(),
+                                 'bn-kpi-card--live': processActiveCount(),
+                             }"
+                             t-on-click="openRunningJobs">
+                            <div class="bn-kpi-card__head">
+                                <span class="bn-kpi-icon">
+                                    <i t-attf-class="fa {{ processActiveCount() ? 'fa-cog fa-spin' : 'fa-play-circle' }}"
+                                       title="Running jobs"/>
+                                </span>
+                                <div class="bn-kpi-label">Running jobs</div>
+                            </div>
+                            <div class="bn-kpi-value" t-out="fmtInt(processActiveCount())"/>
+                            <div class="bn-kpi-trend">Queued &amp; in progress</div>
+                        </div>
+                        <div class="bn-kpi-card bn-kpi-card--click"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.postal_status_pending_count || 0)}"
                              t-on-click="openPendingPostalStatus">
                             <div class="bn-kpi-card__head">
@@ -85,6 +132,7 @@
                             <div class="bn-kpi-trend"
                                  t-out="fmtMoney(state.data.kpis.postal_status_pending_amount || 0) + ' · ' + fmtInt(state.data.kpis.postal_status_pending_notice_1 || 0) + ' N1, ' + fmtInt(state.data.kpis.postal_status_pending_interim_1 || 0) + ' IO1'"/>
                         </div>
+                        <t t-call="bharatnyay_core.DashboardKpiTotalInvoices"/>
                         <div class="bn-kpi-card bn-kpi-card--click"
                              t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.paid_invoice_amount || 0) and !(state.data.kpis.paid_invoices || 0)}"
                              data-filter="paid"
@@ -108,14 +156,15 @@
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click"
-                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.unbilled_cases || 0)}"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.pending_billing_charges || 0)}"
                              t-on-click="openUnbilledCases">
                             <div class="bn-kpi-card__head">
-                                <span class="bn-kpi-icon"><i class="fa fa-clock-o" title="Unbilled cases"/></span>
-                                <div class="bn-kpi-label">Unbilled cases</div>
+                                <span class="bn-kpi-icon"><i class="fa fa-clock-o" title="Unbilled charges"/></span>
+                                <div class="bn-kpi-label">Unbilled charges</div>
                             </div>
-                            <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unbilled_cases || 0)"/>
-                            <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' pending charges'"/>
+                            <div class="bn-kpi-value" t-out="fmtMoney(state.data.kpis.pending_billing_amount || 0)"/>
+                            <div class="bn-kpi-trend"
+                                 t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' charges · ' + fmtInt(state.data.kpis.unbilled_cases || 0) + ' cases'"/>
                         </div>
                         <div class="bn-kpi-card" t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.hearings_today || 0)}">
                             <div class="bn-kpi-card__head">
@@ -127,13 +176,31 @@
                     </div>
                     </div>
 
+                    <t t-call="bharatnyay_core.DashboardUnbilledChargesStrip"/>
+
+                    <div class="bn-dashboard-quick-actions">
+                        <button type="button"
+                                class="btn btn-primary btn-sm bn-quick-action"
+                                title="Import a new Excel batch"
+                                t-on-click="openImportBatch">
+                            <i class="fa fa-upload"/>
+                            Upload new batch
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm bn-quick-action"
+                                t-att-disabled="!(state.data.kpis.movable_cases || 0)"
+                                t-att-title="state.data.kpis.movable_cases ? 'Advance filtered cases by one stage' : 'No cases in the current filter can be advanced'"
+                                t-on-click="moveCasesToNextStage">
+                            <i class="fa fa-arrow-right"/>
+                            Move to next stage
+                            <span t-if="state.data.kpis.movable_cases"
+                                  class="bn-quick-action__count"
+                                  t-out="'(' + fmtInt(state.data.kpis.movable_cases) + ')'"/>
+                        </button>
+                    </div>
+
                     <div class="bn-dashboard-section">
                     <div class="bn-section-title">Case pipeline</div>
-                    <p class="bn-stage-strip-hint">
-                        <i class="fa fa-file-text-o" title="Unbilled billing"/>
-                        Badge — unbilled charge when leaving milestone. Background fill height = share of total caseload.
-                        <span class="bn-stage-flow-hint">Cases move left → right through the pipeline.</span>
-                    </p>
                     <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
                     <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
                     </div>

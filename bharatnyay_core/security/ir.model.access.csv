@@ -13,6 +13,7 @@ access_bharat_notification_template,bharat.notification.template,model_bharat_no
 access_bharat_loan_notice_wizard,bharat.loan.notice.wizard,model_bharat_loan_notice_wizard,base.group_user,1,1,1,1
 access_bharat_loan_notice_response_wizard,bharat.loan.notice.response.wizard,model_bharat_loan_notice_response_wizard,base.group_user,1,1,1,1
 access_bharat_loan_postal_status_wizard,bharat.loan.postal.status.wizard,model_bharat_loan_postal_status_wizard,base.group_user,1,1,1,1
+access_bharat_loan_milestone_advance_wizard,bharat.loan.milestone.advance.wizard,model_bharat_loan_milestone_advance_wizard,base.group_user,1,1,1,1
 access_bharat_loan_hearing_slot_line,bharat.loan.hearing.slot.line,model_bharat_loan_hearing_slot_line,base.group_user,1,1,1,1
 access_bharat_loan_hearing_schedule_wizard,bharat.loan.hearing.schedule.wizard,model_bharat_loan_hearing_schedule_wizard,base.group_user,1,1,1,1
 access_bharat_loan_assign_arbitrator_wizard,bharat.loan.assign.arbitrator.wizard,model_bharat_loan_assign_arbitrator_wizard,base.group_user,1,1,1,1

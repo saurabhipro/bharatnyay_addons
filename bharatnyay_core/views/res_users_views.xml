@@ -109,4 +109,50 @@
             <p>Map internal users as Admin, Case Manager, Arbitrator, Borrower, or Lender. The matching access group is applied automatically.</p>
         </field>
     </record>
+
+    <record id="action_bharat_case_managers" model="ir.actions.act_window">
+        <field name="name">Case managers</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('share', '=', False), ('bharat_role', '=', 'case_manager')]</field>
+        <field name="context">{'default_share': False, 'search_default_role_cm': 1}</field>
+        <field name="search_view_id" ref="view_bharat_res_users_role_search"/>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_bharat_res_users_role_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_bharat_res_users_role_form')}),
+        ]"/>
+    </record>
+
+    <record id="action_bharat_new_case_manager" model="ir.actions.act_window">
+        <field name="name">New case manager</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_bharat_res_users_role_form"/>
+        <field name="target">new</field>
+        <field name="context">{'default_share': False, 'default_bharat_role': 'case_manager'}</field>
+    </record>
+
+    <record id="action_bharat_arbitrators" model="ir.actions.act_window">
+        <field name="name">Arbitrators</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('share', '=', False), ('bharat_role', '=', 'arbitrator')]</field>
+        <field name="context">{'default_share': False, 'search_default_role_arb': 1}</field>
+        <field name="search_view_id" ref="view_bharat_res_users_role_search"/>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_bharat_res_users_role_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_bharat_res_users_role_form')}),
+        ]"/>
+    </record>
+
+    <record id="action_bharat_new_arbitrator" model="ir.actions.act_window">
+        <field name="name">New arbitrator</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_bharat_res_users_role_form"/>
+        <field name="target">new</field>
+        <field name="context">{'default_share': False, 'default_bharat_role': 'arbitrator'}</field>
+    </record>
 </odoo>

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo noupdate="0">
-    <function model="bharat.loan.milestone" name="_ensure_default_master_milestones"/>
+    <function model="bharat.loan.milestone" name="_sync_default_master_milestones"/>
 </odoo>

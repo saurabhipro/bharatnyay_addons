@@ -20,6 +20,7 @@ import {
     openRoleInvoices,
     openPodStatusRecords,
     openStageBucketCases,
+    openUnbilledChargesStage,
     guardEmptyDashboardCard,
 } from "./dashboard_helpers";
 
@@ -236,22 +237,25 @@ export class CaseManagerDashboard extends Component {
     }
 
     openUnbilledCases() {
-        if (
-            !guardEmptyDashboardCard(this.notification, {
-                count: this.state.data?.kpis?.unbilled_cases,
-                label: "Unbilled cases",
-            })
-        ) {
+        openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            "total",
+        );
+    }
+
+    openUnbilledChargesStage(ev) {
+        const key = ev.currentTarget?.dataset?.chargeKey;
+        if (!key) {
             return;
         }
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Pending billing",
-            res_model: "bharat.loan.billing.event",
-            views: [[false, "list"]],
-            domain: this.state.data?.pending_billing_domain || [["state", "=", "pending"]],
-            target: "current",
-        });
+        openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            key,
+        );
     }
 
     openPendingPostalStatus() {

@@ -46,6 +46,12 @@ export function guardEmptyInvoiceCard(notification, state, mode, label) {
             count: kpis.draft_invoices,
         });
     }
+    if (mode === "all") {
+        return guardEmptyDashboardCard(notification, {
+            label: label || _t("Total invoices"),
+            count: kpis.total_invoices,
+        });
+    }
     return true;
 }
 
@@ -195,6 +201,40 @@ export function openPodStatusRecords(action, card, notification) {
         res_model: open.res_model,
         views: [[false, "list"], [false, "form"]],
         domain: open.domain || [],
+        target: "current",
+    });
+}
+
+/** Open pending billing events for one pipeline stage (or total). */
+export function openUnbilledChargesStage(action, notification, state, stageKey) {
+    const pipeline = state.data?.unbilled_charges_pipeline;
+    if (!pipeline) {
+        return Promise.resolve(false);
+    }
+    let card;
+    let name;
+    if (stageKey === "total") {
+        card = pipeline.total;
+        name = _t("All unbilled charges");
+    } else {
+        card = (pipeline.stages || []).find((s) => s.key === stageKey);
+        name = card?.label || _t("Unbilled charges");
+    }
+    if (
+        !guardEmptyDashboardCard(notification, {
+            count: card?.count,
+            label: name,
+            amount: card?.amount,
+        })
+    ) {
+        return Promise.resolve(false);
+    }
+    return action.doAction({
+        type: "ir.actions.act_window",
+        name,
+        res_model: "bharat.loan.billing.event",
+        views: [[false, "list"], [false, "form"]],
+        domain: card.domain || [["state", "=", "pending"]],
         target: "current",
     });
 }

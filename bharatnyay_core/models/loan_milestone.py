@@ -26,6 +26,7 @@ DEFAULT_LOAN_MILESTONES = (
         'auto_invoice_on_exit': False,
         'auto_assign_case_manager': False,
         'auto_assign_arbitrator': False,
+        'bill_on_milestone_exit': False,
     },
     {
         'code': 'notice_1',
@@ -49,6 +50,7 @@ DEFAULT_LOAN_MILESTONES = (
         'icon': 'fa-envelope-open-o',
         'stay_days': 0,
         'auto_invoice_on_exit': False,
+        'bill_on_milestone_exit': True,
     },
     {
         'code': 'notice_3',
@@ -59,6 +61,7 @@ DEFAULT_LOAN_MILESTONES = (
         'icon': 'fa-envelope',
         'stay_days': 0,
         'auto_invoice_on_exit': False,
+        'bill_on_milestone_exit': True,
     },
     {
         'code': 'hearing_1',
@@ -82,6 +85,7 @@ DEFAULT_LOAN_MILESTONES = (
         'icon': 'fa-gavel',
         'stay_days': 0,
         'auto_invoice_on_exit': False,
+        'bill_on_milestone_exit': True,
     },
     {
         'code': 'hearing_3',
@@ -92,6 +96,7 @@ DEFAULT_LOAN_MILESTONES = (
         'icon': 'fa-gavel',
         'stay_days': 0,
         'auto_invoice_on_exit': False,
+        'bill_on_milestone_exit': True,
     },
     {
         'code': 'award',
@@ -190,6 +195,26 @@ class BharatLoanMilestone(models.Model):
         default=False,
     )
     active = fields.Boolean(default=True)
+    is_billable = fields.Boolean(
+        string='Billable',
+        compute='_compute_billing_badge_html',
+        store=True,
+    )
+    billing_trigger = fields.Selection(
+        [
+            ('postal', 'POD'),
+            ('exit', 'On exit'),
+        ],
+        string='Bill via',
+        compute='_compute_billing_badge_html',
+        store=True,
+    )
+    billing_badge_html = fields.Html(
+        string='Billable',
+        compute='_compute_billing_badge_html',
+        store=True,
+        sanitize=False,
+    )
 
     _sql_constraints = [
         ('code_uniq', 'unique(code)', 'Milestone code must be unique.'),
@@ -211,13 +236,21 @@ class BharatLoanMilestone(models.Model):
             ) % (rec.name or '', ic_class)
 
     @api.model
-    def _ensure_default_master_milestones(self):
-        """Create or update default milestones by code (idempotent)."""
+    def _sync_default_master_milestones(self):
+        """Create or update default milestones by code (module install/upgrade)."""
         for spec in DEFAULT_LOAN_MILESTONES:
             existing = self.search([('code', '=', spec['code'])], limit=1)
             if existing:
                 existing.write({k: v for k, v in spec.items() if k != 'code'})
             else:
+                self.create(dict(spec))
+
+    @api.model
+    def _ensure_default_master_milestones(self):
+        """Ensure default rows exist without overwriting live master data."""
+        existing_codes = set(self.search([]).mapped('code'))
+        for spec in DEFAULT_LOAN_MILESTONES:
+            if spec['code'] not in existing_codes:
                 self.create(dict(spec))
 
     @api.model
@@ -269,7 +302,6 @@ class BharatLoanMilestone(models.Model):
 
     @api.model
     def dashboard_billing_flags_by_code(self):
-        self._ensure_default_master_milestones()
         return {
             m.code: m.dashboard_billing_card_fields()
             for m in self.search([])

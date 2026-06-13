@@ -278,9 +278,9 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         for stat in stats:
             tone = stat.get('tone') or 'neutral'
             stat_blocks.append(
-                '<div class="bn-import-stat bn-import-stat--%(tone)s">'
-                '<span class="bn-import-stat__v">%(value)s</span>'
-                '<span class="bn-import-stat__k">%(label)s</span>'
+                '<div class="bn-import-metric bn-import-metric--%(tone)s">'
+                '<span class="bn-import-metric__v">%(value)s</span>'
+                '<span class="bn-import-metric__k">%(label)s</span>'
                 '</div>'
                 % {
                     'tone': escape(tone),
@@ -293,7 +293,7 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         for note in notes:
             kind = note.get('kind') or 'default'
             note_blocks.append(
-                '<div class="bn-import-note bn-import-note--%(kind)s">%(text)s</div>'
+                '<li class="bn-import-note bn-import-note--%(kind)s">%(text)s</li>'
                 % {
                     'kind': escape(kind),
                     'text': escape(note.get('text', '')),
@@ -302,15 +302,14 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
 
         return Markup(
             '<div class="bn-import-outcome bn-import-outcome--%(status)s">'
-            '<div class="bn-import-outcome__hero">'
-            '<span class="bn-import-outcome__icon"><i class="fa %(icon)s"/></span>'
-            '<div class="bn-import-outcome__text">'
-            '<span class="bn-import-outcome__badge">%(badge)s</span>'
+            '<header class="bn-import-outcome__head">'
+            '<p class="bn-import-outcome__eyebrow">'
+            '<i class="fa %(icon)s" aria-hidden="true"/> %(badge)s'
+            '</p>'
             '<h3 class="bn-import-outcome__headline">%(headline)s</h3>'
-            '<p class="bn-import-outcome__file">%(file)s · %(rows)s</p>'
-            '</div>'
-            '</div>'
-            '<div class="bn-import-outcome__stats">%(stats)s</div>'
+            '<p class="bn-import-outcome__meta">%(file)s · %(rows)s</p>'
+            '</header>'
+            '<div class="bn-import-outcome__metrics">%(stats)s</div>'
             '%(notes)s'
             '</div>'
             % {
@@ -323,7 +322,7 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
                 'stats': Markup(''.join(stat_blocks)),
                 'notes': (
                     Markup(
-                        '<div class="bn-import-outcome__notes">%s</div>'
+                        '<ul class="bn-import-outcome__notes">%s</ul>'
                         % ''.join(note_blocks)
                     )
                     if note_blocks
@@ -587,15 +586,7 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
             errors=errors,
             dry_run=self.dry_run,
         )
-
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Portfolio import'),
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'target': 'new',
-        }
+        return False
 
     def _import_pod_status(self):
         self.ensure_one()
@@ -725,15 +716,11 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
             errors=errors,
             dry_run=self.dry_run,
         )
+        return False
 
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('POD status import'),
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'target': 'new',
-        }
+    def action_done(self):
+        """Close the import dialog and return to the dashboard."""
+        return {'type': 'ir.actions.act_window_close'}
 
     def action_view_cases(self):
         self.ensure_one()

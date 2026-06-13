@@ -81,27 +81,39 @@ class ResUsers(models.Model):
 
     @api.model
     def _find_case_manager_for_scope(self, branch_id=False, location_id=False):
-        """Return the first active case manager whose branch/location scope matches."""
+        """Return an active case manager matching branch/location scope, with sensible fallbacks."""
         if branch_id and not location_id:
             branch = self.env['bharat.branch'].browse(branch_id)
             if branch.location_id:
                 location_id = branch.location_id.id
-        if not branch_id and not location_id:
-            return False
 
         candidates = self.search([
             ('bharat_role', '=', 'case_manager'),
             ('active', '=', True),
+            ('share', '=', False),
         ], order='id')
+        if not candidates:
+            return False
+
+        def _matches_scope(user):
+            if not user.bharat_branch_ids and not user.bharat_location_ids:
+                return False
+            if user.bharat_branch_ids and (not branch_id or branch_id not in user.bharat_branch_ids.ids):
+                return False
+            if user.bharat_location_ids and (not location_id or location_id not in user.bharat_location_ids.ids):
+                return False
+            return True
+
+        for user in candidates:
+            if _matches_scope(user):
+                return user.id
+
+        # No scoped match — use a case manager with no branch/location filter (portfolio default).
         for user in candidates:
             if not user.bharat_branch_ids and not user.bharat_location_ids:
-                continue
-            if user.bharat_branch_ids and (not branch_id or branch_id not in user.bharat_branch_ids.ids):
-                continue
-            if user.bharat_location_ids and (not location_id or location_id not in user.bharat_location_ids.ids):
-                continue
-            return user.id
-        return False
+                return user.id
+
+        return candidates[0].id
 
     @api.model
     def _find_arbitrator_for_assignment(self):
