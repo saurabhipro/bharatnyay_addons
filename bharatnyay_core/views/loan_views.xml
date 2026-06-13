@@ -368,51 +368,26 @@
                                 <span class="bn-section__badge bn-section__badge--edit">Editable</span>
                             </div>
                             <div class="bn-section__body">
-                                <div class="bn-import-grid">
-                                    <div class="bn-import-col">
-                                        <div class="bn-import-col__heading"><i class="fa fa-building-o"/> Assignment</div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Lender / company</span>
-                                            <field name="company_id" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Case manager</span>
-                                            <field name="case_manager_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Arbitrator</span>
-                                            <field name="arbitrator_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
+                                <div class="bn-case-mgmt-grid">
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Lender / company</span>
+                                        <field name="company_id" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
                                     </div>
-                                    <div class="bn-import-col">
-                                        <div class="bn-import-col__heading"><i class="fa fa-calendar"/> Dates</div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Deliver date</span>
-                                            <field name="deliver_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Lok Adalat date</span>
-                                            <field name="lok_adalat_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Deliver status</span>
-                                            <field name="post_office_status_id" readonly="is_case_locked" nolabel="1" class="bn-import-row__v" options="{'no_create': True}"/>
-                                        </div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Deliver status (text)</span>
-                                            <field name="deliver_status" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Deliver date</span>
+                                        <field name="deliver_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
                                     </div>
-                                    <div class="bn-import-col">
-                                        <div class="bn-import-col__heading"><i class="fa fa-info-circle"/> Details</div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Notice hand</span>
-                                            <field name="notice_hand" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
-                                        <div class="bn-import-row">
-                                            <span class="bn-import-row__k">Respondent ref.</span>
-                                            <field name="respondent_loan_reference" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
-                                        </div>
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Case manager</span>
+                                        <field name="case_manager_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Lok Adalat date</span>
+                                        <field name="lok_adalat_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                    <div class="bn-import-row bn-case-mgmt-grid__full">
+                                        <span class="bn-import-row__k">Arbitrator</span>
+                                        <field name="arbitrator_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
                                     </div>
                                 </div>
                             </div>
