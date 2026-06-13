@@ -1,6 +1,6 @@
 {
     'name': 'BharatNyay Core',
-    'version': '18.0.31.0.176',
+    'version': '18.0.31.0.179',
     'icon': '/bharatnyay_core/static/description/icon.png',
     'summary': 'Loan portfolio aligned to Excel import template',
     'description': """
@@ -71,6 +71,7 @@
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_wizard.scss',
             'bharatnyay_core/static/src/interim_award_wizard/interim_award_wizard.scss',
             'bharatnyay_core/static/src/milestone_advance_wizard/milestone_advance_wizard.scss',
+            'bharatnyay_core/static/src/consolidated_invoice_wizard/consolidated_invoice_wizard.scss',
             'bharatnyay_core/static/src/flow_simulation/flow_simulation.scss',
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_slot_grid_field.xml',
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_slot_grid_field.js',

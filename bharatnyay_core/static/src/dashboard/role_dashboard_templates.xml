@@ -304,18 +304,30 @@
             <div class="bn-invoice-pipeline-card__metrics">
                 <div class="bn-invoice-pipeline-card__metric">
                     <span class="bn-invoice-pipeline-card__k">Total</span>
-                    <span class="bn-invoice-pipeline-card__v"
-                          t-out="fmtMoney(state.data.kpis.total_invoice_amount || 0)"/>
+                    <span class="bn-invoice-pipeline-card__v">
+                        <span class="bn-invoice-pipeline-card__count"
+                              t-out="fmtInt(state.data.kpis.total_invoices || 0) + ' invoices'"/>
+                        <span class="bn-invoice-pipeline-card__amount"
+                              t-out="fmtMoney(state.data.kpis.total_invoice_amount || 0)"/>
+                    </span>
                 </div>
                 <div class="bn-invoice-pipeline-card__metric">
                     <span class="bn-invoice-pipeline-card__k">Paid</span>
-                    <span class="bn-invoice-pipeline-card__v"
-                          t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
+                    <span class="bn-invoice-pipeline-card__v">
+                        <span class="bn-invoice-pipeline-card__count"
+                              t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
+                        <span class="bn-invoice-pipeline-card__amount"
+                              t-out="fmtMoney(state.data.kpis.paid_invoice_amount || 0)"/>
+                    </span>
                 </div>
                 <div class="bn-invoice-pipeline-card__metric">
                     <span class="bn-invoice-pipeline-card__k">Unpaid</span>
-                    <span class="bn-invoice-pipeline-card__v"
-                          t-out="fmtInt(state.data.kpis.unpaid_invoices || 0)"/>
+                    <span class="bn-invoice-pipeline-card__v">
+                        <span class="bn-invoice-pipeline-card__count"
+                              t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
+                        <span class="bn-invoice-pipeline-card__amount"
+                              t-out="fmtMoney(state.data.kpis.unpaid_invoice_amount || 0)"/>
+                    </span>
                 </div>
             </div>
         </button>

@@ -54,6 +54,9 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
     )
     preview_hint = fields.Char(compute='_compute_preview')
     scope_summary = fields.Char(string='Scope', compute='_compute_preview')
+    scope_detail = fields.Char(string='Scope detail', compute='_compute_preview')
+    billing_stage_label = fields.Char(string='Billing stage', compute='_compute_preview')
+    preview_lender_count = fields.Integer(string='Lenders', compute='_compute_preview')
 
     @api.model
     def default_get(self, fields_list):
@@ -176,6 +179,9 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
             if not events:
                 wiz.preview_hint = _('No pending unbilled charges match this selection.')
                 wiz.scope_summary = ''
+                wiz.scope_detail = ''
+                wiz.billing_stage_label = ''
+                wiz.preview_lender_count = 0
             else:
                 batch_labels = sorted({
                     (name or '').strip() or _('No batch')
@@ -183,21 +189,39 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
                 })
                 stage_labels = sorted(set(events.mapped('milestone_label')) - {False, ''})
                 lenders = len(events.mapped('company_id'))
-                wiz.preview_hint = _(
+                hint = _(
                     '%(n)s charge(s) ready to invoice across %(lenders)s lender(s).'
                 ) % {
                     'n': len(events),
                     'lenders': lenders,
                 }
+                batches_text = ', '.join(batch_labels[:4]) + (
+                    _(' (+%(n)s more)') % {'n': len(batch_labels) - 4}
+                    if len(batch_labels) > 4 else ''
+                )
+                stages_text = ', '.join(stage_labels) or _('All')
+                wiz.preview_hint = hint
                 wiz.scope_summary = _(
                     'Batches: %(batches)s · Stages: %(stages)s'
                 ) % {
-                    'batches': ', '.join(batch_labels[:4]) + (
-                        _(' (+%(n)s more)') % {'n': len(batch_labels) - 4}
-                        if len(batch_labels) > 4 else ''
-                    ),
-                    'stages': ', '.join(stage_labels) or _('All'),
+                    'batches': batches_text,
+                    'stages': stages_text,
                 }
+                wiz.scope_detail = _(
+                    'Batches: %(batches)s · Stages: %(stages)s · %(hint)s'
+                ) % {
+                    'batches': batches_text,
+                    'stages': stages_text,
+                    'hint': hint,
+                }
+                wiz.preview_lender_count = lenders
+                if wiz.milestone_ids:
+                    if len(wiz.milestone_ids) == 1:
+                        wiz.billing_stage_label = wiz.milestone_ids[0].name
+                    else:
+                        wiz.billing_stage_label = _('%s stages') % len(wiz.milestone_ids)
+                else:
+                    wiz.billing_stage_label = stages_text
 
     def action_apply(self):
         self.ensure_one()
