@@ -5,6 +5,7 @@ import re
 
 from odoo import _, fields, models
 from odoo.exceptions import UserError
+from markupsafe import Markup, escape
 
 from ..tools.xlsx_reader import excel_serial_to_date, read_xlsx_rows
 
@@ -116,6 +117,7 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         readonly=True,
     )
     result_summary = fields.Text(string='Result', readonly=True)
+    result_html = fields.Html(string='Result summary', readonly=True, sanitize=False)
     error_log = fields.Text(
         string='Failed rows',
         readonly=True,
@@ -250,6 +252,106 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
             vals['borrower_phone'] = re.sub(r'\s+', '', match.group(1))
 
     _MAX_IMPORT_BYTES = 25 * 1024 * 1024  # 25 MB
+
+    @classmethod
+    def _import_result_status(cls, dry_run, imported_ok, error_count):
+        if dry_run:
+            return 'preview'
+        if error_count and imported_ok:
+            return 'warning'
+        if error_count:
+            return 'error'
+        return 'success'
+
+    @classmethod
+    def _render_import_result_html(cls, status, headline, filename, row_count, stats, notes):
+        """Build a structured HTML summary for the import result popup."""
+        status_meta = {
+            'success': ('fa-check-circle', _('Import completed')),
+            'warning': ('fa-exclamation-triangle', _('Import finished with issues')),
+            'error': ('fa-times-circle', _('Import failed')),
+            'preview': ('fa-eye', _('Preview only')),
+        }
+        icon, badge = status_meta.get(status, status_meta['success'])
+
+        stat_blocks = []
+        for stat in stats:
+            tone = stat.get('tone') or 'neutral'
+            stat_blocks.append(
+                '<div class="bn-import-stat bn-import-stat--%(tone)s">'
+                '<span class="bn-import-stat__v">%(value)s</span>'
+                '<span class="bn-import-stat__k">%(label)s</span>'
+                '</div>'
+                % {
+                    'tone': escape(tone),
+                    'value': escape(stat.get('value', '0')),
+                    'label': escape(stat.get('label', '')),
+                }
+            )
+
+        note_blocks = []
+        for note in notes:
+            kind = note.get('kind') or 'default'
+            note_blocks.append(
+                '<div class="bn-import-note bn-import-note--%(kind)s">%(text)s</div>'
+                % {
+                    'kind': escape(kind),
+                    'text': escape(note.get('text', '')),
+                }
+            )
+
+        return Markup(
+            '<div class="bn-import-outcome bn-import-outcome--%(status)s">'
+            '<div class="bn-import-outcome__hero">'
+            '<span class="bn-import-outcome__icon"><i class="fa %(icon)s"/></span>'
+            '<div class="bn-import-outcome__text">'
+            '<span class="bn-import-outcome__badge">%(badge)s</span>'
+            '<h3 class="bn-import-outcome__headline">%(headline)s</h3>'
+            '<p class="bn-import-outcome__file">%(file)s · %(rows)s</p>'
+            '</div>'
+            '</div>'
+            '<div class="bn-import-outcome__stats">%(stats)s</div>'
+            '%(notes)s'
+            '</div>'
+            % {
+                'status': escape(status),
+                'icon': icon,
+                'badge': escape(badge),
+                'headline': escape(headline),
+                'file': escape(filename or _('(unnamed)')),
+                'rows': escape(_('%s rows in sheet') % row_count),
+                'stats': Markup(''.join(stat_blocks)),
+                'notes': (
+                    Markup(
+                        '<div class="bn-import-outcome__notes">%s</div>'
+                        % ''.join(note_blocks)
+                    )
+                    if note_blocks
+                    else Markup('')
+                ),
+            }
+        )
+
+    def _finalize_import_result(self, *, status, headline, row_count, stats, notes, errors, dry_run):
+        plain_lines = [headline, '', _('File: %s') % (self.filename or _('(unnamed)'))]
+        plain_lines.extend(
+            '%s: %s' % (stat['label'], stat['value']) for stat in stats
+        )
+        for note in notes:
+            plain_lines.append(note.get('text', ''))
+        self.write({
+            'import_state': 'done' if not dry_run else 'idle',
+            'result_summary': '\n'.join(plain_lines),
+            'result_html': self._render_import_result_html(
+                status,
+                headline,
+                self.filename,
+                row_count,
+                stats,
+                notes,
+            ),
+            'error_log': '\n'.join(errors) if errors else False,
+        })
 
     def _parse_workbook(self):
         if not self.data_file:
@@ -411,68 +513,80 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         else:
             headline = _('Import completed successfully — %(ok)s row(s) saved.') % {'ok': imported_ok}
 
-        summary_lines = [
-            headline,
-            '',
-            _('File: %s') % (self.filename or _('(unnamed)')),
-            _('Rows in sheet: %s') % len(data_rows),
+        stats = [
+            {'label': _('Rows in sheet'), 'value': len(data_rows), 'tone': 'neutral'},
         ]
         if self.dry_run:
-            summary_lines.extend([
-                _('Would create: %s') % created,
-                _('Would update: %s') % updated,
-                _('Would skip (loan already exists, update off): %s') % skipped_existing,
+            stats.extend([
+                {'label': _('Would create'), 'value': created, 'tone': 'good'},
+                {'label': _('Would update'), 'value': updated, 'tone': 'neutral'},
+                {'label': _('Skip (exists)'), 'value': skipped_existing, 'tone': 'muted'},
             ])
         else:
-            summary_lines.extend([
-                _('Created: %s') % created,
-                _('Updated: %s') % updated,
-                _('Skipped (loan already exists, update off): %s') % skipped_existing,
+            stats.extend([
+                {'label': _('Created'), 'value': created, 'tone': 'good'},
+                {'label': _('Updated'), 'value': updated, 'tone': 'neutral'},
+                {'label': _('Skip (exists)'), 'value': skipped_existing, 'tone': 'muted'},
             ])
-        summary_lines.extend([
-            _('Skipped (blank loan number): %s') % skipped_blank,
-            _('Skipped (case locked): %s') % locked,
-            _('Failed: %s') % len(errors),
+        stats.extend([
+            {'label': _('Blank loan #'), 'value': skipped_blank, 'tone': 'muted'},
+            {'label': _('Case locked'), 'value': locked, 'tone': 'muted'},
+            {'label': _('Failed'), 'value': len(errors), 'tone': 'bad' if errors else 'good'},
         ])
         if last_batch:
-            summary_lines.append(_('New batch number: %s') % last_batch)
+            stats.append({
+                'label': _('Batch'),
+                'value': last_batch,
+                'tone': 'accent',
+            })
+
+        notes = []
         if unknown_headers:
-            summary_lines.append(
-                _('Ignored columns (no case field): %s')
-                % ', '.join(str(h) for h in unknown_headers if h)
-            )
+            notes.append({
+                'kind': 'muted',
+                'text': _('Ignored columns (no case field): %s')
+                % ', '.join(str(h) for h in unknown_headers if h),
+            })
         if self.dry_run:
-            summary_lines.extend([
-                '',
-                _('Uncheck “Preview only” and click Import again to save data.'),
-            ])
+            notes.append({
+                'kind': 'info',
+                'text': _('Uncheck “Preview only” and click Import again to save data.'),
+            })
         elif imported_ok and not errors:
-            summary_lines.extend([
-                '',
-                _('Open Cases to review imported records.'),
-            ])
+            notes.append({
+                'kind': 'success',
+                'text': _('Open Cases to review imported records.'),
+            })
         elif imported_ok and errors:
-            summary_lines.extend([
-                '',
-                _('Correct rows are already saved. Fix failed rows in Excel and re-import, '
-                  'or update those cases manually.'),
-            ])
+            notes.append({
+                'kind': 'warning',
+                'text': _(
+                    'Correct rows are already saved. Fix failed rows in Excel and re-import, '
+                    'or update those cases manually.'
+                ),
+            })
 
         if not self.dry_run and last_batch and imported_ok:
             self.env['bharat.case.vault.batch'].queue_build_for_batch(last_batch)
             self.env['bharat.loan.batch']._sync_from_loans()
-            summary_lines.extend([
-                '',
-                _('Case Vault build queued for batch %(batch)s — merged Notice 1, Interim Order 1, '
-                  'and Award PDFs will be ready under Case Vault.')
-                % {'batch': last_batch},
-            ])
+            notes.append({
+                'kind': 'info',
+                'text': _(
+                    'Case Vault build queued for %(batch)s — merged Notice 1, Interim Order 1, '
+                    'and Award PDFs will be ready under Case Vault.'
+                ) % {'batch': last_batch},
+            })
 
-        self.write({
-            'import_state': 'done' if not self.dry_run else 'idle',
-            'result_summary': '\n'.join(summary_lines),
-            'error_log': '\n'.join(errors) if errors else False,
-        })
+        status = self._import_result_status(self.dry_run, imported_ok, len(errors))
+        self._finalize_import_result(
+            status=status,
+            headline=headline,
+            row_count=len(data_rows),
+            stats=stats,
+            notes=notes,
+            errors=errors,
+            dry_run=self.dry_run,
+        )
 
         return {
             'type': 'ir.actions.act_window',
@@ -572,43 +686,45 @@ class BharatLoanPortfolioImportWizard(models.TransientModel):
         else:
             headline = _('POD import completed — %(ok)s row(s) updated.') % {'ok': updated}
 
-        summary_lines = [
-            headline,
-            '',
-            _('File: %s') % (self.filename or _('(unnamed)')),
-            _('Rows in sheet: %s') % len(data_rows),
+        stats = [
+            {'label': _('Rows in sheet'), 'value': len(data_rows), 'tone': 'neutral'},
+            {'label': _('Updated'), 'value': updated, 'tone': 'good' if updated else 'neutral'},
+            {'label': _('Blank loan #'), 'value': skipped_blank, 'tone': 'muted'},
+            {'label': _('Case not found'), 'value': not_found, 'tone': 'bad' if not_found else 'muted'},
+            {'label': _('Case locked'), 'value': locked, 'tone': 'muted'},
+            {'label': _('Failed'), 'value': len(errors), 'tone': 'bad' if errors else 'good'},
         ]
-        if self.dry_run:
-            summary_lines.append(_('Would update: %s') % updated)
-        else:
-            summary_lines.append(_('Updated: %s') % updated)
-        summary_lines.extend([
-            _('Skipped (blank loan number): %s') % skipped_blank,
-            _('Skipped (case not found): %s') % not_found,
-            _('Skipped (case locked): %s') % locked,
-            _('Failed: %s') % len(errors),
-        ])
-        if unknown_headers:
-            summary_lines.append(
-                _('Ignored columns: %s')
-                % ', '.join(str(h) for h in unknown_headers if h)
-            )
-        if self.dry_run:
-            summary_lines.extend([
-                '',
-                _('Uncheck “Preview only” and click Import again to save POD updates.'),
-            ])
-        elif updated and not errors:
-            summary_lines.extend([
-                '',
-                _('Open Cases to review Notice 1, Interim Order 1, and Award delivery status.'),
-            ])
 
-        self.write({
-            'import_state': 'done' if not self.dry_run else 'idle',
-            'result_summary': '\n'.join(summary_lines),
-            'error_log': '\n'.join(errors) if errors else False,
-        })
+        notes = []
+        if unknown_headers:
+            notes.append({
+                'kind': 'muted',
+                'text': _('Ignored columns: %s')
+                % ', '.join(str(h) for h in unknown_headers if h),
+            })
+        if self.dry_run:
+            notes.append({
+                'kind': 'info',
+                'text': _('Uncheck “Preview only” and click Import again to save POD updates.'),
+            })
+        elif updated and not errors:
+            notes.append({
+                'kind': 'success',
+                'text': _(
+                    'Open Cases to review Notice 1, Interim Order 1, and Award delivery status.'
+                ),
+            })
+
+        status = self._import_result_status(self.dry_run, updated, len(errors))
+        self._finalize_import_result(
+            status=status,
+            headline=headline,
+            row_count=len(data_rows),
+            stats=stats,
+            notes=notes,
+            errors=errors,
+            dry_run=self.dry_run,
+        )
 
         return {
             'type': 'ir.actions.act_window',

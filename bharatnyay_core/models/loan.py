@@ -3213,6 +3213,9 @@ class BharatLoan(models.Model):
         postal_pending = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pending_postal_status_stats(scope_domain)
+        pod_status_cards = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_status_cards(scope_domain)
 
         return {
             'currency_id': Currency.id,
@@ -3266,6 +3269,7 @@ class BharatLoan(models.Model):
             'payment_mix': payment_mix,
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
+            'pod_status_cards': pod_status_cards,
             'processes': self.env['bharat.process.run'].dashboard_snapshot(
                 page=jobs_page, page_size=jobs_page_size,
             ),
@@ -3734,6 +3738,9 @@ class BharatLoan(models.Model):
         postal_pending = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pending_postal_status_stats(domain)
+        pod_status_cards = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_status_cards(domain)
 
         return {
             'currency_id': Currency.id,
@@ -3773,6 +3780,7 @@ class BharatLoan(models.Model):
             'loan_domain': domain,
             'recent_cases': self._dashboard_recent_cases(loans),
             'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
+            'pod_status_cards': pod_status_cards,
             'invoice_domains': self._dashboard_invoice_domains_for_loans(
                 loans, date_from, date_to,
             ),
@@ -3814,6 +3822,9 @@ class BharatLoan(models.Model):
             billing.get('posted_unpaid_invoices', 0),
             billing.get('draft_invoices', 0),
         )
+        pod_status_cards = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_status_cards(domain)
 
         return {
             'currency_id': Currency.id,
@@ -3846,6 +3857,7 @@ class BharatLoan(models.Model):
             'loan_domain': domain,
             'recent_cases': self._dashboard_recent_cases(loans),
             'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
+            'pod_status_cards': pod_status_cards,
             'invoice_domains': self._dashboard_invoice_domains_for_loans(
                 loans, date_from, date_to,
             ),

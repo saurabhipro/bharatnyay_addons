@@ -71,7 +71,7 @@
                 <field name="dry_run" invisible="1"/>
                 <field name="filename" invisible="1"/>
 
-                <div class="bn-import-wrap" invisible="result_summary">
+                <div class="bn-import-wrap" invisible="result_html">
                     <div class="bn-import-head">
                         <div class="bn-import-head__icon">
                             <i class="fa fa-file-excel-o" title="Excel import"/>
@@ -87,7 +87,7 @@
                         <span class="bn-import-step__label">Import type</span>
                     </div>
                     <div class="bn-import-type">
-                        <field name="import_type" widget="radio" nolabel="1" options="{'horizontal': true}"/>
+                        <field name="import_type" widget="radio" nolabel="1"/>
                     </div>
 
                     <div class="bn-import-step">
@@ -115,25 +115,25 @@
                     </div>
                 </div>
 
-                <div class="bn-import-result" invisible="not result_summary">
-                    <div class="bn-import-result__badge" invisible="import_state != 'done'">
-                        <i class="fa fa-check"/> Import completed
-                    </div>
-                    <group string="Summary">
-                        <field name="result_summary" nolabel="1" widget="text"/>
-                    </group>
-                    <group string="Failed rows" invisible="not error_log">
+                <div class="bn-import-result" invisible="not result_html">
+                    <field name="result_summary" invisible="1"/>
+                    <field name="result_html" nolabel="1" widget="html"/>
+                    <div class="bn-import-errors" invisible="not error_log">
+                        <div class="bn-import-errors__head">
+                            <i class="fa fa-exclamation-circle"/>
+                            <span>Failed rows</span>
+                        </div>
                         <field name="error_log" nolabel="1" widget="text"/>
-                    </group>
+                    </div>
                 </div>
 
                 <footer>
                     <button name="action_import" string="Import now" type="object"
                             class="btn-primary" icon="fa-upload"
-                            invisible="result_summary"/>
+                            invisible="result_html"/>
                     <button name="action_import" string="Import again" type="object"
                             class="btn-primary" icon="fa-refresh"
-                            invisible="not result_summary"/>
+                            invisible="not result_html"/>
                     <button name="action_view_cases" string="Open Cases" type="object"
                             class="btn-secondary" icon="fa-table"
                             invisible="import_state != 'done'"/>

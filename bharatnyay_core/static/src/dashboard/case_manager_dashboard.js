@@ -18,6 +18,7 @@ import {
     batchBarHeight as batchBarHeightHelper,
     batchSegPctCount as batchSegPctCountHelper,
     openRoleInvoices,
+    openPodStatusRecords,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -229,6 +230,18 @@ export class CaseManagerDashboard extends Component {
             context: { create: false },
             target: "current",
         });
+    }
+
+    openPodStatusCases(ev) {
+        const key = ev.currentTarget?.dataset?.podKey;
+        if (!key) {
+            return;
+        }
+        const card = (this.state.data?.pod_status_cards || []).find((c) => c.key === key);
+        if (!card) {
+            return;
+        }
+        openPodStatusRecords(this.action, card);
     }
 
     openInvoices(ev) {

@@ -1705,53 +1705,171 @@
         padding-top: 12px;
         border-top: 1px dashed #cbd5e1;
 
-        > label,
-        .o_form_label {
+        &::before {
+            content: "Post office status";
+            display: block;
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #475569;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
     }
 
     .o_field_radio.o_field_many2one,
     .o_field_widget.o_field_radio {
-        .o_radio_item {
+        width: 100%;
+
+        .o_horizontal,
+        .o_vertical {
             display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: stretch;
+            gap: 0.55rem;
+            width: 100%;
+        }
+
+        .o_radio_item {
+            flex: 1 1 0;
+            min-width: 118px;
+            max-width: none;
+            margin: 0 !important;
+        }
+
+        .form-check {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .form-check-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .form-check-label {
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-            margin: 0 0 4px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            justify-content: center;
+            gap: 0.35rem;
+            width: 100%;
+            min-height: 74px;
+            margin: 0;
+            padding: 0.65rem 0.45rem 0.55rem;
+            border: 2px solid #dbe3ef;
+            border-radius: 999px;
             background: #fff;
             cursor: pointer;
-            transition: border-color 0.15s, background 0.15s;
+            font-weight: 700;
+            font-size: 0.62rem;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #334155;
+            text-align: center;
+            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.12s;
+            position: relative;
 
-            &:hover {
-                border-color: #94a3b8;
-                background: #f8fafc;
-            }
-
-            .form-check-input:checked + label,
-            &:has(.form-check-input:checked) {
-                border-color: var(--bn-primary, #2563eb);
-                background: #eff6ff;
+            &::before {
+                font-family: FontAwesome;
+                font-size: 1rem;
+                line-height: 1;
+                width: 2rem;
+                height: 2rem;
+                border-radius: 999px;
+                display: grid;
+                place-items: center;
+                background: color-mix(in srgb, var(--pod-pill-accent, #64748b) 14%, #fff);
+                color: var(--pod-pill-accent, #64748b);
             }
         }
 
-        .form-check-input:checked {
-            border-color: var(--bn-primary, #2563eb);
-            background-color: var(--bn-primary, #2563eb);
+        .form-check-input:checked + .form-check-label {
+            border-color: var(--pod-pill-accent, var(--bn-primary, #2563eb));
+            background: color-mix(in srgb, var(--pod-pill-accent, #2563eb) 10%, #fff);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--pod-pill-accent, #2563eb) 24%, transparent);
+            color: color-mix(in srgb, var(--pod-pill-accent, #2563eb) 78%, #0f172a);
+            transform: translateY(-1px);
+
+            &::before {
+                background: var(--pod-pill-accent, var(--bn-primary, #2563eb));
+                color: #fff;
+            }
         }
 
-        label {
-            font-weight: 500;
-            color: #1e293b;
-            cursor: pointer;
-            margin: 0;
+        // Status pills — order matches bharat.post.office.status sequence
+        .o_radio_item:nth-child(1) .form-check-label {
+            --pod-pill-accent: #3b82f6;
+            &::before { content: "\f1d8"; } // paper-plane
+        }
+        .o_radio_item:nth-child(2) .form-check-label {
+            --pod-pill-accent: #0891b2;
+            &::before { content: "\f0d1"; } // truck
+        }
+        .o_radio_item:nth-child(3) .form-check-label {
+            --pod-pill-accent: #d97706;
+            &::before { content: "\f0f6"; } // file-text-o
+        }
+        .o_radio_item:nth-child(4) .form-check-label {
+            --pod-pill-accent: #16a34a;
+            &::before { content: "\f058"; } // check-circle
+        }
+        .o_radio_item:nth-child(5) .form-check-label {
+            --pod-pill-accent: #7c3aed;
+            &::before { content: "\f023"; } // lock
+        }
+        .o_radio_item:nth-child(6) .form-check-label {
+            --pod-pill-accent: #dc2626;
+            &::before { content: "\f0e2"; } // undo
+        }
+
+        .o_radio_item .form-check-label:hover {
+            border-color: color-mix(in srgb, var(--pod-pill-accent, #64748b) 45%, #cbd5e1);
+            background: color-mix(in srgb, var(--pod-pill-accent, #64748b) 6%, #fff);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .o_field_radio.o_field_many2one,
+        .o_field_widget.o_field_radio {
+            .o_radio_item {
+                flex: 1 1 calc(33.333% - 0.55rem);
+                min-width: 96px;
+            }
+        }
+    }
+
+    @media (max-width: 560px) {
+        .o_field_radio.o_field_many2one,
+        .o_field_widget.o_field_radio {
+            .o_horizontal,
+            .o_vertical {
+                flex-direction: column;
+            }
+
+            .o_radio_item {
+                flex: 1 1 auto;
+                min-width: 0;
+                max-width: none;
+            }
+
+            .form-check-label {
+                flex-direction: row;
+                justify-content: flex-start;
+                min-height: 0;
+                padding: 0.65rem 0.85rem;
+                border-radius: 12px;
+                text-align: left;
+
+                &::before {
+                    flex-shrink: 0;
+                }
+            }
         }
     }
 }

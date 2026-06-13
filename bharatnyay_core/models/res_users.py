@@ -162,10 +162,53 @@ class ResUsers(models.Model):
             if commands:
                 user.sudo().write({'groups_id': commands})
 
+    def _bharat_home_action_xmlid(self):
+        """Map operational role to the OWL dashboard client action."""
+        self.ensure_one()
+        if self.bharat_role == 'case_manager':
+            return 'bharatnyay_core.action_bharatnyay_case_manager_dashboard'
+        if self.bharat_role == 'arbitrator':
+            return 'bharatnyay_core.action_bharatnyay_arbitrator_dashboard'
+        return 'bharatnyay_core.action_bharatnyay_dashboard'
+
+    def _bharat_home_action(self):
+        """Client action opened after login for internal BharatNyay users."""
+        self.ensure_one()
+        if self.share:
+            return self.env['ir.actions.actions']
+        action = self.env.ref(
+            self._bharat_home_action_xmlid(),
+            raise_if_not_found=False,
+        )
+        return action or self.env['ir.actions.actions']
+
+    def _bharat_login_redirect_path(self):
+        """Deep-link path used after login and for bare /odoo visits."""
+        self.ensure_one()
+        if self.share:
+            return None
+        action = self._bharat_home_action()
+        path = getattr(action, 'path', None) if action else None
+        if path:
+            return '/odoo/%s' % path.strip('/')
+        if action:
+            return '/odoo/action-%s' % action.id
+        return None
+
+    def _sync_bharat_home_action(self):
+        """Persist Home Action on the user so Odoo webclient opens the dashboard."""
+        for user in self:
+            if user.share:
+                continue
+            action = user._bharat_home_action()
+            if action and user.sudo().action_id != action:
+                user.sudo().write({'action_id': action.id})
+
     @api.model_create_multi
     def create(self, vals_list):
         users = super().create(vals_list)
         users.filtered('bharat_role')._sync_bharat_role_groups()
+        users.filtered(lambda u: not u.share)._sync_bharat_home_action()
         if any(
             'bharat_role' in vals or 'bharat_branch_ids' in vals or 'bharat_location_ids' in vals
             for vals in vals_list
@@ -179,6 +222,8 @@ class ResUsers(models.Model):
         res = super().write(vals)
         if 'bharat_role' in vals:
             self._sync_bharat_role_groups()
+        if 'bharat_role' in vals or {'share', 'active'} & set(vals):
+            self.filtered(lambda u: not u.share and u.active)._sync_bharat_home_action()
         if {'bharat_role', 'bharat_branch_ids', 'bharat_location_ids', 'active'} & set(vals):
             self.filtered(
                 lambda u: u.bharat_role == 'case_manager' and u.active

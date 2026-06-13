@@ -1,0 +1,16 @@
+// Cases list — readable columns without breaking Odoo list layout sync
+body.o_web_client {
+    .o_list_view.bn-loan-list .o_list_renderer,
+    .o_list_renderer.bn-loan-list {
+        overflow-x: auto;
+
+        .o_list_table {
+            min-width: 1080px;
+        }
+
+        .o_data_cell .o_field_widget,
+        .o_data_cell .o_field_widget span {
+            white-space: nowrap;
+        }
+    }
+}

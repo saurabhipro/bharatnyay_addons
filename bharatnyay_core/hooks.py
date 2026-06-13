@@ -26,3 +26,12 @@ def pre_init_hook(cr):
           AND ttype = 'char'
         """
     )
+
+
+def post_init_hook(env):
+    """Point all internal users at their BharatNyay dashboard on install/upgrade."""
+    users = env['res.users'].sudo().search([
+        ('share', '=', False),
+        ('active', '=', True),
+    ])
+    users._sync_bharat_home_action()

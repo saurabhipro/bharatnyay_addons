@@ -769,6 +769,20 @@
             }
         }
 
+        &--pod {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+
+            @media (max-width: 1399px) {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            @media (max-width: 991px) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            @media (max-width: 575px) {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 1399px) {
             grid-template-columns: repeat(4, minmax(0, 1fr));
         }
@@ -863,14 +877,14 @@
         }
     }
 
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 1) { --stg: var(--bn-palette-1); --stg-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 2) { --stg: var(--bn-palette-2); --stg-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 3) { --stg: var(--bn-palette-3); --stg-pattern: var(--bn-pattern-orange); &::before { background-image: url("../../img/orange_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 4) { --stg: var(--bn-palette-4); --stg-pattern: var(--bn-pattern-pink); &::before { background-image: url("../../img/pink_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 5) { --stg: var(--bn-palette-5); --stg-pattern: var(--bn-pattern-purple); &::before { background-image: url("../../img/purple_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 6) { --stg: var(--bn-palette-6); --stg-pattern: var(--bn-pattern-yellow); &::before { background-image: url("../../img/yellow_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 7) { --stg: var(--bn-palette-7); --stg-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
-    .bn-stage-strip .bn-stage-card:nth-child(8n + 8) { --stg: var(--bn-palette-8); --stg-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 1) { --stg: var(--bn-palette-1); --stg-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 2) { --stg: var(--bn-palette-2); --stg-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 3) { --stg: var(--bn-palette-3); --stg-pattern: var(--bn-pattern-orange); &::before { background-image: url("../../img/orange_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 4) { --stg: var(--bn-palette-4); --stg-pattern: var(--bn-pattern-pink); &::before { background-image: url("../../img/pink_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 5) { --stg: var(--bn-palette-5); --stg-pattern: var(--bn-pattern-purple); &::before { background-image: url("../../img/purple_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 6) { --stg: var(--bn-palette-6); --stg-pattern: var(--bn-pattern-yellow); &::before { background-image: url("../../img/yellow_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 7) { --stg: var(--bn-palette-7); --stg-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
+    .bn-stage-strip:not(.bn-stage-strip--pod) .bn-stage-card:nth-child(8n + 8) { --stg: var(--bn-palette-8); --stg-pattern: var(--bn-pattern-green); &::before { background-image: url("../../img/green_pattern.jpg"); } }
 
     .bn-stage-bill-badge {
         position: absolute;
@@ -897,6 +911,59 @@
         line-height: 1.2;
         color: color-mix(in srgb, var(--bn-bill-accent) 82%, #334155);
         letter-spacing: 0.01em;
+    }
+
+    .bn-pod-status {
+        position: relative;
+        z-index: 1;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: color-mix(in srgb, var(--stg) 78%, #334155);
+    }
+
+    // POD row — same milestone palette as pipeline (Notice 1 / Hearing 1 / Award)
+    .bn-stage-strip--pod {
+        .bn-stage-card--pod-notice_1 {
+            --stg: var(--bn-palette-2);
+            --stg-pattern: var(--bn-pattern-green);
+
+            &::before {
+                background-image: url("../../img/green_pattern.jpg");
+            }
+        }
+
+        .bn-stage-card--pod-interim_order_1 {
+            --stg: var(--bn-palette-5);
+            --stg-pattern: var(--bn-pattern-purple);
+
+            &::before {
+                background-image: url("../../img/purple_pattern.jpg");
+            }
+        }
+
+        .bn-stage-card--pod-award {
+            --stg: var(--bn-palette-8);
+            --stg-pattern: var(--bn-pattern-green);
+
+            &::before {
+                background-image: url("../../img/green_pattern.jpg");
+            }
+        }
+    }
+
+    .bn-stage-card--pod-pending {
+        .bn-pod-status {
+            color: color-mix(in srgb, var(--stg) 68%, #64748b);
+        }
+    }
+
+    .bn-stage-card--pod-done {
+        .bn-pod-status {
+            color: color-mix(in srgb, var(--stg) 92%, #0f172a);
+            font-weight: 800;
+        }
     }
 
     .bn-stage-top {

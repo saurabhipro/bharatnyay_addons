@@ -128,6 +128,7 @@
                         Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
                     </p>
                     <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
+                    <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
                     </div>
 
                     <div class="bn-dashboard-section">
@@ -361,10 +362,8 @@
                                             <tr>
                                                 <th class="col-status"/>
                                                 <th>Job</th>
-                                                <th>Type</th>
                                                 <th>Started</th>
                                                 <th>Duration</th>
-                                                <th class="col-actions">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -380,7 +379,6 @@
                                                              t-if="job.batch_number"
                                                              t-out="job.batch_number"/>
                                                     </td>
-                                                    <td t-out="job.job_type_label"/>
                                                     <td t-out="fmtDateTime(job.started_at)"/>
                                                     <td>
                                                         <span t-if="job.duration_seconds &amp;&amp; job.state !== 'running' &amp;&amp; job.state !== 'queued'"
@@ -388,24 +386,6 @@
                                                         <span t-elif="job.state === 'running' || job.state === 'queued'"
                                                               t-out="processProgressLabel(job)"/>
                                                         <span t-else="">—</span>
-                                                    </td>
-                                                    <td class="col-actions">
-                                                        <div class="bn-process-row__actions">
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-outline-danger"
-                                                                    title="Stop job"
-                                                                    t-if="job.can_cancel"
-                                                                    t-on-click="(ev) => this.cancelJob(ev, job.id)">
-                                                                Stop
-                                                            </button>
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-outline-primary"
-                                                                    title="Rerun"
-                                                                    t-if="job.can_rerun"
-                                                                    t-on-click="(ev) => this.rerunJob(ev, job.id)">
-                                                                Rerun
-                                                            </button>
-                                                        </div>
                                                     </td>
                                                 </tr>
                                             </t>

@@ -281,6 +281,120 @@ class BharatLoanPostalDispatch(models.Model):
             'domain': domain,
         }
 
+    def _dispatch_pod_done(self):
+        """Postal delivery confirmed — billable or charge already accrued."""
+        self.ensure_one()
+        if self.billing_accrued:
+            return True
+        status = self.post_office_status_id
+        return bool(status and (status.is_delivered or status.triggers_billing))
+
+    @api.model
+    def _dashboard_pod_milestone_reached_codes(self, milestone_code):
+        Loan = self.env['bharat.loan'].sudo()
+        milestones = Loan._milestone_master_ordered()
+        min_seq = next(
+            (m.sequence for m in milestones if m.code == milestone_code),
+            None,
+        )
+        if min_seq is None:
+            return set()
+        return {m.code for m in milestones if m.sequence >= min_seq}
+
+    def _pod_card_open_meta(self, doc_type, label, status_label, loan_ids):
+        """Dashboard drill-down: notices, interim orders, or awards — not case list."""
+        ids = loan_ids or [0]
+        title = _('%s — %s') % (label, status_label)
+        if doc_type == 'notice_1':
+            records = self.env['bharat.loan.notice.line'].sudo().search([
+                ('notice_number', '=', 1),
+                ('loan_id', 'in', ids),
+            ])
+            return {
+                'res_model': 'bharat.loan.notice.line',
+                'name': title,
+                'domain': [('id', 'in', records.ids or [0])],
+            }
+        if doc_type == 'interim_order_1':
+            records = self.env['bharat.loan.interim.order'].sudo().search([
+                ('loan_id', 'in', ids),
+            ])
+            return {
+                'res_model': 'bharat.loan.interim.order',
+                'name': title,
+                'domain': [('id', 'in', records.ids or [0])],
+            }
+        if doc_type == 'award':
+            records = self.env['bharat.loan.award.document'].sudo().search([
+                ('loan_id', 'in', ids),
+                ('award_type', '=', 'final'),
+            ])
+            return {
+                'res_model': 'bharat.loan.award.document',
+                'name': title,
+                'domain': [('id', 'in', records.ids or [0])],
+            }
+        return {
+            'res_model': 'bharat.loan',
+            'name': title,
+            'domain': [('id', 'in', ids)],
+        }
+
+    @api.model
+    def dashboard_pod_status_cards(self, loan_domain=None):
+        """Six dashboard tiles: Notice 1 / Hearing 1 / Award × POD pending vs done."""
+        Loan = self.env['bharat.loan'].sudo()
+        loans = Loan.search(loan_domain or [])
+        loan_ids = loans.ids
+        dispatches = self.sudo().search([('loan_id', 'in', loan_ids or [0])])
+        dispatch_map = {
+            (dispatch.loan_id.id, dispatch.document_type): dispatch
+            for dispatch in dispatches
+        }
+
+        specs = (
+            ('notice_1', _('Notice 1'), 'notice_1', 'fa-envelope-o'),
+            ('interim_order_1', _('Hearing 1'), 'hearing_1', 'fa-video-camera'),
+            ('award', _('Award'), 'award', 'fa-trophy'),
+        )
+        stage_style = Loan.STAGE_STYLE
+        cards = []
+        for doc_type, label, milestone_code, icon in specs:
+            sty = stage_style.get(milestone_code, {})
+            reached = self._dashboard_pod_milestone_reached_codes(milestone_code)
+            pending_ids = []
+            done_ids = []
+            for loan in loans:
+                if (loan.milestone_code or '') not in reached:
+                    continue
+                dispatch = dispatch_map.get((loan.id, doc_type))
+                if dispatch and dispatch._dispatch_pod_done():
+                    done_ids.append(loan.id)
+                else:
+                    pending_ids.append(loan.id)
+
+            doc_total = len(pending_ids) + len(done_ids)
+            for status, ids, status_label, billable in (
+                ('pending', pending_ids, _('POD pending'), False),
+                ('done', done_ids, _('POD done'), True),
+            ):
+                cards.append({
+                    'key': '%s_%s' % (doc_type, status),
+                    'document_type': doc_type,
+                    'pod_status': status,
+                    'label': label,
+                    'status_label': status_label,
+                    'count': len(ids),
+                    'doc_total': doc_total,
+                    'percent': round(100.0 * len(ids) / doc_total, 1) if doc_total else 0.0,
+                    'icon': icon,
+                    'color': sty.get('color', '#64748b'),
+                    'billable': billable,
+                    'loan_domain': [('id', 'in', ids or [0])],
+                    'open': self._pod_card_open_meta(doc_type, label, status_label, ids),
+                })
+        return cards
+
     def apply_postal_import_row(self, dispatch_date, delivery_date, status_text):
         """Update from CSV import and run billing / lock side effects."""
         self.ensure_one()

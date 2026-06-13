@@ -14,6 +14,7 @@ import {
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
     openRoleInvoices,
+    openPodStatusRecords,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -146,6 +147,18 @@ export class ArbitratorDashboard extends Component {
             domain,
             target: "current",
         });
+    }
+
+    openPodStatusCases(ev) {
+        const key = ev.currentTarget?.dataset?.podKey;
+        if (!key) {
+            return;
+        }
+        const card = (this.state.data?.pod_status_cards || []).find((c) => c.key === key);
+        if (!card) {
+            return;
+        }
+        openPodStatusRecords(this.action, card);
     }
 
     openMixCases(ev) {

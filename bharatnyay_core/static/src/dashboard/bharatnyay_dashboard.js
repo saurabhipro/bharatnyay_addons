@@ -13,6 +13,8 @@ import {
     dashboardFilterRpcArgs,
     loadDashboardFilterOptions,
     mergeLoanDomain,
+    openLoanCases,
+    openPodStatusRecords,
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
@@ -166,17 +168,23 @@ export class BharatnyayDashboard extends Component {
         if (!stage) {
             return;
         }
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Loan stage",
-            res_model: "bharat.loan",
-            views: [
-                [false, "list"],
-                [false, "form"],
-            ],
+        const match = (this.state.data?.stage_cards || []).find((s) => s.key === stage);
+        openLoanCases(this.action, {
+            name: match?.label || stage,
             domain: mergeLoanDomain(this.state, [["milestone_code", "=", stage]]),
-            target: "current",
         });
+    }
+
+    openPodStatusCases(ev) {
+        const key = ev.currentTarget?.dataset?.podKey;
+        if (!key) {
+            return;
+        }
+        const card = (this.state.data?.pod_status_cards || []).find((c) => c.key === key);
+        if (!card) {
+            return;
+        }
+        openPodStatusRecords(this.action, card);
     }
 
     openMixCases(ev) {

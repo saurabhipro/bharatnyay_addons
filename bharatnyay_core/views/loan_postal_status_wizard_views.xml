@@ -12,7 +12,7 @@
 
                     <div class="bn-postal-wizard__hero">
                         <div class="bn-postal-wizard__icon">
-                            <i class="fa fa-truck"/>
+                            <i class="fa fa-truck" title="Postal delivery"/>
                         </div>
                         <div>
                             <h2 class="bn-postal-wizard__title">Update POD status</h2>
@@ -37,6 +37,7 @@
                             <field name="post_office_status_id"
                                    string="Post office status"
                                    widget="radio"
+                                   nolabel="1"
                                    options="{'no_create': True}"/>
                         </div>
                     </div>

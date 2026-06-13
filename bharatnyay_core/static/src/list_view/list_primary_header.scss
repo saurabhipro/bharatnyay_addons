@@ -1,89 +1,95 @@
-// BharatNyay list headers — Spiffy primary via Odoo 18 ListRenderer variables.
+// BharatNyay list headers — fixed primary bar (Odoo 18 ListRenderer)
+$o-bn-list-head-bg: #4361ee;
+$o-bn-list-head-bg-active: #3451d1;
+$o-bn-list-head-fg: #ffffff;
 $o-bn-row-even: #ffffff;
 $o-bn-row-odd: #f3f4f6;
 $o-bn-row-hover: #e8edff;
 $o-bn-row-selected: #dfe7ff;
 
 body.o_web_client {
-    // Odoo 18 paints list headers from these vars (default = white webclient bg).
     .o_list_renderer,
     .o_field_x2many .o_list_renderer,
     .o_field_x2many_list .o_list_renderer {
-        --ListRenderer-thead-bg-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee));
-        --ListRenderer-thead-bg-active-color: color-mix(
-            in srgb,
-            var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) 88%,
-            #0f172a
-        );
-        --ListRenderer-thead-border-end-color: rgba(255, 255, 255, 0.15);
+        --ListRenderer-thead-bg-color: #{$o-bn-list-head-bg};
+        --ListRenderer-thead-bg-active-color: #{$o-bn-list-head-bg-active};
+        --ListRenderer-thead-border-end-color: rgba(255, 255, 255, 0.22);
     }
 
     .o_list_renderer .o_list_table thead,
-    .o_list_renderer .o_list_table thead tr,
-    .o_list_renderer .o_list_table thead th,
-    .o_list_view .o_list_renderer .o_list_table thead th,
-    .o_content .o_list_renderer .o_list_table thead th,
-    .o_field_x2many .o_list_renderer .o_list_table thead th,
-    .o_field_x2many_list .o_list_renderer .o_list_table thead th,
-    table.o_list_table thead th {
-        background-color: var(--ListRenderer-thead-bg-color) !important;
-        color: var(--biz-theme-primary-text-color, var(--light-theme-primary-text-color, #ffffff)) !important;
-        border-color: rgba(255, 255, 255, 0.15) !important;
-        font-weight: 600;
-        --bs-table-color: var(--biz-theme-primary-text-color, #ffffff);
-        --bs-table-bg: var(--ListRenderer-thead-bg-color);
-    }
+    .o_list_view .o_list_renderer .o_list_table thead,
+    .o_content .o_list_renderer .o_list_table thead,
+    .o_field_x2many .o_list_renderer .o_list_table thead,
+    .o_field_x2many_list .o_list_renderer .o_list_table thead,
+    table.o_list_table thead {
+        background-color: $o-bn-list-head-bg !important;
 
-    .o_list_renderer .o_list_table thead th.table-active,
-    .o_list_renderer .o_list_table thead th:focus,
-    .o_list_renderer .o_list_table thead th:hover {
-        background-color: var(--ListRenderer-thead-bg-active-color) !important;
-        color: var(--biz-theme-primary-text-color, #ffffff) !important;
-    }
+        th,
+        th.table-active,
+        th:focus,
+        th:hover {
+            background-color: transparent !important;
+            color: $o-bn-list-head-fg !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            font-weight: 600;
+            --bs-table-color: #{$o-bn-list-head-fg};
+            --bs-table-bg: transparent;
 
-    .o_list_renderer .o_list_table thead {
-        background-color: var(--ListRenderer-thead-bg-color) !important;
+            .o_column_title,
+            .o_list_sortable_caret,
+            .o_list_header_label_spacer,
+            .fa,
+            .oi,
+            .dropdown-toggle,
+            .o_optional_columns_dropdown_toggle,
+            button,
+            a,
+            span,
+            div,
+            label {
+                color: $o-bn-list-head-fg !important;
+                -webkit-text-fill-color: $o-bn-list-head-fg !important;
+            }
+        }
 
-        .o_list_sortable_caret,
-        .fa,
-        .oi,
-        .dropdown-toggle,
-        .o_optional_columns_dropdown_toggle,
-        button,
-        a,
-        span,
-        div,
-        label {
-            color: var(--biz-theme-primary-text-color, #ffffff) !important;
+        th.table-active,
+        th:focus,
+        th:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
         }
 
         .o_column_sortable.table-active .o_list_sortable_caret {
-            background: var(--ListRenderer-thead-bg-active-color) !important;
+            background: $o-bn-list-head-bg-active !important;
+        }
+
+        .o_column_sortable .o_list_sortable_caret {
+            background: $o-bn-list-head-bg !important;
+            color: $o-bn-list-head-fg !important;
         }
 
         .o_list_actions_header,
         .o_list_record_selector,
         .o_list_record_selector_header {
-            background-color: var(--ListRenderer-thead-bg-color) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
+            background-color: $o-bn-list-head-bg !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
         }
     }
 
-    // Sticky header clone (Odoo 18 / Bootstrap table-light)
+    // Sticky header clone (Bootstrap table-light)
     .o_list_renderer .o_list_table thead.table-light,
     .o_list_renderer .o_list_table thead.table-light th {
-        background-color: var(--ListRenderer-thead-bg-color) !important;
-        color: var(--biz-theme-primary-text-color, #ffffff) !important;
-        --table-bg: var(--ListRenderer-thead-bg-color);
-        --bs-table-bg: var(--ListRenderer-thead-bg-color);
-        --bs-table-color: var(--biz-theme-primary-text-color, #ffffff);
+        background-color: $o-bn-list-head-bg !important;
+        color: $o-bn-list-head-fg !important;
+        --table-bg: #{$o-bn-list-head-bg};
+        --bs-table-bg: #{$o-bn-list-head-bg};
+        --bs-table-color: #{$o-bn-list-head-fg};
     }
 
     // Pivot / graph table headers where applicable
     .o_pivot table thead th,
     .o_graph .table thead th {
-        background-color: var(--biz-theme-primary-color, var(--light-theme-primary-color, #4361ee)) !important;
-        color: var(--biz-theme-primary-text-color, #ffffff) !important;
+        background-color: $o-bn-list-head-bg !important;
+        color: $o-bn-list-head-fg !important;
     }
 
     // Zebra rows — white / light grey alternation (loan sheet and all list views)
@@ -148,10 +154,8 @@ body.o_web_client {
         $o-bn-row-hover-dark: #334155;
         $o-bn-row-selected-dark: #3b4f72;
 
-        .o_list_renderer .o_list_table thead th,
-        .o_field_x2many .o_list_renderer .o_list_table thead th {
-            background-color: var(--ListRenderer-thead-bg-color) !important;
-            color: var(--biz-theme-primary-text-color, #ffffff) !important;
+        .o_list_renderer .o_list_table thead {
+            background-color: $o-bn-list-head-bg !important;
         }
 
         .o_list_renderer .o_list_table tbody > tr.o_data_row:nth-child(odd),

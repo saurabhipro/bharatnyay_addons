@@ -196,6 +196,42 @@
         </div>
     </t>
 
+    <t t-name="bharatnyay_core.DashboardPodStatusStrip">
+        <div class="bn-section-title mt-2">Postal delivery (POD)</div>
+        <p class="bn-stage-strip-hint">
+            Notice 1, Hearing 1 &amp; Award — pending vs confirmed delivery (billable when POD is done).
+        </p>
+        <div class="bn-stage-strip bn-stage-strip--pod">
+            <t t-foreach="state.data.pod_status_cards || []" t-as="p" t-key="p.key">
+                <button type="button"
+                        t-attf-class="bn-stage-card bn-stage-card--pod bn-stage-card--pod-{{ p.document_type }} {{ p.pod_status === 'pending' ? 'bn-stage-card--pod-pending' : 'bn-stage-card--pod-done' }} {{ p.billable ? 'bn-stage-card--billable' : '' }}"
+                        t-att-data-pod-key="p.key"
+                        t-on-click="openPodStatusCases">
+                    <span t-if="p.billable"
+                          class="bn-stage-bill-badge"
+                          title="Delivery confirmed — billable">
+                        <i class="fa fa-check"/>
+                    </span>
+                    <div class="bn-stage-top">
+                        <span class="bn-stage-ico"><i t-attf-class="fa {{ p.icon }}"/></span>
+                        <span class="bn-stage-name" t-out="p.label"/>
+                    </div>
+                    <div class="bn-pod-status" t-out="p.status_label"/>
+                    <div class="bn-stage-value">
+                        <span class="n" t-out="fmtInt(p.count)"/>
+                        <span class="p" t-out="p.percent + '%'"/>
+                    </div>
+                    <div class="bn-stage-meter">
+                        <span t-attf-style="width: {{ p.percent }}%"/>
+                    </div>
+                    <span t-if="p.doc_total"
+                          class="bn-stage-bill-caption"
+                          t-out="fmtInt(p.count) + ' of ' + fmtInt(p.doc_total) + ' at this stage'"/>
+                </button>
+            </t>
+        </div>
+    </t>
+
     <t t-name="bharatnyay_core.DashboardPipeline">
         <div class="bn-section-title mt-2">Case pipeline</div>
         <p class="bn-stage-strip-hint">
@@ -203,6 +239,7 @@
             Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
         </p>
         <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
+        <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
     </t>
 
     <t t-name="bharatnyay_core.DashboardPanelBatchVolumeStacked">

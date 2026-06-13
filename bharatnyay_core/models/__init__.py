@@ -1,3 +1,4 @@
+from . import ir_http
 from . import region
 from . import post_office_status
 from . import postal_dispatch

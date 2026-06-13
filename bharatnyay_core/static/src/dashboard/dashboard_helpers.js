@@ -78,6 +78,31 @@ export function mergeLoanDomain(state, extra = []) {
     return [...base, ...extra];
 }
 
+/** Open the configured loan list/form action (uses Cases list view with column widths). */
+export function openLoanCases(action, { name, domain }) {
+    return action.doAction("bharatnyay_core.action_bharat_loan", {
+        name: name || "Cases",
+        domain: domain || [],
+        view_mode: "list,form",
+    });
+}
+
+/** POD dashboard tiles → notices, interim orders, or awards (not cases). */
+export function openPodStatusRecords(action, card) {
+    const open = card?.open;
+    if (!open?.res_model) {
+        return Promise.resolve();
+    }
+    return action.doAction({
+        type: "ir.actions.act_window",
+        name: open.name || `${card.label} — ${card.status_label}`,
+        res_model: open.res_model,
+        views: [[false, "list"], [false, "form"]],
+        domain: open.domain || [],
+        target: "current",
+    });
+}
+
 export async function loadDashboardFilterOptions(orm, state, dashboardRole = false) {
     state.filter_options = await orm.call(
         "bharat.loan",

@@ -58,7 +58,7 @@
         <field name="name">bharat.loan.list</field>
         <field name="model">bharat.loan</field>
         <field name="arch" type="xml">
-            <list string="Loans">
+            <list string="Loans" class="bn-loan-list">
                 <header>
                     <button name="%(bharatnyay_core.action_bharat_consolidated_billing_wizard)d"
                             type="action"
@@ -73,26 +73,26 @@
                             display="always"
                             icon="fa-upload"/>
                 </header>
-                <field name="case_number"/>
-                <field name="batch_number" optional="show"/>
-                <field name="company_id" optional="show"/>
-                <field name="loan_number"/>
-                <field name="customer_name"/>
-                <field name="region_id" optional="hide"/>
-                <field name="borrower_state_id" optional="hide"/>
-                <field name="branch_id" optional="show"/>
-                <field name="location_id" string="Location" optional="show"/>
-                <field name="financed_amount" sum="Financed"/>
-                <field name="current_pos" sum="POS"/>
-                <field name="milestone_id" string="Milestone" optional="show"/>
-                <field name="state_display" string="Milestone" optional="hide"/>
+                <field name="case_number" width="140"/>
+                <field name="batch_number" optional="show" width="90"/>
+                <field name="company_id" optional="hide" width="120"/>
+                <field name="loan_number" width="100"/>
+                <field name="customer_name" width="160"/>
+                <field name="region_id" optional="hide" width="100"/>
+                <field name="borrower_state_id" optional="hide" width="100"/>
+                <field name="branch_id" optional="hide" width="140"/>
+                <field name="location_id" string="Location" optional="show" width="120"/>
+                <field name="financed_amount" sum="Financed" width="110"/>
+                <field name="current_pos" sum="POS" width="110"/>
+                <field name="milestone_id" string="Milestone" optional="show" width="130"/>
+                <field name="state_display" string="Milestone" optional="hide" width="130"/>
                 <field name="milestone_code" column_invisible="1"/>
-                <field name="workflow_section" optional="hide"/>
-                <field name="workflow_phase" optional="hide"/>
-                <field name="claim_amount" sum="Claim"/>
-                <field name="lok_adalat_date" optional="show"/>
-                <field name="disbursement_date" optional="show"/>
-                <field name="case_manager_id" optional="show"/>
+                <field name="workflow_section" optional="hide" width="80"/>
+                <field name="workflow_phase" optional="hide" width="120"/>
+                <field name="claim_amount" sum="Claim" width="110"/>
+                <field name="lok_adalat_date" optional="hide" width="100"/>
+                <field name="disbursement_date" optional="hide" width="100"/>
+                <field name="case_manager_id" optional="hide" width="130"/>
                 <field name="currency_id" column_invisible="1"/>
             </list>
         </field>

@@ -68,19 +68,19 @@
 
                     <div class="bn-notice-chips">
                         <span class="bn-notice-chip">
-                            <i class="fa fa-clock-o"/>
+                            <i class="fa fa-clock-o" title="Sent on"/>
                             <field name="sent_on" readonly="1" nolabel="1"/>
                         </span>
                         <span class="bn-notice-chip">
-                            <i class="fa fa-user"/>
+                            <i class="fa fa-user" title="Sent by"/>
                             <field name="sent_by_id" readonly="1" nolabel="1"/>
                         </span>
                         <span class="bn-notice-chip">
-                            <i class="fa fa-at"/>
+                            <i class="fa fa-at" title="Sent to"/>
                             <field name="sent_to" readonly="1" nolabel="1"/>
                         </span>
                         <span class="bn-notice-chip bn-notice-chip--ok" invisible="not response_received_on">
-                            <i class="fa fa-check-circle"/>
+                            <i class="fa fa-check-circle" title="Response received"/>
                             <field name="response_received_on" readonly="1" nolabel="1"/>
                         </span>
                     </div>
@@ -88,7 +88,7 @@
                     <div class="bn-notice-grid">
                         <div class="bn-notice-card bn-notice-card--email">
                             <div class="bn-notice-card__head">
-                                <i class="fa fa-envelope"/>
+                                <i class="fa fa-envelope" title="Email"/>
                                 <span>Email dispatch</span>
                             </div>
                             <div class="bn-notice-kv">
@@ -107,7 +107,7 @@
 
                         <div class="bn-notice-card bn-notice-card--delivery">
                             <div class="bn-notice-card__head">
-                                <i class="fa fa-paper-plane-o"/>
+                                <i class="fa fa-paper-plane-o" title="Delivery"/>
                                 <span>Delivery</span>
                             </div>
                             <div class="bn-notice-delivery__meta" invisible="not delivery_meta">
@@ -141,7 +141,7 @@
                         <div class="bn-notice-card bn-notice-card--reply"
                              invisible="not response_received_on and not response_pdf and not response_notes">
                             <div class="bn-notice-card__head">
-                                <i class="fa fa-inbox"/>
+                                <i class="fa fa-inbox" title="Reply"/>
                                 <span>Respondent reply</span>
                             </div>
                             <div class="bn-notice-kv" invisible="not response_received_on">
