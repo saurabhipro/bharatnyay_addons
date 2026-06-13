@@ -57,14 +57,16 @@
                 <t t-elif="state.data">
                     <div class="bn-dashboard-section">
                     <div class="bn-kpi-grid bn-kpi-grid--7">
-                        <div class="bn-kpi-card">
+                        <div class="bn-kpi-card" t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_loans || 0)}">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-briefcase" title="Total cases"/></span>
                                 <div class="bn-kpi-label">Total cases</div>
                             </div>
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.total_loans)"/>
                         </div>
-                        <div class="bn-kpi-card bn-kpi-card--click" t-on-click="openLoanList">
+                        <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.total_batches || 0)}"
+                             t-on-click="openTotalBatches">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-cubes" title="Total batches"/></span>
                                 <div class="bn-kpi-label">Total batches</div>
@@ -73,6 +75,7 @@
                             <div class="bn-kpi-trend">Distinct import batches</div>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.postal_status_pending_count || 0)}"
                              t-on-click="openPendingPostalStatus">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-envelope-o" title="Awaiting POD status"/></span>
@@ -83,6 +86,7 @@
                                  t-out="fmtMoney(state.data.kpis.postal_status_pending_amount || 0) + ' · ' + fmtInt(state.data.kpis.postal_status_pending_notice_1 || 0) + ' N1, ' + fmtInt(state.data.kpis.postal_status_pending_interim_1 || 0) + ' IO1'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.paid_invoice_amount || 0) and !(state.data.kpis.paid_invoices || 0)}"
                              data-filter="paid"
                              t-on-click="openInvoices">
                             <div class="bn-kpi-card__head">
@@ -93,6 +97,7 @@
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.paid_invoices || 0) + ' invoices'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.unpaid_invoice_amount || 0) and !(state.data.kpis.unpaid_invoices || 0)}"
                              data-filter="unpaid"
                              t-on-click="openInvoices">
                             <div class="bn-kpi-card__head">
@@ -103,6 +108,7 @@
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.unpaid_invoices || 0) + ' invoices'"/>
                         </div>
                         <div class="bn-kpi-card bn-kpi-card--click"
+                             t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.unbilled_cases || 0)}"
                              t-on-click="openUnbilledCases">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-clock-o" title="Unbilled cases"/></span>
@@ -111,7 +117,7 @@
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.unbilled_cases || 0)"/>
                             <div class="bn-kpi-trend" t-out="fmtInt(state.data.kpis.pending_billing_charges || 0) + ' pending charges'"/>
                         </div>
-                        <div class="bn-kpi-card">
+                        <div class="bn-kpi-card" t-att-class="{'bn-kpi-card--empty': !(state.data.kpis.hearings_today || 0)}">
                             <div class="bn-kpi-card__head">
                                 <span class="bn-kpi-icon"><i class="fa fa-gavel" title="Hearings today"/></span>
                                 <div class="bn-kpi-label">Hearings today</div>

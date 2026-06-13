@@ -1208,6 +1208,73 @@
     .bn-kpi-card:nth-child(7n + 6) { --kpi-accent: var(--bn-palette-6); --kpi-pattern: var(--bn-pattern-yellow); &::before { background-image: url("../../img/yellow_pattern.jpg"); } }
     .bn-kpi-card:nth-child(7n + 7) { --kpi-accent: var(--bn-palette-7); --kpi-pattern: var(--bn-pattern-blue); &::before { background-image: url("../../img/blue_pattern.jpg"); } }
 
+    // Zero-count cards — muted grey (still clickable); selectors beat nth-child / POD palette rules
+    .bn-kpi-card.bn-kpi-card--empty,
+    .bn-stage-strip--flow .bn-stage-flow__step .bn-stage-card.bn-stage-card--empty,
+    .bn-stage-strip--pod .bn-stage-card.bn-stage-card--empty,
+    .bn-stage-strip--hearing .bn-stage-card.bn-stage-card--empty,
+    .bn-stage-strip:not(.bn-stage-strip--pod):not(.bn-stage-strip--flow):not(.bn-stage-strip--hearing) .bn-stage-card.bn-stage-card--empty {
+        --stg: #94a3b8 !important;
+        --stg-pattern: none !important;
+        --kpi-accent: #94a3b8 !important;
+        --kpi-pattern: none !important;
+        --bn-card-accent: #94a3b8 !important;
+        opacity: 0.82;
+        filter: grayscale(0.88);
+        border-color: #dbe3ed !important;
+        border-top-color: #cbd5e1 !important;
+        box-shadow: none;
+
+        &::before {
+            background-image: none !important;
+            background: linear-gradient(145deg, #f8fafc 0%, #eef2f6 100%) !important;
+        }
+
+        &::after {
+            opacity: 0.25;
+        }
+
+        .bn-kpi-icon,
+        .bn-stage-ico {
+            background: #e2e8f0 !important;
+            color: #64748b !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        .bn-kpi-label,
+        .bn-kpi-value,
+        .bn-kpi-trend,
+        .bn-stage-name,
+        .bn-stage-value .n,
+        .bn-stage-value .p,
+        .bn-pod-status,
+        .bn-stage-bill-caption {
+            color: #64748b !important;
+        }
+
+        .bn-stage-meter {
+            background: #e2e8f0;
+
+            span {
+                background: #cbd5e1 !important;
+            }
+        }
+
+        .bn-stage-bill-badge {
+            opacity: 0.45;
+        }
+
+        &:hover {
+            transform: none;
+            filter: grayscale(0.88);
+        }
+    }
+
+    .bn-stage-flow__step:has(.bn-stage-card--empty) .bn-stage-flow__connector {
+        opacity: 0.35;
+        filter: grayscale(1);
+    }
+
     .bn-kpi-icon {
         width: 1.85rem;
         height: 1.85rem;

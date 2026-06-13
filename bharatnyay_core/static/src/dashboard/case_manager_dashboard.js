@@ -19,6 +19,8 @@ import {
     batchSegPctCount as batchSegPctCountHelper,
     openRoleInvoices,
     openPodStatusRecords,
+    openStageBucketCases,
+    guardEmptyDashboardCard,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -38,6 +40,7 @@ export class CaseManagerDashboard extends Component {
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
+        this.notification = useService("notification");
         const dr = defaultDateRange();
         this.state = useState({
             loading: true,
@@ -138,6 +141,30 @@ export class CaseManagerDashboard extends Component {
     }
 
     openMyCases() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.total_cases,
+                label: "My cases",
+            })
+        ) {
+            return;
+        }
+        this._openMyCasesAction();
+    }
+
+    openTotalBatches() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.total_batches,
+                label: "Total batches",
+            })
+        ) {
+            return;
+        }
+        this._openMyCasesAction();
+    }
+
+    _openMyCasesAction() {
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "My cases",
@@ -153,19 +180,18 @@ export class CaseManagerDashboard extends Component {
         if (!stage) {
             return;
         }
-        const domain = await this.orm.call("bharat.loan", "get_progress_bucket_domain", [
+        const cards =
+            this.state.data?.hearing_stage_cards?.find((s) => s.key === stage)
+                ? this.state.data?.hearing_stage_cards
+                : this.state.data?.stage_cards;
+        await openStageBucketCases(
+            this.orm,
+            this.action,
+            this.state,
             stage,
-            this.state.data?.loan_domain || [],
-        ]);
-        const match = (this.state.data?.stage_cards || []).find((s) => s.key === stage);
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: match?.label || stage,
-            res_model: "bharat.loan",
-            views: [[false, "list"], [false, "form"]],
-            domain,
-            target: "current",
-        });
+            cards || [],
+            this.notification,
+        );
     }
 
     openMixCases(ev) {
@@ -210,6 +236,14 @@ export class CaseManagerDashboard extends Component {
     }
 
     openUnbilledCases() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.unbilled_cases,
+                label: "Unbilled cases",
+            })
+        ) {
+            return;
+        }
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "Pending billing",
@@ -221,6 +255,14 @@ export class CaseManagerDashboard extends Component {
     }
 
     openPendingPostalStatus() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.postal_status_pending_count,
+                label: "Awaiting POD status",
+            })
+        ) {
+            return;
+        }
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "Awaiting POD status",
@@ -241,12 +283,12 @@ export class CaseManagerDashboard extends Component {
         if (!card) {
             return;
         }
-        openPodStatusRecords(this.action, card);
+        openPodStatusRecords(this.action, card, this.notification);
     }
 
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
-        openRoleInvoices(this.action, this.state, mode);
+        openRoleInvoices(this.action, this.state, mode, this.notification);
     }
 
     openLoan(ev) {

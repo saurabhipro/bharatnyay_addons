@@ -3133,23 +3133,9 @@ class BharatLoan(models.Model):
         unbilled_cases = len(pending_billing.mapped('loan_id'))
         pending_billing_charges = len(pending_billing)
 
-        milestones = self._milestone_master_ordered()
-        billing_flags = self.env['bharat.loan.milestone'].dashboard_billing_flags_by_code()
-        stage_cards = []
-        for milestone in milestones:
-            stage_key = milestone.code
-            cnt = by_stage.get(stage_key, 0)
-            sty = self.STAGE_STYLE.get(stage_key, {})
-            stage_cards.append({
-                'key': stage_key,
-                'id': milestone.id,
-                'label': milestone.name or stage_key,
-                'count': cnt,
-                'percent': round((100.0 * cnt / total), 1) if total else 0.0,
-                'color': sty.get('color', '#64748b'),
-                'icon': sty.get('icon', milestone.icon or 'fa-circle-o'),
-                **billing_flags.get(stage_key, {}),
-            })
+        stage_cards, _stage_card_total = self._bucket_cards_from_loans(
+            scoped_loans, base_domain=scope_domain,
+        )
 
         pos_ratio = round(100 * active_followup / total, 1) if total else 0.0
 
@@ -3444,23 +3430,38 @@ class BharatLoan(models.Model):
         return rows
 
     @api.model
-    def _bucket_cards_from_loans(self, loans):
+    def _bucket_cards_from_loans(self, loans, base_domain=None):
         total = len(loans)
         counts = defaultdict(int)
+        ids_by_bucket = defaultdict(list)
         for loan in loans:
-            counts[loan._case_progress_bucket_code()] += 1
+            code = loan._case_progress_bucket_code()
+            counts[code] += 1
+            ids_by_bucket[code].append(loan.id)
 
-        cards = []
+        milestones = self._milestone_master_ordered()
+        milestone_by_code = {m.code: m for m in milestones}
         billing_flags = self.env['bharat.loan.milestone'].dashboard_billing_flags_by_code()
-        for key, label, color, icon in self.PROGRESS_BUCKET_SPECS:
+        cards = []
+        for key, default_label, default_color, default_icon in self.PROGRESS_BUCKET_SPECS:
             cnt = counts.get(key, 0)
+            bucket_ids = ids_by_bucket.get(key, [])
+            open_domain = [('id', 'in', bucket_ids or [0])]
+            milestone = milestone_by_code.get(key)
+            sty = self.STAGE_STYLE.get(key, {})
             cards.append({
                 'key': key,
-                'label': label,
+                'id': milestone.id if milestone else False,
+                'label': (milestone.name if milestone else None) or default_label,
                 'count': cnt,
                 'percent': round(100.0 * cnt / total, 1) if total else 0.0,
-                'color': color,
-                'icon': icon,
+                'color': sty.get('color', default_color),
+                'icon': sty.get(
+                    'icon',
+                    (milestone.icon if milestone else None) or default_icon,
+                ),
+                'open_domain': open_domain,
+                'loan_ids': bucket_ids,
                 **billing_flags.get(key, {
                     'creates_unbilled_charge': False,
                     'billing_badge_icon': False,
@@ -3526,7 +3527,7 @@ class BharatLoan(models.Model):
         ids = loans.filtered(
             lambda l: l._case_progress_bucket_code() == bucket_key
         ).ids
-        return domain + [('id', 'in', ids or [0])]
+        return [('id', 'in', ids or [0])]
 
     @api.model
     def _dashboard_chart_palette(self):
@@ -3558,9 +3559,11 @@ class BharatLoan(models.Model):
         ]
 
     @api.model
-    def _dashboard_breakdown_from_loans(self, loans):
+    def _dashboard_breakdown_from_loans(self, loans, base_domain=None):
         """Portfolio-style chart payloads scoped to a loan recordset."""
-        bucket_cards, _total = self._bucket_cards_from_loans(loans)
+        if base_domain is None:
+            base_domain = [('id', 'in', loans.ids or [0])]
+        bucket_cards, _total = self._bucket_cards_from_loans(loans, base_domain=base_domain)
         workflow_mix = [
             {
                 'key': card['key'],
@@ -3572,17 +3575,7 @@ class BharatLoan(models.Model):
             for card in bucket_cards
             if card['count']
         ]
-        stage_cards = [
-            {
-                'key': card['key'],
-                'label': card['label'],
-                'count': card['count'],
-                'percent': card['percent'],
-                'color': card['color'],
-                'icon': card['icon'],
-            }
-            for card in bucket_cards
-        ]
+        stage_cards = [dict(card) for card in bucket_cards]
 
         palette = self._dashboard_chart_palette()
         no_batch_label = _('No batch')
@@ -3721,7 +3714,7 @@ class BharatLoan(models.Model):
         loans = self.search(domain)
         bucket_cards, total_cases = self._bucket_cards_from_loans(loans)
         billing = self._billing_stats_for_loans(loans, date_from, date_to)
-        breakdown = self._dashboard_breakdown_from_loans(loans)
+        breakdown = self._dashboard_breakdown_from_loans(loans, base_domain=domain)
         Currency = self.env.company.currency_id
 
         pending_billing = self.env['bharat.loan.billing.event'].sudo().search([
@@ -3808,7 +3801,7 @@ class BharatLoan(models.Model):
         loans = self.search(domain)
         bucket_cards, total_cases = self._bucket_cards_from_loans(loans)
         billing = self._billing_stats_for_loans(loans, date_from, date_to)
-        breakdown = self._dashboard_breakdown_from_loans(loans)
+        breakdown = self._dashboard_breakdown_from_loans(loans, base_domain=domain)
         upcoming = self._upcoming_hearings(domain)
         awards = sum(len(loan.award_document_ids) for loan in loans)
         hearing_cases = sum(

@@ -1,5 +1,54 @@
 /** @odoo-module **/
 
+import { _t } from "@web/core/l10n/translation";
+
+/** Return false when the tile is empty and an info notice was shown. */
+export function guardEmptyDashboardCard(
+    notification,
+    { count, label, amount, invoiceCount } = {}
+) {
+    const n = Number(count ?? 0);
+    const hasAmount = amount !== undefined && amount !== null;
+    const hasInvoices = invoiceCount !== undefined && invoiceCount !== null;
+    const empty =
+        n === 0 &&
+        (!hasAmount || Number(amount || 0) === 0) &&
+        (!hasInvoices || Number(invoiceCount || 0) === 0);
+    if (!empty) {
+        return true;
+    }
+    notification.add(_t("No data in this section."), {
+        title: label || _t("This section"),
+        type: "info",
+    });
+    return false;
+}
+
+export function guardEmptyInvoiceCard(notification, state, mode, label) {
+    const kpis = state.data?.kpis || {};
+    if (mode === "paid") {
+        return guardEmptyDashboardCard(notification, {
+            label: label || _t("Paid invoices"),
+            amount: kpis.paid_invoice_amount,
+            invoiceCount: kpis.paid_invoices,
+        });
+    }
+    if (mode === "unpaid") {
+        return guardEmptyDashboardCard(notification, {
+            label: label || _t("Unpaid invoices"),
+            amount: kpis.unpaid_invoice_amount,
+            invoiceCount: kpis.unpaid_invoices,
+        });
+    }
+    if (mode === "draft") {
+        return guardEmptyDashboardCard(notification, {
+            label: label || _t("Draft invoices"),
+            count: kpis.draft_invoices,
+        });
+    }
+    return true;
+}
+
 export function pieGradient(mix) {
     if (!mix?.length) {
         return "conic-gradient(#e2e8f0 0% 100%)";
@@ -80,18 +129,65 @@ export function mergeLoanDomain(state, extra = []) {
 
 /** Open the configured loan list/form action (uses Cases list view with column widths). */
 export function openLoanCases(action, { name, domain }) {
-    return action.doAction("bharatnyay_core.action_bharat_loan", {
+    // Use an explicit act_window — the XML action has a URL path that ignores domain overrides.
+    return action.doAction({
+        type: "ir.actions.act_window",
         name: name || "Cases",
+        res_model: "bharat.loan",
+        views: [[false, "list"], [false, "form"]],
         domain: domain || [],
-        view_mode: "list,form",
+        target: "current",
     });
 }
 
+/** Open cases for a pipeline stage tile — same records as the card count. */
+export async function openStageBucketCases(
+    orm,
+    action,
+    state,
+    stage,
+    stageCards,
+    notification
+) {
+    const match = (stageCards || []).find((s) => s.key === stage);
+    if (
+        !guardEmptyDashboardCard(notification, {
+            count: match?.count,
+            label: match?.label || stage,
+        })
+    ) {
+        return false;
+    }
+    let domain = match?.open_domain;
+    if (!domain?.length && match?.loan_ids) {
+        domain = [["id", "in", match.loan_ids.length ? match.loan_ids : [0]]];
+    }
+    if (!domain?.length) {
+        domain = await orm.call("bharat.loan", "get_progress_bucket_domain", [
+            stage,
+            state.data?.loan_domain || [],
+        ]);
+    }
+    await openLoanCases(action, {
+        name: match?.label || stage,
+        domain,
+    });
+    return true;
+}
+
 /** POD dashboard tiles → notices, interim orders, or awards (not cases). */
-export function openPodStatusRecords(action, card) {
+export function openPodStatusRecords(action, card, notification) {
+    if (
+        !guardEmptyDashboardCard(notification, {
+            count: card?.count,
+            label: card ? `${card.label} — ${card.status_label}` : _t("POD"),
+        })
+    ) {
+        return Promise.resolve(false);
+    }
     const open = card?.open;
     if (!open?.res_model) {
-        return Promise.resolve();
+        return Promise.resolve(false);
     }
     return action.doAction({
         type: "ir.actions.act_window",
@@ -154,15 +250,18 @@ export async function onDashboardFilterBatchChange(orm, state, ev, reloadFn) {
     await reloadFn();
 }
 
-export function openRoleInvoices(action, state, mode = "all") {
+export function openRoleInvoices(action, state, mode = "all", notification) {
+    const titles = {
+        all: _t("Invoices (my cases)"),
+        paid: _t("Paid invoices (my cases)"),
+        unpaid: _t("Unpaid invoices (my cases)"),
+        draft: _t("Draft invoices (my cases)"),
+    };
+    if (notification && !guardEmptyInvoiceCard(notification, state, mode, titles[mode])) {
+        return false;
+    }
     const domains = state.data?.invoice_domains || {};
     const domain = domains[mode] || domains.all || [["id", "=", 0]];
-    const titles = {
-        all: "Invoices (my cases)",
-        paid: "Paid invoices (my cases)",
-        unpaid: "Unpaid invoices (my cases)",
-        draft: "Draft invoices (my cases)",
-    };
     action.doAction({
         type: "ir.actions.act_window",
         name: titles[mode] || titles.all,
@@ -172,6 +271,7 @@ export function openRoleInvoices(action, state, mode = "all") {
         context: { default_move_type: "out_invoice" },
         target: "current",
     });
+    return true;
 }
 
 export function batchVolumeRows(state) {

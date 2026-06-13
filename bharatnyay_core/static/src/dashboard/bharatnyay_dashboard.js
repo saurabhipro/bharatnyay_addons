@@ -15,6 +15,9 @@ import {
     mergeLoanDomain,
     openLoanCases,
     openPodStatusRecords,
+    openStageBucketCases,
+    guardEmptyDashboardCard,
+    guardEmptyInvoiceCard,
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
@@ -30,6 +33,7 @@ export class BharatnyayDashboard extends Component {
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
+        this.notification = useService("notification");
 
         this.state = useState({
             loading: true,
@@ -153,6 +157,30 @@ export class BharatnyayDashboard extends Component {
     }
 
     openLoanList() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.total_loans,
+                label: "Total cases",
+            })
+        ) {
+            return;
+        }
+        this._openLoanListAction();
+    }
+
+    openTotalBatches() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.total_batches,
+                label: "Total batches",
+            })
+        ) {
+            return;
+        }
+        this._openLoanListAction();
+    }
+
+    _openLoanListAction() {
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "Loan sheet",
@@ -163,16 +191,19 @@ export class BharatnyayDashboard extends Component {
         });
     }
 
-    openStageCases(ev) {
+    async openStageCases(ev) {
         const stage = ev.currentTarget?.dataset?.stage;
         if (!stage) {
             return;
         }
-        const match = (this.state.data?.stage_cards || []).find((s) => s.key === stage);
-        openLoanCases(this.action, {
-            name: match?.label || stage,
-            domain: mergeLoanDomain(this.state, [["milestone_code", "=", stage]]),
-        });
+        await openStageBucketCases(
+            this.orm,
+            this.action,
+            this.state,
+            stage,
+            this.state.data?.stage_cards || [],
+            this.notification,
+        );
     }
 
     openPodStatusCases(ev) {
@@ -184,7 +215,7 @@ export class BharatnyayDashboard extends Component {
         if (!card) {
             return;
         }
-        openPodStatusRecords(this.action, card);
+        openPodStatusRecords(this.action, card, this.notification);
     }
 
     openMixCases(ev) {
@@ -214,6 +245,14 @@ export class BharatnyayDashboard extends Component {
     }
 
     openUnbilledCases() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.unbilled_cases,
+                label: "Unbilled cases",
+            })
+        ) {
+            return;
+        }
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "Pending billing",
@@ -225,6 +264,14 @@ export class BharatnyayDashboard extends Component {
     }
 
     openPendingPostalStatus() {
+        if (
+            !guardEmptyDashboardCard(this.notification, {
+                count: this.state.data?.kpis?.postal_status_pending_count,
+                label: "Awaiting POD status",
+            })
+        ) {
+            return;
+        }
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "Awaiting POD status",
@@ -242,6 +289,14 @@ export class BharatnyayDashboard extends Component {
 
     openInvoices(ev) {
         const mode = ev.currentTarget?.dataset?.filter || "all";
+        const titles = {
+            paid: "Invoices paid",
+            unpaid: "Invoices unpaid",
+            draft: "Draft invoices",
+        };
+        if (!guardEmptyInvoiceCard(this.notification, this.state, mode, titles[mode])) {
+            return;
+        }
         const domain = [
             ["move_type", "=", "out_invoice"],
             ["bharat_arbitration_invoice", "=", true],
