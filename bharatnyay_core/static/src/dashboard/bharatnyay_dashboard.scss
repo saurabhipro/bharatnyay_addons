@@ -1436,6 +1436,24 @@
         box-shadow: 0 1px 3px color-mix(in srgb, var(--bn-bill-accent) 22%, transparent);
     }
 
+    .bn-stage-title-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.08rem;
+        min-width: 0;
+    }
+
+    .bn-bill-milestone {
+        display: block;
+        font-size: 0.58rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #16a34a;
+        line-height: 1.1;
+    }
+
     .bn-stage-bill-caption {
         display: block;
         margin-top: 0.15rem;
@@ -1554,6 +1572,17 @@
             align-items: center;
             gap: 0.35rem;
             margin-bottom: 0.45rem;
+        }
+
+        &__lane-titles {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.12rem;
+        }
+
+        &__lane-milestone {
+            font-size: 0.68rem;
         }
 
         &__lane-title {
@@ -1682,6 +1711,171 @@
         }
     }
 
+    .bn-pipeline-viz__billing-panel {
+        margin-top: 0.85rem;
+        padding: 0.85rem;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid color-mix(in srgb, #22c55e 22%, var(--bn-border));
+        box-shadow:
+            0 1px 2px rgba(15, 23, 42, 0.04),
+            0 8px 24px rgba(34, 197, 94, 0.08);
+
+        .bn-pipeline-viz__branch-label {
+            margin-bottom: 0.55rem;
+        }
+    }
+
+    .bn-pipeline-viz__charge-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.55rem;
+
+        @media (max-width: 1199px) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @media (max-width: 560px) {
+            grid-template-columns: 1fr;
+        }
+
+        .bn-stage-card--compact {
+            min-height: 92px;
+            padding: 0.55rem 0.6rem 0.5rem;
+            gap: 0.2rem;
+
+            .bn-charge-amount {
+                font-size: 0.82rem;
+                margin: 0.05rem 0 0.1rem;
+            }
+
+            .bn-stage-value {
+                .n {
+                    font-size: 0.92rem;
+                }
+
+                .p {
+                    font-size: 0.58rem;
+                }
+            }
+
+            .bn-stage-meter {
+                height: 4px;
+            }
+
+            .bn-stage-bill-caption {
+                font-size: 0.54rem;
+                margin-top: 0.05rem;
+            }
+
+            .bn-charge-card__action {
+                margin-top: 0.35rem;
+                padding: 0.22rem 0.35rem;
+                font-size: 0.56rem;
+            }
+        }
+    }
+
+    .bn-stage-card--invoice-pipeline {
+        --stg: #0f766e;
+        --stg-pattern: var(--bn-pattern-green);
+        --bn-card-veil: linear-gradient(
+            135deg,
+            color-mix(in srgb, #0f766e 82%, #134e4a) 0%,
+            color-mix(in srgb, #14b8a6 68%, #115e59) 100%
+        );
+        text-align: left;
+    }
+
+    .bn-invoice-pipeline-card__metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.25rem;
+        margin-top: 0.15rem;
+    }
+
+    .bn-invoice-pipeline-card__metric {
+        display: flex;
+        flex-direction: column;
+        gap: 0.08rem;
+        min-width: 0;
+    }
+
+    .bn-invoice-pipeline-card__k {
+        font-size: 0.52rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bn-muted);
+        line-height: 1.1;
+    }
+
+    .bn-invoice-pipeline-card__v {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--bn-text);
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bn-pipeline-viz__total-unbilled {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.75rem;
+        width: 100%;
+        margin-top: 0.55rem;
+        padding: 0.45rem 0.65rem;
+        border-radius: 8px;
+        border: 1px dashed color-mix(in srgb, var(--bn-accent) 28%, var(--bn-border));
+        background: color-mix(in srgb, var(--bn-accent) 5%, #ffffff);
+        cursor: pointer;
+        appearance: none;
+        font: inherit;
+        text-align: left;
+        transition: background 0.15s ease, border-color 0.15s ease;
+
+        &:hover {
+            background: color-mix(in srgb, var(--bn-accent) 10%, #ffffff);
+            border-color: color-mix(in srgb, var(--bn-accent) 40%, var(--bn-border));
+        }
+
+        &--empty {
+            opacity: 0.72;
+        }
+
+        &__label {
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #334155;
+        }
+
+        &__amount {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--bn-text);
+        }
+
+        &__meta {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--bn-muted);
+        }
+
+        &__action {
+            margin-left: auto;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: color-mix(in srgb, var(--bn-accent) 82%, #0f172a);
+        }
+    }
+
     @media (max-width: 1199px) {
         .bn-pipeline-viz__branch-lanes {
             grid-template-columns: repeat(3, minmax(250px, 1fr));
@@ -1764,6 +1958,32 @@
         color: var(--bn-text);
         margin: 0.15rem 0 0.2rem;
         line-height: 1.15;
+    }
+
+    .bn-charge-card {
+        text-align: left;
+
+        &__action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            margin-top: 0.55rem;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: color-mix(in srgb, var(--bn-accent) 82%, #0f172a);
+            background: color-mix(in srgb, var(--bn-accent) 10%, #ffffff);
+            border: 1px solid color-mix(in srgb, var(--bn-accent) 22%, var(--bn-border));
+        }
+
+        &:hover .bn-charge-card__action,
+        &:focus .bn-charge-card__action {
+            background: color-mix(in srgb, var(--bn-accent) 18%, #ffffff);
+        }
     }
 
     .bn-stage-card--charge .bn-stage-value .p {

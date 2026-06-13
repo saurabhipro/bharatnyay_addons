@@ -3,7 +3,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 from .product_template import BHARAT_ARBITRATION_STAGE_SELECTION
-from .loan_milestone import POSTAL_BILLING_MILESTONE_CODES
+from .loan_milestone import POSTAL_BILLING_MILESTONE_CODES, POSTAL_BILLING_MILESTONE_NUMBERS
 
 BILLABLE_MILESTONE_CODES = frozenset(
     code for code, _label in BHARAT_ARBITRATION_STAGE_SELECTION
@@ -275,6 +275,7 @@ class BharatLoanBillingEvent(models.Model):
             stages.append({
                 'key': code,
                 'label': label,
+                'billing_milestone_label': _('Milestone %s') % POSTAL_BILLING_MILESTONE_NUMBERS[code],
                 'color': color,
                 'icon': icon,
                 'count': count,

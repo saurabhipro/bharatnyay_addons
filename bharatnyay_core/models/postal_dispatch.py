@@ -385,6 +385,9 @@ class BharatLoanPostalDispatch(models.Model):
                     'document_type': doc_type,
                     'pod_status': status,
                     'label': label,
+                    'billing_milestone_label': self.env['bharat.loan.milestone'].postal_billing_milestone_label(
+                        milestone_code,
+                    ),
                     'status_label': status_label,
                     'count': cnt,
                     'doc_total': doc_total,

@@ -160,26 +160,20 @@
         <field name="arch" type="xml">
             <form string="Create consolidated invoice">
                 <group>
-                    <group>
-                        <field name="company_ids" widget="many2many_tags"
-                               options="{'no_create': True}"/>
-                        <field name="batch_ids" widget="many2many_tags"
-                               options="{'no_create': True}"/>
-                        <field name="milestone_ids" widget="many2many_tags"
-                               options="{'no_create': True}"/>
-                    </group>
-                    <group>
-                        <field name="preview_case_count" readonly="1"/>
-                        <field name="preview_total_amount" readonly="1"/>
-                        <field name="currency_id" invisible="1"/>
-                        <field name="move_id" placeholder="Optional — single lender only"/>
-                    </group>
+                    <field name="preview_case_count" readonly="1"/>
+                    <field name="preview_total_amount" readonly="1"/>
+                    <field name="currency_id" invisible="1"/>
                 </group>
-                <field name="preview_hint" readonly="1" nolabel="1" class="text-muted"/>
+                <field name="scope_summary" readonly="1" nolabel="1" class="text-muted"/>
+                <field name="preview_hint" readonly="1" nolabel="1"/>
+                <field name="company_ids" invisible="1"/>
+                <field name="batch_ids" invisible="1"/>
+                <field name="milestone_ids" invisible="1"/>
+                <field name="move_id" invisible="1"/>
                 <div class="alert alert-info" role="alert">
-                    Bills all <b>pending</b> unbilled charges matching your selection.
-                    Already invoiced rows are never included again.
-                    One posted invoice per lender with summary lines per billing stage and a full case annexure.
+                    Bills all <b>pending</b> unbilled charges for the current dashboard scope.
+                    Batches and billing stages are selected automatically.
+                    One posted invoice per lender with summary lines and a full case annexure.
                 </div>
                 <footer>
                     <button name="action_apply" string="Create consolidated invoice" type="object" class="btn-primary"/>

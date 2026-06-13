@@ -52,16 +52,26 @@ export class PostalDeliveryCardsField extends Component {
         if (!card?.clickable) {
             return;
         }
-        const loanId = this.props.record.resId;
-        if (!loanId || !card.document_type) {
+        const record = this.props.record;
+        const recordId = record.resId;
+        if (!recordId || !card.document_type) {
             return;
         }
         try {
-            const act = await this.orm.call(
-                "bharat.loan",
-                "action_open_postal_status_wizard",
-                [[loanId], card.document_type]
-            );
+            let act;
+            if (record.resModel === "bharat.loan.notice.line") {
+                act = await this.orm.call(
+                    "bharat.loan.notice.line",
+                    "action_update_pod",
+                    [[recordId]]
+                );
+            } else {
+                act = await this.orm.call(
+                    "bharat.loan",
+                    "action_open_postal_status_wizard",
+                    [[recordId], card.document_type]
+                );
+            }
             if (!act) {
                 return;
             }

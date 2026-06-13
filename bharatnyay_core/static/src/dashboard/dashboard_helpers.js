@@ -29,7 +29,7 @@ export function guardEmptyInvoiceCard(notification, state, mode, label) {
     if (mode === "paid") {
         return guardEmptyDashboardCard(notification, {
             label: label || _t("Paid invoices"),
-            amount: kpis.paid_invoice_amount,
+            amount: kpis.paid_invoice_amount    ,
             invoiceCount: kpis.paid_invoices,
         });
     }
@@ -202,6 +202,46 @@ export function openPodStatusRecords(action, card, notification) {
         views: [[false, "list"], [false, "form"]],
         domain: open.domain || [],
         target: "current",
+    });
+}
+
+/** Open simplified consolidated invoice wizard for one pipeline stage (or total). */
+export function openConsolidatedBillingWizard(action, notification, state, stageKey) {
+    const pipeline = state.data?.unbilled_charges_pipeline;
+    if (!pipeline) {
+        return Promise.resolve(false);
+    }
+    let card;
+    let title = _t("Create consolidated invoice");
+    if (stageKey === "total") {
+        card = pipeline.total;
+    } else {
+        card = (pipeline.stages || []).find((s) => s.key === stageKey);
+        if (card?.label) {
+            title = `${_t("Create consolidated invoice")} — ${card.label}`;
+        }
+    }
+    if (
+        !guardEmptyDashboardCard(notification, {
+            count: card?.count,
+            label: title,
+            amount: card?.amount,
+        })
+    ) {
+        return Promise.resolve(false);
+    }
+    return action.doAction({
+        type: "ir.actions.act_window",
+        name: title,
+        res_model: "bharat.arbitration.invoice.line.loader.wizard",
+        views: [[false, "form"]],
+        target: "new",
+        context: {
+            bharat_billing_milestone_code: stageKey === "total" ? "total" : stageKey,
+            dashboard_region_id: state.filter_region || false,
+            dashboard_state_id: state.filter_state || false,
+            dashboard_batch_number: state.filter_batch || false,
+        },
     });
 }
 

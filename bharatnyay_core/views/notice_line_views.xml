@@ -115,6 +115,20 @@
                                         <field name="delivery_date" readonly="1" nolabel="1"/>
                                     </div>
                                 </div>
+                                <div class="bn-notice-delivery-update"
+                                     invisible="not has_pod_tracking or loan_id.is_case_locked">
+                                    <div class="bn-notice-delivery-update__head">
+                                        <span class="bn-notice-delivery-update__hint">Click the card to update POD</span>
+                                        <button name="action_update_pod" type="object"
+                                                string="Update POD status"
+                                                class="btn btn-link bn-notice-delivery-update__link"
+                                                icon="fa-truck"/>
+                                    </div>
+                                    <field name="postal_delivery_card_json"
+                                           widget="bn_postal_delivery_cards"
+                                           nolabel="1"
+                                           readonly="1"/>
+                                </div>
                                 <p class="bn-notice-hint" invisible="has_pod_tracking">
                                     Digital notice — email delivery only.
                                 </p>

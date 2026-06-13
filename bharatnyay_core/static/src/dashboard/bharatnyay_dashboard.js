@@ -17,6 +17,7 @@ import {
     openPodStatusRecords,
     openStageBucketCases,
     openUnbilledChargesStage,
+    openConsolidatedBillingWizard,
     guardEmptyDashboardCard,
     guardEmptyInvoiceCard,
     onDashboardFilterRegionChange,
@@ -382,6 +383,19 @@ export class BharatnyayDashboard extends Component {
             return;
         }
         openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            key,
+        );
+    }
+
+    openConsolidatedBillingFromStage(ev) {
+        const key = ev.currentTarget?.dataset?.chargeKey;
+        if (!key) {
+            return;
+        }
+        openConsolidatedBillingWizard(
             this.action,
             this.notification,
             this.state,

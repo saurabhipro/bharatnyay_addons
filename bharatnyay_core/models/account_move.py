@@ -16,7 +16,7 @@ class AccountMove(models.Model):
         help='Set when lines are built from BharatNyay loan batches / milestones.',
     )
     bharat_invoice_batch_ref = fields.Char(
-        string='Loan batch ref.',
+        string='Batch no',
         index=True,
         help='Import/batch number shared by the cases billed on this invoice.',
     )
