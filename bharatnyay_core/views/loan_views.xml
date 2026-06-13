@@ -545,11 +545,6 @@
                                     Arbitration charges for this case. Pending rows are included on the next consolidated invoice.
                                 </p>
                             </group>
-                            <div groups="bharatnyay_core.group_bharat_admin,base.group_system">
-                                <button name="action_open_billing_test_wizard" type="object"
-                                        string="Accrue test charge" class="btn-secondary mb-2"
-                                        icon="fa-flask"/>
-                            </div>
                             <field name="billing_event_ids"
                                    nolabel="1"
                                    readonly="1">

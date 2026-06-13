@@ -160,12 +160,6 @@
                             string="Create consolidated invoice"
                             class="btn-primary"
                             display="always"/>
-                    <button name="%(bharatnyay_core.action_bharat_loan_billing_test_wizard)d"
-                            type="action"
-                            string="Accrue test charge"
-                            class="btn-secondary"
-                            display="always"
-                            groups="bharatnyay_core.group_bharat_admin,base.group_system"/>
                 </header>
                 <field name="accrual_date"/>
                 <field name="loan_number"/>

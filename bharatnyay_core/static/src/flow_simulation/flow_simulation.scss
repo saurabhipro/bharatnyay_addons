@@ -1,9 +1,63 @@
 .o_bharat_flow_sim {
     position: relative;
     min-height: 100%;
-    color: #f8fafc;
+    color: #f8fafc !important;
     background: radial-gradient(ellipse at 20% 0%, #1e3a5f 0%, #0f172a 45%, #020617 100%);
     overflow: hidden;
+
+    // Spiffy / Bootstrap set dark text on fullscreen actions — override for dark demo shell.
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    span,
+    pre,
+    li,
+    label,
+    .btn-link {
+        color: inherit;
+    }
+
+    h1,
+    h2,
+    h3 {
+        color: #f8fafc !important;
+    }
+
+    .btn-link {
+        color: #e2e8f0 !important;
+        text-decoration: none;
+
+        &:hover,
+        &:focus,
+        &:active {
+            color: #ffffff !important;
+        }
+    }
+
+    .btn-outline-light {
+        color: #f8fafc !important;
+        border-color: rgba(248, 250, 252, 0.5) !important;
+
+        &:hover,
+        &:focus {
+            color: #0f172a !important;
+            background: #f8fafc !important;
+            border-color: #f8fafc !important;
+        }
+    }
+
+    .btn-outline-info {
+        color: #7dd3fc !important;
+        border-color: rgba(56, 189, 248, 0.55) !important;
+
+        &:hover,
+        &:focus {
+            color: #0f172a !important;
+            background: #7dd3fc !important;
+        }
+    }
 
     &__backdrop {
         pointer-events: none;
@@ -36,6 +90,7 @@
             font-size: 1.25rem;
             font-weight: 700;
             letter-spacing: 0.02em;
+            color: #f8fafc !important;
         }
     }
 
@@ -64,6 +119,7 @@
     &__case-label {
         display: block;
         font-weight: 600;
+        color: #f1f5f9 !important;
     }
 
     &__case-milestone {
@@ -73,8 +129,17 @@
     }
 
     &__exit {
-        color: #cbd5e1 !important;
+        color: #e2e8f0 !important;
         text-decoration: none !important;
+
+        i {
+            color: inherit !important;
+        }
+
+        &:hover,
+        &:focus {
+            color: #ffffff !important;
+        }
     }
 
     &__body {
@@ -95,6 +160,11 @@
         justify-content: center;
         gap: 1rem;
         padding: 4rem 2rem;
+        color: #cbd5e1 !important;
+
+        p {
+            color: #cbd5e1 !important;
+        }
     }
 
     &__timeline {
@@ -127,20 +197,38 @@
         transition: background 0.25s ease, color 0.25s ease;
 
         &--done {
-            color: #86efac;
+            color: #86efac !important;
+
+            .o_bharat_flow_sim__step-title {
+                color: #86efac !important;
+            }
 
             .o_bharat_flow_sim__step-icon {
                 background: rgba(34, 197, 94, 0.15);
+                color: #86efac !important;
             }
         }
 
         &--current {
-            color: #f8fafc;
+            color: #f8fafc !important;
             background: rgba(56, 189, 248, 0.12);
+
+            .o_bharat_flow_sim__step-title {
+                color: #f8fafc !important;
+            }
 
             .o_bharat_flow_sim__step-icon {
                 background: rgba(56, 189, 248, 0.25);
                 box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+                color: #bae6fd !important;
+            }
+        }
+
+        &--pending {
+            color: #94a3b8 !important;
+
+            .o_bharat_flow_sim__step-title {
+                color: #94a3b8 !important;
             }
         }
     }
@@ -160,6 +248,7 @@
     &__step-title {
         font-size: 0.88rem;
         line-height: 1.35;
+        color: inherit !important;
     }
 
     &__stage {
@@ -167,6 +256,7 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        min-height: calc(100vh - 8rem);
     }
 
     &__progress {
@@ -227,6 +317,7 @@
         font-size: 1.75rem;
         font-weight: 700;
         margin-bottom: 0.75rem;
+        color: #f8fafc !important;
     }
 
     &__hero p {

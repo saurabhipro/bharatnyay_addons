@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -14,6 +16,7 @@ class BharatLoanFlowSimulation(models.TransientModel):
     filter_state_id = fields.Many2one('res.country.state', readonly=True)
     filter_batch_number = fields.Char(readonly=True)
     invoice_id = fields.Many2one('account.move', string='Generated invoice', readonly=True)
+    last_open_url = fields.Char(string='URL to open in demo', readonly=True)
 
     @api.model
     def _flow_steps(self):
@@ -59,20 +62,20 @@ class BharatLoanFlowSimulation(models.TransientModel):
             {
                 'key': 'schedule_hearing',
                 'title': _('Schedule hearing'),
-                'subtitle': _('Pick a slot — the video hearing invite is sent.'),
+                'subtitle': _('Auto-books the next free slot and opens the video room — no emails sent.'),
                 'icon': 'fa-calendar-check-o',
-                'mode': 'interactive',
-                'action': 'schedule_hearing',
-                'prompt': _('Complete the hearing scheduler, then continue.'),
+                'mode': 'auto',
+                'handler': '_step_demo_schedule_hearing',
+                'pause': 2200,
             },
             {
                 'key': 'interim_order',
                 'title': _('Pass interim order'),
-                'subtitle': _('Draft, preview PDF, and record an interim award.'),
+                'subtitle': _('Demo auto-records a sample interim order — no wizard required.'),
                 'icon': 'fa-gavel',
-                'mode': 'interactive',
-                'action': 'pass_interim_award',
-                'prompt': _('Record the interim order (or cancel the wizard to skip), then continue.'),
+                'mode': 'auto',
+                'handler': '_step_demo_interim_order',
+                'pause': 1800,
             },
             {
                 'key': 'award',
@@ -96,11 +99,11 @@ class BharatLoanFlowSimulation(models.TransientModel):
             {
                 'key': 'final_award',
                 'title': _('Pass final award'),
-                'subtitle': _('Sign-off the award letter on the case.'),
+                'subtitle': _('Demo auto-records the final award letter — no wizard required.'),
                 'icon': 'fa-legal',
-                'mode': 'interactive',
-                'action': 'pass_final_award',
-                'prompt': _('Record the final award, then continue to billing.'),
+                'mode': 'auto',
+                'handler': '_step_demo_final_award',
+                'pause': 1800,
             },
             {
                 'key': 'invoice',
@@ -280,6 +283,7 @@ class BharatLoanFlowSimulation(models.TransientModel):
             },
             'log_text': self.log_text or '',
             'invoice_id': self.invoice_id.id if self.invoice_id else False,
+            'open_url': self.last_open_url or False,
         }
         data.update(extra)
         return data
@@ -339,6 +343,31 @@ class BharatLoanFlowSimulation(models.TransientModel):
         if skip:
             raise UserError(skip)
         return _('Moved to %s') % name
+
+    def _step_demo_schedule_hearing(self, step):
+        self.ensure_one()
+        self.last_open_url = False
+        result = self.env['bharat.loan.hearing.schedule.wizard'].schedule_demo_hearing(
+            self.loan_id.with_context(**self._advance_context()),
+        )
+        url = (result.get('open_url') or '').strip()
+        if url:
+            self.last_open_url = url
+        return result.get('message') or _('Hearing scheduled for demo.')
+
+    def _step_demo_interim_order(self, step):
+        self.ensure_one()
+        return self.env['bharat.loan.interim.award.wizard'].record_demo_order(
+            self.loan_id.with_context(**self._advance_context()),
+            is_final_award=False,
+        )
+
+    def _step_demo_final_award(self, step):
+        self.ensure_one()
+        return self.env['bharat.loan.interim.award.wizard'].record_demo_order(
+            self.loan_id.with_context(**self._advance_context()),
+            is_final_award=True,
+        )
 
     def _step_advance_until(self, step):
         loan = self.loan_id
@@ -467,15 +496,12 @@ class BharatLoanFlowSimulation(models.TransientModel):
             auto_pause_ms=step.get('pause', 1400) if not done else 0,
             done=done,
         )
+        if self.last_open_url:
+            payload['open_url'] = self.last_open_url
+            self.last_open_url = False
         if done and self.invoice_id:
-            payload['invoice_action'] = self._ensure_action_views({
-                'type': 'ir.actions.act_window',
-                'name': self.invoice_id.display_name,
-                'res_model': 'account.move',
-                'res_id': self.invoice_id.id,
-                'view_mode': 'form',
-                'target': 'new',
-            })
+            payload['invoice_id'] = self.invoice_id.id
+            payload['invoice_name'] = self.invoice_id.display_name
         return payload
 
     def open_case_action(self):

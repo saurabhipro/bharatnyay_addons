@@ -2303,13 +2303,23 @@ class BharatLoan(models.Model):
     def _hearing_upsert_calendar_event(self, start_dt, invite_users=None, external_partners=None):
         """Create or update an Odoo Calendar event with Discuss videocall."""
         self.ensure_one()
-        Calendar = self.env['calendar.event'].sudo()
+        demo = bool(self.env.context.get('bharat_flow_simulation'))
+        mail_ctx = {
+            'mail_create_nosubscribe': True,
+            'mail_create_nolog': True,
+            'mail_notrack': True,
+            'tracking_disable': True,
+        }
+        Calendar = self.env['calendar.event'].sudo().with_context(**mail_ctx)
         start = fields.Datetime.to_datetime(start_dt) if isinstance(start_dt, str) else start_dt
         stop = start + timedelta(minutes=self._HEARING_MEETING_MINUTES)
         case_ref = self.case_number or self.loan_number or self.display_name
-        partner_ids = self._hearing_partner_ids_for_meeting(
-            invite_users, external_partners,
-        ).ids
+        if demo:
+            partner_ids = []
+        else:
+            partner_ids = self._hearing_partner_ids_for_meeting(
+                invite_users, external_partners,
+            ).ids
         vals = {
             'name': _('Hearing — %s') % case_ref,
             'start': fields.Datetime.to_string(start),
@@ -2321,7 +2331,7 @@ class BharatLoan(models.Model):
         }
         event = self.calendar_event_id
         if event:
-            event.write(vals)
+            event.with_context(**mail_ctx).write(vals)
         else:
             event = Calendar.create(vals)
         event._set_discuss_videocall_location()
@@ -2479,6 +2489,7 @@ class BharatLoan(models.Model):
             'name': _('Pass Interim Award'),
             'res_model': 'bharat.loan.interim.award.wizard',
             'view_mode': 'form',
+            'views': [(False, 'form')],
             'target': 'new',
             'context': {'default_loan_id': self.id},
         }

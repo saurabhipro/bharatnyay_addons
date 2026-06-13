@@ -25,7 +25,46 @@
                 </button>
             </header>
 
-            <div class="o_bharat_flow_sim__body" t-if="state.loading">
+            <div class="o_bharat_flow_sim__body" t-if="state.phase === 'pick_mode'">
+                <div class="o_bharat_flow_sim__setup">
+                    <div class="o_bharat_flow_sim__setup-icon">
+                        <i class="fa fa-play-circle"/>
+                    </div>
+                    <h2>How would you like to run the demo?</h2>
+                    <p class="o_bharat_flow_sim__setup-lead">
+                        Walk one case from its current stage through Award and invoice.
+                        Choose whether steps advance on their own or wait for you.
+                    </p>
+                    <div class="o_bharat_flow_sim__mode-cards">
+                        <button type="button"
+                                class="o_bharat_flow_sim__mode-card"
+                                t-att-disabled="state.busy"
+                                t-on-click="() => this.startDemo('auto')">
+                            <span class="o_bharat_flow_sim__mode-icon">
+                                <i class="fa fa-forward"/>
+                            </span>
+                            <span class="o_bharat_flow_sim__mode-title">Auto play</span>
+                            <span class="o_bharat_flow_sim__mode-desc">
+                                Steps run automatically with short pauses between them.
+                            </span>
+                        </button>
+                        <button type="button"
+                                class="o_bharat_flow_sim__mode-card o_bharat_flow_sim__mode-card--manual"
+                                t-att-disabled="state.busy"
+                                t-on-click="() => this.startDemo('manual')">
+                            <span class="o_bharat_flow_sim__mode-icon">
+                                <i class="fa fa-hand-pointer-o"/>
+                            </span>
+                            <span class="o_bharat_flow_sim__mode-title">Manual</span>
+                            <span class="o_bharat_flow_sim__mode-desc">
+                                You control each step with the Next button at the bottom.
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_bharat_flow_sim__body" t-elif="state.loading">
                 <div class="o_bharat_flow_sim__loader">
                     <i class="fa fa-spinner fa-spin fa-2x"/>
                     <p>Preparing demo case…</p>
@@ -104,17 +143,11 @@
                            t-out="state.payload.current_step.prompt"/>
 
                         <div class="o_bharat_flow_sim__hero-actions">
-                            <button t-if="state.waitingForUser and state.payload.current_step?.key === 'schedule_hearing'"
+                            <button t-if="state.videoRoomUrl"
                                     type="button"
-                                    class="btn btn-outline-light btn-lg"
-                                    t-on-click="reopenWizard">
-                                <i class="fa fa-calendar-check-o"/> Open hearing scheduler
-                            </button>
-                            <button t-if="state.waitingForUser"
-                                    type="button"
-                                    class="btn btn-primary btn-lg o_bharat_flow_sim__continue"
-                                    t-on-click="onContinue">
-                                <i class="fa fa-play"/> Continue demo
+                                    class="btn btn-outline-info btn-lg"
+                                    t-on-click="openVideoRoom">
+                                <i class="fa fa-video-camera"/> Open video room
                             </button>
                             <button t-if="state.waitingForUser and state.payload.current_step?.key === 'open_case'"
                                     type="button"
@@ -128,11 +161,20 @@
                                     t-on-click="reopenWizard">
                                 <i class="fa fa-external-link"/> Open wizard again
                             </button>
-                            <div t-if="state.busy and !state.waitingForUser"
-                                 class="o_bharat_flow_sim__auto-hint">
-                                <i class="fa fa-magic"/> Advancing automatically…
-                            </div>
                         </div>
+                    </div>
+
+                    <div t-if="canShowNext() or state.busy"
+                         class="o_bharat_flow_sim__nav">
+                        <p class="o_bharat_flow_sim__nav-hint" t-out="nextHint()"/>
+                        <button t-if="canShowNext()"
+                                type="button"
+                                class="btn btn-primary btn-lg o_bharat_flow_sim__next"
+                                t-att-disabled="state.busy"
+                                t-on-click="onNext">
+                            <i class="fa fa-arrow-right"/>
+                            <t t-out="nextButtonLabel()"/>
+                        </button>
                     </div>
 
                     <div class="o_bharat_flow_sim__log" t-if="state.payload.log_text">

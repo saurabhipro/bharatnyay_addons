@@ -6,7 +6,6 @@ import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 
 const INTERACTIVE_WIZARD_KEYS = new Set([
-    "schedule_hearing",
     "interim_order",
     "final_award",
 ]);
@@ -38,20 +37,25 @@ export class FlowSimulation extends Component {
         this.notification = useService("notification");
 
         this.state = useState({
-            loading: true,
+            phase: "pick_mode",
+            advanceMode: null,
+            loading: false,
             error: null,
             payload: null,
             message: "",
             busy: false,
             waitingForUser: false,
+            readyForNext: false,
+            autoWaiting: false,
             lastClientAction: null,
+            videoRoomUrl: "",
         });
 
         this._autoTimer = null;
         this._simulationId = null;
 
-        onWillStart(async () => {
-            await this._bootstrap();
+        onWillStart(() => {
+            this.state.loading = false;
         });
 
         onWillUnmount(() => {
@@ -81,6 +85,17 @@ export class FlowSimulation extends Component {
         });
     }
 
+    async startDemo(mode) {
+        if (this.state.busy || this.state.phase !== "pick_mode") {
+            return;
+        }
+        this.state.advanceMode = mode;
+        this.state.phase = "running";
+        this.state.loading = true;
+        this.state.error = null;
+        await this._bootstrap();
+    }
+
     async _bootstrap() {
         this.state.loading = true;
         this.state.error = null;
@@ -92,7 +107,10 @@ export class FlowSimulation extends Component {
                 this._filterArgs(),
             );
             this._applyPayload(payload);
-            await this._advance(false);
+            this.state.readyForNext = true;
+            if (this.state.advanceMode === "auto") {
+                await this._advance(false);
+            }
         } catch (e) {
             this.state.error = e?.message || String(e);
         } finally {
@@ -106,6 +124,18 @@ export class FlowSimulation extends Component {
         if (payload?.message) {
             this.state.message = payload.message;
         }
+        if (payload?.open_url) {
+            this._openDemoUrl(payload.open_url);
+            this.state.videoRoomUrl = payload.open_url;
+        }
+    }
+
+    _openDemoUrl(url) {
+        const target = (url || "").trim();
+        if (!target) {
+            return;
+        }
+        window.open(target, "_blank", "noopener,noreferrer");
     }
 
     async _advance(confirmed = false) {
@@ -114,6 +144,8 @@ export class FlowSimulation extends Component {
         }
         this.state.busy = true;
         this.state.waitingForUser = false;
+        this.state.readyForNext = false;
+        this.state.autoWaiting = false;
         this._clearAutoTimer();
         try {
             const payload = await this.orm.call(
@@ -124,14 +156,12 @@ export class FlowSimulation extends Component {
             );
             this._applyPayload(payload);
             if (payload.done) {
-                this.state.message = payload.message || "Demo finished.";
-                if (payload.invoice_action) {
-                    this.state.lastClientAction = payload.invoice_action;
-                }
+                await this._finishDemo(payload);
                 return;
             }
             if (payload.wait && payload.client_action) {
                 this.state.waitingForUser = true;
+                this.state.readyForNext = true;
                 this.state.lastClientAction = payload.client_action;
                 this.state.message =
                     payload.message ||
@@ -144,16 +174,40 @@ export class FlowSimulation extends Component {
             }
             if (payload.auto_continue) {
                 this.state.busy = false;
+                this.state.readyForNext = true;
+                if (this.state.advanceMode === "manual") {
+                    return;
+                }
+                this.state.autoWaiting = true;
                 await this._sleep(payload.auto_pause_ms || 1400);
+                if (!this.state.autoWaiting) {
+                    return;
+                }
+                this.state.autoWaiting = false;
                 await this._advance(false);
                 return;
             }
+            this.state.readyForNext = true;
         } catch (e) {
             this.state.error = e?.message || String(e);
             this.notification.add(this.state.error, { type: "danger" });
         } finally {
             this.state.busy = false;
         }
+    }
+
+    async _finishDemo(payload) {
+        const label = payload?.loan_label || "Demo case";
+        const parts = [`${label}: guided demo complete.`];
+        if (payload?.invoice_name) {
+            parts.push(`Invoice ${payload.invoice_name} created.`);
+        }
+        this.notification.add(parts.join(" "), {
+            title: "Flow demo complete",
+            type: "success",
+        });
+        await this._sleep(900);
+        this.onExit();
     }
 
     _launchClientAction(clientAction) {
@@ -194,8 +248,58 @@ export class FlowSimulation extends Component {
         return INTERACTIVE_WIZARD_KEYS.has(key) && this.state.lastClientAction;
     }
 
+    isAutoStep() {
+        return this.state.payload?.current_step?.mode === "auto";
+    }
+
+    nextButtonLabel() {
+        if (this.state.waitingForUser) {
+            return "Continue";
+        }
+        return "Next";
+    }
+
+    nextHint() {
+        if (this.state.busy) {
+            return "Working…";
+        }
+        if (this.state.advanceMode === "manual") {
+            if (this.state.waitingForUser) {
+                return "Complete the action above, then click Continue.";
+            }
+            return "Click Next when you are ready to run this step.";
+        }
+        if (this.state.autoWaiting) {
+            return "Auto-advancing… click Next to skip the pause.";
+        }
+        if (this.state.waitingForUser) {
+            return "Complete the action above, then click Continue.";
+        }
+        if (this.isAutoStep()) {
+            return "Click Next to run this step now, or wait for auto-advance.";
+        }
+        return "Click Next to move to the following step.";
+    }
+
+    canShowNext() {
+        return Boolean(
+            this.state.payload &&
+                !this.state.payload.done &&
+                (this.state.readyForNext || this.state.waitingForUser || this.state.autoWaiting),
+        );
+    }
+
+    async onNext() {
+        if (!this.canShowNext() || this.state.busy) {
+            return;
+        }
+        this._clearAutoTimer();
+        this.state.autoWaiting = false;
+        await this._advance(this.state.waitingForUser);
+    }
+
     async onContinue() {
-        await this._advance(true);
+        await this.onNext();
     }
 
     async reopenWizard() {
@@ -234,6 +338,10 @@ export class FlowSimulation extends Component {
                 }),
             );
         }
+    }
+
+    openVideoRoom() {
+        this._openDemoUrl(this.state.videoRoomUrl || this.state.payload?.open_url);
     }
 
     onExit() {

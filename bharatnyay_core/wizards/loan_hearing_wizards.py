@@ -160,6 +160,25 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             v.pop('slot_line_ids', None)
             v.pop('selected_slot_id', None)
             v.pop('hearing_notes', None)
+            if not v.get('hearing_datetime'):
+                loan = self.env['bharat.loan'].browse(v.get('loan_id'))
+                if loan.hearing_datetime:
+                    v['hearing_datetime'] = loan.hearing_datetime
+                else:
+                    sched_day = v.get('scheduler_date')
+                    if sched_day:
+                        day = fields.Date.from_string(sched_day)
+                        stub = self.new({
+                            'loan_id': loan.id if loan else False,
+                            'scheduler_date': sched_day,
+                        })
+                        utc_naive = stub._utc_naive_for_grid_index(day, 1)
+                        if utc_naive:
+                            v['hearing_datetime'] = fields.Datetime.to_string(utc_naive)
+                    if not v.get('hearing_datetime'):
+                        v['hearing_datetime'] = fields.Datetime.to_string(
+                            fields.Datetime.now() + timedelta(days=1)
+                        )
             cleaned.append(v)
         return super().create(cleaned)
 
@@ -731,23 +750,31 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         if not self.hearing_datetime:
             raise UserError(_('Set a hearing date and time.'))
 
-        external_partners = self.external_attendee_partner_ids
-        if (self.external_attendee_emails or '').strip():
-            external_partners |= loan._hearing_partners_from_emails(
-                self.external_attendee_emails,
-            )
+        external_partners = self.env['res.partner']
+        invite_users = self.env['res.users']
+        if not self.env.context.get('bharat_flow_simulation'):
+            external_partners = self.external_attendee_partner_ids
+            if (self.external_attendee_emails or '').strip():
+                external_partners |= loan._hearing_partners_from_emails(
+                    self.external_attendee_emails,
+                )
+            invite_users = self.invite_user_ids
+
         calendar_event = loan._hearing_upsert_calendar_event(
             self.hearing_datetime,
-            self.invite_user_ids,
+            invite_users,
             external_partners,
         )
 
         vals_loan = {
             'hearing_datetime': self.hearing_datetime,
-            'hearing_invite_user_ids': [(6, 0, self.invite_user_ids.ids)],
-            'hearing_external_attendee_ids': [(6, 0, external_partners.ids)],
             'calendar_event_id': calendar_event.id,
         }
+        if not self.env.context.get('bharat_flow_simulation'):
+            vals_loan.update({
+                'hearing_invite_user_ids': [(6, 0, self.invite_user_ids.ids)],
+                'hearing_external_attendee_ids': [(6, 0, external_partners.ids)],
+            })
         if not self.hearing_reschedule:
             if self.is_final_award:
                 milestone = loan._milestone_by_code('award')
@@ -810,6 +837,95 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
         })
 
         return {'type': 'ir.actions.act_window_close'}
+
+    @api.model
+    def _demo_schedule_context(self):
+        return {
+            'bharat_flow_simulation': True,
+            'bharat_skip_milestone_email': True,
+            'bharat_defer_milestone_pdf': True,
+            'bharat_skip_milestone_sms': True,
+            'mail_create_nosubscribe': True,
+            'mail_create_nolog': True,
+            'mail_notrack': True,
+            'tracking_disable': True,
+        }
+
+    @api.model
+    def schedule_demo_hearing(self, loan):
+        """Book the next free slot for a guided demo; skip invitation emails."""
+        self = self.with_context(**self._demo_schedule_context())
+        loan = loan.with_context(**self._demo_schedule_context())
+        loan.invalidate_recordset(['hearing_datetime', 'calendar_event_id', 'arbitrator_id'])
+
+        if not loan.arbitrator_id:
+            raise UserError(_('Assign an arbitrator before running the hearing demo step.'))
+
+        event = loan.calendar_event_id.sudo() if loan.calendar_event_id else False
+        if loan.hearing_datetime and event:
+            if not (event.videocall_location or '').strip():
+                event._set_discuss_videocall_location()
+            return {
+                'message': _('Hearing already scheduled — opening video room.'),
+                'open_url': (event.videocall_location or '').strip(),
+            }
+
+        start_day = self._default_scheduler_date_for_loan(loan)
+        wiz = self.create({
+            'loan_id': loan.id,
+            'hearing_reschedule': loan._is_hearing_milestone(),
+            'scheduler_date': fields.Date.to_string(start_day),
+            'use_manual_time': False,
+            'invite_user_ids': [(5, 0, 0)],
+            'external_attendee_partner_ids': [(5, 0, 0)],
+            'external_attendee_emails': False,
+        })
+
+        au = loan.arbitrator_id
+        busy = self._busy_hearing_starts_utc(au, exclude_loan=loan)
+        tz = self._user_timezone()
+        now_local = datetime.now(tz)
+        picked = False
+
+        for day_offset in range(0, 14):
+            day = start_day + timedelta(days=day_offset)
+            for idx in range(1, self.GRID_SLOT_COUNT + 1):
+                stub = self.new({'loan_id': loan.id, 'scheduler_date': day})
+                utc_naive = stub._utc_naive_for_grid_index(day, idx)
+                if not utc_naive:
+                    continue
+                local_start = pytz.UTC.localize(utc_naive.replace(tzinfo=None)).astimezone(tz)
+                if local_start < now_local:
+                    continue
+                if self._slot_interval_overlaps(utc_naive, busy):
+                    continue
+                wiz.write({
+                    'scheduler_date': fields.Date.to_string(day),
+                    'grid_selected_date': fields.Date.to_string(day),
+                    'grid_selected_index': idx,
+                    'selected_slot_range_display': stub._slot_range_label_from_index(day, idx),
+                })
+                picked = True
+                break
+            if picked:
+                break
+
+        if not picked:
+            raise UserError(
+                _('No free hearing slot in the next two weeks for this arbitrator. Try another demo case.')
+            )
+
+        wiz.with_context(**self._demo_schedule_context()).action_schedule()
+        loan.invalidate_recordset(['calendar_event_id', 'hearing_datetime'])
+        event = loan.calendar_event_id.sudo()
+        if event and not (event.videocall_location or '').strip():
+            event._set_discuss_videocall_location()
+        url = (event.videocall_location or '').strip() if event else ''
+        local = fields.Datetime.context_timestamp(loan, loan.hearing_datetime)
+        return {
+            'message': _('Hearing booked for %s — opening video room (no emails sent).') % local,
+            'open_url': url,
+        }
 
 
 class BharatLoanInterimAwardWizard(models.TransientModel):
@@ -890,7 +1006,8 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         vals = super().default_get(fields_list)
-        loan = self.env['bharat.loan'].browse(self.env.context.get('active_id'))
+        loan_id = self.env.context.get('default_loan_id') or self.env.context.get('active_id')
+        loan = self.env['bharat.loan'].browse(loan_id)
         if loan:
             vals.setdefault('loan_id', loan.id)
             vals.setdefault('currency_id', loan.currency_id.id if loan.currency_id else False)
@@ -994,7 +1111,12 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
     def action_confirm(self):
         self.ensure_one()
         loan = self.loan_id
-        if not loan._is_hearing_milestone():
+        if self.is_final_award:
+            if (loan.milestone_code or '') != 'award':
+                raise UserError(
+                    _('Pass Final Award when the case is at the Award milestone.')
+                )
+        elif not loan._is_hearing_milestone():
             raise UserError(_('Pass Interim Award is only available during hearing milestones.'))
         if not self.order_type:
             raise UserError(_('Select an interim order type.'))
@@ -1068,7 +1190,8 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             })
             pdf_attachment = (signed_name, base64.b64decode(self.signed_order_pdf))
         else:
-            interim._attach_order_pdf()
+            if not self.env.context.get('bharat_flow_simulation'):
+                interim._attach_order_pdf()
             if interim.order_pdf:
                 pdf_attachment = (
                     interim.order_pdf_filename or 'Interim_Order.pdf',
@@ -1088,7 +1211,8 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
                 'award_notes': summary or type_label,
                 'created_by_id': self.env.user.id,
             })
-            award_doc._attach_draft_award_letter()
+            if not self.env.context.get('bharat_flow_simulation'):
+                award_doc._attach_draft_award_letter()
         else:
             loan.env['bharat.loan.award.document'].create({
                 'loan_id': loan.id,
@@ -1099,3 +1223,59 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             })
 
         return {'type': 'ir.actions.act_window_close'}
+
+    @api.model
+    def _demo_record_context(self, allow_locked_case_write=False):
+        ctx = {
+            'bharat_flow_simulation': True,
+            'bharat_skip_milestone_email': True,
+            'bharat_defer_milestone_pdf': True,
+            'bharat_skip_milestone_sms': True,
+            'mail_create_nosubscribe': True,
+            'mail_create_nolog': True,
+            'mail_notrack': True,
+            'tracking_disable': True,
+        }
+        if allow_locked_case_write:
+            ctx['bharat_allow_locked_case_write'] = True
+        return ctx
+
+    @api.model
+    def record_demo_order(self, loan, is_final_award=False):
+        """Auto-record interim/final order for guided demo (no wizard, no emails)."""
+        from ..models.interim_order_types import INTERIM_ORDER_TYPE_SELECTION, interim_order_meta
+
+        ctx = self._demo_record_context(allow_locked_case_write=is_final_award)
+        self = self.with_context(**ctx)
+        loan = loan.with_context(**ctx)
+
+        if is_final_award:
+            if (loan.milestone_code or '') != 'award':
+                raise UserError(
+                    _('Demo final award requires the case to be at the Award milestone.')
+                )
+        elif not loan._is_hearing_milestone():
+            raise UserError(
+                _('Demo interim order requires the case to be in a hearing milestone.')
+            )
+
+        order_type = INTERIM_ORDER_TYPE_SELECTION[0][0]
+        meta = interim_order_meta(order_type)
+        type_label = dict(INTERIM_ORDER_TYPE_SELECTION).get(order_type, order_type)
+        currency = loan.currency_id or self.env.company.currency_id
+        wizard = self.create({
+            'loan_id': loan.id,
+            'order_type': order_type,
+            'purpose': meta.get('purpose'),
+            'typical_loan_type': meta.get('typical_loan_type'),
+            'passed_by': meta.get('passed_by'),
+            'common_directions': meta.get('common_directions'),
+            'is_final_award': is_final_award,
+            'interim_award_notes': _('Auto-recorded for guided demo.'),
+            'currency_id': currency.id,
+        })
+        wizard._apply_draft_template()
+        wizard.with_context(**ctx).action_confirm()
+        if is_final_award:
+            return _('Final award recorded for demo (%s).') % type_label
+        return _('Interim order recorded for demo (%s).') % type_label
