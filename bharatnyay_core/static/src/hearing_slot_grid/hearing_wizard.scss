@@ -1,10 +1,30 @@
 .bn-hearing-wizard {
-    max-width: 1100px;
+    max-width: none;
+    width: 100%;
     padding-top: 0.75rem;
+
+    &__scheduler-field {
+        display: block;
+        width: 100%;
+        max-width: none;
+
+        .o_field_widget,
+        .bn-hearing-scheduler,
+        .bn-slot-week-cal,
+        .bn-slot-week-cal__grid {
+            width: 100%;
+            max-width: none;
+        }
+
+        .bn-slot-grid-field {
+            width: 100%;
+            max-width: none;
+        }
+    }
 
     &__split {
         display: grid;
-        grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.75fr);
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
         gap: 12px;
         align-items: start;
     }
@@ -65,6 +85,7 @@
 
         &--calendar {
             padding-bottom: 10px;
+            width: 100%;
         }
 
         &--attendees {
@@ -218,6 +239,12 @@
     .bn-hearing-wizard__split {
         grid-template-columns: 1fr;
     }
+}
+
+/* Wider dialog so the week grid can stretch (avoid Sass min() — incompatible vw/px units) */
+.modal:has(.bn-hearing-wizard) .modal-dialog {
+    max-width: 1320px;
+    width: calc(100vw - 40px);
 }
 
 @media (max-width: 760px) {

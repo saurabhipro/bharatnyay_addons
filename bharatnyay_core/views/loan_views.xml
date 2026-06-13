@@ -231,45 +231,12 @@
                                     </span>
                                     <span class="bn-id-pill bn-id-pill--hearing" invisible="not hearing_datetime">
                                         <span class="bn-id-pill__k">Hearing</span>
-                                        <field name="hearing_datetime" readonly="1" nolabel="1" widget="datetime"/>
+                                        <field name="hearing_schedule_header" readonly="1" nolabel="1"/>
                                     </span>
                                 </div>
                                 <span class="bn-stage-pill">
                                     <field name="state_display" readonly="1" nolabel="1"/>
                                 </span>
-                            </div>
-                            <div class="bn-hero-main">
-                                <div class="bn-customer">
-                                    <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name"/>
-                                </div>
-                                <div class="bn-hero-sub">
-                                    <span class="bn-hero-sub__item">
-                                        <i class="fa fa-map-marker" title="Location" aria-hidden="true"/>
-                                        <field name="location_id" readonly="1" nolabel="1"/>
-                                    </span>
-                                    <span class="bn-hero-sub__dot" aria-hidden="true">·</span>
-                                    <span class="bn-hero-sub__item">
-                                        <i class="fa fa-tag" title="Product class" aria-hidden="true"/>
-                                        <field name="product_class_id" readonly="1" nolabel="1"/>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="bn-postal-delivery">
-                                <div class="bn-postal-delivery__head">
-                                    <span class="bn-postal-delivery__title">
-                                        <i class="fa fa-paper-plane" title="Postal delivery" aria-hidden="true"/>
-                                        Document delivery status
-                                    </span>
-                                    <button name="action_open_postal_dispatch" type="object"
-                                            class="btn btn-link bn-postal-delivery__link">
-                                        Manage tracking
-                                    </button>
-                                    <span class="bn-postal-delivery__hint">Click a card to update POD</span>
-                                </div>
-                                <field name="postal_delivery_cards_json"
-                                       widget="bn_postal_delivery_cards"
-                                       nolabel="1"
-                                       readonly="1"/>
                             </div>
                             <div class="bn-hero-metrics">
                                 <div class="bn-metric bn-metric--financed">
@@ -302,6 +269,36 @@
                                 <span class="bn-section__badge">Imported (read-only)</span>
                             </div>
                             <div class="bn-section__body">
+                                <div class="bn-loan-data-identity">
+                                    <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name" class="bn-customer"/>
+                                    <span class="bn-loan-data-identity__sep" aria-hidden="true">·</span>
+                                    <span class="bn-loan-data-identity__item">
+                                        <i class="fa fa-map-marker" title="Location" aria-hidden="true"/>
+                                        <field name="location_id" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-loan-data-identity__sep" aria-hidden="true">·</span>
+                                    <span class="bn-loan-data-identity__item">
+                                        <i class="fa fa-tag" title="Product class" aria-hidden="true"/>
+                                        <field name="product_class_id" readonly="1" nolabel="1"/>
+                                    </span>
+                                </div>
+                                <div class="bn-postal-delivery bn-postal-delivery--loan-data">
+                                    <div class="bn-postal-delivery__head">
+                                        <span class="bn-postal-delivery__title">
+                                            <i class="fa fa-paper-plane" title="Postal delivery" aria-hidden="true"/>
+                                            Document delivery
+                                        </span>
+                                        <button name="action_open_postal_dispatch" type="object"
+                                                class="btn btn-link bn-postal-delivery__link">
+                                            Manage tracking
+                                        </button>
+                                        <span class="bn-postal-delivery__hint">Click a card to update POD</span>
+                                    </div>
+                                    <field name="postal_delivery_cards_json"
+                                           widget="bn_postal_delivery_cards"
+                                           nolabel="1"
+                                           readonly="1"/>
+                                </div>
                                 <div class="bn-import-grid">
                                     <div class="bn-import-col">
                                         <div class="bn-import-col__heading"><i class="fa fa-user-o"/> Borrower</div>

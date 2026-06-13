@@ -1,8 +1,11 @@
 .bn-hearing-scheduler {
+    display: block;
     width: 100%;
+    max-width: none;
 }
 
 .bn-slot-week-cal {
+    display: block;
     width: 100%;
     max-width: none;
 
@@ -67,12 +70,14 @@
         border-radius: 12px;
         overflow: hidden;
         background: #ffffff;
+        width: 100%;
     }
 
     &__head,
     &__row {
         display: grid;
-        grid-template-columns: 56px repeat(5, minmax(0, 1fr));
+        width: 100%;
+        grid-template-columns: minmax(48px, 4.5%) repeat(5, minmax(0, 1fr));
     }
 
     &__head {
@@ -81,7 +86,7 @@
     }
 
     &__day-head {
-        padding: 8px 6px;
+        padding: 8px 10px;
         text-align: center;
         font-size: 0.72rem;
         font-weight: 800;
@@ -119,6 +124,7 @@
     }
 
     .bn-slot-cell {
+        width: 100%;
         min-height: 44px;
         border-radius: 0;
         border: none;

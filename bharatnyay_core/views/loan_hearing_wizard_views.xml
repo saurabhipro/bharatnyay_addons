@@ -58,7 +58,8 @@
                             <div class="bn-hearing-wizard__panel-title">Pick a slot · Mon–Fri · 09:00–17:00 · 30 min</div>
                             <field name="grid_selected_index"
                                    widget="bn_hearing_scheduler"
-                                   nolabel="1"/>
+                                   nolabel="1"
+                                   class="bn-hearing-wizard__scheduler-field"/>
                         </div>
                     </div>
 

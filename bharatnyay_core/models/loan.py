@@ -361,6 +361,18 @@ class BharatLoan(models.Model):
         tracking=True,
         help='Stored in UTC; invitations show the viewer’s timezone.',
     )
+    hearing_slot_index = fields.Integer(
+        string='Hearing slot #',
+        compute='_compute_hearing_schedule_header',
+    )
+    hearing_slot_time_label = fields.Char(
+        string='Hearing slot time',
+        compute='_compute_hearing_schedule_header',
+    )
+    hearing_schedule_header = fields.Char(
+        string='Hearing schedule',
+        compute='_compute_hearing_schedule_header',
+    )
     hearing_video_url = fields.Char(
         string='Video meeting URL',
         tracking=True,
@@ -1334,6 +1346,33 @@ class BharatLoan(models.Model):
             else:
                 rec.hero_disburse_display = d.strftime('%d %b %y')
 
+    @api.depends('hearing_datetime')
+    def _compute_hearing_schedule_header(self):
+        Wiz = self.env['bharat.loan.hearing.schedule.wizard']
+        for rec in self:
+            rec.hearing_slot_index = 0
+            rec.hearing_slot_time_label = ''
+            rec.hearing_schedule_header = ''
+            if not rec.hearing_datetime:
+                continue
+            utc_naive = rec.hearing_datetime.replace(second=0, microsecond=0)
+            local = fields.Datetime.context_timestamp(rec, rec.hearing_datetime)
+            day = local.date()
+            idx = Wiz._grid_index_for_datetime_on_day(day, utc_naive)
+            rec.hearing_slot_index = idx
+            date_label = format_date(rec.env, day)
+            if idx:
+                wiz = Wiz.new({'loan_id': rec.id, 'scheduler_date': day})
+                time_label = wiz._slot_range_label_from_index(day, idx)
+                rec.hearing_slot_time_label = time_label
+                parts = [date_label, _('Slot %s') % idx]
+                if time_label:
+                    parts.append(time_label)
+                rec.hearing_schedule_header = ' · '.join(parts)
+            else:
+                rec.hearing_schedule_header = format_datetime(
+                    rec.env, rec.hearing_datetime, dt_format='medium',
+                )
 
     @api.model
     def _domain_arbitrator_users(self):
