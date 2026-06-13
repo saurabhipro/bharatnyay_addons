@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="view_bharat_loan_milestone_advance_wizard_form" model="ir.ui.view">
-        <field name="name">bharat.loan.milestone.advance.wizard.form</field>
-        <field name="model">bharat.loan.milestone.advance.wizard</field>
+    <record id="view_bharat_loan_pod_mark_done_wizard_form" model="ir.ui.view">
+        <field name="name">bharat.loan.pod.mark.done.wizard.form</field>
+        <field name="model">bharat.loan.pod.mark.done.wizard</field>
         <field name="arch" type="xml">
-            <form string="Move to next stage" class="bn-milestone-advance-wizard">
+            <form string="Mark POD delivered" class="bn-milestone-advance-wizard">
                 <sheet>
                     <div class="bn-milestone-advance-wizard__hero">
                         <div class="bn-milestone-advance-wizard__hero-icon">
-                            <i class="fa fa-forward" title="Advance stage"/>
+                            <i class="fa fa-check-circle" title="POD delivered"/>
                         </div>
                         <div class="bn-milestone-advance-wizard__hero-body">
-                            <h1 class="bn-milestone-advance-wizard__title">Move to next stage</h1>
+                            <h1 class="bn-milestone-advance-wizard__title">Mark POD delivered</h1>
                             <p class="bn-milestone-advance-wizard__subtitle">
-                                Advance
+                                Set
                                 <span class="bn-milestone-advance-wizard__count">
-                                    <field name="case_count" readonly="1" nolabel="1" class="oe_inline"/>
+                                    <field name="dispatch_count" readonly="1" nolabel="1" class="oe_inline"/>
                                 </span>
-                                case(s) matching the current dashboard filters by one workflow stage.
+                                pending delivery row(s) to <b>Delivered</b> and accrue unbilled charges
+                                for Notice 1, Hearing 1, and Award in the current filter.
                             </p>
                         </div>
                     </div>
@@ -39,38 +40,41 @@
                         </span>
                     </div>
 
-                    <div class="bn-milestone-advance-wizard__section-title">Optional actions</div>
+                    <div class="bn-milestone-advance-wizard__section-title">Rows to update</div>
                     <div class="bn-milestone-advance-wizard__options">
                         <div class="bn-milestone-advance-wizard__option">
-                            <div class="bn-milestone-advance-wizard__option-icon bn-milestone-advance-wizard__option-icon--pdf">
-                                <i class="fa fa-file-pdf-o" title="PDF"/>
+                            <div class="bn-milestone-advance-wizard__option-icon bn-milestone-advance-wizard__option-icon--email">
+                                <i class="fa fa-envelope-o" title="Notice 1"/>
                             </div>
                             <div class="bn-milestone-advance-wizard__option-body">
-                                <field name="generate_pdfs"/>
+                                <strong>Notice 1 — POD pending</strong>
                                 <span class="bn-milestone-advance-wizard__option-hint">
-                                    Render notice and hearing PDFs immediately. Leave off for faster testing.
+                                    <field name="notice_1_count" readonly="1" nolabel="1" class="oe_inline fw-bold"/>
+                                    case(s) will be marked delivered and billed.
                                 </span>
                             </div>
                         </div>
                         <div class="bn-milestone-advance-wizard__option">
-                            <div class="bn-milestone-advance-wizard__option-icon bn-milestone-advance-wizard__option-icon--email">
-                                <i class="fa fa-envelope-o" title="Email"/>
+                            <div class="bn-milestone-advance-wizard__option-icon bn-milestone-advance-wizard__option-icon--pdf">
+                                <i class="fa fa-video-camera" title="Hearing 1"/>
                             </div>
                             <div class="bn-milestone-advance-wizard__option-body">
-                                <field name="send_email"/>
+                                <strong>Hearing 1 — POD pending</strong>
                                 <span class="bn-milestone-advance-wizard__option-hint">
-                                    Notify the borrower by email when a case advances.
+                                    <field name="interim_1_count" readonly="1" nolabel="1" class="oe_inline fw-bold"/>
+                                    case(s) will be marked delivered and billed.
                                 </span>
                             </div>
                         </div>
                         <div class="bn-milestone-advance-wizard__option">
                             <div class="bn-milestone-advance-wizard__option-icon bn-milestone-advance-wizard__option-icon--sms">
-                                <i class="fa fa-mobile" title="SMS"/>
+                                <i class="fa fa-trophy" title="Award"/>
                             </div>
                             <div class="bn-milestone-advance-wizard__option-body">
-                                <field name="send_sms"/>
+                                <strong>Award — POD pending</strong>
                                 <span class="bn-milestone-advance-wizard__option-hint">
-                                    Send an SMS alert to the borrower on advance.
+                                    <field name="award_count" readonly="1" nolabel="1" class="oe_inline fw-bold"/>
+                                    case(s) will be marked delivered and billed.
                                 </span>
                             </div>
                         </div>
@@ -78,16 +82,16 @@
                 </sheet>
                 <footer class="bn-milestone-advance-wizard__footer">
                     <button name="action_confirm" type="object"
-                            string="Move to next stage" class="btn-primary" icon="fa-arrow-right"/>
+                            string="Mark delivered &amp; accrue charges" class="btn-primary" icon="fa-check"/>
                     <button string="Cancel" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
         </field>
     </record>
 
-    <record id="action_bharat_loan_milestone_advance_wizard" model="ir.actions.act_window">
-        <field name="name">Move to next stage</field>
-        <field name="res_model">bharat.loan.milestone.advance.wizard</field>
+    <record id="action_bharat_loan_pod_mark_done_wizard" model="ir.actions.act_window">
+        <field name="name">Mark POD delivered</field>
+        <field name="res_model">bharat.loan.pod.mark.done.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class BharatPostOfficeStatus(models.Model):
@@ -25,6 +25,17 @@ class BharatPostOfficeStatus(models.Model):
         help='When set, the case form becomes read-only (e.g. RRN locked after delivery).',
     )
     description = fields.Text(string='Notes')
+    setup_id = fields.Many2one(
+        'bharat.case.workflow.setup',
+        string='Workflow setup',
+        ondelete='set null',
+        index=True,
+    )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        self.env['bharat.case.workflow.setup'].assign_setup_id_vals(vals_list)
+        return super().create(vals_list)
 
     _sql_constraints = [
         ('code_uniq', 'unique(code)', 'Post office status code must be unique.'),

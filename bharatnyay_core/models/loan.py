@@ -1209,6 +1209,38 @@ class BharatLoan(models.Model):
         )
 
     @api.model
+    def action_dashboard_mark_pod_done(
+        self, region_id=False, state_id=False, batch_number=False,
+    ):
+        """Mark pending Notice 1 / Hearing 1 / Award POD rows as delivered (accrue charges)."""
+        domain = self._dashboard_apply_scope_filters(
+            [], region_id=region_id, state_id=state_id, batch_number=batch_number,
+        )
+        Dispatch = self.env['bharat.loan.postal.dispatch']
+        stats = Dispatch.dashboard_pod_markable_stats(domain)
+        if not stats['count']:
+            return self._milestone_action_notification(
+                _('Mark POD delivered'),
+                _('No pending POD delivery rows in the current filter.'),
+                'warning',
+            )
+        result = Dispatch.dashboard_mark_pod_done(domain)
+        parts = [
+            _('Marked %(n)s delivery row(s) as delivered.') % {'n': result['updated']},
+        ]
+        if result['billed']:
+            parts.append(
+                _('Accrued %(n)s unbilled charge(s).') % {'n': result['billed']}
+            )
+        else:
+            parts.append(_('No new charges were accrued (already billed or not billable).'))
+        return self._milestone_action_notification(
+            _('Mark POD delivered'),
+            '\n'.join(parts),
+            'success' if result['updated'] else 'warning',
+        )
+
+    @api.model
     def _bharat_cleanup_action_menu(self):
         """Remove legacy PDF server actions from the loan Action menu (upgrade hook)."""
         loan_model = self.env['ir.model']._get('bharat.loan')
@@ -3414,6 +3446,9 @@ class BharatLoan(models.Model):
         postal_pending = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pending_postal_status_stats(scope_domain)
+        pod_markable = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_markable_stats(scope_domain)
         pod_status_cards = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pod_status_cards(scope_domain)
@@ -3447,6 +3482,17 @@ class BharatLoan(models.Model):
                 'postal_status_pending_notice_1': postal_pending['notice_1_count'],
                 'postal_status_pending_interim_1': postal_pending['interim_order_1_count'],
                 'postal_status_pending_amount': postal_pending['estimated_amount'],
+                'pod_markable_count': pod_markable['count'],
+                'pod_markable_notice_1': pod_markable['notice_1_count'],
+                'pod_markable_interim_1': pod_markable['interim_order_1_count'],
+                'pod_markable_award': pod_markable['award_count'],
+                'simulation_available': self.env[
+                    'bharat.loan.flow.simulation'
+                ].dashboard_simulation_available(
+                    region_id=region_id,
+                    state_id=state_id,
+                    batch_number=batch_number,
+                ),
                 'active_exposure_rows': active_followup,
                 'delivered_or_lok': lok_done,
                 'pos_ratio_pct': pos_ratio,
@@ -4517,9 +4563,17 @@ class BharatLoanInterimOrder(models.Model):
         required=True,
     )
     notes = fields.Text(string='Additional notes / rationale')
+    draft_body_html = fields.Html(string='Draft order body', sanitize=False)
     order_pdf = fields.Binary(string='Interim order PDF', attachment=True)
     order_pdf_filename = fields.Char(string='Interim PDF filename')
+    signed_on = fields.Datetime(string='Signed on', copy=False)
+    is_signed = fields.Boolean(string='Signed copy uploaded', compute='_compute_is_signed', store=True)
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    @api.depends('order_pdf', 'signed_on')
+    def _compute_is_signed(self):
+        for rec in self:
+            rec.is_signed = bool(rec.order_pdf and rec.signed_on)
 
     @api.model
     def _interim_order_type_selection(self):
@@ -4542,6 +4596,61 @@ class BharatLoanInterimOrder(models.Model):
             rec.typical_loan_type = meta.get('typical_loan_type')
             rec.passed_by = meta.get('passed_by')
             rec.common_directions = meta.get('common_directions')
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        docs = self.browse(docids).exists()
+        labels = {}
+        for doc in docs:
+            labels[doc.id] = (
+                format_datetime(doc.env, doc.order_date, dt_format='medium')
+                if doc.order_date else '—'
+            )
+        return {
+            'doc_ids': docids,
+            'doc_model': self._name,
+            'docs': docs,
+            'interim_order_date_labels': labels,
+        }
+
+    def _interim_order_report(self):
+        return self.env.ref(
+            'bharatnyay_core.action_report_bharat_loan_interim_order_document',
+            raise_if_not_found=False,
+        )
+
+    def _attach_order_pdf(self):
+        """Render draft interim order PDF from stored HTML body."""
+        self.ensure_one()
+        if not self.draft_body_html:
+            return False
+        report = self._interim_order_report()
+        if not report:
+            return False
+        pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=self.ids)
+        ref = self.loan_id.loan_number or self.loan_id.case_number or self.loan_id.id
+        type_code = self.order_type or 'interim'
+        filename = 'Interim_Order_%s_%s.pdf' % (type_code, ref)
+        self.write({
+            'order_pdf': base64.b64encode(pdf_bytes),
+            'order_pdf_filename': filename,
+        })
+        return True
+
+    def action_download_order_pdf(self):
+        self.ensure_one()
+        if not self.order_pdf:
+            self._attach_order_pdf()
+        if not self.order_pdf:
+            raise UserError(_('Interim order PDF is not available yet.'))
+        filename = self.order_pdf_filename or 'Interim_Order.pdf'
+        return {
+            'type': 'ir.actions.act_url',
+            'url': (
+                '/web/content/?model=%s&id=%s&field=order_pdf&filename=%s&download=true'
+            ) % (self._name, self.id, filename),
+            'target': 'self',
+        }
 
 
 class BharatLoanAwardDocument(models.Model):

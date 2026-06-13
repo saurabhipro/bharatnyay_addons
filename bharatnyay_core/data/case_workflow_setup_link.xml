@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <function model="bharat.case.workflow.setup" name="link_existing_masters"/>
+</odoo>

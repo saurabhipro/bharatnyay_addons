@@ -416,6 +416,87 @@ class BharatLoanPostalDispatch(models.Model):
             })
         return groups
 
+    @api.model
+    def dashboard_pod_markable_stats(self, loan_domain=None):
+        """Counts of dashboard POD-pending rows (Notice 1, Hearing 1, Award) in scope."""
+        cards = self.dashboard_pod_status_cards(loan_domain)
+        pending = [c for c in cards if c.get('pod_status') == 'pending']
+        by_doc = {c['document_type']: c['count'] for c in pending}
+        return {
+            'count': sum(c['count'] for c in pending),
+            'notice_1_count': by_doc.get('notice_1', 0),
+            'interim_order_1_count': by_doc.get('interim_order_1', 0),
+            'award_count': by_doc.get('award', 0),
+        }
+
+    @api.model
+    def dashboard_mark_pod_done(self, loan_domain=None):
+        """Set pending Notice 1 / IO1 / Award POD rows to Delivered and accrue charges."""
+        delivered = self.env.ref(
+            'bharatnyay_core.post_office_status_delivered',
+            raise_if_not_found=False,
+        )
+        if not delivered:
+            delivered = self.env['bharat.post.office.status'].search(
+                [('code', '=', 'delivered')], limit=1,
+            )
+        if not delivered:
+            raise UserError(_('Delivered post office status is not configured.'))
+
+        Loan = self.env['bharat.loan'].sudo()
+        loans = Loan.search(loan_domain or [])
+        if not loans:
+            raise UserError(_('No cases match the current dashboard filter.'))
+
+        dispatches = self.sudo().search([('loan_id', 'in', loans.ids)])
+        dispatch_map = {
+            (dispatch.loan_id.id, dispatch.document_type): dispatch
+            for dispatch in dispatches
+        }
+        specs = (
+            ('notice_1', 'notice_1'),
+            ('interim_order_1', 'hearing_1'),
+            ('award', 'award'),
+        )
+        to_process = self.browse()
+        for doc_type, milestone_code in specs:
+            reached = self._dashboard_pod_milestone_reached_codes(milestone_code)
+            for loan in loans:
+                if (loan.milestone_code or '') not in reached:
+                    continue
+                dispatch = dispatch_map.get((loan.id, doc_type))
+                if dispatch and dispatch._dispatch_pod_done():
+                    continue
+                if not dispatch:
+                    dispatch = self.ensure_for_loan(loan, doc_type)
+                    dispatch_map[(loan.id, doc_type)] = dispatch
+                to_process |= dispatch
+
+        if not to_process:
+            raise UserError(_('No pending POD delivery rows in the current filter.'))
+
+        today = fields.Date.context_today(self)
+        updated = 0
+        billed = 0
+        for dispatch in to_process:
+            if dispatch._dispatch_pod_done():
+                continue
+            vals = {
+                'post_office_status_id': delivered.id,
+                'delivery_date': dispatch.delivery_date or today,
+            }
+            if not dispatch.dispatch_date and not (dispatch.pod or '').strip():
+                vals['dispatch_date'] = today
+            dispatch.write(vals)
+            updated += 1
+            if dispatch.billing_accrued:
+                billed += 1
+
+        return {
+            'updated': updated,
+            'billed': billed,
+        }
+
     def apply_postal_import_row(self, dispatch_date, delivery_date, status_text):
         """Update from CSV import and run billing / lock side effects."""
         self.ensure_one()

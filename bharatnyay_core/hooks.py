@@ -30,6 +30,7 @@ def pre_init_hook(env):
 
 def post_init_hook(env):
     """Point all internal users at their BharatNyay dashboard on install/upgrade."""
+    env['bharat.case.workflow.setup']._ensure_singleton()
     users = env['res.users'].sudo().search([
         ('share', '=', False),
         ('active', '=', True),

@@ -141,22 +141,57 @@
         <field name="name">bharat.loan.interim.award.wizard.form</field>
         <field name="model">bharat.loan.interim.award.wizard</field>
         <field name="arch" type="xml">
-            <form string="Pass Interim Award">
-                <group>
-                    <field name="loan_id"/>
-                    <field name="currency_id" invisible="1"/>
-                    <field name="order_type"/>
-                    <field name="purpose"/>
-                    <field name="typical_loan_type"/>
-                    <field name="passed_by"/>
-                    <field name="common_directions"/>
-                    <field name="interim_award_amount"/>
-                    <field name="interim_award_notes"
-                           placeholder="Additional procedural directions, deposit orders, timelines, …"/>
-                    <field name="was_user_present"/>
-                    <field name="is_final_award"/>
-                </group>
-                <footer>
+            <form string="Pass Interim Award" class="bn-interim-award-wizard">
+                <field name="currency_id" invisible="1"/>
+                <field name="draft_pdf_filename" invisible="1"/>
+                <field name="purpose" invisible="1"/>
+                <field name="typical_loan_type" invisible="1"/>
+                <field name="passed_by" invisible="1"/>
+                <field name="common_directions" invisible="1"/>
+
+                <div class="bn-interim-award-wizard__split">
+                    <div class="bn-interim-award-wizard__panel bn-interim-award-wizard__panel--meta">
+                        <div class="bn-interim-award-wizard__panel-title">Order details</div>
+                        <group>
+                            <field name="loan_id"/>
+                            <field name="order_type"/>
+                            <field name="interim_award_amount"/>
+                            <field name="interim_award_notes"
+                                   placeholder="Additional procedural directions, deposit orders, timelines, …"/>
+                            <field name="was_user_present"/>
+                            <field name="is_final_award"/>
+                        </group>
+                    </div>
+
+                    <div class="bn-interim-award-wizard__panel bn-interim-award-wizard__panel--editor">
+                        <div class="bn-interim-award-wizard__panel-title">Interim order draft</div>
+                        <div class="bn-interim-award-wizard__toolbar">
+                            <button string="Reload from template" type="object" name="action_reload_template"
+                                    class="btn-secondary" icon="fa-refresh"/>
+                            <button string="Preview PDF" type="object" name="action_preview_pdf"
+                                    class="btn-secondary" icon="fa-eye"/>
+                            <button string="Download draft PDF" type="object" name="action_download_draft_pdf"
+                                    class="btn-secondary" icon="fa-download"/>
+                        </div>
+                        <field name="draft_body_html" nolabel="1" class="bn-interim-award-wizard__editor"
+                               placeholder="Select an interim order type to load the draft template, then edit the order text here."/>
+                        <div class="bn-interim-award-wizard__preview" invisible="not draft_pdf">
+                            <div class="bn-interim-award-wizard__panel-title">PDF preview</div>
+                            <field name="draft_pdf" filename="draft_pdf_filename" widget="pdf_viewer" nolabel="1"/>
+                        </div>
+                        <div class="bn-interim-award-wizard__upload">
+                            <div class="bn-interim-award-wizard__panel-title">Signed copy (optional)</div>
+                            <field name="signed_order_pdf" filename="signed_order_pdf_filename"/>
+                            <field name="signed_order_pdf_filename" invisible="1"/>
+                            <p class="bn-interim-award-wizard__hint">
+                                Preview and download the draft, sign it offline, then upload the executed PDF before recording.
+                                If no signed copy is uploaded, the generated draft PDF is saved on the case.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="bn-interim-award-wizard__footer">
                     <button string="Record final award" type="object" name="action_confirm"
                             class="btn-primary" invisible="not is_final_award"/>
                     <button string="Record interim &amp; stay in Hearing" type="object" name="action_confirm"

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="case_workflow_setup_default" model="bharat.case.workflow.setup">
+        <field name="name">Case workflow</field>
+    </record>
+</odoo>

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import base64
 import json
 from datetime import datetime, time as dt_time, timedelta
 
@@ -837,6 +838,15 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         string='Additional directions / rationale',
         help='Optional extra notes logged on the chatter and saved on the interim order.',
     )
+    draft_body_html = fields.Html(
+        string='Interim order draft',
+        sanitize=False,
+        help='Editable interim order text generated from the selected type template.',
+    )
+    draft_pdf = fields.Binary(string='Draft PDF preview', readonly=True)
+    draft_pdf_filename = fields.Char(string='Draft PDF filename', readonly=True)
+    signed_order_pdf = fields.Binary(string='Signed interim order PDF')
+    signed_order_pdf_filename = fields.Char(string='Signed PDF filename')
     is_final_award = fields.Boolean(string='Is final award', default=False)
     was_user_present = fields.Boolean(string='Was user present', default=False)
 
@@ -850,6 +860,20 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
         from ..models.interim_order_types import INTERIM_ORDER_PASSED_BY_SELECTION
         return INTERIM_ORDER_PASSED_BY_SELECTION
 
+    def _apply_draft_template(self):
+        from ..models.interim_order_types import render_interim_order_draft_html
+        for wizard in self:
+            if not wizard.loan_id or not wizard.order_type:
+                continue
+            wizard.draft_body_html = render_interim_order_draft_html(
+                wizard.order_type,
+                wizard.loan_id,
+                amount=wizard.interim_award_amount or 0.0,
+                additional_notes=wizard.interim_award_notes or '',
+                common_directions=wizard.common_directions or '',
+                purpose=wizard.purpose or '',
+            )
+
     @api.onchange('order_type')
     def _onchange_order_type(self):
         from ..models.interim_order_types import interim_order_meta
@@ -861,6 +885,7 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             wizard.typical_loan_type = meta.get('typical_loan_type')
             wizard.passed_by = meta.get('passed_by')
             wizard.common_directions = meta.get('common_directions')
+            wizard._apply_draft_template()
 
     @api.model
     def default_get(self, fields_list):
@@ -871,6 +896,101 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             vals.setdefault('currency_id', loan.currency_id.id if loan.currency_id else False)
         return vals
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for wizard, vals in zip(records, vals_list):
+            if vals.get('draft_body_html') or not wizard.order_type:
+                continue
+            wizard._apply_draft_template()
+        return records
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        docs = self.browse(docids).exists()
+        labels = {}
+        for doc in docs:
+            labels[doc.id] = (
+                format_datetime(doc.env, doc.create_date, dt_format='medium')
+                if doc.create_date else '—'
+            )
+        return {
+            'doc_ids': docids,
+            'doc_model': self._name,
+            'docs': docs,
+            'interim_order_date_labels': labels,
+        }
+
+    def _draft_report(self):
+        return self.env.ref(
+            'bharatnyay_core.action_report_bharat_interim_award_wizard_draft',
+            raise_if_not_found=False,
+        )
+
+    def _draft_pdf_filename(self):
+        self.ensure_one()
+        loan = self.loan_id
+        ref = (loan.loan_number or loan.case_number or loan.id) if loan else self.id
+        return 'Interim_Order_Draft_%s.pdf' % ref
+
+    def _render_draft_pdf(self):
+        self.ensure_one()
+        if not (self.draft_body_html or '').strip():
+            raise UserError(_('The interim order draft is empty. Select a type or edit the draft.'))
+        report = self._draft_report()
+        if not report:
+            raise UserError(_('Interim order draft report is not configured.'))
+        pdf_bytes, _ctype = report._render_qweb_pdf(report, res_ids=self.ids)
+        return pdf_bytes
+
+    def action_reload_template(self):
+        self.ensure_one()
+        self.write({'draft_pdf': False, 'draft_pdf_filename': False})
+        self._apply_draft_template()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Pass Interim Award'),
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+            'context': self.env.context,
+        }
+
+    def action_preview_pdf(self):
+        self.ensure_one()
+        pdf_bytes = self._render_draft_pdf()
+        self.write({
+            'draft_pdf': base64.b64encode(pdf_bytes),
+            'draft_pdf_filename': self._draft_pdf_filename(),
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Pass Interim Award'),
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+            'context': dict(self.env.context, show_interim_pdf_preview=True),
+        }
+
+    def action_download_draft_pdf(self):
+        self.ensure_one()
+        if not self.draft_pdf:
+            pdf_bytes = self._render_draft_pdf()
+            self.write({
+                'draft_pdf': base64.b64encode(pdf_bytes),
+                'draft_pdf_filename': self._draft_pdf_filename(),
+            })
+        filename = self.draft_pdf_filename or self._draft_pdf_filename()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': (
+                '/web/content/?model=%s&id=%s&field=draft_pdf&filename=%s&download=true'
+            ) % (self._name, self.id, filename),
+            'target': 'self',
+        }
+
     def action_confirm(self):
         self.ensure_one()
         loan = self.loan_id
@@ -878,6 +998,8 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             raise UserError(_('Pass Interim Award is only available during hearing milestones.'))
         if not self.order_type:
             raise UserError(_('Select an interim order type.'))
+        if not (self.draft_body_html or '').strip():
+            raise UserError(_('Draft the interim order before recording it.'))
 
         notes = (self.interim_award_notes or '').strip()
         summary_bits = [self.purpose, self.common_directions, notes]
@@ -915,10 +1037,9 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             chunks.append('%s\n%s' % (_('Directions:'), self.common_directions))
         if notes:
             chunks.append('%s\n%s' % (_('Notes:'), notes))
-        loan.message_post(body='\n'.join(chunks))
 
         latest_hearing = loan.hearing_line_ids[:1]
-        loan.env['bharat.loan.interim.order'].create({
+        interim = loan.env['bharat.loan.interim.order'].create({
             'loan_id': loan.id,
             'hearing_line_id': latest_hearing.id if latest_hearing else False,
             'order_type': self.order_type,
@@ -930,8 +1051,35 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             'amount': self.interim_award_amount or 0.0,
             'currency_id': loan.currency_id.id if loan.currency_id else self.currency_id.id,
             'notes': notes,
+            'draft_body_html': self.draft_body_html,
             'created_by_id': self.env.user.id,
         })
+
+        pdf_attachment = None
+        if self.signed_order_pdf:
+            ref = loan.loan_number or loan.case_number or loan.id
+            signed_name = (self.signed_order_pdf_filename or '').strip() or (
+                'Interim_Order_Signed_%s.pdf' % ref
+            )
+            interim.write({
+                'order_pdf': self.signed_order_pdf,
+                'order_pdf_filename': signed_name,
+                'signed_on': fields.Datetime.now(),
+            })
+            pdf_attachment = (signed_name, base64.b64decode(self.signed_order_pdf))
+        else:
+            interim._attach_order_pdf()
+            if interim.order_pdf:
+                pdf_attachment = (
+                    interim.order_pdf_filename or 'Interim_Order.pdf',
+                    base64.b64decode(interim.order_pdf),
+                )
+
+        post_vals = {'body': '\n'.join(chunks)}
+        if pdf_attachment:
+            post_vals['attachments'] = [pdf_attachment]
+        loan.message_post(**post_vals)
+
         if self.is_final_award:
             award_doc = loan.env['bharat.loan.award.document'].create({
                 'loan_id': loan.id,

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="bharatnyay_core.FlowSimulation">
+        <div class="o_bharat_flow_sim o_action">
+            <div class="o_bharat_flow_sim__backdrop"/>
+
+            <header class="o_bharat_flow_sim__header">
+                <div class="o_bharat_flow_sim__brand">
+                    <span class="o_bharat_flow_sim__pulse"/>
+                    <div>
+                        <div class="o_bharat_flow_sim__eyebrow">Guided demo</div>
+                        <h1>Case flow simulation</h1>
+                    </div>
+                </div>
+                <div class="o_bharat_flow_sim__case" t-if="state.payload">
+                    <span class="o_bharat_flow_sim__case-label" t-out="state.payload.loan_label"/>
+                    <span class="o_bharat_flow_sim__case-milestone" t-out="state.payload.milestone_label"/>
+                </div>
+                <button type="button"
+                        class="btn btn-link o_bharat_flow_sim__exit"
+                        title="Exit demo"
+                        t-on-click="onExit">
+                    <i class="fa fa-times"/> Exit
+                </button>
+            </header>
+
+            <div class="o_bharat_flow_sim__body" t-if="state.loading">
+                <div class="o_bharat_flow_sim__loader">
+                    <i class="fa fa-spinner fa-spin fa-2x"/>
+                    <p>Preparing demo case…</p>
+                </div>
+            </div>
+
+            <div class="o_bharat_flow_sim__body" t-elif="state.error">
+                <div class="o_bharat_flow_sim__error alert alert-danger">
+                    <i class="fa fa-exclamation-circle"/>
+                    <span t-out="state.error"/>
+                </div>
+                <button type="button" class="btn btn-secondary" t-on-click="onExit">Close</button>
+            </div>
+
+            <div class="o_bharat_flow_sim__body" t-elif="state.payload">
+                <aside class="o_bharat_flow_sim__timeline">
+                    <div class="o_bharat_flow_sim__timeline-title">Flow timeline</div>
+                    <ol class="o_bharat_flow_sim__steps">
+                        <li t-foreach="state.payload.steps" t-as="step" t-key="step.key"
+                            t-att-class="'o_bharat_flow_sim__step o_bharat_flow_sim__step--' + step.state">
+                            <span class="o_bharat_flow_sim__step-icon">
+                                <i t-att-class="'fa ' + step.icon"/>
+                            </span>
+                            <span class="o_bharat_flow_sim__step-title" t-out="step.title"/>
+                        </li>
+                    </ol>
+                </aside>
+
+                <main class="o_bharat_flow_sim__stage">
+                    <div class="o_bharat_flow_sim__progress">
+                        <div class="o_bharat_flow_sim__progress-bar"
+                             t-att-style="'width:' + progressPct() + '%'"/>
+                    </div>
+                    <div class="o_bharat_flow_sim__progress-label"
+                         t-out="progressLabel()"/>
+
+                    <div t-if="state.payload.done" class="o_bharat_flow_sim__hero o_bharat_flow_sim__hero--done">
+                        <div class="o_bharat_flow_sim__hero-icon">
+                            <i class="fa fa-flag-checkered"/>
+                        </div>
+                        <h2>Demo complete</h2>
+                        <p>Commencement → Award → Invoice. The full arbitration journey in one guided run.</p>
+                        <div class="o_bharat_flow_sim__hero-actions">
+                            <button t-if="state.payload.invoice_id"
+                                    type="button"
+                                    class="btn btn-primary"
+                                    t-on-click="openInvoice">
+                                <i class="fa fa-file-text-o"/> View invoice
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-light"
+                                    t-on-click="openCase">
+                                <i class="fa fa-folder-open-o"/> Open case
+                            </button>
+                            <button type="button"
+                                    class="btn btn-link text-white-50"
+                                    t-on-click="onExit">
+                                Back to dashboard
+                            </button>
+                        </div>
+                    </div>
+
+                    <div t-else="" class="o_bharat_flow_sim__hero">
+                        <div class="o_bharat_flow_sim__hero-icon"
+                             t-att-class="state.busy ? 'o_bharat_flow_sim__hero-icon--busy' : ''">
+                            <i t-att-class="'fa ' + (state.payload.current_step?.icon || 'fa-circle-o')"/>
+                        </div>
+                        <h2 t-out="state.payload.current_step?.title || 'Processing…'"/>
+                        <p t-out="state.payload.current_step?.subtitle || state.message"/>
+                        <p t-if="state.message and state.payload.current_step?.subtitle"
+                           class="o_bharat_flow_sim__message"
+                           t-out="state.message"/>
+
+                        <p t-if="state.payload.current_step?.prompt and state.waitingForUser"
+                           class="o_bharat_flow_sim__prompt"
+                           t-out="state.payload.current_step.prompt"/>
+
+                        <div class="o_bharat_flow_sim__hero-actions">
+                            <button t-if="state.waitingForUser and state.payload.current_step?.key === 'schedule_hearing'"
+                                    type="button"
+                                    class="btn btn-outline-light btn-lg"
+                                    t-on-click="reopenWizard">
+                                <i class="fa fa-calendar-check-o"/> Open hearing scheduler
+                            </button>
+                            <button t-if="state.waitingForUser"
+                                    type="button"
+                                    class="btn btn-primary btn-lg o_bharat_flow_sim__continue"
+                                    t-on-click="onContinue">
+                                <i class="fa fa-play"/> Continue demo
+                            </button>
+                            <button t-if="state.waitingForUser and state.payload.current_step?.key === 'open_case'"
+                                    type="button"
+                                    class="btn btn-outline-light"
+                                    t-on-click="openCase">
+                                <i class="fa fa-folder-open-o"/> Open case again
+                            </button>
+                            <button t-if="state.waitingForUser and canReopenWizard()"
+                                    type="button"
+                                    class="btn btn-outline-light"
+                                    t-on-click="reopenWizard">
+                                <i class="fa fa-external-link"/> Open wizard again
+                            </button>
+                            <div t-if="state.busy and !state.waitingForUser"
+                                 class="o_bharat_flow_sim__auto-hint">
+                                <i class="fa fa-magic"/> Advancing automatically…
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="o_bharat_flow_sim__log" t-if="state.payload.log_text">
+                        <div class="o_bharat_flow_sim__log-title">Activity log</div>
+                        <pre t-out="state.payload.log_text"/>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </t>
+
+</templates>

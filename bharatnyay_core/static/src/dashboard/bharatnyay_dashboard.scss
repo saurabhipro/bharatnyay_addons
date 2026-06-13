@@ -843,6 +843,15 @@
             font-size: 0.78em;
             opacity: 0.85;
         }
+
+        &--sim:not(:disabled) {
+            border-color: #0ea5e9;
+            color: #0369a1;
+
+            &:hover {
+                background: rgba(14, 165, 233, 0.08);
+            }
+        }
     }
 
     .bn-kpi-grid--3 {

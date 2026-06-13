@@ -215,6 +215,17 @@ class BharatLoanMilestone(models.Model):
         store=True,
         sanitize=False,
     )
+    setup_id = fields.Many2one(
+        'bharat.case.workflow.setup',
+        string='Workflow setup',
+        ondelete='set null',
+        index=True,
+    )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        self.env['bharat.case.workflow.setup'].assign_setup_id_vals(vals_list)
+        return super().create(vals_list)
 
     _sql_constraints = [
         ('code_uniq', 'unique(code)', 'Milestone code must be unique.'),

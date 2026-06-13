@@ -233,6 +233,46 @@ export class BharatnyayDashboard extends Component {
         });
     }
 
+    markPodDelivered() {
+        const count = this.state.data?.kpis?.pod_markable_count || 0;
+        if (!count) {
+            this.notification.add("No pending POD delivery rows in the current filter.", {
+                type: "warning",
+            });
+            return;
+        }
+        this.action.doAction("bharatnyay_core.action_bharat_loan_pod_mark_done_wizard", {
+            additionalContext: {
+                dashboard_region_id: this.state.filter_region || false,
+                dashboard_state_id: this.state.filter_state || false,
+                dashboard_batch_number: this.state.filter_batch || false,
+            },
+            onClose: () => {
+                void this.load(true);
+            },
+        });
+    }
+
+    runFlowSimulation() {
+        if (!this.state.data?.kpis?.simulation_available) {
+            this.notification.add(
+                "No unlocked demo case in the current filter. Import a batch or widen filters.",
+                { type: "warning" },
+            );
+            return;
+        }
+        this.action.doAction("bharatnyay_core.action_bharat_flow_simulation", {
+            additionalContext: {
+                dashboard_region_id: this.state.filter_region || false,
+                dashboard_state_id: this.state.filter_state || false,
+                dashboard_batch_number: this.state.filter_batch || false,
+            },
+            onClose: () => {
+                void this.load(true);
+            },
+        });
+    }
+
     openRunningJobs() {
         if (!this.processActiveCount()) {
             this.notification.add("No background jobs are running or queued.", {

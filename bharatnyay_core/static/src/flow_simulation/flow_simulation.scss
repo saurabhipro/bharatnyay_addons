@@ -1,0 +1,338 @@
+.o_bharat_flow_sim {
+    position: relative;
+    min-height: 100%;
+    color: #f8fafc;
+    background: radial-gradient(ellipse at 20% 0%, #1e3a5f 0%, #0f172a 45%, #020617 100%);
+    overflow: hidden;
+
+    &__backdrop {
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.12), transparent 40%),
+            radial-gradient(circle at 10% 80%, rgba(34, 197, 94, 0.08), transparent 35%);
+        animation: bn-flow-glow 8s ease-in-out infinite alternate;
+    }
+
+    &__header {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+        backdrop-filter: blur(8px);
+    }
+
+    &__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+    }
+
+    &__eyebrow {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #7dd3fc;
+        margin-bottom: 0.15rem;
+    }
+
+    &__pulse {
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 50%;
+        background: #22c55e;
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+        animation: bn-flow-pulse 2s infinite;
+    }
+
+    &__case {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    &__case-label {
+        display: block;
+        font-weight: 600;
+    }
+
+    &__case-milestone {
+        display: block;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    &__exit {
+        color: #cbd5e1 !important;
+        text-decoration: none !important;
+    }
+
+    &__body {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        min-height: calc(100vh - 5rem);
+    }
+
+    &__loader,
+    &__error {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 4rem 2rem;
+    }
+
+    &__timeline {
+        padding: 1.5rem 1.25rem 2rem;
+        border-right: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(15, 23, 42, 0.55);
+    }
+
+    &__timeline-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+
+    &__steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__step {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        padding: 0.55rem 0.35rem;
+        border-radius: 0.5rem;
+        color: #64748b;
+        transition: background 0.25s ease, color 0.25s ease;
+
+        &--done {
+            color: #86efac;
+
+            .o_bharat_flow_sim__step-icon {
+                background: rgba(34, 197, 94, 0.15);
+            }
+        }
+
+        &--current {
+            color: #f8fafc;
+            background: rgba(56, 189, 248, 0.12);
+
+            .o_bharat_flow_sim__step-icon {
+                background: rgba(56, 189, 248, 0.25);
+                box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+            }
+        }
+    }
+
+    &__step-icon {
+        flex: 0 0 1.75rem;
+        width: 1.75rem;
+        height: 1.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.12);
+        font-size: 0.8rem;
+    }
+
+    &__step-title {
+        font-size: 0.88rem;
+        line-height: 1.35;
+    }
+
+    &__stage {
+        padding: 2rem 2.5rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    &__progress {
+        height: 0.35rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.15);
+        overflow: hidden;
+    }
+
+    &__progress-bar {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #38bdf8, #22c55e);
+        transition: width 0.6s ease;
+    }
+
+    &__progress-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: -0.75rem;
+    }
+
+    &__hero {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem 1rem;
+        animation: bn-flow-fade-in 0.45s ease;
+
+        &--done .o_bharat_flow_sim__hero-icon {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+    }
+
+    &__hero-icon {
+        width: 5.5rem;
+        height: 5.5rem;
+        border-radius: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        margin-bottom: 1.25rem;
+        background: rgba(56, 189, 248, 0.15);
+        color: #7dd3fc;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+
+        &--busy {
+            animation: bn-flow-icon-pulse 1.2s ease-in-out infinite;
+        }
+    }
+
+    &__hero h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    &__hero p {
+        max-width: 36rem;
+        color: #cbd5e1;
+        margin-bottom: 0.5rem;
+    }
+
+    &__message {
+        font-size: 0.95rem;
+        color: #7dd3fc !important;
+    }
+
+    &__prompt {
+        max-width: 36rem;
+        margin-top: 0.35rem;
+        padding: 0.65rem 1rem;
+        border-radius: 0.5rem;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        color: #bae6fd !important;
+        font-size: 0.95rem;
+    }
+
+    &__hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+
+    &__continue {
+        min-width: 12rem;
+        box-shadow: 0 8px 24px rgba(56, 189, 248, 0.25);
+    }
+
+    &__auto-hint {
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    &__log {
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        padding-top: 1rem;
+    }
+
+    &__log-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    &__log pre {
+        margin: 0;
+        max-height: 9rem;
+        overflow: auto;
+        font-size: 0.78rem;
+        color: #94a3b8;
+        white-space: pre-wrap;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+@keyframes bn-flow-glow {
+    from { opacity: 0.85; }
+    to { opacity: 1; }
+}
+
+@keyframes bn-flow-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+    70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@keyframes bn-flow-fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bn-flow-icon-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); box-shadow: 0 0 28px rgba(56, 189, 248, 0.35); }
+}
+
+@media (max-width: 992px) {
+    .o_bharat_flow_sim__body {
+        grid-template-columns: 1fr;
+    }
+
+    .o_bharat_flow_sim__timeline {
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+}
+
+/* Hearing / award wizards must sit above the fullscreen demo overlay. */
+body:has(.o_bharat_flow_sim) {
+    .o_dialog,
+    .o-overlay-item,
+    .modal.d-block,
+    .modal.show {
+        z-index: 2100 !important;
+    }
+}

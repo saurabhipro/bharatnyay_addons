@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_case_workflow_setup_form" model="ir.ui.view">
+        <field name="name">bharat.case.workflow.setup.form</field>
+        <field name="model">bharat.case.workflow.setup</field>
+        <field name="arch" type="xml">
+            <form string="Case workflow" create="0" delete="0">
+                <sheet>
+                    <div class="oe_title mb-3">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <p class="text-muted mb-0">
+                            Configure workflow stages and post office / POD delivery statuses.
+                        </p>
+                    </div>
+                    <notebook>
+                        <page string="Workflow milestones" name="milestones">
+                            <field name="milestone_ids" nolabel="1" context="{'default_setup_id': id}">
+                                <list string="Workflow milestones" class="o_bharat_milestone_list">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="icon_html" string="" readonly="1" widget="html"/>
+                                    <field name="name" string="Stage name"/>
+                                    <field name="code" string="Stage ID" readonly="1"/>
+                                    <field name="billing_badge_html" string="Billable" widget="html" readonly="1"/>
+                                    <field name="billing_trigger" string="Bill via" optional="show"/>
+                                    <field name="is_billable" column_invisible="1"/>
+                                    <field name="stay_days" string="Stay (days)"/>
+                                    <field name="icon" column_invisible="1"/>
+                                    <field name="setup_id" column_invisible="1"/>
+                                    <field name="active" widget="boolean_toggle" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Post office status" name="post_office">
+                            <field name="post_office_status_ids" nolabel="1" context="{'default_setup_id': id}">
+                                <list string="Post office statuses" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="is_delivered"/>
+                                    <field name="triggers_billing"/>
+                                    <field name="locks_case"/>
+                                    <field name="setup_id" column_invisible="1"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_case_workflow_setup" model="ir.actions.act_window">
+        <field name="name">Case workflow</field>
+        <field name="res_model">bharat.case.workflow.setup</field>
+        <field name="view_mode">form</field>
+        <field name="res_id" ref="case_workflow_setup_default"/>
+        <field name="target">current</field>
+    </record>
+</odoo>

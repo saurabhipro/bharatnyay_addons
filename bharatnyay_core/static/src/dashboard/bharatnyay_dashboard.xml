@@ -195,6 +195,25 @@
                                   class="bn-quick-action__count"
                                   t-out="'(' + fmtInt(state.data.kpis.movable_cases) + ')'"/>
                         </button>
+                        <button type="button"
+                                class="btn btn-outline-success btn-sm bn-quick-action"
+                                t-att-disabled="!(state.data.kpis.pod_markable_count || 0)"
+                                t-att-title="state.data.kpis.pod_markable_count ? 'Mark pending Notice 1, Hearing 1 and Award POD as delivered and accrue charges' : 'No pending POD delivery rows in the current filter'"
+                                t-on-click="markPodDelivered">
+                            <i class="fa fa-check-circle"/>
+                            Mark POD delivered
+                            <span t-if="state.data.kpis.pod_markable_count"
+                                  class="bn-quick-action__count"
+                                  t-out="'(' + fmtInt(state.data.kpis.pod_markable_count) + ')'"/>
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-info btn-sm bn-quick-action bn-quick-action--sim"
+                                t-att-disabled="!(state.data.kpis.simulation_available)"
+                                t-att-title="state.data.kpis.simulation_available ? 'Guided demo: walk one case from its current stage through Award and invoice' : 'No unlocked demo case in the current filter'"
+                                t-on-click="runFlowSimulation">
+                            <i class="fa fa-play-circle"/>
+                            Run flow demo
+                        </button>
                     </div>
 
                     <div class="bn-dashboard-section">

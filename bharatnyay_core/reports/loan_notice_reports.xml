@@ -109,6 +109,27 @@
         <field name="print_report_name">'Award Letter - %s' % (object.loan_number or object.case_number or 'Case')</field>
     </record>
 
+    <record id="action_report_bharat_interim_award_wizard_draft" model="ir.actions.report">
+        <field name="name">Interim Order Draft (wizard)</field>
+        <field name="model">bharat.loan.interim.award.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_interim_award_wizard_draft</field>
+        <field name="report_file">bharatnyay_core.report_bharat_interim_award_wizard_draft</field>
+        <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <record id="action_report_bharat_loan_interim_order_document" model="ir.actions.report">
+        <field name="name">Interim Order Document</field>
+        <field name="model">bharat.loan.interim.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bharatnyay_core.report_bharat_loan_interim_order_document</field>
+        <field name="report_file">bharatnyay_core.report_bharat_loan_interim_order_document</field>
+        <field name="paperformat_id" ref="bharatnyay_core.paperformat_bharat_loan_notice"/>
+        <field name="binding_model_id" eval="False"/>
+        <field name="print_report_name">'Interim Order - %s' % (object.loan_id.loan_number or object.loan_id.case_number or 'Case')</field>
+    </record>
+
     <!-- Available from code / technical menu only (hidden from loan Print dropdown) -->
     <record id="action_report_bharat_loan_written_statement" model="ir.actions.report">
         <field name="name">Written Statement / Response by Borrower</field>
@@ -693,6 +714,76 @@
                         </p>
                     </div>
                 </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_interim_order_document_shell">
+        <t t-set="loan" t-value="loan or False"/>
+        <t t-set="body_html" t-value="body_html or ''"/>
+        <t t-set="order_date" t-value="order_date or False"/>
+        <t t-set="order_date_display" t-value="order_date_display or ''"/>
+        <t t-set="company" t-value="loan.company_id if loan else env.company"/>
+        <t t-call="web.external_layout">
+            <t t-set="arbitrator_name" t-value="loan.arbitrator_id.name if loan and loan.arbitrator_id else (loan.arbitrator_name if loan else 'Learned Sole Arbitrator')"/>
+            <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #111; padding: 0; margin: 0;">
+                <div style="border: 1px solid #222; padding: 22px 24px;">
+                    <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                        Interim Order / Interim Award
+                    </h2>
+                    <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2px;">
+                        Before the Learned Sole Arbitrator
+                    </h3>
+                    <ul style="margin: 0 0 12px 0; padding-left: 22px; list-style-type: disc;">
+                        <li style="margin-bottom: 6px;">
+                            <strong>Loan Account No.:</strong>
+                            <span t-esc="loan.loan_number if loan else '—'"/>
+                        </li>
+                        <li style="margin-bottom: 6px;">
+                            <strong>Case ID:</strong>
+                            <span t-esc="loan.case_number if loan else '—'"/>
+                        </li>
+                        <li>
+                            <strong>Respondent:</strong>
+                            <span t-esc="loan.customer_name if loan else '—'"/>
+                        </li>
+                    </ul>
+                    <div t-raw="body_html"/>
+                    <p style="margin: 16px 0 8px 0;">
+                        <strong>Date:</strong>
+                        <span t-esc="order_date_display or '—'"/>
+                    </p>
+                    <div style="margin-top: 18px;">
+                        <p style="margin: 0 0 6px 0;">Sd/-</p>
+                        <p style="margin: 0; font-weight: 700;"><span t-esc="arbitrator_name"/></p>
+                        <p style="margin: 4px 0 0 0; font-size: 10px; color: #444;">(Arbitrator)</p>
+                    </div>
+                </div>
+                <p style="margin-top: 16px; font-size: 9px; color: #666; text-align: center;">
+                    Draft interim order — review, sign, and upload the executed copy if required.
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_bharat_interim_award_wizard_draft">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="w">
+                <t t-set="loan" t-value="w.loan_id"/>
+                <t t-set="body_html" t-value="w.draft_body_html or ''"/>
+                <t t-set="order_date_display" t-value="interim_order_date_labels.get(w.id, '—')"/>
+                <t t-call="bharatnyay_core.report_bharat_interim_order_document_shell"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_bharat_loan_interim_order_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="loan" t-value="o.loan_id"/>
+                <t t-set="body_html" t-value="o.draft_body_html or ''"/>
+                <t t-set="order_date_display" t-value="interim_order_date_labels.get(o.id, '—')"/>
+                <t t-call="bharatnyay_core.report_bharat_interim_order_document_shell"/>
             </t>
         </t>
     </template>
