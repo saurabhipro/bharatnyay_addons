@@ -126,6 +126,7 @@
                     <p class="bn-stage-strip-hint">
                         <i class="fa fa-file-text-o" title="Unbilled billing"/>
                         Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+                        <span class="bn-stage-flow-hint">Cases move left → right through the pipeline.</span>
                     </p>
                     <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
                     <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>

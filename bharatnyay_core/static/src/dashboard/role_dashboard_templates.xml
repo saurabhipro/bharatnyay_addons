@@ -66,33 +66,39 @@
     </t>
 
     <t t-name="bharatnyay_core.DashboardStageCardStrip">
-        <div class="bn-stage-strip">
+        <div class="bn-stage-strip bn-stage-strip--flow">
             <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
-                <button type="button"
-                        class="bn-stage-card"
-                        t-att-class="{'bn-stage-card--billable': s.creates_unbilled_charge}"
-                        t-att-data-stage="s.key"
-                        t-on-click="openStageCases">
-                    <span t-if="s.creates_unbilled_charge"
-                          class="bn-stage-bill-badge"
-                          t-att-title="s.billing_badge_title">
-                        <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
+                <div class="bn-stage-flow__step">
+                    <button type="button"
+                            class="bn-stage-card"
+                            t-att-class="{'bn-stage-card--billable': s.creates_unbilled_charge}"
+                            t-att-data-stage="s.key"
+                            t-on-click="openStageCases">
+                        <span t-if="s.creates_unbilled_charge"
+                              class="bn-stage-bill-badge"
+                              t-att-title="s.billing_badge_title">
+                            <i t-attf-class="fa {{ s.billing_badge_icon }}"/>
+                        </span>
+                        <div class="bn-stage-top">
+                            <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
+                            <span class="bn-stage-name" t-out="s.label"/>
+                        </div>
+                        <div class="bn-stage-value">
+                            <span class="n" t-out="fmtInt(s.count)"/>
+                            <span class="p" t-out="s.percent + '%'"/>
+                        </div>
+                        <div class="bn-stage-meter">
+                            <span t-attf-style="width: {{ s.percent }}%"/>
+                        </div>
+                        <span t-if="s.creates_unbilled_charge"
+                              class="bn-stage-bill-caption"
+                              t-out="s.billing_badge_title"/>
+                    </button>
+                    <span t-if="!s_last" class="bn-stage-flow__connector" aria-hidden="true">
+                        <span class="bn-stage-flow__pipe"/>
+                        <i class="fa fa-chevron-right"/>
                     </span>
-                    <div class="bn-stage-top">
-                        <span class="bn-stage-ico"><i t-attf-class="fa {{ s.icon }}"/></span>
-                        <span class="bn-stage-name" t-out="s.label"/>
-                    </div>
-                    <div class="bn-stage-value">
-                        <span class="n" t-out="fmtInt(s.count)"/>
-                        <span class="p" t-out="s.percent + '%'"/>
-                    </div>
-                    <div class="bn-stage-meter">
-                        <span t-attf-style="width: {{ s.percent }}%"/>
-                    </div>
-                    <span t-if="s.creates_unbilled_charge"
-                          class="bn-stage-bill-caption"
-                          t-out="s.billing_badge_title"/>
-                </button>
+                </div>
             </t>
         </div>
     </t>
@@ -237,6 +243,7 @@
         <p class="bn-stage-strip-hint">
             <i class="fa fa-file-text-o" title="Unbilled billing"/>
             Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+            <span class="bn-stage-flow-hint">Cases move left → right through the pipeline.</span>
         </p>
         <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
         <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
