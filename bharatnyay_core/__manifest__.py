@@ -92,7 +92,8 @@
             'bharatnyay_core/static/src/js/user_menus.js',
             'bharatnyay_core/static/src/import_wizard/import_wizard.scss',
             'bharatnyay_core/static/src/case_vault/case_vault_list.scss',
-            ('after', 'spiffy_theme_backend/static/src/scss/list_view.scss', 'bharatnyay_core/static/src/list_view/list_primary_header.scss'),
+            # Last in bundle so it overrides all Spiffy list_view.scss header rules.
+            'bharatnyay_core/static/src/list_view/list_primary_header.scss',
         ],
     },
     'installable': True,
