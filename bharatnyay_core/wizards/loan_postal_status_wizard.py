@@ -75,8 +75,6 @@ class BharatLoanPostalStatusWizard(models.TransientModel):
     def action_save(self):
         self.ensure_one()
         loan = self.loan_id
-        if loan.is_case_locked:
-            raise UserError(_('This case is locked and cannot be updated.'))
         if not (self.pod or '').strip() and not self.post_office_status_id:
             raise UserError(_('Enter a POD / tracking number or select a post office status.'))
 

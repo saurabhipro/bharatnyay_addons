@@ -346,6 +346,7 @@ class BharatLoanPostalDispatch(models.Model):
         Loan = self.env['bharat.loan'].sudo()
         loans = Loan.search(loan_domain or [])
         loan_ids = loans.ids
+        total_cases = len(loans)
         dispatches = self.sudo().search([('loan_id', 'in', loan_ids or [0])])
         dispatch_map = {
             (dispatch.loan_id.id, dispatch.document_type): dispatch
@@ -378,15 +379,19 @@ class BharatLoanPostalDispatch(models.Model):
                 ('pending', pending_ids, _('POD pending'), False),
                 ('done', done_ids, _('POD done'), True),
             ):
+                cnt = len(ids)
                 cards.append({
                     'key': '%s_%s' % (doc_type, status),
                     'document_type': doc_type,
                     'pod_status': status,
                     'label': label,
                     'status_label': status_label,
-                    'count': len(ids),
+                    'count': cnt,
                     'doc_total': doc_total,
-                    'percent': round(100.0 * len(ids) / doc_total, 1) if doc_total else 0.0,
+                    'total_cases': total_cases,
+                    # Fill height & label — share of entire caseload (same as pipeline cards)
+                    'percent': round(100.0 * cnt / total_cases, 1) if total_cases else 0.0,
+                    'milestone_percent': round(100.0 * cnt / doc_total, 1) if doc_total else 0.0,
                     'icon': icon,
                     'color': sty.get('color', '#64748b'),
                     'billable': billable,
@@ -394,6 +399,22 @@ class BharatLoanPostalDispatch(models.Model):
                     'open': self._pod_card_open_meta(doc_type, label, status_label, ids),
                 })
         return cards
+
+    @api.model
+    def dashboard_pod_status_groups(self, loan_domain=None):
+        """Three POD pairs: pending → done for Notice 1, Hearing 1, and Award."""
+        cards = self.dashboard_pod_status_cards(loan_domain)
+        groups = []
+        for i in range(0, len(cards), 2):
+            if i + 1 >= len(cards):
+                break
+            pending = cards[i]
+            groups.append({
+                'key': pending['document_type'],
+                'pending': pending,
+                'done': cards[i + 1],
+            })
+        return groups
 
     def apply_postal_import_row(self, dispatch_date, delivery_date, status_text):
         """Update from CSV import and run billing / lock side effects."""

@@ -70,11 +70,12 @@
             <t t-foreach="state.data.stage_cards || []" t-as="s" t-key="s.key">
                 <div class="bn-stage-flow__step">
                     <button type="button"
-                            class="bn-stage-card"
+                            class="bn-stage-card bn-stage-card--fill"
                             t-att-class="{
                                 'bn-stage-card--billable': s.creates_unbilled_charge,
                                 'bn-stage-card--empty': !s.count,
                             }"
+                            t-attf-style="--bn-tank-fill: {{ s.percent }}%;"
                             t-att-data-stage="s.key"
                             t-on-click="openStageCases">
                         <span t-if="s.creates_unbilled_charge"
@@ -114,11 +115,12 @@
         <div class="bn-stage-strip bn-stage-strip--hearing">
             <t t-foreach="state.data.hearing_stage_cards || []" t-as="s" t-key="s.key">
                 <button type="button"
-                        class="bn-stage-card"
+                        class="bn-stage-card bn-stage-card--fill"
                         t-att-class="{
                             'bn-stage-card--billable': s.creates_unbilled_charge,
                             'bn-stage-card--empty': !s.count,
                         }"
+                        t-attf-style="--bn-tank-fill: {{ s.percent }}%;"
                         t-att-data-stage="s.key"
                         t-on-click="openStageCases">
                     <span t-if="s.creates_unbilled_charge"
@@ -208,38 +210,53 @@
         </div>
     </t>
 
+    <t t-name="bharatnyay_core.DashboardPodStatusCard">
+        <button type="button"
+                t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--pod bn-stage-card--pod-{{ p.document_type }} {{ p.pod_status === 'pending' ? 'bn-stage-card--pod-pending' : 'bn-stage-card--pod-done' }} {{ p.billable ? 'bn-stage-card--billable' : '' }} {{ !p.count ? 'bn-stage-card--empty' : '' }}"
+                t-attf-style="--bn-tank-fill: {{ p.percent }}%;"
+                t-att-data-pod-key="p.key"
+                t-on-click="openPodStatusCases">
+            <span t-if="p.billable"
+                  class="bn-stage-bill-badge"
+                  title="Delivery confirmed — billable">
+                <i class="fa fa-check"/>
+            </span>
+            <div class="bn-stage-top">
+                <span class="bn-stage-ico"><i t-attf-class="fa {{ p.icon }}"/></span>
+                <span class="bn-stage-name" t-out="p.label"/>
+            </div>
+            <div class="bn-pod-status" t-out="p.status_label"/>
+            <div class="bn-stage-value">
+                <span class="n" t-out="fmtInt(p.count)"/>
+                <span class="p" t-out="p.percent + '%'"/>
+            </div>
+            <div class="bn-stage-meter">
+                <span t-attf-style="width: {{ p.percent }}%"/>
+            </div>
+            <span t-if="p.doc_total"
+                  class="bn-stage-bill-caption"
+                  t-out="fmtInt(p.count) + ' of ' + fmtInt(p.doc_total) + ' at this stage'"/>
+        </button>
+    </t>
+
     <t t-name="bharatnyay_core.DashboardPodStatusStrip">
         <div class="bn-section-title mt-2">Postal delivery (POD)</div>
         <p class="bn-stage-strip-hint">
             Notice 1, Hearing 1 &amp; Award — pending vs confirmed delivery (billable when POD is done).
+            <span class="bn-stage-flow-hint">Pending → done within each milestone.</span>
         </p>
-        <div class="bn-stage-strip bn-stage-strip--pod">
-            <t t-foreach="state.data.pod_status_cards || []" t-as="p" t-key="p.key">
-                <button type="button"
-                        t-attf-class="bn-stage-card bn-stage-card--pod bn-stage-card--pod-{{ p.document_type }} {{ p.pod_status === 'pending' ? 'bn-stage-card--pod-pending' : 'bn-stage-card--pod-done' }} {{ p.billable ? 'bn-stage-card--billable' : '' }} {{ !p.count ? 'bn-stage-card--empty' : '' }}"
-                        t-att-data-pod-key="p.key"
-                        t-on-click="openPodStatusCases">
-                    <span t-if="p.billable"
-                          class="bn-stage-bill-badge"
-                          title="Delivery confirmed — billable">
-                        <i class="fa fa-check"/>
+        <div class="bn-stage-strip bn-stage-strip--pod bn-stage-strip--pod-flow">
+            <t t-foreach="state.data.pod_status_groups || []" t-as="g" t-key="g.key">
+                <div class="bn-pod-flow__group">
+                    <t t-set="p" t-value="g.pending"/>
+                    <t t-call="bharatnyay_core.DashboardPodStatusCard"/>
+                    <span class="bn-pod-flow__connector bn-stage-flow__connector" aria-hidden="true">
+                        <span class="bn-stage-flow__pipe"/>
+                        <i class="fa fa-chevron-right"/>
                     </span>
-                    <div class="bn-stage-top">
-                        <span class="bn-stage-ico"><i t-attf-class="fa {{ p.icon }}"/></span>
-                        <span class="bn-stage-name" t-out="p.label"/>
-                    </div>
-                    <div class="bn-pod-status" t-out="p.status_label"/>
-                    <div class="bn-stage-value">
-                        <span class="n" t-out="fmtInt(p.count)"/>
-                        <span class="p" t-out="p.percent + '%'"/>
-                    </div>
-                    <div class="bn-stage-meter">
-                        <span t-attf-style="width: {{ p.percent }}%"/>
-                    </div>
-                    <span t-if="p.doc_total"
-                          class="bn-stage-bill-caption"
-                          t-out="fmtInt(p.count) + ' of ' + fmtInt(p.doc_total) + ' at this stage'"/>
-                </button>
+                    <t t-set="p" t-value="g.done"/>
+                    <t t-call="bharatnyay_core.DashboardPodStatusCard"/>
+                </div>
             </t>
         </div>
     </t>
@@ -248,7 +265,7 @@
         <div class="bn-section-title mt-2">Case pipeline</div>
         <p class="bn-stage-strip-hint">
             <i class="fa fa-file-text-o" title="Unbilled billing"/>
-            Theme badge — milestone accrues an unbilled charge (Notice 1, Hearing 1, Award per master).
+            Badge — unbilled charge when leaving milestone. Background fill height = share of total caseload.
             <span class="bn-stage-flow-hint">Cases move left → right through the pipeline.</span>
         </p>
         <t t-call="bharatnyay_core.DashboardStageCardStrip"/>

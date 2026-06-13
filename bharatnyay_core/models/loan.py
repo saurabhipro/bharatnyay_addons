@@ -39,6 +39,14 @@ class BharatLoan(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'loan_number'
 
+    # Fields still writable when case is Award-locked (POD / delivery tracking only).
+    _LOCKED_CASE_POSTAL_WRITABLE = frozenset({
+        'deliver_date',
+        'deliver_status',
+        'post_office_status_id',
+        'postal_case_locked',
+    })
+
     loan_number = fields.Char(string='Loan Number', required=True, index=True)
 
     _sql_constraints = [
@@ -1585,7 +1593,7 @@ class BharatLoan(models.Model):
                 'badge': state_labels.get(state, status_label),
                 'status_label': status_label,
                 'meta': meta or '—',
-                'clickable': state != 'not_started' and not self.is_case_locked,
+                'clickable': state != 'not_started',
             })
         return rows
 
@@ -1664,8 +1672,6 @@ class BharatLoan(models.Model):
     def action_open_postal_status_wizard(self, document_type):
         """Open popup to update POD number and post office status for one document."""
         self.ensure_one()
-        if self.is_case_locked:
-            raise UserError(_('This case is locked and cannot be updated.'))
         valid_types = {spec['type'] for spec in self.POSTAL_DELIVERY_DOCUMENTS}
         if document_type not in valid_types:
             raise UserError(_('Invalid document type.'))
@@ -2472,9 +2478,11 @@ class BharatLoan(models.Model):
     def write(self, vals):
         locked = self.filtered('is_case_locked')
         if locked and not self.env.context.get('bharat_allow_locked_case_write'):
-            raise UserError(
-                _('This case is at Award stage and cannot be modified.')
-            )
+            disallowed = set(vals) - self._LOCKED_CASE_POSTAL_WRITABLE
+            if disallowed:
+                raise UserError(
+                    _('This case is at Award stage and cannot be modified.')
+                )
         values = dict(vals)
         self._normalize_loan_number_in_vals(values)
         self._apply_arbitrator_user_to_vals(self.env, values)
@@ -3202,6 +3210,9 @@ class BharatLoan(models.Model):
         pod_status_cards = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pod_status_cards(scope_domain)
+        pod_status_groups = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_status_groups(scope_domain)
 
         return {
             'currency_id': Currency.id,
@@ -3256,6 +3267,7 @@ class BharatLoan(models.Model):
             'entity_cards': entity_cards,
             'stage_cards': stage_cards,
             'pod_status_cards': pod_status_cards,
+            'pod_status_groups': pod_status_groups,
             'processes': self.env['bharat.process.run'].dashboard_snapshot(
                 page=jobs_page, page_size=jobs_page_size,
             ),
@@ -3734,6 +3746,9 @@ class BharatLoan(models.Model):
         pod_status_cards = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pod_status_cards(domain)
+        pod_status_groups = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_status_groups(domain)
 
         return {
             'currency_id': Currency.id,
@@ -3774,6 +3789,7 @@ class BharatLoan(models.Model):
             'recent_cases': self._dashboard_recent_cases(loans),
             'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
             'pod_status_cards': pod_status_cards,
+            'pod_status_groups': pod_status_groups,
             'invoice_domains': self._dashboard_invoice_domains_for_loans(
                 loans, date_from, date_to,
             ),
@@ -3818,6 +3834,9 @@ class BharatLoan(models.Model):
         pod_status_cards = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pod_status_cards(domain)
+        pod_status_groups = self.env[
+            'bharat.loan.postal.dispatch'
+        ].dashboard_pod_status_groups(domain)
 
         return {
             'currency_id': Currency.id,
@@ -3851,6 +3870,7 @@ class BharatLoan(models.Model):
             'recent_cases': self._dashboard_recent_cases(loans),
             'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
             'pod_status_cards': pod_status_cards,
+            'pod_status_groups': pod_status_groups,
             'invoice_domains': self._dashboard_invoice_domains_for_loans(
                 loans, date_from, date_to,
             ),
