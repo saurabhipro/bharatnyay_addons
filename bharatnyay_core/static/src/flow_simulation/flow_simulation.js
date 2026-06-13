@@ -89,11 +89,16 @@ export class FlowSimulation extends Component {
         if (this.state.busy || this.state.phase !== "pick_mode") {
             return;
         }
+        this.state.busy = true;
         this.state.advanceMode = mode;
         this.state.phase = "running";
         this.state.loading = true;
         this.state.error = null;
-        await this._bootstrap();
+        try {
+            await this._bootstrap();
+        } finally {
+            this.state.busy = false;
+        }
     }
 
     async _bootstrap() {

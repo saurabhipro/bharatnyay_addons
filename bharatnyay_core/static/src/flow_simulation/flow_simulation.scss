@@ -347,17 +347,152 @@
         flex-wrap: wrap;
         gap: 0.75rem;
         justify-content: center;
-        margin-top: 1.5rem;
+        margin-top: 1.25rem;
     }
 
-    &__continue {
-        min-width: 12rem;
-        box-shadow: 0 8px 24px rgba(56, 189, 248, 0.25);
+    &__nav {
+        margin-top: auto;
+        padding-top: 1.75rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        text-align: center;
     }
 
-    &__auto-hint {
+    &__nav-hint {
+        margin: 0;
+        max-width: 28rem;
         color: #94a3b8;
-        font-size: 0.95rem;
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    &__next {
+        min-width: 14rem;
+        padding: 0.85rem 2.75rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        box-shadow: 0 10px 28px rgba(56, 189, 248, 0.28);
+
+        i {
+            margin-right: 0.45rem;
+        }
+    }
+
+    &__setup {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 4rem 2rem 5rem;
+        min-height: calc(100vh - 6rem);
+        animation: bn-flow-fade-in 0.45s ease;
+    }
+
+    &__setup-icon {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.25rem;
+        background: rgba(56, 189, 248, 0.15);
+        color: #7dd3fc;
+    }
+
+    &__setup h2 {
+        font-size: 1.85rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: #f8fafc !important;
+    }
+
+    &__setup-lead {
+        max-width: 34rem;
+        color: #cbd5e1;
+        margin-bottom: 2rem;
+        font-size: 1rem;
+        line-height: 1.55;
+    }
+
+    &__mode-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(240px, 300px));
+        gap: 1.25rem;
+        width: 100%;
+        max-width: 42rem;
+    }
+
+    &__mode-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 1.75rem 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(15, 23, 42, 0.65);
+        color: #f8fafc !important;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover,
+        &:focus {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.55);
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.45);
+            background: rgba(30, 41, 59, 0.85);
+        }
+
+        &:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        &--manual:hover,
+        &--manual:focus {
+            border-color: rgba(34, 197, 94, 0.55);
+            box-shadow: 0 12px 32px rgba(34, 197, 94, 0.12);
+        }
+    }
+
+    &__mode-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        background: rgba(56, 189, 248, 0.18);
+        color: #7dd3fc;
+    }
+
+    &__mode-card--manual &__mode-icon {
+        background: rgba(34, 197, 94, 0.18);
+        color: #86efac;
+    }
+
+    &__mode-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #f8fafc !important;
+    }
+
+    &__mode-desc {
+        font-size: 0.9rem;
+        line-height: 1.45;
+        color: #94a3b8 !important;
     }
 
     &__log {
@@ -415,6 +550,11 @@
     .o_bharat_flow_sim__timeline {
         border-right: none;
         border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .o_bharat_flow_sim__mode-cards {
+        grid-template-columns: 1fr;
+        max-width: 22rem;
     }
 }
 
