@@ -339,10 +339,77 @@
     </t>
 
     <t t-name="bharatnyay_core.DashboardPipeline">
-        <div class="bn-section-title mt-2">Case pipeline</div>
-        <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
-        <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
-        <t t-call="bharatnyay_core.DashboardUnbilledChargesStrip"/>
+        <div class="bn-pipeline-viz">
+            <div class="bn-section-title mt-2">Case pipeline</div>
+            <div class="bn-pipeline-viz__scroll">
+                <div class="bn-pipeline-viz__canvas">
+                    <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
+
+                    <div class="bn-pipeline-viz__branch-lanes">
+                        <t t-foreach="pipelineLinkedStages()" t-as="s" t-key="'lane-' + s.key">
+                            <div class="bn-pipeline-viz__branch-lane">
+                                <div class="bn-pipeline-viz__lane-head">
+                                    <span class="bn-pipeline-viz__vlink bn-pipeline-viz__vlink--from-case" aria-hidden="true">
+                                        <span class="bn-pipeline-viz__vlink-stem"/>
+                                    </span>
+                                    <span class="bn-pipeline-viz__lane-title" t-out="s.label"/>
+                                </div>
+
+                                <div class="bn-pipeline-viz__branch-panel">
+                                    <t t-set="podGroup" t-value="podGroupForStage(s.key)"/>
+                                    <div class="bn-pipeline-viz__branch-section" t-if="podGroup">
+                                        <div class="bn-pipeline-viz__branch-label">Postal delivery</div>
+                                        <div class="bn-pipeline-viz__pod-pair">
+                                            <t t-set="p" t-value="podGroup.pending"/>
+                                            <t t-call="bharatnyay_core.DashboardPodStatusCard"/>
+                                            <span class="bn-pipeline-viz__pod-arrow" aria-hidden="true">
+                                                <i class="fa fa-long-arrow-right"/>
+                                            </span>
+                                            <t t-set="p" t-value="podGroup.done"/>
+                                            <t t-call="bharatnyay_core.DashboardPodStatusCard"/>
+                                        </div>
+                                    </div>
+
+                                    <t t-if="state.data.unbilled_charges_pipeline">
+                                        <t t-set="chargeStage" t-value="chargeStageForKey(s.key)"/>
+                                        <div class="bn-pipeline-viz__branch-section" t-if="chargeStage">
+                                            <div class="bn-pipeline-viz__branch-divider"/>
+                                            <div class="bn-pipeline-viz__branch-label">Unbilled charges</div>
+                                            <t t-set="c" t-value="chargeStage"/>
+                                            <t t-call="bharatnyay_core.DashboardUnbilledChargeCard"/>
+                                        </div>
+                                        <div class="bn-pipeline-viz__branch-section" t-if="s.key === 'award'">
+                                            <div class="bn-pipeline-viz__branch-divider"/>
+                                            <button type="button"
+                                                    class="bn-stage-card bn-stage-card--fill bn-stage-card--charge bn-stage-card--charge-total"
+                                                    t-att-class="{'bn-stage-card--empty': !(state.data.unbilled_charges_pipeline.total.count || 0)}"
+                                                    data-charge-key="total"
+                                                    t-on-click="openUnbilledChargesStage">
+                                                <div class="bn-stage-top">
+                                                    <span class="bn-stage-ico"><i class="fa fa-money"/></span>
+                                                    <span class="bn-stage-name">Total unbilled</span>
+                                                </div>
+                                                <div class="bn-charge-amount"
+                                                     t-out="fmtMoney(state.data.unbilled_charges_pipeline.total.amount || 0)"/>
+                                                <div class="bn-stage-value">
+                                                    <span class="n" t-out="fmtInt(state.data.unbilled_charges_pipeline.total.count || 0)"/>
+                                                    <span class="p">100%</span>
+                                                </div>
+                                                <div class="bn-stage-meter">
+                                                    <span style="width: 100%"/>
+                                                </div>
+                                                <span class="bn-stage-bill-caption"
+                                                      t-out="fmtInt(state.data.unbilled_charges_pipeline.total.cases || 0) + ' cases'"/>
+                                            </button>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
     </t>
 
     <t t-name="bharatnyay_core.DashboardPanelBatchVolumeStacked">

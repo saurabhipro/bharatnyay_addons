@@ -1507,6 +1507,207 @@
         }
     }
 
+    .bn-pipeline-viz {
+        margin: 0.35rem 0 var(--bn-section-gap);
+
+        &__scroll {
+            overflow-x: auto;
+            padding-bottom: 0.35rem;
+            scrollbar-width: thin;
+
+            &::-webkit-scrollbar {
+                height: 5px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: color-mix(in srgb, var(--bn-accent) 28%, #cbd5e1);
+                border-radius: 999px;
+            }
+        }
+
+        &__canvas {
+            min-width: 960px;
+        }
+
+        .bn-stage-strip--flow {
+            margin-bottom: 0;
+        }
+
+        &__branch-lanes {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 0.65rem;
+            padding: 0.25rem 0.15rem 0.35rem;
+        }
+
+        &__branch-lane {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 0;
+        }
+
+        &__lane-head {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.45rem;
+        }
+
+        &__lane-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #16a34a;
+        }
+
+        &__branch-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            padding: 0.85rem;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid color-mix(in srgb, #22c55e 22%, var(--bn-border));
+            box-shadow:
+                0 1px 2px rgba(15, 23, 42, 0.04),
+                0 8px 24px rgba(34, 197, 94, 0.08);
+        }
+
+        &__branch-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        &__branch-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #64748b;
+            line-height: 1.2;
+        }
+
+        &__branch-divider {
+            height: 1px;
+            background: color-mix(in srgb, var(--bn-border) 80%, #22c55e 20%);
+            margin: 0.1rem 0;
+        }
+
+        &__pod-pair {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 0.45rem;
+
+            .bn-stage-card {
+                width: 100%;
+                min-height: 108px;
+            }
+
+            .bn-stage-name {
+                font-size: 0.62rem;
+            }
+
+            .bn-pod-status {
+                font-size: 0.68rem;
+                font-weight: 700;
+            }
+
+            .bn-stage-bill-caption {
+                font-size: 0.58rem;
+                line-height: 1.25;
+            }
+        }
+
+        &__pod-arrow {
+            color: #16a34a;
+            font-size: 0.85rem;
+            opacity: 0.85;
+            flex-shrink: 0;
+        }
+
+        &__vlink {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            &--from-case {
+                min-height: 1.1rem;
+            }
+        }
+
+        &__vlink-stem {
+            width: 3px;
+            height: 1.1rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #4ade80, #16a34a);
+            box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.12);
+            position: relative;
+
+            &::before,
+            &::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #22c55e;
+                box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.14);
+            }
+
+            &::before {
+                top: -3px;
+            }
+
+            &::after {
+                bottom: -3px;
+            }
+        }
+
+        .bn-stage-card--charge,
+        .bn-stage-card--pod {
+            min-height: 108px;
+        }
+
+        .bn-stage-card--charge-total {
+            min-height: 108px;
+        }
+    }
+
+    @media (max-width: 1199px) {
+        .bn-pipeline-viz__branch-lanes {
+            grid-template-columns: repeat(3, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .bn-pipeline-viz__canvas {
+            min-width: 820px;
+        }
+
+        .bn-pipeline-viz__branch-lanes {
+            grid-template-columns: repeat(3, minmax(240px, 1fr));
+        }
+
+        .bn-pipeline-viz__pod-pair {
+            grid-template-columns: 1fr;
+
+            .bn-pipeline-viz__pod-arrow {
+                justify-self: center;
+                transform: rotate(90deg);
+            }
+        }
+    }
+
     .bn-stage-strip--charges {
         display: flex;
         flex-wrap: wrap;

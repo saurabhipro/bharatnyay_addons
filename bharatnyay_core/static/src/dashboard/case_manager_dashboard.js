@@ -22,6 +22,10 @@ import {
     openStageBucketCases,
     openUnbilledChargesStage,
     guardEmptyDashboardCard,
+    isPipelineLinkStage as isPipelineLinkStageHelper,
+    podGroupForStage as podGroupForStageHelper,
+    chargeStageForKey as chargeStageForKeyHelper,
+    pipelineLinkedStages as pipelineLinkedStagesHelper,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -193,6 +197,22 @@ export class CaseManagerDashboard extends Component {
             cards || [],
             this.notification,
         );
+    }
+
+    isPipelineLinkStage(stageKey) {
+        return isPipelineLinkStageHelper(stageKey);
+    }
+
+    podGroupForStage(stageKey) {
+        return podGroupForStageHelper(this.state.data, stageKey);
+    }
+
+    chargeStageForKey(stageKey) {
+        return chargeStageForKeyHelper(this.state.data, stageKey);
+    }
+
+    pipelineLinkedStages() {
+        return pipelineLinkedStagesHelper(this.state.data);
     }
 
     openMixCases(ev) {

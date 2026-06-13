@@ -334,3 +334,34 @@ export function batchSegPctCount(batch, segCount) {
     }
     return Math.round(((segCount || 0) / total) * 100);
 }
+
+const PIPELINE_LINK_STAGE_KEYS = new Set(["notice_1", "hearing_1", "award"]);
+
+const POD_DOC_TYPE_BY_STAGE = {
+    notice_1: "notice_1",
+    hearing_1: "interim_order_1",
+    award: "award",
+};
+
+export function isPipelineLinkStage(stageKey) {
+    return PIPELINE_LINK_STAGE_KEYS.has(stageKey);
+}
+
+export function podGroupForStage(data, stageKey) {
+    const docType = POD_DOC_TYPE_BY_STAGE[stageKey];
+    if (!docType) {
+        return null;
+    }
+    return (data?.pod_status_groups || []).find((group) => group.key === docType) || null;
+}
+
+export function chargeStageForKey(data, stageKey) {
+    return (
+        (data?.unbilled_charges_pipeline?.stages || []).find((stage) => stage.key === stageKey) ||
+        null
+    );
+}
+
+export function pipelineLinkedStages(data) {
+    return (data?.stage_cards || []).filter((stage) => isPipelineLinkStage(stage.key));
+}
