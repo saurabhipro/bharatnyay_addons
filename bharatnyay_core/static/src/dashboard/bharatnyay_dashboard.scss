@@ -1511,11 +1511,6 @@
             min-width: 140px;
         }
 
-        .bn-charges-pipeline__total {
-            flex: 1.05 1 0;
-            min-width: 150px;
-        }
-
         .bn-charges-pipeline__connector {
             flex: 0 0 auto;
             margin: 0 0.15rem;
@@ -1541,10 +1536,6 @@
 
         .bn-stage-card--charge-total {
             --stg: var(--bn-bill-accent);
-            border-color: color-mix(in srgb, var(--bn-bill-accent) 42%, var(--bn-border));
-            box-shadow:
-                0 0 0 1px color-mix(in srgb, var(--bn-bill-accent) 18%, transparent),
-                var(--bn-card-shadow);
 
             &::before {
                 background-image: url("../../img/yellow_pattern.jpg");
@@ -1577,15 +1568,13 @@
             display: none;
         }
 
-        .bn-stage-strip--charges .bn-stage-flow__step,
-        .bn-stage-strip--charges .bn-charges-pipeline__total {
+        .bn-stage-strip--charges .bn-stage-flow__step {
             flex: 1 1 calc(50% - 0.35rem);
         }
     }
 
     @media (max-width: 560px) {
-        .bn-stage-strip--charges .bn-stage-flow__step,
-        .bn-stage-strip--charges .bn-charges-pipeline__total {
+        .bn-stage-strip--charges .bn-stage-flow__step {
             flex: 1 1 100%;
         }
     }

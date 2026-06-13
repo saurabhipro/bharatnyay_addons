@@ -256,25 +256,21 @@ class BharatLoanBillingEvent(models.Model):
 
     @api.model
     def dashboard_pending_charges_pipeline(self, loan_ids=None):
-        """Stage-wise pending charges for dashboard pipeline (Notice 1 → Hearing 1 → Award → Total)."""
+        """Pending POD-stage charges for dashboard (Notice 1 → Hearing 1 → Award → Total)."""
         domain = [('state', '=', 'pending')]
         if loan_ids is not None:
             domain.append(('loan_id', 'in', loan_ids or [0]))
         events = self.sudo().search(domain)
+        postal_codes = list(POSTAL_BILLING_MILESTONE_CODES)
 
         specs = (
             ('notice_1', _('Notice 1'), '#3b82f6', 'fa-envelope-o'),
             ('hearing_1', _('Hearing 1'), '#8b5cf6', 'fa-video-camera'),
             ('award', _('Award'), '#ef4444', 'fa-trophy'),
         )
-        total_count = len(events)
         stages = []
         for code, label, color, icon in specs:
-            stage_events = events.filtered(
-                lambda e, c=code: (
-                    e.milestone_code == c and e.accrual_trigger == 'delivery'
-                ),
-            )
+            stage_events = events.filtered(lambda e, c=code: e.milestone_code == c)
             count = len(stage_events)
             stages.append({
                 'key': code,
@@ -284,20 +280,27 @@ class BharatLoanBillingEvent(models.Model):
                 'count': count,
                 'cases': len(stage_events.mapped('loan_id')),
                 'amount': round(sum(stage_events.mapped('unit_price')), 2),
-                'percent': round(100.0 * count / total_count, 1) if total_count else 0.0,
+                'percent': 0.0,
                 'domain': domain + [('milestone_code', '=', code)],
             })
 
-        total_amount = round(sum(events.mapped('unit_price')), 2)
+        total_count = sum(stage['count'] for stage in stages)
+        total_amount = round(sum(stage['amount'] for stage in stages), 2)
+        pipeline_events = events.filtered(lambda e: e.milestone_code in POSTAL_BILLING_MILESTONE_CODES)
+        for stage in stages:
+            stage['percent'] = (
+                round(100.0 * stage['count'] / total_count, 1) if total_count else 0.0
+            )
+
         return {
             'stages': stages,
             'total': {
                 'key': 'total',
                 'label': _('Total unbilled'),
                 'count': total_count,
-                'cases': len(events.mapped('loan_id')),
+                'cases': len(pipeline_events.mapped('loan_id')),
                 'amount': total_amount,
-                'domain': domain,
+                'domain': domain + [('milestone_code', 'in', postal_codes)],
             },
         }
 

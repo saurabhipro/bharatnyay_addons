@@ -215,7 +215,7 @@ export function openUnbilledChargesStage(action, notification, state, stageKey) 
     let name;
     if (stageKey === "total") {
         card = pipeline.total;
-        name = _t("All unbilled charges");
+        name = _t("Notice 1 / Hearing 1 / Award — unbilled");
     } else {
         card = (pipeline.stages || []).find((s) => s.key === stageKey);
         name = card?.label || _t("Unbilled charges");

@@ -235,6 +235,33 @@ class BharatLoanMilestone(models.Model):
                 '<i class="%s" aria-hidden="true"></i></span>'
             ) % (rec.name or '', ic_class)
 
+    @api.depends('code', 'bill_on_milestone_exit')
+    def _compute_billing_badge_html(self):
+        for rec in self:
+            rec.is_billable = False
+            rec.billing_trigger = False
+            rec.billing_badge_html = Markup('')
+            if rec.code in POSTAL_BILLING_MILESTONE_CODES:
+                rec.is_billable = True
+                rec.billing_trigger = 'postal'
+            elif rec.bill_on_milestone_exit:
+                rec.is_billable = True
+                rec.billing_trigger = 'exit'
+            if not rec.is_billable:
+                continue
+            raw_icon = BILLING_BADGE_ICONS.get(rec.code, 'fa-money')
+            if raw_icon.startswith('fa-'):
+                ic_class = 'fa %s' % raw_icon
+            elif raw_icon.startswith('fa '):
+                ic_class = raw_icon
+            else:
+                ic_class = 'fa fa-%s' % raw_icon
+            tip = _('Billable — POD') if rec.billing_trigger == 'postal' else _('Billable — on exit')
+            rec.billing_badge_html = Markup(
+                '<span class="bn-milestone-bill-icon" title="%s">'
+                '<i class="%s" aria-hidden="true"></i></span>'
+            ) % (tip, ic_class)
+
     @api.model
     def _sync_default_master_milestones(self):
         """Create or update default milestones by code (module install/upgrade)."""
@@ -285,14 +312,10 @@ class BharatLoanMilestone(models.Model):
             }
         mode = self.billing_accrual_mode()
         if mode == 'postal_delivery':
-            title = {
-                'notice_1': _('Unbilled charge on Notice 1 postal delivery'),
-                'hearing_1': _('Unbilled charge on Interim Order 1 postal delivery'),
-                'award': _('Unbilled charge on Award postal delivery'),
-            }.get(self.code, _('Unbilled charge on postal delivery'))
-            icon = BILLING_BADGE_ICONS.get(self.code, 'fa-file-text-o')
+            title = _('Billable — POD')
+            icon = BILLING_BADGE_ICONS.get(self.code, 'fa-money')
         else:
-            title = _('Unbilled charge when leaving this milestone')
+            title = _('Billable — on exit')
             icon = 'fa-sign-out'
         return {
             'creates_unbilled_charge': True,

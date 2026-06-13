@@ -450,6 +450,7 @@
             <search>
                 <field name="name"/>
                 <field name="code"/>
+                <filter string="Billable" name="billable" domain="[('is_billable', '=', True)]"/>
                 <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
             </search>
         </field>
@@ -463,6 +464,9 @@
                 <field name="icon_html" string="" readonly="1" widget="html"/>
                 <field name="name" string="Stage name"/>
                 <field name="code" string="Stage ID" readonly="1"/>
+                <field name="billing_badge_html" string="Billable" widget="html" readonly="1"/>
+                <field name="billing_trigger" string="Bill via" optional="show"/>
+                <field name="is_billable" column_invisible="1"/>
                 <field name="stay_days" string="Stay (days)"/>
                 <field name="icon" column_invisible="1"/>
                 <field name="active" widget="boolean_toggle" optional="hide"/>

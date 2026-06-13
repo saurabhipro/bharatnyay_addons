@@ -176,8 +176,6 @@
                     </div>
                     </div>
 
-                    <t t-call="bharatnyay_core.DashboardUnbilledChargesStrip"/>
-
                     <div class="bn-dashboard-quick-actions">
                         <button type="button"
                                 class="btn btn-primary btn-sm bn-quick-action"
@@ -200,9 +198,7 @@
                     </div>
 
                     <div class="bn-dashboard-section">
-                    <div class="bn-section-title">Case pipeline</div>
-                    <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
-                    <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
+                    <t t-call="bharatnyay_core.DashboardPipeline"/>
                     </div>
 
                     <div class="bn-dashboard-section">

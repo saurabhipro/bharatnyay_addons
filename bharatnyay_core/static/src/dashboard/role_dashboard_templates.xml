@@ -104,9 +104,6 @@
                         <div class="bn-stage-meter">
                             <span t-attf-style="width: {{ s.percent }}%"/>
                         </div>
-                        <span t-if="s.creates_unbilled_charge"
-                              class="bn-stage-bill-caption"
-                              t-out="s.billing_badge_title"/>
                     </button>
                     <span t-if="!s_last" class="bn-stage-flow__connector" aria-hidden="true">
                         <span class="bn-stage-flow__pipe"/>
@@ -314,7 +311,7 @@
                         </span>
                     </div>
                 </t>
-                <div class="bn-stage-flow__step bn-charges-pipeline__total">
+                <div class="bn-stage-flow__step">
                     <button type="button"
                             class="bn-stage-card bn-stage-card--fill bn-stage-card--charge bn-stage-card--charge-total"
                             t-att-class="{'bn-stage-card--empty': !(state.data.unbilled_charges_pipeline.total.count || 0)}"
@@ -328,7 +325,10 @@
                              t-out="fmtMoney(state.data.unbilled_charges_pipeline.total.amount || 0)"/>
                         <div class="bn-stage-value">
                             <span class="n" t-out="fmtInt(state.data.unbilled_charges_pipeline.total.count || 0)"/>
-                            <span class="p">charges</span>
+                            <span class="p">100%</span>
+                        </div>
+                        <div class="bn-stage-meter">
+                            <span style="width: 100%"/>
                         </div>
                         <span class="bn-stage-bill-caption"
                               t-out="fmtInt(state.data.unbilled_charges_pipeline.total.cases || 0) + ' cases'"/>
@@ -342,6 +342,7 @@
         <div class="bn-section-title mt-2">Case pipeline</div>
         <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
         <t t-call="bharatnyay_core.DashboardPodStatusStrip"/>
+        <t t-call="bharatnyay_core.DashboardUnbilledChargesStrip"/>
     </t>
 
     <t t-name="bharatnyay_core.DashboardPanelBatchVolumeStacked">
@@ -707,8 +708,6 @@
                             <div class="bn-kpi-value" t-out="fmtInt(state.data.kpis.hearings_today || 0)"/>
                         </div>
                     </div>
-
-                    <t t-call="bharatnyay_core.DashboardUnbilledChargesStrip"/>
 
                     <div class="bn-chart-row bn-chart-row--2 mt-2">
                         <t t-call="bharatnyay_core.DashboardPanelRecentCases"/>

@@ -13,6 +13,22 @@
             font-size: 1rem;
         }
     }
+
+    .bn-milestone-bill-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.65rem;
+        height: 1.65rem;
+        border-radius: 999px;
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+
+        .fa {
+            font-size: 0.78rem;
+        }
+    }
 }
 
 .o_bharat_milestone_form {
