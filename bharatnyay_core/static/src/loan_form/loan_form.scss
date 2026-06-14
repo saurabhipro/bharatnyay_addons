@@ -1602,6 +1602,141 @@
         }
     }
 
+    .bn-notice-delivery-update {
+        margin-top: 0.85rem;
+        padding-top: 0.85rem;
+        border-top: 1px dashed var(--bn-line);
+
+        &__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.45rem;
+        }
+
+        &__hint {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--bn-muted);
+        }
+
+        &__link {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0;
+            white-space: nowrap;
+        }
+
+        .o_field_widget.o_field_bn_postal_delivery_cards {
+            width: 100%;
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .bn-postal-delivery__grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .bn-postal-card {
+            --postal-accent: #64748b;
+            --postal-pattern: var(--bn-pattern-blue);
+            --postal-veil: var(--bn-veil-notice);
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            appearance: none;
+            width: 100%;
+            font: inherit;
+            border-radius: 10px;
+            border: 1px solid color-mix(in srgb, var(--postal-accent) 22%, var(--bn-line));
+            border-top: 3px solid var(--postal-accent);
+            background: #ffffff;
+            padding: 10px 11px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+            min-height: 88px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+
+            &--clickable {
+                cursor: pointer;
+
+                &:hover {
+                    border-color: color-mix(in srgb, var(--bn-primary) 35%, var(--bn-line));
+                    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+                }
+            }
+
+            &--awaiting {
+                --postal-accent: #d97706;
+            }
+
+            &--dispatched,
+            &--in_progress {
+                --postal-accent: #2563eb;
+            }
+
+            &--delivered,
+            &--billed {
+                --postal-accent: #16a34a;
+            }
+
+            &__head {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            &__icon {
+                flex-shrink: 0;
+                width: 1.35rem;
+                text-align: center;
+                color: var(--postal-accent);
+            }
+
+            &__title {
+                flex: 1 1 auto;
+                font-size: 0.78rem;
+                font-weight: 700;
+                color: var(--bn-ink);
+            }
+
+            &__badge {
+                flex-shrink: 0;
+                font-size: 0.58rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                padding: 0.15rem 0.45rem;
+                border-radius: 999px;
+                background: color-mix(in srgb, var(--postal-accent) 12%, #fff);
+                color: var(--postal-accent);
+            }
+
+            &__status,
+            &__meta {
+                position: relative;
+                z-index: 1;
+                font-size: 0.72rem;
+                color: var(--bn-sub);
+            }
+
+            &__status {
+                font-weight: 600;
+                color: var(--bn-ink);
+            }
+        }
+    }
+
     .bn-notice-preview {
         background: transparent;
         border: none;

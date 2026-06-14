@@ -158,28 +158,84 @@
         <field name="name">bharat.arbitration.invoice.line.loader.wizard.form</field>
         <field name="model">bharat.arbitration.invoice.line.loader.wizard</field>
         <field name="arch" type="xml">
-            <form string="Create consolidated invoice">
-                <group>
-                    <group>
-                        <field name="batch_ids" widget="many2many_tags"
-                               options="{'no_create': True}"/>
-                    </group>
-                    <group>
-                        <field name="preview_case_count" readonly="1"/>
-                        <field name="preview_total_amount" readonly="1"/>
-                        <field name="currency_id" invisible="1"/>
-                        <field name="move_id" placeholder="Optional — one lender only"/>
-                    </group>
-                </group>
-                <field name="preview_hint" readonly="1" nolabel="1" class="text-muted"/>
-                <div class="alert alert-info" role="alert">
-                    Bills all <b>pending</b> unbilled charges in the selected batch(es).
-                    Leave batches empty to include every batch with pending charges.
-                    Already invoiced rows are never included again.
-                    One posted invoice per lender with summary lines per billing stage and a full case annexure.
-                </div>
-                <footer>
-                    <button name="action_apply" string="Create consolidated invoice" type="object" class="btn-primary"/>
+            <form string="Create consolidated invoice" class="bn-consolidated-invoice-wizard">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="company_ids" invisible="1"/>
+                    <field name="batch_ids" invisible="1"/>
+                    <field name="milestone_ids" invisible="1"/>
+                    <field name="move_id" invisible="1"/>
+                    <field name="scope_summary" invisible="1"/>
+                    <field name="preview_hint" invisible="1"/>
+
+                    <div class="bn-consolidated-invoice-wizard__hero">
+                        <div class="bn-consolidated-invoice-wizard__hero-icon">
+                            <i class="fa fa-file-text-o" title="Consolidated invoice"/>
+                        </div>
+                        <div class="bn-consolidated-invoice-wizard__hero-body">
+                            <h1 class="bn-consolidated-invoice-wizard__title">Create consolidated invoice</h1>
+                            <p class="bn-consolidated-invoice-wizard__subtitle">
+                                <span class="bn-consolidated-invoice-wizard__stage"
+                                      invisible="not billing_stage_label">
+                                    <field name="billing_stage_label" readonly="1" nolabel="1" class="oe_inline"/>
+                                </span>
+                                <span class="bn-consolidated-invoice-wizard__subtitle-lead">
+                                    Bill pending unbilled charges for the current dashboard scope.
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bn-consolidated-invoice-wizard__stats">
+                        <div class="bn-consolidated-invoice-wizard__stat">
+                            <span class="bn-consolidated-invoice-wizard__stat-k">Pending charges</span>
+                            <field name="preview_case_count" readonly="1" nolabel="1"
+                                   class="bn-consolidated-invoice-wizard__stat-v"/>
+                        </div>
+                        <div class="bn-consolidated-invoice-wizard__stat">
+                            <span class="bn-consolidated-invoice-wizard__stat-k">Estimated total</span>
+                            <field name="preview_total_amount" readonly="1" nolabel="1"
+                                   widget="monetary"
+                                   class="bn-consolidated-invoice-wizard__stat-v"/>
+                        </div>
+                        <div class="bn-consolidated-invoice-wizard__stat">
+                            <span class="bn-consolidated-invoice-wizard__stat-k">Lenders</span>
+                            <field name="preview_lender_count" readonly="1" nolabel="1"
+                                   class="bn-consolidated-invoice-wizard__stat-v"/>
+                        </div>
+                    </div>
+
+                    <div class="bn-consolidated-invoice-wizard__scope"
+                         invisible="not scope_detail">
+                        <div class="bn-consolidated-invoice-wizard__scope-label">Selection scope</div>
+                        <field name="scope_detail" readonly="1" nolabel="1"
+                               class="bn-consolidated-invoice-wizard__scope-text"/>
+                    </div>
+
+                    <div class="bn-consolidated-invoice-wizard__empty"
+                         invisible="preview_case_count">
+                        <i class="fa fa-info-circle" title="No charges"/>
+                        <span>No pending unbilled charges match this selection.</span>
+                    </div>
+
+                    <div class="bn-consolidated-invoice-wizard__info"
+                         invisible="not preview_case_count">
+                        <i class="fa fa-lightbulb-o" title="How it works"/>
+                        <div>
+                            <strong>What happens next</strong>
+                            <p>
+                                Bills all <b>pending</b> unbilled charges in scope. Batches and billing
+                                stages are picked automatically. Creates one posted invoice per lender
+                                with summary lines and a full case annexure.
+                            </p>
+                        </div>
+                    </div>
+                </sheet>
+                <footer class="bn-consolidated-invoice-wizard__footer">
+                    <button name="action_apply" string="Create consolidated invoice" type="object"
+                            class="btn-primary"
+                            invisible="not preview_case_count"
+                            icon="fa-file-text-o"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

@@ -22,7 +22,12 @@ import {
     openPodStatusRecords,
     openStageBucketCases,
     openUnbilledChargesStage,
+    openConsolidatedBillingWizard,
     guardEmptyDashboardCard,
+    isPipelineLinkStage as isPipelineLinkStageHelper,
+    podGroupForStage as podGroupForStageHelper,
+    chargeStageForKey as chargeStageForKeyHelper,
+    pipelineLinkedStages as pipelineLinkedStagesHelper,
 } from "./dashboard_helpers";
 
 function defaultDateRange() {
@@ -197,6 +202,22 @@ export class CaseManagerDashboard extends Component {
         );
     }
 
+    isPipelineLinkStage(stageKey) {
+        return isPipelineLinkStageHelper(stageKey);
+    }
+
+    podGroupForStage(stageKey) {
+        return podGroupForStageHelper(this.state.data, stageKey);
+    }
+
+    chargeStageForKey(stageKey) {
+        return chargeStageForKeyHelper(this.state.data, stageKey);
+    }
+
+    pipelineLinkedStages() {
+        return pipelineLinkedStagesHelper(this.state.data);
+    }
+
     openMixCases(ev) {
         const kind = ev.currentTarget?.dataset?.mixKind;
         const rawId = ev.currentTarget?.dataset?.mixId;
@@ -253,6 +274,19 @@ export class CaseManagerDashboard extends Component {
             return;
         }
         openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            key,
+        );
+    }
+
+    openConsolidatedBillingFromStage(ev) {
+        const key = ev.currentTarget?.dataset?.chargeKey;
+        if (!key) {
+            return;
+        }
+        openConsolidatedBillingWizard(
             this.action,
             this.notification,
             this.state,

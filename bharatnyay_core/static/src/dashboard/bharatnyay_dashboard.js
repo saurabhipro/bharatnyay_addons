@@ -18,6 +18,7 @@ import {
     openPodStatusRecords,
     openStageBucketCases,
     openUnbilledChargesStage,
+    openConsolidatedBillingWizard,
     guardEmptyDashboardCard,
     guardEmptyInvoiceCard,
     onDashboardFilterRegionChange,
@@ -26,6 +27,10 @@ import {
     batchVolumeRows,
     batchBarHeight as batchBarHeightHelper,
     batchSegPctCount as batchSegPctCountHelper,
+    isPipelineLinkStage as isPipelineLinkStageHelper,
+    podGroupForStage as podGroupForStageHelper,
+    chargeStageForKey as chargeStageForKeyHelper,
+    pipelineLinkedStages as pipelineLinkedStagesHelper,
 } from "./dashboard_helpers";
 
 export class BharatnyayDashboard extends Component {
@@ -311,6 +316,22 @@ export class BharatnyayDashboard extends Component {
         );
     }
 
+    isPipelineLinkStage(stageKey) {
+        return isPipelineLinkStageHelper(stageKey);
+    }
+
+    podGroupForStage(stageKey) {
+        return podGroupForStageHelper(this.state.data, stageKey);
+    }
+
+    chargeStageForKey(stageKey) {
+        return chargeStageForKeyHelper(this.state.data, stageKey);
+    }
+
+    pipelineLinkedStages() {
+        return pipelineLinkedStagesHelper(this.state.data);
+    }
+
     openPodStatusCases(ev) {
         const key = ev.currentTarget?.dataset?.podKey;
         if (!key) {
@@ -364,6 +385,19 @@ export class BharatnyayDashboard extends Component {
             return;
         }
         openUnbilledChargesStage(
+            this.action,
+            this.notification,
+            this.state,
+            key,
+        );
+    }
+
+    openConsolidatedBillingFromStage(ev) {
+        const key = ev.currentTarget?.dataset?.chargeKey;
+        if (!key) {
+            return;
+        }
+        openConsolidatedBillingWizard(
             this.action,
             this.notification,
             this.state,

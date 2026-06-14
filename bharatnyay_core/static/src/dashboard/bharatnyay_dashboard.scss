@@ -1436,6 +1436,24 @@
         box-shadow: 0 1px 3px color-mix(in srgb, var(--bn-bill-accent) 22%, transparent);
     }
 
+    .bn-stage-title-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.08rem;
+        min-width: 0;
+    }
+
+    .bn-bill-milestone {
+        display: block;
+        font-size: 0.58rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #16a34a;
+        line-height: 1.1;
+    }
+
     .bn-stage-bill-caption {
         display: block;
         margin-top: 0.15rem;
@@ -1507,6 +1525,446 @@
         }
     }
 
+    .bn-pipeline-viz {
+        margin: 0.35rem 0 var(--bn-section-gap);
+
+        &__scroll {
+            overflow-x: auto;
+            padding-bottom: 0.35rem;
+            scrollbar-width: thin;
+
+            &::-webkit-scrollbar {
+                height: 5px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: color-mix(in srgb, var(--bn-accent) 28%, #cbd5e1);
+                border-radius: 999px;
+            }
+        }
+
+        &__canvas {
+            min-width: 960px;
+        }
+
+        .bn-stage-strip--flow {
+            margin-bottom: 0;
+        }
+
+        &__branch-lanes {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 0.65rem;
+            padding: 0.25rem 0.15rem 0.35rem;
+        }
+
+        &__branch-lane {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 0;
+        }
+
+        &__lane-head {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.45rem;
+        }
+
+        &__lane-titles {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.12rem;
+        }
+
+        &__lane-milestone {
+            font-size: 0.68rem;
+        }
+
+        &__lane-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #16a34a;
+        }
+
+        &__branch-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            padding: 0.85rem;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid color-mix(in srgb, #22c55e 22%, var(--bn-border));
+            box-shadow:
+                0 1px 2px rgba(15, 23, 42, 0.04),
+                0 8px 24px rgba(34, 197, 94, 0.08);
+        }
+
+        &__branch-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        &__branch-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #64748b;
+            line-height: 1.2;
+        }
+
+        &__branch-divider {
+            height: 1px;
+            background: color-mix(in srgb, var(--bn-border) 80%, #22c55e 20%);
+            margin: 0.1rem 0;
+        }
+
+        &__pod-pair {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 0.45rem;
+
+            .bn-stage-card {
+                width: 100%;
+                min-height: 108px;
+            }
+
+            .bn-stage-name {
+                font-size: 0.62rem;
+            }
+
+            .bn-pod-status {
+                font-size: 0.68rem;
+                font-weight: 700;
+            }
+
+            .bn-stage-bill-caption {
+                font-size: 0.58rem;
+                line-height: 1.25;
+            }
+        }
+
+        &__pod-arrow {
+            color: #16a34a;
+            font-size: 0.85rem;
+            opacity: 0.85;
+            flex-shrink: 0;
+        }
+
+        &__vlink {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            &--from-case {
+                min-height: 1.1rem;
+            }
+        }
+
+        &__vlink-stem {
+            width: 3px;
+            height: 1.1rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #4ade80, #16a34a);
+            box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.12);
+            position: relative;
+
+            &::before,
+            &::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #22c55e;
+                box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.14);
+            }
+
+            &::before {
+                top: -3px;
+            }
+
+            &::after {
+                bottom: -3px;
+            }
+        }
+
+        .bn-stage-card--charge,
+        .bn-stage-card--pod {
+            min-height: 108px;
+        }
+
+        .bn-stage-card--charge-total {
+            min-height: 108px;
+        }
+    }
+
+    .bn-pipeline-viz__billing-panel {
+        margin-top: 0.85rem;
+        padding: 0.85rem;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid color-mix(in srgb, #22c55e 22%, var(--bn-border));
+        box-shadow:
+            0 1px 2px rgba(15, 23, 42, 0.04),
+            0 8px 24px rgba(34, 197, 94, 0.08);
+
+        .bn-pipeline-viz__branch-label {
+            margin-bottom: 0.55rem;
+        }
+    }
+
+    .bn-pipeline-viz__charge-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(200px, 1fr));
+        gap: 0.75rem;
+        align-items: stretch;
+
+        @media (max-width: 1199px) {
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+        }
+
+        @media (max-width: 560px) {
+            grid-template-columns: 1fr;
+        }
+
+        .bn-stage-card--compact {
+            min-height: 132px;
+            padding: 0.75rem 0.8rem 0.7rem;
+            gap: 0.35rem;
+
+            .bn-stage-top {
+                align-items: flex-start;
+            }
+
+            .bn-stage-ico {
+                width: 1.85rem;
+                height: 1.85rem;
+                font-size: 0.85rem;
+            }
+
+            .bn-stage-title-stack {
+                gap: 0.12rem;
+            }
+
+            .bn-bill-milestone {
+                font-size: 0.66rem;
+                letter-spacing: 0.08em;
+            }
+
+            .bn-stage-name {
+                font-size: 0.72rem;
+                white-space: normal;
+                line-height: 1.2;
+                min-height: 0;
+            }
+
+            .bn-charge-amount {
+                font-size: 1rem;
+                margin: 0.1rem 0 0.15rem;
+            }
+
+            .bn-stage-value {
+                .n {
+                    font-size: 1.15rem;
+                }
+
+                .p {
+                    font-size: 0.68rem;
+                }
+            }
+
+            .bn-stage-meter {
+                height: 5px;
+                margin-top: 0.1rem;
+            }
+
+            .bn-stage-bill-caption {
+                font-size: 0.64rem;
+                margin-top: 0.1rem;
+            }
+
+            .bn-charge-card__action {
+                margin-top: auto;
+                padding-top: 0.45rem;
+                padding-bottom: 0.32rem;
+                font-size: 0.64rem;
+                letter-spacing: 0.03em;
+            }
+        }
+
+        .bn-stage-card--invoice-pipeline {
+            .bn-stage-name {
+                font-size: 0.72rem;
+            }
+        }
+    }
+
+    .bn-stage-card--invoice-pipeline {
+        --stg: #0f766e;
+        --stg-pattern: var(--bn-pattern-green);
+        --bn-card-veil: linear-gradient(
+            135deg,
+            color-mix(in srgb, #0f766e 82%, #134e4a) 0%,
+            color-mix(in srgb, #14b8a6 68%, #115e59) 100%
+        );
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+    .bn-invoice-pipeline-card__metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.35rem;
+        flex: 1 1 auto;
+    }
+
+    .bn-invoice-pipeline-card__metric {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+        min-width: 0;
+        padding: 0.2rem 0;
+        border-bottom: 1px solid color-mix(in srgb, var(--bn-border) 70%, transparent);
+
+        &:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+    }
+
+    .bn-invoice-pipeline-card__k {
+        font-size: 0.64rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--bn-muted);
+        line-height: 1.2;
+        flex-shrink: 0;
+    }
+
+    .bn-invoice-pipeline-card__v {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.1rem;
+        text-align: right;
+        min-width: 0;
+    }
+
+    .bn-invoice-pipeline-card__count {
+        font-size: 0.66rem;
+        font-weight: 700;
+        color: var(--bn-muted);
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .bn-invoice-pipeline-card__amount {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: var(--bn-text);
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .bn-pipeline-viz__total-unbilled {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.75rem;
+        width: 100%;
+        margin-top: 0.55rem;
+        padding: 0.45rem 0.65rem;
+        border-radius: 8px;
+        border: 1px dashed color-mix(in srgb, var(--bn-accent) 28%, var(--bn-border));
+        background: color-mix(in srgb, var(--bn-accent) 5%, #ffffff);
+        cursor: pointer;
+        appearance: none;
+        font: inherit;
+        text-align: left;
+        transition: background 0.15s ease, border-color 0.15s ease;
+
+        &:hover {
+            background: color-mix(in srgb, var(--bn-accent) 10%, #ffffff);
+            border-color: color-mix(in srgb, var(--bn-accent) 40%, var(--bn-border));
+        }
+
+        &--empty {
+            opacity: 0.72;
+        }
+
+        &__label {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #334155;
+        }
+
+        &__amount {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: var(--bn-text);
+        }
+
+        &__meta {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--bn-muted);
+        }
+
+        &__action {
+            margin-left: auto;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: color-mix(in srgb, var(--bn-accent) 82%, #0f172a);
+        }
+    }
+
+    @media (max-width: 1199px) {
+        .bn-pipeline-viz__branch-lanes {
+            grid-template-columns: repeat(3, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .bn-pipeline-viz__canvas {
+            min-width: 820px;
+        }
+
+        .bn-pipeline-viz__branch-lanes {
+            grid-template-columns: repeat(3, minmax(240px, 1fr));
+        }
+
+        .bn-pipeline-viz__pod-pair {
+            grid-template-columns: 1fr;
+
+            .bn-pipeline-viz__pod-arrow {
+                justify-self: center;
+                transform: rotate(90deg);
+            }
+        }
+    }
+
     .bn-stage-strip--charges {
         display: flex;
         flex-wrap: wrap;
@@ -1563,6 +2021,32 @@
         color: var(--bn-text);
         margin: 0.15rem 0 0.2rem;
         line-height: 1.15;
+    }
+
+    .bn-charge-card {
+        text-align: left;
+
+        &__action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            margin-top: 0.55rem;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: color-mix(in srgb, var(--bn-accent) 82%, #0f172a);
+            background: color-mix(in srgb, var(--bn-accent) 10%, #ffffff);
+            border: 1px solid color-mix(in srgb, var(--bn-accent) 22%, var(--bn-border));
+        }
+
+        &:hover .bn-charge-card__action,
+        &:focus .bn-charge-card__action {
+            background: color-mix(in srgb, var(--bn-accent) 18%, #ffffff);
+        }
     }
 
     .bn-stage-card--charge .bn-stage-value .p {

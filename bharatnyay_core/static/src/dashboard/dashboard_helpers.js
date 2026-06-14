@@ -29,7 +29,7 @@ export function guardEmptyInvoiceCard(notification, state, mode, label) {
     if (mode === "paid") {
         return guardEmptyDashboardCard(notification, {
             label: label || _t("Paid invoices"),
-            amount: kpis.paid_invoice_amount,
+            amount: kpis.paid_invoice_amount    ,
             invoiceCount: kpis.paid_invoices,
         });
     }
@@ -205,6 +205,46 @@ export function openPodStatusRecords(action, card, notification) {
     });
 }
 
+/** Open simplified consolidated invoice wizard for one pipeline stage (or total). */
+export function openConsolidatedBillingWizard(action, notification, state, stageKey) {
+    const pipeline = state.data?.unbilled_charges_pipeline;
+    if (!pipeline) {
+        return Promise.resolve(false);
+    }
+    let card;
+    let title = _t("Create consolidated invoice");
+    if (stageKey === "total") {
+        card = pipeline.total;
+    } else {
+        card = (pipeline.stages || []).find((s) => s.key === stageKey);
+        if (card?.label) {
+            title = `${_t("Create consolidated invoice")} — ${card.label}`;
+        }
+    }
+    if (
+        !guardEmptyDashboardCard(notification, {
+            count: card?.count,
+            label: title,
+            amount: card?.amount,
+        })
+    ) {
+        return Promise.resolve(false);
+    }
+    return action.doAction({
+        type: "ir.actions.act_window",
+        name: title,
+        res_model: "bharat.arbitration.invoice.line.loader.wizard",
+        views: [[false, "form"]],
+        target: "new",
+        context: {
+            bharat_billing_milestone_code: stageKey === "total" ? "total" : stageKey,
+            dashboard_region_id: state.filter_region || false,
+            dashboard_state_id: state.filter_state || false,
+            dashboard_batch_number: state.filter_batch || false,
+        },
+    });
+}
+
 /** Open pending billing events for one pipeline stage (or total). */
 export function openUnbilledChargesStage(action, notification, state, stageKey) {
     const pipeline = state.data?.unbilled_charges_pipeline;
@@ -347,4 +387,35 @@ export function batchSegPctCount(batch, segCount) {
         return 0;
     }
     return Math.round(((segCount || 0) / total) * 100);
+}
+
+const PIPELINE_LINK_STAGE_KEYS = new Set(["notice_1", "hearing_1", "award"]);
+
+const POD_DOC_TYPE_BY_STAGE = {
+    notice_1: "notice_1",
+    hearing_1: "interim_order_1",
+    award: "award",
+};
+
+export function isPipelineLinkStage(stageKey) {
+    return PIPELINE_LINK_STAGE_KEYS.has(stageKey);
+}
+
+export function podGroupForStage(data, stageKey) {
+    const docType = POD_DOC_TYPE_BY_STAGE[stageKey];
+    if (!docType) {
+        return null;
+    }
+    return (data?.pod_status_groups || []).find((group) => group.key === docType) || null;
+}
+
+export function chargeStageForKey(data, stageKey) {
+    return (
+        (data?.unbilled_charges_pipeline?.stages || []).find((stage) => stage.key === stageKey) ||
+        null
+    );
+}
+
+export function pipelineLinkedStages(data) {
+    return (data?.stage_cards || []).filter((stage) => isPipelineLinkStage(stage.key));
 }

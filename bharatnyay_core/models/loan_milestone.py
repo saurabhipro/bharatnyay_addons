@@ -115,6 +115,11 @@ DEFAULT_LOAN_MILESTONES = (
 
 # Workflow entry points that accrue unbilled charges on postal delivery (POD).
 POSTAL_BILLING_MILESTONE_CODES = frozenset({'notice_1', 'hearing_1', 'award'})
+POSTAL_BILLING_MILESTONE_NUMBERS = {
+    'notice_1': 1,
+    'hearing_1': 2,
+    'award': 3,
+}
 
 BILLING_BADGE_ICONS = {
     'notice_1': 'fa-file-text-o',
@@ -312,14 +317,22 @@ class BharatLoanMilestone(models.Model):
             return 'milestone_exit'
         return False
 
+    @api.model
+    def postal_billing_milestone_label(self, code):
+        """Human label for the three POD billable milestones (Notice 1 / Hearing 1 / Award)."""
+        num = POSTAL_BILLING_MILESTONE_NUMBERS.get(code)
+        return _('Milestone %s') % num if num else False
+
     def dashboard_billing_card_fields(self):
         """JSON fields for dashboard stage / pipeline cards."""
         self.ensure_one()
+        milestone_label = self.postal_billing_milestone_label(self.code)
         if not self.creates_unbilled_charge():
             return {
                 'creates_unbilled_charge': False,
                 'billing_badge_icon': False,
                 'billing_badge_title': False,
+                'billing_milestone_label': milestone_label,
             }
         mode = self.billing_accrual_mode()
         if mode == 'postal_delivery':
@@ -332,6 +345,7 @@ class BharatLoanMilestone(models.Model):
             'creates_unbilled_charge': True,
             'billing_badge_icon': icon,
             'billing_badge_title': title,
+            'billing_milestone_label': milestone_label,
         }
 
     @api.model

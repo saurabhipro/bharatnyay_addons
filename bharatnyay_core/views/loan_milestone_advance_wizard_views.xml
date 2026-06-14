@@ -26,15 +26,15 @@
                          invisible="not filter_region_id and not filter_state_id and not filter_batch_number">
                         <div class="bn-milestone-advance-wizard__filters-label">Current filter</div>
                         <span class="bn-milestone-advance-wizard__filter-chip" invisible="not filter_region_id">
-                            <i class="fa fa-map-marker"/>
+                            <i class="fa fa-map-marker" title="Region"/>
                             <field name="filter_region_id" readonly="1" nolabel="1" class="oe_inline"/>
                         </span>
                         <span class="bn-milestone-advance-wizard__filter-chip" invisible="not filter_state_id">
-                            <i class="fa fa-flag"/>
+                            <i class="fa fa-flag" title="State"/>
                             <field name="filter_state_id" readonly="1" nolabel="1" class="oe_inline"/>
                         </span>
                         <span class="bn-milestone-advance-wizard__filter-chip" invisible="not filter_batch_number">
-                            <i class="fa fa-database"/>
+                            <i class="fa fa-database" title="Batch"/>
                             <field name="filter_batch_number" readonly="1" nolabel="1" class="oe_inline"/>
                         </span>
                     </div>

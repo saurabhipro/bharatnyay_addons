@@ -80,4 +80,15 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_invoice_tree_bharat_arbitration" model="ir.ui.view">
+        <field name="name">account.invoice.list.bharat.arbitration</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_partner_display_name']" position="after">
+                <field name="bharat_invoice_batch_ref" string="Batch no" optional="show"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

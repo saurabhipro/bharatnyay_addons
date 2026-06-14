@@ -3788,6 +3788,7 @@ class BharatLoan(models.Model):
                     'creates_unbilled_charge': False,
                     'billing_badge_icon': False,
                     'billing_badge_title': False,
+                    'billing_milestone_label': False,
                 }),
             })
         return cards, total
@@ -4274,6 +4275,35 @@ class BharatLoanNoticeLine(models.Model):
     )
     dispatch_date = fields.Date(related='postal_dispatch_id.dispatch_date', readonly=True)
     delivery_date = fields.Date(related='postal_dispatch_id.delivery_date', readonly=True)
+    postal_delivery_card_json = fields.Json(
+        string='Postal delivery card',
+        compute='_compute_postal_delivery_card_json',
+    )
+
+    @api.depends(
+        'has_pod_tracking',
+        'loan_id',
+        'loan_id.milestone_id',
+        'loan_id.milestone_id.code',
+        'loan_id.is_case_locked',
+        'loan_id.postal_dispatch_ids',
+        'loan_id.postal_dispatch_ids.pod',
+        'loan_id.postal_dispatch_ids.post_office_status_id',
+        'loan_id.postal_dispatch_ids.dispatch_date',
+        'loan_id.postal_dispatch_ids.delivery_date',
+        'loan_id.postal_dispatch_ids.billing_accrued',
+        'loan_id.postal_dispatch_ids.post_office_status_id.is_delivered',
+        'loan_id.postal_dispatch_ids.post_office_status_id.triggers_billing',
+    )
+    def _compute_postal_delivery_card_json(self):
+        for rec in self:
+            if not rec.has_pod_tracking or not rec.loan_id:
+                rec.postal_delivery_card_json = {'cards': []}
+                continue
+            rows = rec.loan_id._postal_delivery_card_rows()
+            rec.postal_delivery_card_json = {
+                'cards': [row for row in rows if row.get('document_type') == 'notice_1'],
+            }
 
     @api.depends(
         'notice_number',
