@@ -39,30 +39,41 @@
         <field name="name">bharat.loan.interim.order.form</field>
         <field name="model">bharat.loan.interim.order</field>
         <field name="arch" type="xml">
-            <form string="Interim order">
+            <form string="Interim order" class="bn-interim-order-form">
                 <sheet>
-                    <group>
+                    <div class="bn-interim-order-form__meta">
                         <group>
-                            <field name="loan_id"/>
-                            <field name="order_date"/>
-                            <field name="order_type"/>
-                            <field name="purpose"/>
-                            <field name="typical_loan_type"/>
-                            <field name="passed_by"/>
-                            <field name="hearing_line_id"/>
-                            <field name="amount"/>
-                            <field name="created_by_id" readonly="1"/>
+                            <group>
+                                <field name="loan_id"/>
+                                <field name="order_date"/>
+                                <field name="order_type"/>
+                                <field name="purpose"/>
+                                <field name="typical_loan_type"/>
+                                <field name="passed_by"/>
+                            </group>
+                            <group>
+                                <field name="hearing_line_id"/>
+                                <field name="amount"/>
+                                <field name="created_by_id" readonly="1"/>
+                                <field name="signed_on" readonly="1"/>
+                                <field name="is_signed" readonly="1"/>
+                                <field name="common_directions"/>
+                                <field name="notes"/>
+                            </group>
                         </group>
-                        <group>
-                            <field name="common_directions"/>
-                            <field name="draft_body_html" widget="html" readonly="1" invisible="not draft_body_html"/>
-                            <field name="order_pdf" filename="order_pdf_filename" widget="pdf_viewer"/>
-                            <field name="order_pdf_filename" invisible="1"/>
-                            <field name="signed_on" readonly="1"/>
-                            <field name="is_signed" readonly="1"/>
-                            <field name="notes"/>
-                        </group>
-                    </group>
+                    </div>
+                    <div class="bn-interim-order-form__draft" invisible="not draft_body_html">
+                        <separator string="Draft order body"/>
+                        <field name="draft_body_html" widget="html" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="bn-interim-order-form__pdf" invisible="not order_pdf">
+                        <div class="bn-interim-order-form__pdf-label">
+                            <i class="fa fa-file-pdf-o" title="Interim order PDF"/>
+                            <span>Interim order PDF</span>
+                        </div>
+                        <field name="order_pdf" filename="order_pdf_filename" widget="pdf_viewer" nolabel="1"/>
+                        <field name="order_pdf_filename" invisible="1"/>
+                    </div>
                 </sheet>
             </form>
         </field>

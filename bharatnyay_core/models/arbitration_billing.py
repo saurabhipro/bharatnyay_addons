@@ -316,6 +316,17 @@ class BharatLoanBillingEvent(models.Model):
             domain.append(('milestone_code', 'in', list(milestone_codes)))
         return self.search(domain, order='batch_number, loan_number, case_number, id')
 
+    def action_open_consolidated_billing_wizard(self):
+        """Open consolidated invoice wizard (list header / selection)."""
+        batch_number = (self.env.context.get('dashboard_batch_number') or '').strip()
+        if not batch_number and self:
+            names = {n.strip() for n in self.mapped('batch_number') if (n or '').strip()}
+            if len(names) == 1:
+                batch_number = next(iter(names))
+        return self.env['bharat.loan'].bharat_consolidated_billing_wizard_action(
+            batch_number=batch_number or None,
+        )
+
 
 class BharatArbitrationInvoiceAnnexureLine(models.Model):
     _name = 'bharat.arbitration.invoice.annexure.line'

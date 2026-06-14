@@ -161,23 +161,20 @@
             <form string="Create consolidated invoice">
                 <group>
                     <group>
-                        <field name="company_ids" widget="many2many_tags"
-                               options="{'no_create': True}"/>
                         <field name="batch_ids" widget="many2many_tags"
-                               options="{'no_create': True}"/>
-                        <field name="milestone_ids" widget="many2many_tags"
                                options="{'no_create': True}"/>
                     </group>
                     <group>
                         <field name="preview_case_count" readonly="1"/>
                         <field name="preview_total_amount" readonly="1"/>
                         <field name="currency_id" invisible="1"/>
-                        <field name="move_id" placeholder="Optional — single lender only"/>
+                        <field name="move_id" placeholder="Optional — one lender only"/>
                     </group>
                 </group>
                 <field name="preview_hint" readonly="1" nolabel="1" class="text-muted"/>
                 <div class="alert alert-info" role="alert">
-                    Bills all <b>pending</b> unbilled charges matching your selection.
+                    Bills all <b>pending</b> unbilled charges in the selected batch(es).
+                    Leave batches empty to include every batch with pending charges.
                     Already invoiced rows are never included again.
                     One posted invoice per lender with summary lines per billing stage and a full case annexure.
                 </div>

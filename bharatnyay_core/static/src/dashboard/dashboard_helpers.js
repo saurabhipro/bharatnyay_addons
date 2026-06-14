@@ -235,6 +235,9 @@ export function openUnbilledChargesStage(action, notification, state, stageKey) 
         res_model: "bharat.loan.billing.event",
         views: [[false, "list"], [false, "form"]],
         domain: card.domain || [["state", "=", "pending"]],
+        context: {
+            dashboard_batch_number: state.filter_batch || false,
+        },
         target: "current",
     });
 }
@@ -285,8 +288,19 @@ export async function onDashboardFilterStateChange(orm, state, ev, dashboardRole
     await reloadFn();
 }
 
+export async function restoreDashboardBatchFilter(orm, state) {
+    const savedBatch = await orm.call("bharat.loan", "bharat_get_dashboard_batch_filter", []);
+    if (savedBatch) {
+        state.filter_batch = savedBatch;
+        _resetInvalidDashboardFilters(state);
+    }
+}
+
 export async function onDashboardFilterBatchChange(orm, state, ev, reloadFn) {
     state.filter_batch = ev.target.value;
+    await orm.call("bharat.loan", "bharat_set_dashboard_batch_filter", [], {
+        batch_number: state.filter_batch || false,
+    });
     await reloadFn();
 }
 

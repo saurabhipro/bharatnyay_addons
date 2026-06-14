@@ -155,8 +155,8 @@
         <field name="arch" type="xml">
             <list create="0" delete="0">
                 <header>
-                    <button name="%(bharatnyay_core.action_bharat_consolidated_billing_wizard)d"
-                            type="action"
+                    <button name="action_open_consolidated_billing_wizard"
+                            type="object"
                             string="Create consolidated invoice"
                             class="btn-primary"
                             display="always"/>

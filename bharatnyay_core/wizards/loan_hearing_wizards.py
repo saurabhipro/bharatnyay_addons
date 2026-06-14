@@ -1022,22 +1022,6 @@ class BharatLoanInterimAwardWizard(models.TransientModel):
             wizard._apply_draft_template()
         return records
 
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        docs = self.browse(docids).exists()
-        labels = {}
-        for doc in docs:
-            labels[doc.id] = (
-                format_datetime(doc.env, doc.create_date, dt_format='medium')
-                if doc.create_date else '—'
-            )
-        return {
-            'doc_ids': docids,
-            'doc_model': self._name,
-            'docs': docs,
-            'interim_order_date_labels': labels,
-        }
-
     def _draft_report(self):
         return self.env.ref(
             'bharatnyay_core.action_report_bharat_interim_award_wizard_draft',

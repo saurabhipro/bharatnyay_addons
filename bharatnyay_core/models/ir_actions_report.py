@@ -16,6 +16,7 @@ from odoo import _, api, models
 from odoo.addons.base.models.ir_actions_report import _get_wkhtmltopdf_bin, _split_table
 from odoo.exceptions import UserError
 from odoo.tools import split_every
+from odoo.tools.misc import format_datetime
 
 from ..tools.pdf_render import read_fast_mode, read_merge_chunk, read_parallel_workers
 
@@ -118,6 +119,40 @@ def _raise_file_descriptor_limit(min_limit=4096):
 
 class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'
+
+    _INTERIM_ORDER_REPORT_NAMES = frozenset({
+        'bharatnyay_core.report_bharat_loan_interim_order_document',
+        'bharatnyay_core.report_bharat_interim_award_wizard_draft',
+    })
+
+    @api.model
+    def _bharat_interim_order_date_labels(self, report, docids, data):
+        """QWeb context for interim-order PDFs (no report.* model — names exceed PG limit)."""
+        docs = data.get('docs')
+        if not docs:
+            docs = self.env[report.model].browse(docids).exists()
+        labels = {}
+        date_field = (
+            'create_date'
+            if report.model == 'bharat.loan.interim.award.wizard'
+            else 'order_date'
+        )
+        for doc in docs:
+            value = doc[date_field]
+            labels[doc.id] = (
+                format_datetime(doc.env, value, dt_format='medium') if value else '—'
+            )
+        return labels
+
+    def _get_rendering_context(self, report, docids, data):
+        data = super()._get_rendering_context(report, docids, data)
+        report_name = report.report_name or ''
+        if report_name in self._INTERIM_ORDER_REPORT_NAMES:
+            data.setdefault(
+                'interim_order_date_labels',
+                self._bharat_interim_order_date_labels(report, docids, data),
+            )
+        return data
 
     @api.model
     def _bharat_icp_get(self, key, default=None):

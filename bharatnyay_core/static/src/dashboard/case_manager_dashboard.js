@@ -11,6 +11,7 @@ import {
     dashboardFilterRpcArgs,
     loadDashboardFilterOptions,
     mergeLoanDomain,
+    restoreDashboardBatchFilter,
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
@@ -59,6 +60,7 @@ export class CaseManagerDashboard extends Component {
         });
         onWillStart(async () => {
             await loadDashboardFilterOptions(this.orm, this.state, "case_manager");
+            await restoreDashboardBatchFilter(this.orm, this.state);
             await this.load();
         });
     }

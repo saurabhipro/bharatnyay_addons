@@ -653,25 +653,61 @@ class BharatLoan(models.Model):
         }
 
     def action_open_consolidated_billing_wizard(self):
-        """Open consolidated billing wizard with batch/lender pre-filled when possible."""
+        """Open consolidated billing wizard with batch pre-filled when possible."""
+        batch_names = sorted({b for b in self.mapped('batch_number') if (b or '').strip()})
+        batch_number = batch_names[0] if len(batch_names) == 1 else None
+        return self.bharat_consolidated_billing_wizard_action(batch_number=batch_number)
+
+    @api.model
+    def action_open_consolidated_billing_wizard_from_list(self):
+        """List header: open wizard using dashboard batch filter."""
+        return self.bharat_consolidated_billing_wizard_action()
+
+    @api.model
+    def _bharat_dashboard_batch_config_key(self):
+        return 'bharatnyay.dashboard.batch.%s' % self.env.uid
+
+    @api.model
+    def bharat_set_dashboard_batch_filter(self, batch_number=False):
+        """Remember the portfolio dashboard batch filter for billing wizards."""
+        self.check_access('read')
+        self.env['ir.config_parameter'].sudo().set_param(
+            self._bharat_dashboard_batch_config_key(),
+            (batch_number or '').strip(),
+        )
+
+    @api.model
+    def bharat_get_dashboard_batch_filter(self):
+        self.check_access('read')
+        return (
+            self.env['ir.config_parameter'].sudo().get_param(
+                self._bharat_dashboard_batch_config_key()
+            ) or ''
+        ).strip()
+
+    @api.model
+    def bharat_consolidated_billing_wizard_action(self, batch_number=None):
+        """Open consolidated invoice wizard with batch defaults when known."""
         Batch = self.env['bharat.loan.batch'].sudo()
         Batch._sync_from_loans()
-        batch_names = sorted({b for b in self.mapped('batch_number') if (b or '').strip()})
-        ctx = {}
-        if batch_names:
-            batch_ids = Batch.search([('name', 'in', batch_names)]).ids
-            if batch_ids:
-                ctx['default_batch_ids'] = [(6, 0, batch_ids)]
-        company_ids = list(set(self.mapped('company_id').ids))
-        if len(company_ids) == 1:
-            ctx['default_company_ids'] = [(6, 0, company_ids)]
+        ctx = dict(self.env.context)
+        batch_number = (
+            (batch_number or ctx.get('dashboard_batch_number') or self.bharat_get_dashboard_batch_filter() or '')
+            .strip()
+        )
+        wizard_ctx = {}
+        if batch_number and batch_number != '__none__':
+            batch = Batch.search([('name', '=', batch_number)], limit=1)
+            if batch:
+                wizard_ctx['default_batch_ids'] = [(6, 0, batch.ids)]
+        wizard_ctx['dashboard_batch_number'] = batch_number or False
         return {
             'type': 'ir.actions.act_window',
             'name': _('Create consolidated invoice'),
             'res_model': 'bharat.arbitration.invoice.line.loader.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': ctx,
+            'context': wizard_ctx,
         }
 
     def _resolve_borrower_partner(self):
@@ -4607,22 +4643,6 @@ class BharatLoanInterimOrder(models.Model):
             rec.typical_loan_type = meta.get('typical_loan_type')
             rec.passed_by = meta.get('passed_by')
             rec.common_directions = meta.get('common_directions')
-
-    @api.model
-    def _get_report_values(self, docids, data=None):
-        docs = self.browse(docids).exists()
-        labels = {}
-        for doc in docs:
-            labels[doc.id] = (
-                format_datetime(doc.env, doc.order_date, dt_format='medium')
-                if doc.order_date else '—'
-            )
-        return {
-            'doc_ids': docids,
-            'doc_model': self._name,
-            'docs': docs,
-            'interim_order_date_labels': labels,
-        }
 
     def _interim_order_report(self):
         return self.env.ref(

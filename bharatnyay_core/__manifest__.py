@@ -70,6 +70,7 @@
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_scheduler_field.scss',
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_wizard.scss',
             'bharatnyay_core/static/src/interim_award_wizard/interim_award_wizard.scss',
+            'bharatnyay_core/static/src/interim_order_form/interim_order_form.scss',
             'bharatnyay_core/static/src/milestone_advance_wizard/milestone_advance_wizard.scss',
             'bharatnyay_core/static/src/flow_simulation/flow_simulation.scss',
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_slot_grid_field.xml',

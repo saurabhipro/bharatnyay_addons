@@ -13,6 +13,7 @@ import {
     dashboardFilterRpcArgs,
     loadDashboardFilterOptions,
     mergeLoanDomain,
+    restoreDashboardBatchFilter,
     openLoanCases,
     openPodStatusRecords,
     openStageBucketCases,
@@ -55,6 +56,7 @@ export class BharatnyayDashboard extends Component {
 
         onWillStart(async () => {
             await loadDashboardFilterOptions(this.orm, this.state);
+            await restoreDashboardBatchFilter(this.orm, this.state);
             await this.load();
         });
 
@@ -390,7 +392,11 @@ export class BharatnyayDashboard extends Component {
     }
 
     openBillBatchWizard() {
-        this.action.doAction("bharatnyay_core.action_bharat_consolidated_billing_wizard");
+        this.orm
+            .call("bharat.loan", "bharat_consolidated_billing_wizard_action", [], {
+                batch_number: this.state.filter_batch || false,
+            })
+            .then((action) => this.action.doAction(action));
     }
 
     openInvoices(ev) {

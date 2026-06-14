@@ -10,6 +10,7 @@ import {
     dashboardFilterRpcArgs,
     loadDashboardFilterOptions,
     mergeLoanDomain,
+    restoreDashboardBatchFilter,
     onDashboardFilterRegionChange,
     onDashboardFilterStateChange,
     onDashboardFilterBatchChange,
@@ -48,6 +49,7 @@ export class ArbitratorDashboard extends Component {
         });
         onWillStart(async () => {
             await loadDashboardFilterOptions(this.orm, this.state, "arbitrator");
+            await restoreDashboardBatchFilter(this.orm, this.state);
             await this.load();
         });
     }

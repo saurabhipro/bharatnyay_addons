@@ -1,0 +1,82 @@
+.bn-interim-order-form {
+    .o_form_sheet_bg,
+    .o_form_sheet {
+        max-width: none;
+    }
+
+    &__meta {
+        margin-bottom: 0.5rem;
+    }
+
+    &__draft {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e8edf3;
+
+        .o_field_html .note-editable,
+        .o_field_html .odoo-editor-editable {
+            max-height: 220px;
+            overflow: auto;
+        }
+    }
+
+    &__pdf {
+        margin-top: 1rem;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #3d4044;
+        box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
+
+        &-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.72);
+            padding: 0.55rem 0.85rem;
+            background: rgba(0, 0, 0, 0.22);
+
+            .fa {
+                font-size: 0.75rem;
+                opacity: 0.85;
+            }
+        }
+
+        .o_field_widget.o_field_pdf_viewer {
+            width: 100%;
+            min-height: 520px;
+            height: calc(100vh - 14rem);
+            border: none;
+            border-radius: 0;
+            overflow: hidden;
+            background: #525659;
+
+            iframe,
+            embed {
+                width: 100% !important;
+                height: 100% !important;
+                border: none;
+            }
+        }
+    }
+}
+
+.modal:has(.bn-interim-order-form) .modal-dialog {
+    max-width: 1320px;
+    width: calc(100vw - 40px);
+}
+
+.modal:has(.bn-interim-order-form) .modal-content {
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+}
+
+@media (max-width: 991px) {
+    .bn-interim-order-form__pdf .o_field_widget.o_field_pdf_viewer {
+        min-height: 360px;
+        height: 56vh;
+    }
+}

@@ -2,8 +2,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from ..models.arbitration_billing import BILLABLE_MILESTONE_CODES
-
 
 class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
     _name = 'bharat.arbitration.invoice.line.loader.wizard'
@@ -14,15 +12,7 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
         string='Draft invoice (optional)',
         ondelete='cascade',
         domain=[('move_type', '=', 'out_invoice'), ('state', '=', 'draft')],
-        help='Leave empty to create a new posted invoice. Only used when a single lender is selected.',
-    )
-    company_ids = fields.Many2many(
-        'res.company',
-        'bharat_inv_loader_company_rel',
-        'wizard_id',
-        'company_id',
-        string='Lenders',
-        help='Leave empty to include all lenders with pending charges.',
+        help='Leave empty to create a new posted invoice. Only used when pending charges belong to one lender.',
     )
     batch_ids = fields.Many2many(
         'bharat.loan.batch',
@@ -31,15 +21,6 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
         'batch_id',
         string='Batches',
         help='Leave empty to include all batches with pending charges.',
-    )
-    milestone_ids = fields.Many2many(
-        'bharat.loan.milestone',
-        'bharat_inv_loader_milestone_rel',
-        'wizard_id',
-        'milestone_id',
-        string='Billing stages',
-        domain=[('code', 'in', list(BILLABLE_MILESTONE_CODES))],
-        help='Leave empty to include all pending billing stages.',
     )
     preview_case_count = fields.Integer(string='Pending charges', compute='_compute_preview')
     preview_total_amount = fields.Monetary(
@@ -56,19 +37,32 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        self.env['bharat.loan.batch']._sync_from_loans()
+        if fields_list is not None and 'batch_ids' not in fields_list:
+            return res
+        if res.get('batch_ids'):
+            return res
+        batch_number = (self.env.context.get('dashboard_batch_number') or '').strip()
+        if not batch_number:
+            batch_number = (
+                self.env['bharat.loan'].bharat_get_dashboard_batch_filter() or ''
+            ).strip()
+        if not batch_number or batch_number == '__none__':
+            return res
+        Batch = self.env['bharat.loan.batch'].sudo()
+        Batch._sync_from_loans()
+        batch = Batch.search([('name', '=', batch_number)], limit=1)
+        if batch:
+            res['batch_ids'] = [(6, 0, batch.ids)]
         return res
 
     def _pending_events(self):
         self.ensure_one()
         Event = self.env['bharat.loan.billing.event']
         return Event.bharat_search_pending(
-            company_ids=self.company_ids.ids or None,
             batch_names=self.batch_ids.mapped('name') or None,
-            milestone_codes=self.milestone_ids.mapped('code') or None,
         )
 
-    @api.depends('company_ids', 'batch_ids', 'milestone_ids')
+    @api.depends('batch_ids')
     def _compute_preview(self):
         for wiz in self:
             events = wiz._pending_events()
@@ -79,16 +73,12 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
             if not events:
                 wiz.preview_hint = _('No pending unbilled charges match this selection.')
             else:
-                lenders = len(events.mapped('company_id'))
                 batches = len(set(events.mapped('batch_number')))
-                stages = len(set(events.mapped('milestone_code')))
                 wiz.preview_hint = _(
-                    '%(n)s charge(s) — %(lenders)s lender(s), %(batches)s batch(es), %(stages)s stage(s).'
+                    '%(n)s charge(s) — %(batches)s batch(es).'
                 ) % {
                     'n': len(events),
-                    'lenders': lenders,
                     'batches': batches,
-                    'stages': stages,
                 }
 
     def action_apply(self):
@@ -99,7 +89,6 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
 
         Move = self.env['account.move']
         batch_names = self.batch_ids.mapped('name') or None
-        milestone_codes = self.milestone_ids.mapped('code') or None
         companies = events.mapped('company_id')
         moves = Move.browse()
 
@@ -111,7 +100,6 @@ class BharatArbitrationInvoiceLineLoaderWizard(models.TransientModel):
             moves |= Move.bharat_create_consolidated_from_events(
                 company_events,
                 batch_names=batch_names,
-                milestone_codes=milestone_codes,
                 move=draft_move,
             )
 
