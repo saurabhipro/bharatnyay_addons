@@ -60,12 +60,6 @@
         <field name="arch" type="xml">
             <list string="Loans" class="bn-loan-list" create="0">
                 <header>
-                    <button name="%(bharatnyay_core.action_bharat_consolidated_billing_wizard)d"
-                            type="action"
-                            string="Create consolidated invoice"
-                            class="btn-primary"
-                            display="always"
-                            icon="fa-file-text-o"/>
                     <button name="%(bharatnyay_core.action_bharat_loan_portfolio_import_wizard)d"
                             type="action"
                             string="Import Excel"
@@ -545,7 +539,6 @@
                                            decoration-warning="state == 'pending'"
                                            decoration-success="state == 'invoiced'"
                                            decoration-muted="state == 'cancelled'"/>
-                                    <field name="move_id" string="Invoice" optional="show"/>
                                     <field name="postal_dispatch_id" optional="hide"/>
                                 </list>
                                 <form string="Billing charge" create="0" delete="0" edit="0">
@@ -562,7 +555,6 @@
                                                 <field name="unit_price" readonly="1"/>
                                                 <field name="state" readonly="1"/>
                                                 <field name="postal_dispatch_id" readonly="1"/>
-                                                <field name="move_id" readonly="1"/>
                                             </group>
                                         </group>
                                     </sheet>

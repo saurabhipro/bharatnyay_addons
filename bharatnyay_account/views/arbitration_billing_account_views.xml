@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_tree_account" model="ir.ui.view">
+        <field name="name">bharat.loan.list.account</field>
+        <field name="model">bharat.loan</field>
+        <field name="inherit_id" ref="bharatnyay_core.view_bharat_loan_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@string='Import Excel']" position="before">
+                <button name="%(action_bharat_consolidated_billing_wizard)d"
+                        type="action"
+                        string="Create consolidated invoice"
+                        class="btn-primary"
+                        display="always"
+                        icon="fa-file-text-o"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_billing_event_tree_account" model="ir.ui.view">
+        <field name="name">bharat.loan.billing.event.list.account</field>
+        <field name="model">bharat.loan.billing.event</field>
+        <field name="inherit_id" ref="bharatnyay_core.view_bharat_loan_billing_event_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[1]" position="before">
+                <header>
+                    <button name="%(action_bharat_consolidated_billing_wizard)d"
+                            type="action"
+                            string="Create consolidated invoice"
+                            class="btn-primary"
+                            display="always"/>
+                </header>
+            </xpath>
+            <xpath expr="//list/field[@name='state']" position="after">
+                <field name="move_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_billing_event_form_account" model="ir.ui.view">
+        <field name="name">bharat.loan.billing.event.form.account</field>
+        <field name="model">bharat.loan.billing.event</field>
+        <field name="inherit_id" ref="bharatnyay_core.view_bharat_loan_billing_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='postal_dispatch_id']" position="after">
+                <field name="move_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_form_account_billing" model="ir.ui.view">
+        <field name="name">bharat.loan.form.account.billing</field>
+        <field name="model">bharat.loan</field>
+        <field name="inherit_id" ref="bharatnyay_core.view_bharat_loan_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='page_unbilled_bills']//field[@name='billing_event_ids']/list/field[@name='state']" position="after">
+                <field name="move_id" string="Invoice" optional="show"/>
+            </xpath>
+            <xpath expr="//page[@name='page_unbilled_bills']//field[@name='billing_event_ids']/form//field[@name='postal_dispatch_id']" position="after">
+                <field name="move_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_bharatnyay_invoices"
+              name="Invoices"
+              parent="bharatnyay_core.menu_bharatnyay_billing_root"
+              action="action_bharat_arbitration_invoices"
+              sequence="20"/>
+</odoo>

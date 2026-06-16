@@ -1,6 +1,6 @@
 {
     'name': 'BharatNyay Core',
-    'version': '18.0.31.0.182',
+    'version': '18.0.32.0.0',
     'icon': '/bharatnyay_core/static/description/icon.png',
     'summary': 'Loan portfolio aligned to Excel import template',
     'description': """
@@ -9,7 +9,7 @@
     """,
     'category': 'Operations/Disputes',
     'author': 'BharatNyay Team',
-    'depends': ['web', 'mail', 'calendar', 'account', 'account_payment', 'product', 'spiffy_theme_backend'],
+    'depends': ['web', 'mail', 'calendar', 'product', 'spiffy_theme_backend'],
     'data': [
         'security/bharatnyay_groups.xml',
         'security/bharatnyay_record_rules.xml',
@@ -42,7 +42,6 @@
         'views/arbitration_billing_views.xml',
         'views/case_workflow_setup_views.xml',
         'views/case_vault_views.xml',
-        'reports/arbitration_invoice_annexure_report.xml',
         'views/loan_hearing_wizard_views.xml',
         'views/loan_award_wizard_views.xml',
         'views/loan_assign_arbitrator_wizard_views.xml',
@@ -72,7 +71,6 @@
             'bharatnyay_core/static/src/interim_award_wizard/interim_award_wizard.scss',
             'bharatnyay_core/static/src/interim_order_form/interim_order_form.scss',
             'bharatnyay_core/static/src/milestone_advance_wizard/milestone_advance_wizard.scss',
-            'bharatnyay_core/static/src/consolidated_invoice_wizard/consolidated_invoice_wizard.scss',
             'bharatnyay_core/static/src/flow_simulation/flow_simulation.scss',
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_slot_grid_field.xml',
             'bharatnyay_core/static/src/hearing_slot_grid/hearing_slot_grid_field.js',

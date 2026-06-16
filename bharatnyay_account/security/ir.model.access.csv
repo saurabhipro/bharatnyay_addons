@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bharat_arbitration_invoice_line_loader_wizard,bharat.arbitration.invoice.line.loader.wizard,model_bharat_arbitration_invoice_line_loader_wizard,base.group_user,1,1,1,1
+access_bharat_loan_billing_test_wizard,bharat.loan.billing.test.wizard,model_bharat_loan_billing_test_wizard,bharatnyay_core.group_bharat_admin,1,1,1,1
+access_bharat_loan_billing_test_wizard_system,bharat.loan.billing.test.wizard,model_bharat_loan_billing_test_wizard,base.group_system,1,1,1,1
+access_bharat_arbitration_invoice_annexure_line,bharat.arbitration.invoice.annexure.line,model_bharat_arbitration_invoice_annexure_line,base.group_user,1,1,1,0

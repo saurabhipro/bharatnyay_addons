@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_bharat_arbitration_invoices" model="ir.actions.act_window">
+        <field name="name">Invoices</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ]</field>
+        <field name="context">{'default_move_type': 'out_invoice', 'default_bharat_arbitration_invoice': True}</field>
+    </record>
+</odoo>

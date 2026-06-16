@@ -592,41 +592,19 @@ class BharatLoan(models.Model):
             )
 
     def _compute_arbitration_invoice_count(self):
-        Move = self.env['account.move'].sudo()
-        Event = self.env['bharat.loan.billing.event'].sudo()
         for rec in self:
-            legacy = Move.search_count([
-                ('bharat_loan_id', '=', rec.id),
-                ('move_type', '=', 'out_invoice'),
-                ('bharat_arbitration_invoice', '=', True),
-            ])
-            consolidated = Event.search_count([
-                ('loan_id', '=', rec.id),
-                ('state', '=', 'invoiced'),
-                ('move_id.move_type', '=', 'out_invoice'),
-                ('move_id.bharat_arbitration_invoice', '=', True),
-            ])
-            rec.arbitration_invoice_count = legacy + consolidated
+            rec.arbitration_invoice_count = 0
 
     def action_open_arbitration_invoices(self):
         self.ensure_one()
-        move_ids = self.env['bharat.loan.billing.event'].sudo().search([
-            ('loan_id', '=', self.id),
-            ('state', '=', 'invoiced'),
-            ('move_id', '!=', False),
-        ]).mapped('move_id').ids
-        legacy_ids = self.env['account.move'].sudo().search([
-            ('bharat_loan_id', '=', self.id),
-            ('move_type', '=', 'out_invoice'),
-            ('bharat_arbitration_invoice', '=', True),
-        ]).ids
-        all_ids = list(set(move_ids + legacy_ids))
+        if 'account.move' not in self.env:
+            raise UserError(_('Install BharatNyay Accounting to view arbitration invoices.'))
         return {
             'type': 'ir.actions.act_window',
             'name': _('Arbitration invoices'),
             'res_model': 'account.move',
             'view_mode': 'list,form',
-            'domain': [('id', 'in', all_ids or [0])],
+            'domain': [('id', 'in', [0])],
             'context': {'default_move_type': 'out_invoice'},
         }
 
@@ -1002,6 +980,8 @@ class BharatLoan(models.Model):
         if not milestone.bill_on_milestone_exit:
             return self.env['bharat.loan.billing.event']
         if milestone.auto_invoice_on_exit:
+            if 'account.move' not in self.env:
+                return self.env['bharat.loan.billing.event'].bharat_accrue_for_loan(self, milestone)
             return self.env['account.move'].bharat_create_case_milestone_invoice(
                 self, milestone.code
             )
@@ -2930,33 +2910,61 @@ class BharatLoan(models.Model):
         return bool(region_id or state_id or batch_number)
 
     @api.model
+    def _bharat_arbitration_accounting_available(self):
+        """True when BharatNyay Accounting extends account.move (not just Odoo Invoicing)."""
+        Move = self.env.get('account.move')
+        return bool(Move and 'bharat_arbitration_invoice' in Move._fields)
+
+    @api.model
+    def _bharat_empty_invoiced_charges_pipeline(self):
+        """Fallback dashboard payload when accounting is not installed."""
+        from .loan_milestone import POSTAL_BILLING_MILESTONE_NUMBERS
+
+        specs = (
+            ('notice_1', _('Notice 1'), '#3b82f6', 'fa-envelope-o'),
+            ('hearing_1', _('Hearing 1'), '#8b5cf6', 'fa-video-camera'),
+            ('award', _('Award'), '#ef4444', 'fa-trophy'),
+        )
+        stages = []
+        for code, label, color, icon in specs:
+            domain_all = [('id', 'in', [0])]
+            stages.append({
+                'key': code,
+                'label': label,
+                'billing_milestone_label': _('Milestone %s') % POSTAL_BILLING_MILESTONE_NUMBERS[code],
+                'color': color,
+                'icon': icon,
+                'count': 0,
+                'cases': 0,
+                'amount': 0.0,
+                'paid_count': 0,
+                'paid_amount': 0.0,
+                'unpaid_count': 0,
+                'unpaid_amount': 0.0,
+                'draft_count': 0,
+                'domain': domain_all,
+                'domains': {
+                    'all': domain_all,
+                    'paid': domain_all + [
+                        ('state', '=', 'posted'),
+                        ('payment_state', 'in', ['paid', 'in_payment']),
+                    ],
+                    'unpaid': domain_all + [
+                        ('state', '=', 'posted'),
+                        ('payment_state', 'not in', ['paid', 'in_payment']),
+                        ('amount_residual', '>', 0),
+                    ],
+                    'draft': domain_all + [('state', '=', 'draft')],
+                },
+            })
+        return {'stages': stages}
+
+    @api.model
     def _dashboard_arbitration_moves_for_loans(self, loans, extra_domain=None):
-        """Arbitration invoices linked to a loan set (direct, annexure, or line text)."""
-        Move = self.env['account.move'].sudo()
-        inv_domain = [
-            ('move_type', '=', 'out_invoice'),
-            ('bharat_arbitration_invoice', '=', True),
-        ]
-        if extra_domain:
-            inv_domain.extend(extra_domain)
-        moves = Move.search(inv_domain)
-        if not loans:
-            return Move.browse()
-        loan_ids = set(loans.ids)
-        loan_numbers = {n for n in loans.mapped('loan_number') if n}
-
-        def _matches(move):
-            if move.bharat_loan_id and move.bharat_loan_id.id in loan_ids:
-                return True
-            annexure_ids = move.bharat_annexure_line_ids.mapped('loan_id').ids
-            if any(lid in loan_ids for lid in annexure_ids):
-                return True
-            if loan_numbers:
-                blob = ' '.join(move.invoice_line_ids.mapped('name') or [])
-                return any(num in blob for num in loan_numbers)
-            return False
-
-        return moves.filtered(_matches)
+        """Arbitration invoices linked to a loan set (overridden in bharatnyay_account)."""
+        if not self._bharat_arbitration_accounting_available():
+            return self.env['account.move'].browse()
+        return self.env['account.move'].browse()
 
     @api.model
     def _dashboard_batch_payment_breakdown(self, loans, no_batch_label=None):
@@ -3453,42 +3461,51 @@ class BharatLoan(models.Model):
                 'color': '#94a3b8',
             })
 
-        if scope_active:
-            posted_arb = self._dashboard_arbitration_moves_for_loans(
-                scoped_loans, [('state', '=', 'posted')],
-            )
-            draft_moves = self._dashboard_arbitration_moves_for_loans(
-                scoped_loans, [('state', '=', 'draft')],
-            )
-        else:
-            Move = self.env['account.move'].sudo()
-            arb_inv_domain = [
-                ('move_type', '=', 'out_invoice'),
-                ('bharat_arbitration_invoice', '=', True),
-            ]
-            posted_arb = Move.search(arb_inv_domain + [('state', '=', 'posted')])
-            draft_moves = Move.search(arb_inv_domain + [('state', '=', 'draft')])
+        if self._bharat_arbitration_accounting_available():
+            if scope_active:
+                posted_arb = self._dashboard_arbitration_moves_for_loans(
+                    scoped_loans, [('state', '=', 'posted')],
+                )
+                draft_moves = self._dashboard_arbitration_moves_for_loans(
+                    scoped_loans, [('state', '=', 'draft')],
+                )
+            else:
+                Move = self.env['account.move'].sudo()
+                arb_inv_domain = [
+                    ('move_type', '=', 'out_invoice'),
+                    ('bharat_arbitration_invoice', '=', True),
+                ]
+                posted_arb = Move.search(arb_inv_domain + [('state', '=', 'posted')])
+                draft_moves = Move.search(arb_inv_domain + [('state', '=', 'draft')])
 
-        paid_moves = posted_arb.filtered(
-            lambda m: m.payment_state in ('paid', 'in_payment')
-        )
-        unpaid_moves = posted_arb.filtered(
-            lambda m: m.payment_state not in ('paid', 'in_payment')
-            and (m.amount_residual or 0) > 0
-        )
-        paid_invoice_count = len(paid_moves)
-        unpaid_invoice_count = len(unpaid_moves)
-        total_invoices = len(posted_arb) + len(draft_moves)
-        paid_invoice_amount = round(
-            sum((m.amount_total or 0) - (m.amount_residual or 0) for m in paid_moves),
-            2,
-        )
-        unpaid_invoice_amount = round(sum(unpaid_moves.mapped('amount_residual')), 2)
-        total_invoice_amount = round(
-            sum(posted_arb.mapped('amount_total')) + sum(draft_moves.mapped('amount_total')),
-            2,
-        )
-        draft_invoices_count = len(draft_moves)
+            paid_moves = posted_arb.filtered(
+                lambda m: m.payment_state in ('paid', 'in_payment')
+            )
+            unpaid_moves = posted_arb.filtered(
+                lambda m: m.payment_state not in ('paid', 'in_payment')
+                and (m.amount_residual or 0) > 0
+            )
+            paid_invoice_count = len(paid_moves)
+            unpaid_invoice_count = len(unpaid_moves)
+            total_invoices = len(posted_arb) + len(draft_moves)
+            paid_invoice_amount = round(
+                sum((m.amount_total or 0) - (m.amount_residual or 0) for m in paid_moves),
+                2,
+            )
+            unpaid_invoice_amount = round(sum(unpaid_moves.mapped('amount_residual')), 2)
+            total_invoice_amount = round(
+                sum(posted_arb.mapped('amount_total')) + sum(draft_moves.mapped('amount_total')),
+                2,
+            )
+            draft_invoices_count = len(draft_moves)
+        else:
+            paid_invoice_count = 0
+            unpaid_invoice_count = 0
+            total_invoices = 0
+            paid_invoice_amount = 0.0
+            unpaid_invoice_amount = 0.0
+            total_invoice_amount = 0.0
+            draft_invoices_count = 0
 
         pending_billing_domain = [('state', '=', 'pending')]
         if scope_active:
@@ -3496,9 +3513,12 @@ class BharatLoan(models.Model):
         unbilled_charges_pipeline = self.env[
             'bharat.loan.billing.event'
         ].dashboard_pending_charges_pipeline(loan_ids if scope_active else None)
-        invoiced_charges_pipeline = self.env[
-            'account.move'
-        ].dashboard_invoiced_charges_pipeline(loan_ids if scope_active else None)
+        if self._bharat_arbitration_accounting_available():
+            invoiced_charges_pipeline = self.env[
+                'account.move'
+            ].dashboard_invoiced_charges_pipeline(loan_ids if scope_active else None)
+        else:
+            invoiced_charges_pipeline = self._bharat_empty_invoiced_charges_pipeline()
         unbilled_cases = unbilled_charges_pipeline['total']['cases']
         pending_billing_charges = unbilled_charges_pipeline['total']['count']
         pending_billing_amount = unbilled_charges_pipeline['total']['amount']
@@ -4120,9 +4140,12 @@ class BharatLoan(models.Model):
         unbilled_charges_pipeline = self.env[
             'bharat.loan.billing.event'
         ].dashboard_pending_charges_pipeline(loans.ids)
-        invoiced_charges_pipeline = self.env[
-            'account.move'
-        ].dashboard_invoiced_charges_pipeline(loans.ids)
+        if self._bharat_arbitration_accounting_available():
+            invoiced_charges_pipeline = self.env[
+                'account.move'
+            ].dashboard_invoiced_charges_pipeline(loans.ids)
+        else:
+            invoiced_charges_pipeline = self._bharat_empty_invoiced_charges_pipeline()
         batch_keys = {b for b in loans.mapped('batch_number') if b}
 
         payment_mix = self._dashboard_payment_mix(
@@ -4233,9 +4256,12 @@ class BharatLoan(models.Model):
         unbilled_charges_pipeline = self.env[
             'bharat.loan.billing.event'
         ].dashboard_pending_charges_pipeline(loans.ids)
-        invoiced_charges_pipeline = self.env[
-            'account.move'
-        ].dashboard_invoiced_charges_pipeline(loans.ids)
+        if self._bharat_arbitration_accounting_available():
+            invoiced_charges_pipeline = self.env[
+                'account.move'
+            ].dashboard_invoiced_charges_pipeline(loans.ids)
+        else:
+            invoiced_charges_pipeline = self._bharat_empty_invoiced_charges_pipeline()
 
         return {
             'currency_id': Currency.id,

@@ -12,8 +12,6 @@ from . import law_firm
 from . import notification_template
 from . import res_users
 from . import product_template
-from . import account_move
-from . import account_chart_template
 from . import arbitration_billing
 from . import ir_actions_report
 from . import bharat_arbitrator_blockout
