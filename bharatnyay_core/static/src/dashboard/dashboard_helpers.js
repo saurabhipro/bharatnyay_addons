@@ -223,13 +223,20 @@ export function openConsolidatedBillingWizard(action, notification, state, stage
             title = `${_t("Create consolidated invoice")} — ${card.label}`;
         }
     }
-    if (
-        !guardEmptyDashboardCard(notification, {
-            count: card?.count,
-            label: title,
-            amount: card?.amount,
-        })
-    ) {
+    if (!card) {
+        return Promise.resolve(false);
+    }
+    // If count is 0, there are no pending events to invoice. We avoid opening
+    // the wizard based on amount formatting/rounding.
+    const empty = Number(card.count ?? 0) === 0;
+    if (empty) {
+        notification.add(
+            _t(
+                "No pending unbilled charges for this stage. "
+                + "Charges appear after POD delivery is confirmed and not yet invoiced."
+            ),
+            { title, type: "info" }
+        );
         return Promise.resolve(false);
     }
     return action.doAction({

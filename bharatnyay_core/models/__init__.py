@@ -21,6 +21,10 @@ from . import loan_stage
 from . import loan_milestone
 from . import res_company
 from . import loan
+from . import loan_notice_line
+from . import loan_hearing_line
+from . import loan_interim_order
+from . import loan_award_document
 from . import loan_flow_simulation
 from . import process_run
 from . import case_vault

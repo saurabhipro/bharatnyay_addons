@@ -14,14 +14,14 @@ BHARAT_ARBITRATION_STAGE_SELECTION = [
 ]
 
 DEFAULT_BILLING_PRODUCTS = (
-    ('notice_1', 'ODR — Notice 1', 25.0),
-    ('notice_2', 'ODR — Notice 2', 25.0),
-    ('notice_3', 'ODR — Notice 3', 25.0),
-    ('interim_order_1', 'ODR — Interim Order 1', 35.0),
-    ('hearing_1', 'ODR — Hearing 1', 50.0),
-    ('hearing_2', 'ODR — Hearing 2', 50.0),
-    ('hearing_3', 'ODR — Hearing 3', 50.0),
-    ('award', 'ODR — Award', 75.0),
+    ('notice_1', 'ODR — Notice 1', 100.0),
+    ('notice_2', 'ODR — Notice 2', 100.0),
+    ('notice_3', 'ODR — Notice 3', 100.0),
+    ('interim_order_1', 'ODR — Interim Order 1', 100.0),
+    ('hearing_1', 'ODR — Hearing 1', 100.0),
+    ('hearing_2', 'ODR — Hearing 2', 100.0),
+    ('hearing_3', 'ODR — Hearing 3', 100.0),
+    ('award', 'ODR — Award', 100.0),
 )
 
 
@@ -60,6 +60,7 @@ class ProductTemplate(models.Model):
                 continue
             existing = self.search([('bharat_arbitration_stage', '=', stage)], limit=1)
             if existing:
+                existing.write({'list_price': price})
                 continue
             self.create({
                 'name': name,

@@ -299,7 +299,10 @@
                 t-on-click="openInvoices">
             <div class="bn-stage-top">
                 <span class="bn-stage-ico"><i class="fa fa-file-text-o"/></span>
-                <span class="bn-stage-name">Invoices</span>
+                <span class="bn-stage-title-stack">
+                    <span class="bn-stage-name">Invoiced to date</span>
+                    <span class="bn-bill-milestone">Posted arbitration invoices</span>
+                </span>
             </div>
             <div class="bn-invoice-pipeline-card__metrics">
                 <div class="bn-invoice-pipeline-card__metric">

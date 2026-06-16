@@ -312,7 +312,8 @@
                                         </div>
                                         <div class="bn-import-row">
                                             <span class="bn-import-row__k">State</span>
-                                            <field name="borrower_state_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                            <field name="borrower_state_id" readonly="1" nolabel="1" class="bn-import-row__v" invisible="not borrower_state_id"/>
+                                            <field name="borrower_state" readonly="1" nolabel="1" class="bn-import-row__v" invisible="borrower_state_id"/>
                                         </div>
                                         <div class="bn-import-row" invisible="not borrower_address">
                                             <span class="bn-import-row__k">Address</span>
