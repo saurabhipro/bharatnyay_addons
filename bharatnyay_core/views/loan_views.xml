@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record id="view_bharat_loan_search" model="ir.ui.view">
@@ -661,3 +662,660 @@
     </record>
 
 </odoo>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bharat_loan_search" model="ir.ui.view">
+        <field name="name">bharat.loan.search</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Omnibox: one chip searches loan #, BharatNyay case #, batch, borrower, respondent A/C -->
+                <field name="loan_number"
+                       string="Loan / case # / borrower"
+                       filter_domain="['|', '|', '|', '|', '|', '|',
+                                       ('loan_number', 'ilike', self),
+                                       ('case_number', 'ilike', self),
+                                       ('batch_number', 'ilike', self),
+                                       ('customer_name', 'ilike', self),
+                                       ('respondent_loan_reference', 'ilike', self),
+                                       ('borrower_phone', 'ilike', self),
+                                       ('borrower_email', 'ilike', self)]"/>
+                <field name="case_number" string="BharatNyay case #"/>
+                <field name="batch_number"/>
+                <field name="company_id"/>
+                <field name="customer_name"/>
+                <field name="region_id"/>
+                <field name="borrower_state_id"/>
+                <field name="branch_id"/>
+                <field name="location_id"/>
+                <field name="product_class_id"/>
+                <field name="law_firm_id"/>
+                <field name="product"/>
+                <field name="case_manager_id"/>
+                <field name="workflow_phase"/>
+                <field name="milestone_id"/>
+                <field name="milestone_code"/>
+                <field name="respondent_name"/>
+                <separator/>
+                <filter string="Has claim" name="has_claim" domain="[('claim_amount','&gt;',0)]"/>
+                <filter string="Commencement" name="wf_commencement" domain="[('milestone_code','=','commencement')]"/>
+                <filter string="Notice 1" name="wf_notice_1" domain="[('milestone_code','=','notice_1')]"/>
+                <filter string="Notice 2" name="wf_notice_2" domain="[('milestone_code','=','notice_2')]"/>
+                <filter string="Notice 3" name="wf_notice_3" domain="[('milestone_code','=','notice_3')]"/>
+                <filter string="Hearing 1" name="wf_hearing_1" domain="[('milestone_code','=','hearing_1')]"/>
+                <filter string="Hearing 2" name="wf_hearing_2" domain="[('milestone_code','=','hearing_2')]"/>
+                <filter string="Hearing 3" name="wf_hearing_3" domain="[('milestone_code','=','hearing_3')]"/>
+                <filter string="Award" name="wf_award" domain="[('milestone_code','=','award')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Region" name="grp_region" context="{'group_by': 'region_id'}"/>
+                    <filter string="State" name="grp_state" context="{'group_by': 'borrower_state_id'}"/>
+                    <filter string="Branch" name="grp_branch" context="{'group_by': 'branch_id'}"/>
+                    <filter string="Product class" name="grp_pclass" context="{'group_by': 'product_class_id'}"/>
+                    <filter string="Product" name="grp_product" context="{'group_by': 'product'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_tree" model="ir.ui.view">
+        <field name="name">bharat.loan.list</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <list string="Loans" class="bn-loan-list" create="0">
+                <header>
+                    <button name="%(bharatnyay_core.action_bharat_consolidated_billing_wizard)d"
+                            type="action"
+                            string="Create consolidated invoice"
+                            class="btn-primary"
+                            display="always"
+                            icon="fa-file-text-o"/>
+                    <button name="%(bharatnyay_core.action_bharat_loan_portfolio_import_wizard)d"
+                            type="action"
+                            string="Import Excel"
+                            class="btn-secondary"
+                            display="always"
+                            icon="fa-upload"/>
+                </header>
+                <field name="case_number" width="140"/>
+                <field name="batch_number" optional="show" width="90"/>
+                <field name="company_id" optional="hide" width="120"/>
+                <field name="loan_number" width="100"/>
+                <field name="customer_name" width="160"/>
+                <field name="region_id" optional="hide" width="100"/>
+                <field name="borrower_state_id" optional="hide" width="100"/>
+                <field name="branch_id" optional="hide" width="140"/>
+                <field name="location_id" string="Location" optional="show" width="120"/>
+                <field name="financed_amount" sum="Financed" width="110"/>
+                <field name="current_pos" sum="POS" width="110"/>
+                <field name="milestone_id" string="Milestone" optional="show" width="130"/>
+                <field name="state_display" string="Milestone" optional="hide" width="130"/>
+                <field name="milestone_code" column_invisible="1"/>
+                <field name="workflow_section" optional="hide" width="80"/>
+                <field name="workflow_phase" optional="hide" width="120"/>
+                <field name="claim_amount" sum="Claim" width="110"/>
+                <field name="lok_adalat_date" optional="hide" width="100"/>
+                <field name="disbursement_date" optional="hide" width="100"/>
+                <field name="case_manager_id" optional="hide" width="130"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_kanban" model="ir.ui.view">
+        <field name="name">bharat.loan.kanban</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="milestone_id" records_draggable="1">
+                <field name="loan_number"/>
+                <field name="customer_name"/>
+                <field name="milestone_id"/>
+                <field name="branch_id"/>
+                <field name="current_pos"/>
+                <field name="claim_amount"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click o_kanban_record">
+                            <div class="o_kanban_record_top">
+                                <strong><field name="loan_number"/></strong>
+                            </div>
+                            <div><field name="customer_name"/></div>
+                            <div class="text-muted"><field name="branch_id"/></div>
+                            <div class="mt-2">
+                                <span class="me-3">POS: <field name="current_pos" widget="monetary"/></span>
+                                <span>Claim: <field name="claim_amount" widget="monetary"/></span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_calendar" model="ir.ui.view">
+        <field name="name">bharat.loan.calendar</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <calendar string="Loan Calendar" date_start="deliver_date" color="milestone_id" mode="month">
+                <field name="loan_number"/>
+                <field name="customer_name"/>
+                <field name="milestone_id"/>
+                <field name="branch_id"/>
+                <field name="deliver_status"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_bharat_loan_form" model="ir.ui.view">
+        <field name="name">bharat.loan.form</field>
+        <field name="model">bharat.loan</field>
+        <field name="arch" type="xml">
+            <form string="Loan" class="o_bharat_loan_form">
+                <header>
+                    <field name="company_id" invisible="1"/>
+                    <field name="allowed_milestone_ids" invisible="1"/>
+                    <field name="state_is_arbitrator" invisible="1"/>
+                    <field name="is_case_locked" invisible="1"/>
+                    <field name="milestone_code" invisible="1"/>
+                    <field name="can_move_to_next_stage" invisible="1"/>
+                    <field name="next_milestone_label" invisible="1"/>
+                    <field name="milestone_id" widget="statusbar"
+                           domain="[('id', 'in', allowed_milestone_ids)]"
+                           readonly="1"
+                           options="{'clickable': '0'}"/>
+                    <button name="action_move_to_next_stage" type="object"
+                            string="Move to next stage" class="oe_highlight" icon="fa-arrow-right"
+                            invisible="is_case_locked or not can_move_to_next_stage"
+                            confirm="Advance this case to the next workflow milestone?"/>
+                    <button name="action_reschedule_hearing" type="object" string="Reschedule hearing"
+                            icon="fa-calendar"
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
+                    <button name="action_send_hearing_video_link" type="object" string="Send Hearing Link"
+                            icon="fa-paper-plane"
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
+                    <button name="action_join_hearing_meeting" type="object" string="Join Odoo Meeting"
+                            icon="fa-video-camera"
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
+                    <button name="action_pass_interim_award" type="object" string="Pass Interim Award"
+                            icon="fa-gavel"
+                            invisible="is_case_locked or milestone_code not in ('hearing_1', 'hearing_2', 'hearing_3')"/>
+                    <button name="action_download_award_letter" type="object" string="Download award letter"
+                            class="oe_highlight" icon="fa-download"
+                            invisible="milestone_code != 'award'"/>
+                    <button name="action_upload_signed_award" type="object" string="Upload signed award"
+                            icon="fa-upload"
+                            invisible="milestone_code != 'award'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_notice_lines" type="object" class="oe_stat_button" icon="fa-envelope-o">
+                            <field name="notice_count" widget="statinfo" string="Notices"/>
+                        </button>
+                        <button name="action_open_hearing_lines" type="object" class="oe_stat_button" icon="fa-video-camera">
+                            <field name="hearing_log_count" widget="statinfo" string="Hearings"/>
+                        </button>
+                        <button name="action_open_interim_orders" type="object" class="oe_stat_button" icon="fa-gavel">
+                            <field name="interim_order_count" widget="statinfo" string="Interim orders"/>
+                        </button>
+                        <button name="action_open_award_documents" type="object" class="oe_stat_button" icon="fa-trophy">
+                            <field name="award_document_count" widget="statinfo" string="Awards"/>
+                        </button>
+                        <button name="action_open_arbitration_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="arbitration_invoice_count == 0">
+                            <field name="arbitration_invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                        <button name="action_open_unbilled_bills" type="object" class="oe_stat_button" icon="fa-clock-o">
+                            <field name="pending_billing_count" widget="statinfo" string="Unbilled charges"/>
+                        </button>
+                        <button name="action_open_postal_dispatch" type="object" class="oe_stat_button" icon="fa-truck">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Postal delivery</span>
+                            </div>
+                        </button>
+                    </div>
+                   
+                    <field name="workflow_section" invisible="1"/>
+
+                    <div class="bn-loan-hero">
+                        <div class="bn-hero-inner">
+                            <div class="bn-hero-head">
+                                <div class="bn-hero-ids">
+                                    <span class="bn-id-pill">
+                                        <span class="bn-id-pill__k">Case</span>
+                                        <field name="case_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-id-pill">
+                                        <span class="bn-id-pill__k">Batch</span>
+                                        <field name="batch_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-id-pill">
+                                        <span class="bn-id-pill__k">Loan</span>
+                                        <field name="loan_number" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-id-pill bn-id-pill--hearing" invisible="not hearing_datetime">
+                                        <span class="bn-id-pill__k">Hearing</span>
+                                        <field name="hearing_schedule_header" readonly="1" nolabel="1"/>
+                                    </span>
+                                </div>
+                                <span class="bn-stage-pill">
+                                    <field name="state_display" readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <div class="bn-hero-metrics">
+                                <div class="bn-metric bn-metric--financed">
+                                    <span class="bn-metric__icon"><i class="fa fa-inr" title="Financed" aria-hidden="true"/></span>
+                                    <span class="bn-metric__label">Financed</span>
+                                    <field name="hero_financed_display" readonly="1" nolabel="1" class="bn-metric__value"/>
+                                </div>
+                                <div class="bn-metric bn-metric--pos">
+                                    <span class="bn-metric__icon"><i class="fa fa-balance-scale" title="Current POS" aria-hidden="true"/></span>
+                                    <span class="bn-metric__label">Current POS</span>
+                                    <field name="hero_pos_display" readonly="1" nolabel="1" class="bn-metric__value"/>
+                                </div>
+                                <div class="bn-metric bn-metric--claim">
+                                    <span class="bn-metric__icon"><i class="fa fa-gavel" title="Claim" aria-hidden="true"/></span>
+                                    <span class="bn-metric__label">Claim</span>
+                                    <field name="hero_claim_display" readonly="1" nolabel="1" class="bn-metric__value"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <field name="currency_id" invisible="1"/>
+                    <field name="case_manager_manual" invisible="1"/>
+                    <div class="bn-form-body">
+
+                        <!-- Imported data (read-only) — 3 columns, no Amounts (shown in hero) -->
+                        <div class="bn-section">
+                            <div class="bn-section__head">
+                                <span class="bn-section__title">Loan data</span>
+                                <span class="bn-section__badge">Imported (read-only)</span>
+                            </div>
+                            <div class="bn-section__body">
+                                <div class="bn-loan-data-identity">
+                                    <field name="customer_name" readonly="1" nolabel="1" placeholder="Customer name" class="bn-customer"/>
+                                    <span class="bn-loan-data-identity__sep" aria-hidden="true">·</span>
+                                    <span class="bn-loan-data-identity__item">
+                                        <i class="fa fa-map-marker" title="Location" aria-hidden="true"/>
+                                        <field name="location_id" readonly="1" nolabel="1"/>
+                                    </span>
+                                    <span class="bn-loan-data-identity__sep" aria-hidden="true">·</span>
+                                    <span class="bn-loan-data-identity__item">
+                                        <i class="fa fa-tag" title="Product class" aria-hidden="true"/>
+                                        <field name="product_class_id" readonly="1" nolabel="1"/>
+                                    </span>
+                                </div>
+                                <div class="bn-postal-delivery bn-postal-delivery--loan-data">
+                                    <div class="bn-postal-delivery__head">
+                                        <span class="bn-postal-delivery__title">
+                                            <i class="fa fa-paper-plane" title="Postal delivery" aria-hidden="true"/>
+                                            Document delivery
+                                        </span>
+                                        <button name="action_open_postal_dispatch" type="object"
+                                                class="btn btn-link bn-postal-delivery__link">
+                                            Manage tracking
+                                        </button>
+                                        <span class="bn-postal-delivery__hint">Click a card to update POD</span>
+                                    </div>
+                                    <field name="postal_delivery_cards_json"
+                                           widget="bn_postal_delivery_cards"
+                                           nolabel="1"
+                                           readonly="1"/>
+                                </div>
+                                <div class="bn-import-grid">
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-user-o"/> Borrower</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Email</span>
+                                            <field name="borrower_email" readonly="1" nolabel="1" widget="email" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Phone</span>
+                                            <field name="borrower_phone" readonly="1" nolabel="1" widget="phone" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">State</span>
+                                            <field name="borrower_state_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row" invisible="not borrower_address">
+                                            <span class="bn-import-row__k">Address</span>
+                                            <field name="borrower_address" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                    </div>
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-map-marker"/> Geography</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Region</span>
+                                            <field name="region_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Location</span>
+                                            <field name="location_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Branch</span>
+                                            <field name="branch_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                    </div>
+                                    <div class="bn-import-col">
+                                        <div class="bn-import-col__heading"><i class="fa fa-briefcase"/> Product / Legal</div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Product class</span>
+                                            <field name="product_class_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Product code</span>
+                                            <field name="product" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Write-off</span>
+                                            <field name="writeoff_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Law firm</span>
+                                            <field name="law_firm_id" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                        <div class="bn-import-row">
+                                            <span class="bn-import-row__k">Disbursed</span>
+                                            <field name="disbursement_date" readonly="1" nolabel="1" class="bn-import-row__v"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Case management (editable) -->
+                        <div class="bn-section bn-section--edit">
+                            <div class="bn-section__head">
+                                <span class="bn-section__title">Case management</span>
+                                <span class="bn-section__badge bn-section__badge--edit">Editable</span>
+                            </div>
+                            <div class="bn-section__body">
+                                <div class="bn-case-mgmt-grid">
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Lender / company</span>
+                                        <field name="company_id" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Deliver date</span>
+                                        <field name="deliver_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Case manager</span>
+                                        <field name="case_manager_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                    <div class="bn-import-row">
+                                        <span class="bn-import-row__k">Lok Adalat date</span>
+                                        <field name="lok_adalat_date" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                    <div class="bn-import-row bn-case-mgmt-grid__full">
+                                        <span class="bn-import-row__k">Arbitrator</span>
+                                        <field name="arbitrator_id" options="{'no_create': True}" readonly="is_case_locked" nolabel="1" class="bn-import-row__v"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <notebook class="bn-loan-notebook" readonly="is_case_locked">
+                        <page string="Notices" name="page_notices">
+                            <group>
+                                <field name="notice_line_ids" nolabel="1" readonly="is_case_locked">
+                                    <list create="0" delete="0" edit="0" multi_edit="0">
+                                        <field name="notice_number"/>
+                                        <field name="notice_label" readonly="1"/>
+                                        <field name="sent_on"/>
+                                        <field name="delivery_status" string="Delivery"/>
+                                        <field name="sent_by_id"/>
+                                        <field name="subject"/>
+                                        <button name="action_record_response" type="object" string="Record reply"
+                                                class="btn-link" icon="fa-inbox"
+                                                invisible="parent.is_case_locked"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Hearing" name="page_hearing">
+                            <separator string="Hearing log"/>
+                            <field name="hearing_line_ids" nolabel="1" readonly="is_case_locked">
+                                <list create="0" delete="0" edit="0">
+                                    <button name="action_join_meeting" type="object" string="Join"
+                                            class="btn-link" title="Join Odoo meeting"/>
+                                    <field name="hearing_datetime"/>
+                                    <field name="calendar_event_id" optional="show"/>
+                                    <field name="invitees"/>
+                                    <field name="created_by_id"/>
+                                </list>
+                                <form string="Hearing detail" create="0" edit="0" delete="0">
+                                    <header>
+                                        <button name="action_join_meeting" type="object"
+                                                string="Join meeting" class="btn-primary"/>
+                                    </header>
+                                    <group>
+                                        <group>
+                                            <field name="hearing_datetime"/>
+                                            <field name="calendar_event_id" readonly="1"/>
+                                            <field name="invitees"/>
+                                            <field name="created_by_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="notes"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                            <separator string="Interim orders"/>
+                            <field name="interim_order_ids" nolabel="1" readonly="is_case_locked">
+                                <list create="0" delete="0" edit="0">
+                                    <field name="order_date"/>
+                                    <field name="order_type"/>
+                                    <field name="purpose" optional="show"/>
+                                    <field name="passed_by" optional="show"/>
+                                    <field name="amount"/>
+                                    <field name="common_directions" optional="hide"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="order_pdf_filename" optional="hide"/>
+                                </list>
+                                <form string="Interim order" create="0" edit="0" delete="0">
+                                    <group>
+                                        <group>
+                                            <field name="order_date"/>
+                                            <field name="order_type"/>
+                                            <field name="purpose"/>
+                                            <field name="typical_loan_type"/>
+                                            <field name="passed_by"/>
+                                            <field name="hearing_line_id"/>
+                                            <field name="amount"/>
+                                            <field name="created_by_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="common_directions"/>
+                                            <field name="order_pdf" filename="order_pdf_filename" widget="pdf_viewer"/>
+                                            <field name="order_pdf_filename" invisible="1"/>
+                                            <field name="notes"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Awards" name="page_awards">
+                            <field name="award_document_ids" nolabel="1">
+                                <list create="0" delete="0">
+                                    <field name="award_type"/>
+                                    <field name="award_date"/>
+                                    <field name="draft_generated_on" optional="show"/>
+                                    <field name="is_signed" widget="boolean"/>
+                                    <field name="signed_on" optional="show"/>
+                                    <field name="created_by_id" optional="hide"/>
+                                    <field name="award_notes" optional="hide"/>
+                                    <button name="action_download_award_letter" type="object"
+                                            string="Download draft" icon="fa-download"
+                                            invisible="award_type != 'final'"/>
+                                    <button name="action_upload_signed_award" type="object"
+                                            string="Upload signed" icon="fa-upload"
+                                            invisible="award_type != 'final'"/>
+                                </list>
+                                <form string="Award document" create="0" delete="0">
+                                    <header>
+                                        <button name="action_download_award_letter" type="object"
+                                                string="Download award letter" class="oe_highlight"
+                                                invisible="award_type != 'final'"/>
+                                        <button name="action_upload_signed_award" type="object"
+                                                string="Upload signed award"
+                                                invisible="award_type != 'final'"/>
+                                    </header>
+                                    <group>
+                                        <group>
+                                            <field name="award_type" readonly="1"/>
+                                            <field name="award_date" readonly="1"/>
+                                            <field name="created_by_id" readonly="1"/>
+                                            <field name="draft_generated_on" readonly="1"/>
+                                            <field name="signed_on" readonly="1"/>
+                                            <field name="is_signed" readonly="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="draft_award_pdf" filename="draft_award_pdf_filename"
+                                                   widget="pdf_viewer" readonly="1"/>
+                                            <field name="draft_award_pdf_filename" invisible="1"/>
+                                            <field name="award_pdf" filename="award_pdf_filename"
+                                                   widget="pdf_viewer" readonly="1"
+                                                   string="Signed award PDF"/>
+                                            <field name="award_pdf_filename" invisible="1"/>
+                                            <field name="award_notes"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Unbilled charges" name="page_unbilled_bills">
+                            <group>
+                                <p class="text-muted mb-0">
+                                    Arbitration charges for this case. Pending rows are included on the next consolidated invoice.
+                                </p>
+                            </group>
+                            <field name="billing_event_ids"
+                                   nolabel="1"
+                                   readonly="1">
+                                <list create="0" delete="0" edit="0">
+                                    <field name="accrual_date"/>
+                                    <field name="milestone_label" string="Billing stage"/>
+                                    <field name="milestone_code" optional="hide"/>
+                                    <field name="accrual_trigger"/>
+                                    <field name="unit_price" widget="monetary"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="state" widget="badge"
+                                           decoration-warning="state == 'pending'"
+                                           decoration-success="state == 'invoiced'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                    <field name="move_id" string="Invoice" optional="show"/>
+                                    <field name="postal_dispatch_id" optional="hide"/>
+                                </list>
+                                <form string="Billing charge" create="0" delete="0" edit="0">
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="milestone_label" readonly="1"/>
+                                                <field name="milestone_code" readonly="1"/>
+                                                <field name="accrual_trigger" readonly="1"/>
+                                                <field name="accrual_date" readonly="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="product_id" readonly="1"/>
+                                                <field name="unit_price" readonly="1"/>
+                                                <field name="state" readonly="1"/>
+                                                <field name="postal_dispatch_id" readonly="1"/>
+                                                <field name="move_id" readonly="1"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        
+                    </notebook>
+                </sheet>
+                <chatter open_attachments="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bharat_loan" model="ir.actions.act_window">
+        <field name="name">Loan sheet</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="path">bharatnyay-loan</field>
+        <field name="view_mode">list,kanban,calendar,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Import your portfolio Excel to get started.</p>
+            <p>Click <strong>Import Excel</strong> in the list header, or set up <strong>Masters</strong> (regions, branches, …) before your first import.</p>
+        </field>
+    </record>
+    <record id="action_bharat_loan_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_bharat_loan_tree"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+    <record id="action_bharat_loan_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_bharat_loan_form"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+    <record id="action_bharat_loan_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_bharat_loan_kanban"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+    <record id="action_bharat_loan_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="view_bharat_loan_calendar"/>
+        <field name="act_window_id" ref="action_bharat_loan"/>
+    </record>
+
+    <record id="action_bharat_loan_notice" model="ir.actions.act_window">
+        <field name="name">Notice</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('milestone_code', 'in', ['notice_1', 'notice_2', 'notice_3'])]</field>
+    </record>
+    <record id="action_bharat_loan_arbitrator_appointed" model="ir.actions.act_window">
+        <field name="name">Hearing 1 (arbitrator)</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('milestone_code', '=', 'hearing_1'), ('arbitrator_id', '!=', False)]</field>
+    </record>
+    <record id="action_bharat_loan_hearing_status" model="ir.actions.act_window">
+        <field name="name">Hearing status</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('milestone_code', 'in', ['hearing_1', 'hearing_2', 'hearing_3'])]</field>
+    </record>
+    <record id="action_bharat_loan_final_award" model="ir.actions.act_window">
+        <field name="name">Award</field>
+        <field name="res_model">bharat.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bharat_loan_search"/>
+        <field name="domain">[('milestone_code', '=', 'award')]</field>
+    </record>
+
+    <record id="action_bharat_loan_move_to_next_stage" model="ir.actions.server">
+        <field name="name">Move to next stage</field>
+        <field name="model_id" ref="model_bharat_loan"/>
+        <field name="binding_model_id" ref="model_bharat_loan"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_move_to_next_stage()</field>
+    </record>
+
+</odoo>
+>>>>>>> Stashed changes

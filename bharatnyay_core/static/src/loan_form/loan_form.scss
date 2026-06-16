@@ -1408,9 +1408,9 @@
         min-height: calc(100vh - 11rem);
 
         &__main {
-            flex: 0 0 380px;
-            max-width: 420px;
-            min-width: 300px;
+            flex: 0 0 320px;
+            max-width: 360px;
+            min-width: 280px;
         }
 
         &__preview {
@@ -1438,8 +1438,8 @@
     }
 
     .bn-notice-hero {
-        margin: 0 0 1.25rem;
-        padding: 1.1rem 1.15rem 0.95rem;
+        margin: 0 0 0.85rem;
+        padding: 1rem 1.1rem 0.9rem;
         border-radius: 14px;
         color: #fff;
         background: linear-gradient(
@@ -1514,6 +1514,87 @@
                 font-weight: 500;
                 min-width: 0;
                 word-break: break-word;
+            }
+        }
+    }
+
+    .bn-notice-summary {
+        margin: 0 0 1.25rem;
+        padding: 0.95rem 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--bn-line);
+        background: var(--bn-canvas);
+
+        &__row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.45rem 0;
+            border-bottom: 1px solid color-mix(in srgb, var(--bn-line) 80%, transparent);
+
+            &:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            &:first-child {
+                padding-top: 0;
+            }
+
+            &--link {
+                align-items: center;
+            }
+        }
+
+        &__k {
+            flex: 0 0 auto;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--bn-muted);
+        }
+
+        &__v {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: right;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--bn-ink);
+            line-height: 1.35;
+
+            .o_field_widget {
+                font-size: 0.88rem;
+                font-weight: 600;
+                color: var(--bn-ink) !important;
+                text-align: right;
+                width: 100%;
+            }
+
+            &--status .o_field_widget {
+                font-weight: 700;
+                color: color-mix(in srgb, var(--bn-primary) 78%, #0f172a) !important;
+            }
+        }
+
+        &__link {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: right;
+
+            .o_field_widget,
+            a {
+                font-size: 0.84rem;
+                font-weight: 600;
+                color: var(--bn-primary) !important;
+                text-decoration: none;
+                word-break: break-all;
+
+                &:hover {
+                    text-decoration: underline;
+                }
             }
         }
     }
