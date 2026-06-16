@@ -244,6 +244,11 @@
                 t-attf-style="--bn-tank-fill: {{ p.percent }}%;"
                 t-att-data-pod-key="p.key"
                 t-on-click="openPodStatusCases">
+            <span t-if="p.billable and pipelineCompact"
+                  class="bn-stage-bill-badge bn-stage-bill-badge--corner"
+                  title="Delivery confirmed — billable">
+                <i class="fa fa-check"/>
+            </span>
             <div t-attf-class="bn-stage-top {{ pipelineCompact ? 'bn-stage-top--icon-only' : '' }}">
                 <span class="bn-stage-ico"><i t-attf-class="fa {{ p.icon }}"/></span>
                 <span class="bn-stage-title-stack" t-if="!pipelineCompact">
@@ -252,7 +257,7 @@
                           t-out="p.billing_milestone_label"/>
                     <span class="bn-stage-name" t-out="p.label"/>
                 </span>
-                <span t-if="p.billable"
+                <span t-if="p.billable and !pipelineCompact"
                       class="bn-stage-bill-badge"
                       title="Delivery confirmed — billable">
                     <i class="fa fa-check"/>

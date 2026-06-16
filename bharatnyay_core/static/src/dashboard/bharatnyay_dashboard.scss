@@ -1434,6 +1434,21 @@
         place-items: center;
         font-size: 0.58rem;
         box-shadow: 0 1px 3px color-mix(in srgb, var(--bn-bill-accent) 22%, transparent);
+
+        &--corner {
+            position: absolute;
+            top: 0.42rem;
+            right: 0.42rem;
+            z-index: 2;
+            margin-left: 0;
+            width: 1.35rem;
+            height: 1.35rem;
+            font-size: 0.65rem;
+            background: linear-gradient(145deg, #4ade80, #16a34a);
+            color: #ffffff;
+            border-color: #15803d;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+        }
     }
 
     .bn-stage-title-stack {
@@ -1830,6 +1845,7 @@
 
             .bn-stage-top--icon-only {
                 justify-content: center;
+                width: 100%;
                 margin-bottom: 0.1rem;
             }
 
@@ -1857,6 +1873,10 @@
             .bn-stage-bill-caption,
             .bn-charge-card__action {
                 text-align: center;
+            }
+
+            .bn-stage-bill-badge--corner {
+                opacity: 1;
             }
         }
 

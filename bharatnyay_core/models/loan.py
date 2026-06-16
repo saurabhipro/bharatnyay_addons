@@ -944,6 +944,7 @@ class BharatLoan(models.Model):
             ('migrate_loans_to_milestone_only', self._bharat_migrate_loans_to_milestone_only),
             ('migrate_interim_order_billing_events', self.env['bharat.loan.billing.event']._bharat_migrate_interim_order_billing_events),
             ('recompute_postal_billing_codes', self.env['bharat.loan.postal.dispatch']._bharat_recompute_billing_milestone_codes),
+            ('realign_batch_hearing_slots', self.env['bharat.loan.hearing.line']._bharat_realign_batch_hearing_slots),
             ('backfill_hearing_postal_billing', self.env['bharat.loan.billing.event']._bharat_backfill_hearing_postal_billing),
             ('sanitize_case_vault_documents', self.env['bharat.case.vault.batch']._bharat_sanitize_case_vault_documents),
         ):
@@ -1483,28 +1484,55 @@ class BharatLoan(models.Model):
             rec._provision_hearing_lines_on_arbitrator_assign()
 
     def _provision_hearing_lines_on_arbitrator_assign(self):
-        """Create three hearing log rows (+1, +10, +30 days) if none exist yet."""
+        """Create three hearing rows (+1, +10, +30 days) on sequential 30-min slots."""
         HearingLine = self.env['bharat.loan.hearing.line']
-        base = fields.Datetime.now()
-        if isinstance(base, str):
-            base = fields.Datetime.from_string(base)
+        Wiz = self.env['bharat.loan.hearing.schedule.wizard']
+        slot_claims = {}
         to_create = []
+        loan_primary_dt = {}
+
         for rec in self:
             if not rec.arbitrator_id or rec.hearing_line_ids:
                 continue
-            first_dt = base + timedelta(days=self._ARBITRATOR_HEARING_OFFSET_DAYS[0])
+            first_dt = None
             for days in self._ARBITRATOR_HEARING_OFFSET_DAYS:
+                target_day = Wiz._hearing_day_after_offset(days)
+                claim_key = (
+                    rec.batch_number or '',
+                    rec.arbitrator_id.id,
+                    fields.Date.to_string(target_day),
+                )
+                used = slot_claims.get(claim_key)
+                if used is None:
+                    used = Wiz._used_slot_indices_for_batch_day(
+                        rec.batch_number,
+                        rec.arbitrator_id,
+                        target_day,
+                        exclude_loan=rec,
+                    )
+                    slot_claims[claim_key] = set(used)
+                utc_naive, _idx = Wiz._utc_naive_for_batch_slot(rec, target_day, slot_claims[claim_key])
+                if not utc_naive:
+                    base = fields.Datetime.now()
+                    if isinstance(base, str):
+                        base = fields.Datetime.from_string(base)
+                    utc_naive = base + timedelta(days=days)
                 to_create.append({
                     'loan_id': rec.id,
-                    'hearing_datetime': base + timedelta(days=days),
+                    'hearing_datetime': utc_naive,
                     'link_type': 'external',
                     'created_by_id': self.env.user.id,
                     'status': 'scheduled',
                 })
-            if not rec.hearing_datetime:
-                rec.hearing_datetime = first_dt
+                if first_dt is None:
+                    first_dt = utc_naive
+            if first_dt and not rec.hearing_datetime:
+                loan_primary_dt[rec.id] = first_dt
+
         if to_create:
             HearingLine.create(to_create)
+        for loan_id, hearing_dt in loan_primary_dt.items():
+            self.browse(loan_id).hearing_datetime = hearing_dt
         self._check_hearing_countdown_and_promote()
 
     @api.depends('branch_id', 'location_id', 'branch_id.location_id', 'case_manager_manual')

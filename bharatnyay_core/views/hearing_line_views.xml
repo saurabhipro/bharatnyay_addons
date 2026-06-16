@@ -31,7 +31,7 @@
         <field name="name">bharat.loan.hearing.line.list</field>
         <field name="model">bharat.loan.hearing.line</field>
         <field name="arch" type="xml">
-            <list string="Hearings" default_order="batch_number, hearing_datetime asc" multi_edit="0">
+            <list string="Hearings" default_order="batch_number, hearing_slot_index asc, hearing_datetime asc" multi_edit="0">
                 <button name="action_join_meeting" type="object" string="Join" class="btn-link" title="Join Odoo meeting"/>
                 <button name="action_reschedule_hearing" type="object" string="Reschedule" class="btn-link"/>
                 <field name="batch_number"/>

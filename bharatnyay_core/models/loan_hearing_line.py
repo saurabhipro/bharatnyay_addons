@@ -128,6 +128,59 @@ class BharatLoanHearingLine(models.Model):
             delta = line.hearing_datetime - now
             line.minutes_remaining = max(0, int(delta.total_seconds() // 60))
 
+    @api.model
+    def _bharat_realign_batch_hearing_slots(self):
+        """Assign Slot 1, 2, 3… per batch/day for existing placeholder hearings."""
+        Wiz = self.env['bharat.loan.hearing.schedule.wizard']
+        lines = self.sudo().search([
+            ('status', '=', 'scheduled'),
+            ('hearing_datetime', '!=', False),
+            ('arbitrator_id', '!=', False),
+        ])
+        groups = {}
+        for line in lines:
+            local = fields.Datetime.context_timestamp(line, line.hearing_datetime)
+            key = (line.batch_number or '', line.arbitrator_id.id, local.date())
+            groups.setdefault(key, []).append(line)
+
+        Loan = self.env['bharat.loan'].sudo()
+        touched_loans = Loan.browse()
+        for group_lines in groups.values():
+            sorted_lines = sorted(
+                group_lines,
+                key=lambda ln: (ln.loan_number or '', ln.id),
+            )
+            if not sorted_lines:
+                continue
+            day = fields.Datetime.context_timestamp(
+                sorted_lines[0], sorted_lines[0].hearing_datetime,
+            ).date()
+            for slot_idx, line in enumerate(sorted_lines, start=1):
+                if slot_idx > Wiz.GRID_SLOT_COUNT:
+                    break
+                wiz = Wiz.new({'loan_id': line.loan_id.id, 'scheduler_date': day})
+                utc_naive = wiz._utc_naive_for_grid_index(day, slot_idx)
+                if not utc_naive:
+                    continue
+                current = line.hearing_datetime
+                if isinstance(current, str):
+                    current = fields.Datetime.from_string(current)
+                if current.replace(second=0, microsecond=0) != utc_naive.replace(second=0, microsecond=0):
+                    line.with_context(skip_hearing_countdown=True).write({
+                        'hearing_datetime': utc_naive,
+                    })
+                    touched_loans |= line.loan_id
+
+        for loan in touched_loans:
+            upcoming = loan.hearing_line_ids.filtered(
+                lambda ln: ln.status == 'scheduled',
+            ).sorted('hearing_datetime')
+            if upcoming and loan.hearing_datetime != upcoming[0].hearing_datetime:
+                loan.with_context(skip_hearing_countdown=True).write({
+                    'hearing_datetime': upcoming[0].hearing_datetime,
+                })
+        return True
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)

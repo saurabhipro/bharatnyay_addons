@@ -697,6 +697,87 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             self.grid_selected_index = 0
             self.selected_slot_range_display = ''
 
+    @api.model
+    def _hearing_day_after_offset(self, days_offset):
+        """Local calendar day for auto-provisioned hearings (+1 / +10 / +30)."""
+        tz = self._user_timezone()
+        now_utc = fields.Datetime.now()
+        if isinstance(now_utc, str):
+            now_utc = fields.Datetime.from_string(now_utc)
+        local = pytz.UTC.localize(now_utc).astimezone(tz)
+        return (local + timedelta(days=days_offset)).date()
+
+    @api.model
+    def _used_slot_indices_for_batch_day(self, batch_number, arbitrator, target_day, exclude_loan=None):
+        """Slot indices already taken on target_day for this batch + arbitrator."""
+        used = set()
+        if not arbitrator or not target_day:
+            return used
+        if isinstance(target_day, str):
+            target_day = fields.Date.from_string(target_day)
+        HearingLine = self.env['bharat.loan.hearing.line']
+        line_domain = [
+            ('batch_number', '=', batch_number or False),
+            ('arbitrator_id', '=', arbitrator.id),
+            ('hearing_datetime', '!=', False),
+        ]
+        if exclude_loan:
+            line_domain.append(('loan_id', '!=', exclude_loan.id))
+        for line in HearingLine.search(line_domain):
+            local = fields.Datetime.context_timestamp(line, line.hearing_datetime)
+            if local.date() != target_day:
+                continue
+            idx = self._grid_index_for_datetime_on_day(target_day, line.hearing_datetime)
+            if idx:
+                used.add(idx)
+        Loan = self.env['bharat.loan']
+        loan_domain = [
+            ('batch_number', '=', batch_number or False),
+            ('arbitrator_id', '=', arbitrator.id),
+            ('hearing_datetime', '!=', False),
+        ]
+        if exclude_loan:
+            loan_domain.append(('id', '!=', exclude_loan.id))
+        for loan in Loan.search(loan_domain):
+            local = fields.Datetime.context_timestamp(loan, loan.hearing_datetime)
+            if local.date() != target_day:
+                continue
+            idx = self._grid_index_for_datetime_on_day(target_day, loan.hearing_datetime)
+            if idx:
+                used.add(idx)
+        return used
+
+    @api.model
+    def _pick_next_slot_index(self, target_day, arbitrator, used_indices, exclude_loan=None):
+        """Next free 30-minute slot (1–16) on target_day for this arbitrator."""
+        busy = self._busy_hearing_starts_utc(arbitrator, exclude_loan)
+        for idx in range(1, self.GRID_SLOT_COUNT + 1):
+            if idx in used_indices:
+                continue
+            stub = self.new({'scheduler_date': target_day})
+            utc_naive = stub._utc_naive_for_grid_index(target_day, idx)
+            if not utc_naive:
+                continue
+            if self._slot_interval_overlaps(utc_naive, busy):
+                continue
+            return idx
+        for idx in range(1, self.GRID_SLOT_COUNT + 1):
+            if idx not in used_indices:
+                return idx
+        return 1
+
+    @api.model
+    def _utc_naive_for_batch_slot(self, loan, target_day, used_indices):
+        """Resolve UTC start for the next batch slot on target_day."""
+        if isinstance(target_day, str):
+            target_day = fields.Date.from_string(target_day)
+        arb = loan.arbitrator_id
+        idx = self._pick_next_slot_index(target_day, arb, used_indices, exclude_loan=loan)
+        used_indices.add(idx)
+        stub = self.new({'loan_id': loan.id, 'scheduler_date': target_day})
+        utc_naive = stub._utc_naive_for_grid_index(target_day, idx)
+        return utc_naive, idx
+
     def _utc_naive_for_grid_index(self, scheduler_date, index):
         self.ensure_one()
         if not scheduler_date or not index:
