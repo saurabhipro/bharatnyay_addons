@@ -55,6 +55,21 @@ class BharatLoanHearingLine(models.Model):
         readonly=True,
     )
     hearing_datetime = fields.Datetime(string='Hearing date/time', required=True)
+    hearing_slot_index = fields.Integer(
+        string='Slot index',
+        compute='_compute_hearing_slot_display',
+        store=True,
+    )
+    hearing_slot_label = fields.Char(
+        string='Slot number',
+        compute='_compute_hearing_slot_display',
+        store=True,
+    )
+    hearing_slot_time_label = fields.Char(
+        string='Slot time',
+        compute='_compute_hearing_slot_display',
+        store=True,
+    )
     minutes_remaining = fields.Integer(
         string='Minutes until hearing',
         compute='_compute_minutes_remaining',
@@ -80,6 +95,28 @@ class BharatLoanHearingLine(models.Model):
     notes = fields.Text(string='Hearing instructions')
     invitees = fields.Char(string='Invitees')
     created_by_id = fields.Many2one('res.users', string='Recorded by', default=lambda self: self.env.user)
+
+    @api.depends('hearing_datetime')
+    def _compute_hearing_slot_display(self):
+        Wiz = self.env['bharat.loan.hearing.schedule.wizard']
+        for line in self:
+            line.hearing_slot_index = 0
+            line.hearing_slot_label = ''
+            line.hearing_slot_time_label = ''
+            if not line.hearing_datetime:
+                continue
+            local = fields.Datetime.context_timestamp(line, line.hearing_datetime)
+            day = local.date()
+            utc_naive = line.hearing_datetime.replace(second=0, microsecond=0)
+            idx = Wiz._grid_index_for_datetime_on_day(day, utc_naive)
+            line.hearing_slot_index = idx
+            if idx:
+                line.hearing_slot_label = _('Slot %s') % idx
+                wiz = Wiz.new({
+                    'loan_id': line.loan_id.id,
+                    'scheduler_date': day,
+                })
+                line.hearing_slot_time_label = wiz._slot_range_label_from_index(day, idx)
 
     @api.depends('hearing_datetime')
     def _compute_minutes_remaining(self):

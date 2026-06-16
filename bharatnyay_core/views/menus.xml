@@ -38,6 +38,12 @@
               action="action_bharat_loan"
               sequence="15"/>
 
+    <menuitem id="menu_bharatnyay_hearings"
+              name="Hearings"
+              parent="menu_bharatnyay_root"
+              action="action_bharat_loan_hearing_line_batch"
+              sequence="16"/>
+
     <menuitem id="menu_bharatnyay_case_vault"
               name="Case Vault"
               parent="menu_bharatnyay_root"

@@ -13,6 +13,7 @@
                 <field name="arbitrator_id"/>
                 <field name="calendar_event_id"/>
                 <field name="hearing_datetime"/>
+                <field name="hearing_slot_label"/>
                 <separator/>
                 <filter string="Today" name="today" date="hearing_datetime"/>
                 <filter string="Scheduled" name="scheduled" domain="[('status', '=', 'scheduled')]"/>
@@ -21,6 +22,7 @@
                 <filter string="Batch" name="group_batch" context="{'group_by': 'batch_number'}"/>
                 <filter string="Arbitrator" name="group_arbitrator" context="{'group_by': 'arbitrator_id'}"/>
                 <filter string="Milestone" name="group_milestone" context="{'group_by': 'milestone_code'}"/>
+                <filter string="Slot" name="group_slot" context="{'group_by': 'hearing_slot_label'}"/>
             </search>
         </field>
     </record>
@@ -37,6 +39,8 @@
                 <field name="case_number" optional="show"/>
                 <field name="customer_name" optional="show"/>
                 <field name="hearing_datetime"/>
+                <field name="hearing_slot_label" string="Slot number"/>
+                <field name="hearing_slot_time_label" string="Slot time" optional="show"/>
                 <field name="minutes_remaining" optional="show"/>
                 <field name="arbitrator_id" optional="show"/>
                 <field name="milestone_code" optional="hide"/>
@@ -88,6 +92,8 @@
                         </group>
                         <group>
                             <field name="hearing_datetime"/>
+                            <field name="hearing_slot_label" readonly="1"/>
+                            <field name="hearing_slot_time_label" readonly="1"/>
                             <field name="minutes_remaining" readonly="1"/>
                             <field name="calendar_event_id" readonly="1"/>
                             <field name="invitees"/>
