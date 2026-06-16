@@ -316,13 +316,12 @@ class BharatLoanPostalDispatch(models.Model):
                 'domain': [('id', 'in', records.ids or [0])],
             }
         if doc_type == 'interim_order_1':
-            records = self.env['bharat.loan.interim.order'].sudo().search([
-                ('loan_id', 'in', ids),
-            ])
             return {
-                'res_model': 'bharat.loan.interim.order',
-                'name': title,
-                'domain': [('id', 'in', records.ids or [0])],
+                'res_model': 'bharat.loan.hearing.line',
+                'name': _('Hearings — %s') % status_label,
+                'domain': [('loan_id', 'in', ids or [0])],
+                'view_mode': 'list,calendar,form',
+                'context': {'search_default_group_batch': 1},
             }
         if doc_type == 'award':
             dispatches = self.sudo().search([

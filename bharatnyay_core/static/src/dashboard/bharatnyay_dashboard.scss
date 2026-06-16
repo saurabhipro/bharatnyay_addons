@@ -1528,6 +1528,13 @@
     .bn-pipeline-viz {
         margin: 0.35rem 0 var(--bn-section-gap);
 
+        &__hint {
+            margin: -0.15rem 0 0.55rem;
+            font-size: 0.78rem;
+            color: #64748b;
+            line-height: 1.35;
+        }
+
         &__scroll {
             overflow-x: auto;
             padding-bottom: 0.35rem;
@@ -1553,7 +1560,7 @@
 
         &__branch-lanes {
             display: grid;
-            grid-template-columns: repeat(3, minmax(280px, 1fr));
+            grid-template-columns: repeat(3, minmax(320px, 1fr));
             gap: 1.25rem;
             margin-top: 0.65rem;
             padding: 0.25rem 0.15rem 0.35rem;
@@ -1604,6 +1611,118 @@
             box-shadow:
                 0 1px 2px rgba(15, 23, 42, 0.04),
                 0 8px 24px rgba(34, 197, 94, 0.08);
+
+            &--notice_1 {
+                border-color: color-mix(in srgb, #3b82f6 28%, var(--bn-border));
+                box-shadow: 0 8px 24px rgba(59, 130, 246, 0.1);
+            }
+
+            &--hearing_1 {
+                border-color: color-mix(in srgb, #8b5cf6 28%, var(--bn-border));
+                box-shadow: 0 8px 24px rgba(139, 92, 246, 0.1);
+            }
+
+            &--award {
+                border-color: color-mix(in srgb, #ef4444 28%, var(--bn-border));
+                box-shadow: 0 8px 24px rgba(239, 68, 68, 0.1);
+            }
+        }
+
+        &__lane-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        &__flow-step {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        &__flow-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.2rem 0 0.35rem;
+            gap: 0.22rem;
+
+            &-stem {
+                width: 3px;
+                height: 1.35rem;
+                border-radius: 999px;
+                background: linear-gradient(180deg, #cbd5e1, #94a3b8);
+                transition: background 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            &-label {
+                font-size: 0.58rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #94a3b8;
+                text-align: center;
+                line-height: 1.25;
+                max-width: 11rem;
+            }
+
+            &--active {
+                .bn-pipeline-viz__flow-link-stem {
+                    background: linear-gradient(180deg, #4ade80, #16a34a);
+                    box-shadow: 0 0 10px rgba(34, 197, 94, 0.28);
+                }
+
+                .bn-pipeline-viz__flow-link-label {
+                    color: #15803d;
+                }
+            }
+        }
+
+        &__billing-footer {
+            margin-top: 0.85rem;
+            padding-top: 0.15rem;
+        }
+
+        &__billing-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: stretch;
+            gap: 0.35rem;
+            margin-top: 0.1rem;
+        }
+
+        &__billing-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            min-width: 0;
+
+            .bn-stage-card--compact,
+            .bn-milestone-invoice-card {
+                width: 100%;
+                min-height: 112px;
+            }
+
+            .bn-stage-card--compact {
+                padding: 0.62rem 0.65rem 0.55rem;
+            }
+
+            .bn-milestone-invoice-card {
+                padding: 0.62rem 0.65rem 0.55rem;
+                min-height: 112px;
+            }
+        }
+
+        &__billing-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            color: #16a34a;
+            font-size: 0.8rem;
+            opacity: 0.85;
+            padding-top: 0.85rem;
+            flex-shrink: 0;
         }
 
         &__branch-section {
@@ -1709,36 +1828,6 @@
         .bn-stage-card--charge-total {
             min-height: 108px;
         }
-    }
-
-    .bn-pipeline-viz__billing-panel {
-        margin-top: 0.85rem;
-        padding: 0.85rem;
-        border-radius: 12px;
-        background: #ffffff;
-        border: 1px solid color-mix(in srgb, #22c55e 22%, var(--bn-border));
-        box-shadow:
-            0 1px 2px rgba(15, 23, 42, 0.04),
-            0 8px 24px rgba(34, 197, 94, 0.08);
-
-        .bn-pipeline-viz__branch-label {
-            margin-bottom: 0.55rem;
-        }
-    }
-
-    .bn-pipeline-viz__charge-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(200px, 1fr));
-        gap: 0.75rem;
-        align-items: stretch;
-
-        @media (max-width: 1199px) {
-            grid-template-columns: repeat(2, minmax(220px, 1fr));
-        }
-
-        @media (max-width: 560px) {
-            grid-template-columns: 1fr;
-        }
 
         .bn-stage-card--compact {
             min-height: 132px;
@@ -1804,10 +1893,104 @@
                 letter-spacing: 0.03em;
             }
         }
+    }
 
-        .bn-stage-card--invoice-pipeline {
-            .bn-stage-name {
-                font-size: 0.72rem;
+    .bn-milestone-invoice-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        width: 100%;
+        padding: 0.75rem 0.8rem 0.7rem;
+        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--stg, #0f766e) 24%, var(--bn-border));
+        background: color-mix(in srgb, var(--stg, #0f766e) 6%, #ffffff);
+        min-height: 132px;
+
+        &--empty {
+            opacity: 0.78;
+        }
+
+        &__head {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+        }
+
+        &__main {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1rem;
+            width: 100%;
+            padding: 0.35rem 0.45rem;
+            border-radius: 8px;
+            border: 1px solid color-mix(in srgb, var(--stg, #0f766e) 18%, var(--bn-border));
+            background: #ffffff;
+            cursor: pointer;
+            appearance: none;
+            font: inherit;
+            text-align: left;
+            transition: background 0.15s ease, border-color 0.15s ease;
+
+            &:hover {
+                background: color-mix(in srgb, var(--stg, #0f766e) 5%, #ffffff);
+            }
+        }
+
+        &__count {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--bn-muted);
+        }
+
+        &__amount {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--bn-text);
+        }
+
+        &__split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+        }
+
+        &__pill {
+            display: flex;
+            flex-direction: column;
+            gap: 0.08rem;
+            padding: 0.35rem 0.45rem;
+            border-radius: 8px;
+            border: 1px solid var(--bn-border);
+            background: #ffffff;
+            cursor: pointer;
+            appearance: none;
+            font: inherit;
+            text-align: left;
+            transition: background 0.15s ease, border-color 0.15s ease;
+
+            .k {
+                font-size: 0.58rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--bn-muted);
+            }
+
+            .v {
+                font-size: 0.78rem;
+                font-weight: 800;
+                color: var(--bn-text);
+            }
+
+            &--paid:hover {
+                border-color: color-mix(in srgb, #22c55e 40%, var(--bn-border));
+                background: color-mix(in srgb, #22c55e 6%, #ffffff);
+            }
+
+            &--unpaid:hover {
+                border-color: color-mix(in srgb, #f59e0b 40%, var(--bn-border));
+                background: color-mix(in srgb, #f59e0b 6%, #ffffff);
             }
         }
     }

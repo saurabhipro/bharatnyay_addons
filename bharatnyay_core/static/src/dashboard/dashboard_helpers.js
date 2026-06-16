@@ -197,12 +197,16 @@ export function openPodStatusRecords(action, card, notification) {
     if (!open?.res_model) {
         return Promise.resolve(false);
     }
+    const viewMode = open.view_mode || "list,form";
+    const views = viewMode.split(",").map((mode) => [false, mode.trim()]);
     return action.doAction({
         type: "ir.actions.act_window",
         name: open.name || `${card.label} — ${card.status_label}`,
         res_model: open.res_model,
-        views: [[false, "list"], [false, "form"]],
+        view_mode: viewMode,
+        views,
         domain: open.domain || [],
+        context: open.context || {},
         target: "current",
     });
 }
@@ -437,6 +441,63 @@ export function chargeStageForKey(data, stageKey) {
     );
 }
 
+export function invoiceStageForKey(data, stageKey) {
+    return (
+        (data?.invoiced_charges_pipeline?.stages || []).find((stage) => stage.key === stageKey) ||
+        null
+    );
+}
+
+export function pipelineStageCards(data) {
+    return data?.stage_cards || data?.bucket_cards || [];
+}
+
 export function pipelineLinkedStages(data) {
-    return (data?.stage_cards || []).filter((stage) => isPipelineLinkStage(stage.key));
+    return pipelineStageCards(data).filter((stage) => isPipelineLinkStage(stage.key));
+}
+
+export function openMilestoneInvoices(action, data, stageKey, filterMode = "all", notification) {
+    const stage = invoiceStageForKey(data, stageKey);
+    if (!stage) {
+        return;
+    }
+    const mode = filterMode || "all";
+    const titles = {
+        all: `${stage.label} — invoices`,
+        paid: `${stage.label} — paid`,
+        unpaid: `${stage.label} — payment due`,
+        draft: `${stage.label} — draft`,
+    };
+    const counts = {
+        all: stage.count,
+        paid: stage.paid_count,
+        unpaid: stage.unpaid_count,
+        draft: stage.draft_count,
+    };
+    if (
+        notification &&
+        !guardEmptyDashboardCard(notification, {
+            label: titles[mode],
+            count: counts[mode],
+            amount:
+                mode === "paid"
+                    ? stage.paid_amount
+                    : mode === "unpaid"
+                      ? stage.unpaid_amount
+                      : stage.amount,
+            invoiceCount: counts[mode],
+        })
+    ) {
+        return;
+    }
+    const domain = stage.domains?.[mode] || stage.domain || [["id", "=", 0]];
+    action.doAction({
+        type: "ir.actions.act_window",
+        name: titles[mode] || stage.label,
+        res_model: "account.move",
+        views: [[false, "list"], [false, "form"]],
+        domain,
+        context: { default_move_type: "out_invoice" },
+        target: "current",
+    });
 }

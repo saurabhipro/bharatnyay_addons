@@ -364,3 +364,90 @@ class AccountMove(models.Model):
         })
         move._bharat_post_arbitration_invoice()
         return move
+
+    @api.model
+    def _dashboard_moves_for_milestone(self, moves, milestone_code):
+        return moves.filtered(
+            lambda m, code=milestone_code: (
+                m.bharat_milestone_code == code
+                or code in (m.bharat_annexure_line_ids.mapped('milestone_code') or [])
+            )
+        )
+
+    @api.model
+    def _dashboard_milestone_invoice_case_count(self, moves, milestone_code):
+        annexure_loans = moves.mapped('bharat_annexure_line_ids').filtered(
+            lambda line, code=milestone_code: line.milestone_code == code,
+        ).mapped('loan_id')
+        direct_loans = moves.mapped('bharat_loan_id')
+        return len(set((annexure_loans | direct_loans).ids))
+
+    @api.model
+    def dashboard_invoiced_charges_pipeline(self, loan_ids=None):
+        """Per-milestone arbitration invoice stats for dashboard milestone lanes."""
+        from .loan_milestone import POSTAL_BILLING_MILESTONE_NUMBERS
+
+        Loan = self.env['bharat.loan'].sudo()
+        inv_domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('bharat_arbitration_invoice', '=', True),
+        ]
+        if loan_ids is not None:
+            moves = Loan._dashboard_arbitration_moves_for_loans(Loan.browse(loan_ids))
+        else:
+            moves = self.sudo().search(inv_domain)
+
+        specs = (
+            ('notice_1', _('Notice 1'), '#3b82f6', 'fa-envelope-o'),
+            ('hearing_1', _('Hearing 1'), '#8b5cf6', 'fa-video-camera'),
+            ('award', _('Award'), '#ef4444', 'fa-trophy'),
+        )
+        stages = []
+        for code, label, color, icon in specs:
+            stage_moves = self._dashboard_moves_for_milestone(moves, code)
+            posted = stage_moves.filtered(lambda m: m.state == 'posted')
+            draft = stage_moves.filtered(lambda m: m.state == 'draft')
+            paid = posted.filtered(
+                lambda m: m.payment_state in ('paid', 'in_payment')
+            )
+            unpaid = posted.filtered(
+                lambda m: m.payment_state not in ('paid', 'in_payment')
+                and (m.amount_residual or 0) > 0
+            )
+            move_ids = stage_moves.ids or [0]
+            domain_all = [('id', 'in', move_ids)]
+            stages.append({
+                'key': code,
+                'label': label,
+                'billing_milestone_label': (
+                    _('Milestone %s') % POSTAL_BILLING_MILESTONE_NUMBERS[code]
+                ),
+                'color': color,
+                'icon': icon,
+                'count': len(stage_moves),
+                'cases': self._dashboard_milestone_invoice_case_count(stage_moves, code),
+                'amount': round(sum(stage_moves.mapped('amount_total')), 2),
+                'paid_count': len(paid),
+                'paid_amount': round(
+                    sum((m.amount_total or 0) - (m.amount_residual or 0) for m in paid),
+                    2,
+                ),
+                'unpaid_count': len(unpaid),
+                'unpaid_amount': round(sum(unpaid.mapped('amount_residual')), 2),
+                'draft_count': len(draft),
+                'domain': domain_all,
+                'domains': {
+                    'all': domain_all,
+                    'paid': domain_all + [
+                        ('state', '=', 'posted'),
+                        ('payment_state', 'in', ['paid', 'in_payment']),
+                    ],
+                    'unpaid': domain_all + [
+                        ('state', '=', 'posted'),
+                        ('payment_state', 'not in', ['paid', 'in_payment']),
+                        ('amount_residual', '>', 0),
+                    ],
+                    'draft': domain_all + [('state', '=', 'draft')],
+                },
+            })
+        return {'stages': stages}

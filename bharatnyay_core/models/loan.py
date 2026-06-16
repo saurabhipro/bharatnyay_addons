@@ -1428,19 +1428,19 @@ class BharatLoan(models.Model):
             day = local.date()
             idx = Wiz._grid_index_for_datetime_on_day(day, utc_naive)
             rec.hearing_slot_index = idx
-            date_label = format_date(rec.env, day)
+            dt_label = format_datetime(
+                rec.env, rec.hearing_datetime, dt_format='medium',
+            )
             if idx:
                 wiz = Wiz.new({'loan_id': rec.id, 'scheduler_date': day})
                 time_label = wiz._slot_range_label_from_index(day, idx)
                 rec.hearing_slot_time_label = time_label
-                parts = [date_label, _('Slot %s') % idx]
-                if time_label:
-                    parts.append(time_label)
-                rec.hearing_schedule_header = ' · '.join(parts)
-            else:
-                rec.hearing_schedule_header = format_datetime(
-                    rec.env, rec.hearing_datetime, dt_format='medium',
+                rec.hearing_schedule_header = _('Slot %s · %s · %s') % (
+                    idx, time_label, dt_label,
                 )
+            else:
+                rec.hearing_slot_time_label = ''
+                rec.hearing_schedule_header = dt_label
 
     @api.model
     def _domain_arbitrator_users(self):
@@ -3465,6 +3465,9 @@ class BharatLoan(models.Model):
         unbilled_charges_pipeline = self.env[
             'bharat.loan.billing.event'
         ].dashboard_pending_charges_pipeline(loan_ids if scope_active else None)
+        invoiced_charges_pipeline = self.env[
+            'account.move'
+        ].dashboard_invoiced_charges_pipeline(loan_ids if scope_active else None)
         unbilled_cases = unbilled_charges_pipeline['total']['cases']
         pending_billing_charges = unbilled_charges_pipeline['total']['count']
         pending_billing_amount = unbilled_charges_pipeline['total']['amount']
@@ -3605,6 +3608,7 @@ class BharatLoan(models.Model):
                 'pending_billing_amount': pending_billing_amount,
             },
             'unbilled_charges_pipeline': unbilled_charges_pipeline,
+            'invoiced_charges_pipeline': invoiced_charges_pipeline,
             'monthly_created': monthly_series,
             'batch_volume': batch_volume,
             'batch_volume_stages': batch_volume_stages['batches'],
@@ -4085,6 +4089,9 @@ class BharatLoan(models.Model):
         unbilled_charges_pipeline = self.env[
             'bharat.loan.billing.event'
         ].dashboard_pending_charges_pipeline(loans.ids)
+        invoiced_charges_pipeline = self.env[
+            'account.move'
+        ].dashboard_invoiced_charges_pipeline(loans.ids)
         batch_keys = {b for b in loans.mapped('batch_number') if b}
 
         payment_mix = self._dashboard_payment_mix(
@@ -4138,6 +4145,7 @@ class BharatLoan(models.Model):
                 ('loan_id', 'in', loans.ids or [0]),
             ],
             'unbilled_charges_pipeline': unbilled_charges_pipeline,
+            'invoiced_charges_pipeline': invoiced_charges_pipeline,
             'postal_pending_status_domain': postal_pending['domain'],
             'loan_domain': domain,
             'recent_cases': self._dashboard_recent_cases(loans),
@@ -4191,6 +4199,12 @@ class BharatLoan(models.Model):
         pod_status_groups = self.env[
             'bharat.loan.postal.dispatch'
         ].dashboard_pod_status_groups(domain)
+        unbilled_charges_pipeline = self.env[
+            'bharat.loan.billing.event'
+        ].dashboard_pending_charges_pipeline(loans.ids)
+        invoiced_charges_pipeline = self.env[
+            'account.move'
+        ].dashboard_invoiced_charges_pipeline(loans.ids)
 
         return {
             'currency_id': Currency.id,
@@ -4225,6 +4239,8 @@ class BharatLoan(models.Model):
             'hearing_stage_cards': self._dashboard_hearing_award_cards(bucket_cards),
             'pod_status_cards': pod_status_cards,
             'pod_status_groups': pod_status_groups,
+            'unbilled_charges_pipeline': unbilled_charges_pipeline,
+            'invoiced_charges_pipeline': invoiced_charges_pipeline,
             'invoice_domains': self._dashboard_invoice_domains_for_loans(
                 loans, date_from, date_to,
             ),

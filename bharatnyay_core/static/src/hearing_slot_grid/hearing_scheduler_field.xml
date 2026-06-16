@@ -49,6 +49,10 @@
                                                     <span class="bn-slot-week-cal__cell-time" t-esc="slot.time_range or slotRangeLabel(slot)"/>
                                                 </t>
                                                 <t t-elif="slotKind(slot) === 'booked' or slotKind(slot) === 'own'">
+                                                    <span t-if="slotKind(slot) === 'own'"
+                                                          class="bn-slot-week-cal__booked-tag">Your hearing</span>
+                                                    <span class="bn-slot-week-cal__booked-slot"
+                                                          t-esc="'Slot ' + slot.index"/>
                                                     <span class="bn-slot-week-cal__booked-label" t-esc="slot.loan_number"/>
                                                     <span t-if="slot.customer_name"
                                                           class="bn-slot-week-cal__booked-sub"

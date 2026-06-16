@@ -20,6 +20,19 @@
                             <field name="loan_id" readonly="1" nolabel="1" class="bn-hearing-wizard__case-name"/>
                         </div>
 
+                        <div class="bn-hearing-wizard__topbar-divider"
+                             invisible="not hearing_reschedule or not current_hearing_label"/>
+
+                        <div class="bn-hearing-wizard__topbar-block bn-hearing-wizard__topbar-block--current"
+                             invisible="not hearing_reschedule or not current_hearing_label">
+                            <span class="bn-hearing-wizard__kicker">Current hearing</span>
+                            <field name="current_hearing_label"
+                                   readonly="1"
+                                   nolabel="1"
+                                   class="bn-hearing-wizard__current-hearing-pill"/>
+                            <field name="current_hearing_slot_index" invisible="1"/>
+                        </div>
+
                         <div class="bn-hearing-wizard__topbar-divider" invisible="use_manual_time"/>
 
                         <div class="bn-hearing-wizard__topbar-block bn-hearing-wizard__topbar-block--selection"

@@ -23,6 +23,8 @@ import {
     isPipelineLinkStage as isPipelineLinkStageHelper,
     podGroupForStage as podGroupForStageHelper,
     chargeStageForKey as chargeStageForKeyHelper,
+    invoiceStageForKey as invoiceStageForKeyHelper,
+    openMilestoneInvoices as openMilestoneInvoicesHelper,
     pipelineLinkedStages as pipelineLinkedStagesHelper,
 } from "./dashboard_helpers";
 
@@ -177,6 +179,25 @@ export class ArbitratorDashboard extends Component {
 
     chargeStageForKey(stageKey) {
         return chargeStageForKeyHelper(this.state.data, stageKey);
+    }
+
+    invoiceStageForKey(stageKey) {
+        return invoiceStageForKeyHelper(this.state.data, stageKey);
+    }
+
+    openMilestoneInvoices(ev) {
+        const stageKey = ev.currentTarget?.dataset?.milestoneKey;
+        const filterMode = ev.currentTarget?.dataset?.filter || "all";
+        if (!stageKey) {
+            return;
+        }
+        openMilestoneInvoicesHelper(
+            this.action,
+            this.state.data,
+            stageKey,
+            filterMode,
+            this.notification,
+        );
     }
 
     pipelineLinkedStages() {

@@ -90,6 +90,21 @@ export class HearingSchedulerField extends Component {
         }
     }
 
+    get currentHearing() {
+        return this.weekBoard.current_hearing || null;
+    }
+
+    isCurrentHearingSlot(slot, dayDate) {
+        const marker = this.currentHearing;
+        if (!marker || !marker.in_grid || !slot) {
+            return false;
+        }
+        return (
+            this._toISODate(dayDate) === marker.date &&
+            slot.index === marker.slot_index
+        );
+    }
+
     get weekDays() {
         return Array.isArray(this.weekBoard.days) ? this.weekBoard.days : [];
     }
@@ -131,6 +146,9 @@ export class HearingSchedulerField extends Component {
         } else {
             classes.push("bn-slot-cell--free");
         }
+        if (this.isCurrentHearingSlot(slot, dayDate)) {
+            classes.push("bn-slot-cell--current-hearing");
+        }
         if (this.isSelected(slot, dayDate)) {
             classes.push("bn-slot-cell--selected");
         }
@@ -138,17 +156,21 @@ export class HearingSchedulerField extends Component {
     }
 
     isSelected(slot, dayDate) {
-        if (!slot || !this.isFree(slot)) {
+        if (!slot) {
             return false;
         }
+        const kind = this.slotKind(slot);
         const selectedDate =
             this.props.record.data.grid_selected_date ||
             this._toISODate(this.props.record.data.scheduler_date);
         const selectedIndex = this.props.record.data.grid_selected_index;
-        return (
+        const sameCell =
             this._toISODate(selectedDate) === this._toISODate(dayDate) &&
-            slot.index === selectedIndex
-        );
+            slot.index === selectedIndex;
+        if (sameCell && (kind === "free" || kind === "own")) {
+            return true;
+        }
+        return this.isCurrentHearingSlot(slot, dayDate) && kind === "own";
     }
 
     slotIconClass(slot) {
@@ -170,8 +192,9 @@ export class HearingSchedulerField extends Component {
         const prefix = day?.label ? `${day.label} ` : "";
         if (kind === "booked" || kind === "own") {
             const loan = slot.loan_number ? ` · ${slot.loan_number}` : "";
+            const slotNo = slot.index ? ` · Slot ${slot.index}` : "";
             const tag = kind === "own" ? "your hearing" : "booked";
-            return `${prefix}${slot.label} — ${tag}${loan}`;
+            return `${prefix}${slot.label}${slotNo} — ${tag}${loan}`;
         }
         if (kind === "unavailable") {
             return `${prefix}${slot.label} — unavailable`;

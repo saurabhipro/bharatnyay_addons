@@ -17,6 +17,43 @@ class BharatLoanHearingLine(models.Model):
         index=True,
         readonly=True,
     )
+    loan_number = fields.Char(
+        related='loan_id.loan_number',
+        string='Loan number',
+        store=True,
+        readonly=True,
+    )
+    case_number = fields.Char(
+        related='loan_id.case_number',
+        string='Case number',
+        store=True,
+        readonly=True,
+    )
+    batch_number = fields.Char(
+        related='loan_id.batch_number',
+        string='Batch',
+        store=True,
+        readonly=True,
+        index=True,
+    )
+    customer_name = fields.Char(
+        related='loan_id.customer_name',
+        string='Borrower',
+        store=True,
+        readonly=True,
+    )
+    milestone_code = fields.Selection(
+        related='loan_id.milestone_code',
+        string='Milestone',
+        store=True,
+        readonly=True,
+    )
+    arbitrator_id = fields.Many2one(
+        related='loan_id.arbitrator_id',
+        string='Arbitrator',
+        store=True,
+        readonly=True,
+    )
     hearing_datetime = fields.Datetime(string='Hearing date/time', required=True)
     minutes_remaining = fields.Integer(
         string='Minutes until hearing',

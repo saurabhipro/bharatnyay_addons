@@ -190,6 +190,28 @@
         }
     }
 
+    &__current-hearing-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .o_field_widget {
+            color: inherit;
+            font-weight: inherit;
+        }
+    }
+
     &__teams-header {
         display: flex;
         align-items: center;
