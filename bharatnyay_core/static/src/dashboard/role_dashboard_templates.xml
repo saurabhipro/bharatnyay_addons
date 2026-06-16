@@ -240,13 +240,13 @@
 
     <t t-name="bharatnyay_core.DashboardPodStatusCard">
         <button type="button"
-                t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--pod bn-stage-card--pod-{{ p.document_type }} {{ p.pod_status === 'pending' ? 'bn-stage-card--pod-pending' : 'bn-stage-card--pod-done' }} {{ p.billable ? 'bn-stage-card--billable' : '' }} {{ !p.count ? 'bn-stage-card--empty' : '' }}"
+                t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--pod bn-stage-card--pod-{{ p.document_type }} {{ p.pod_status === 'pending' ? 'bn-stage-card--pod-pending' : 'bn-stage-card--pod-done' }} {{ p.billable ? 'bn-stage-card--billable' : '' }} {{ !p.count ? 'bn-stage-card--empty' : '' }} {{ pipelineCompact ? 'bn-stage-card--pipeline-compact' : '' }}"
                 t-attf-style="--bn-tank-fill: {{ p.percent }}%;"
                 t-att-data-pod-key="p.key"
                 t-on-click="openPodStatusCases">
-            <div class="bn-stage-top">
+            <div t-attf-class="bn-stage-top {{ pipelineCompact ? 'bn-stage-top--icon-only' : '' }}">
                 <span class="bn-stage-ico"><i t-attf-class="fa {{ p.icon }}"/></span>
-                <span class="bn-stage-title-stack">
+                <span class="bn-stage-title-stack" t-if="!pipelineCompact">
                     <span t-if="p.billing_milestone_label"
                           class="bn-bill-milestone"
                           t-out="p.billing_milestone_label"/>
@@ -291,12 +291,11 @@
     </t>
 
     <t t-name="bharatnyay_core.DashboardMilestoneInvoiceCard">
-        <div class="bn-milestone-invoice-card"
-             t-attf-class="bn-milestone-invoice-card bn-milestone-invoice-card--{{ inv.key }} {{ !(inv.count || 0) ? 'bn-milestone-invoice-card--empty' : '' }}"
+        <div t-attf-class="bn-milestone-invoice-card bn-milestone-invoice-card--{{ inv.key }} {{ !(inv.count || 0) ? 'bn-milestone-invoice-card--empty' : '' }} {{ pipelineCompact ? 'bn-milestone-invoice-card--pipeline-compact' : '' }}"
              t-attf-style="--stg: {{ inv.color }};">
-            <div class="bn-milestone-invoice-card__head">
+            <div class="bn-milestone-invoice-card__head" t-att-class="pipelineCompact ? 'bn-milestone-invoice-card__head--icon-only' : ''">
                 <span class="bn-stage-ico"><i t-attf-class="fa {{ inv.icon }}"/></span>
-                <span class="bn-stage-title-stack">
+                <span class="bn-stage-title-stack" t-if="!pipelineCompact">
                     <span t-if="inv.billing_milestone_label"
                           class="bn-bill-milestone"
                           t-out="inv.billing_milestone_label"/>
@@ -387,14 +386,14 @@
 
     <t t-name="bharatnyay_core.DashboardUnbilledChargeCard">
         <button type="button"
-                t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--charge bn-stage-card--charge-{{ c.key }} bn-charge-card {{ chargeCompact ? 'bn-stage-card--compact' : '' }} {{ !c.count ? 'bn-stage-card--empty' : '' }}"
+                t-attf-class="bn-stage-card bn-stage-card--fill bn-stage-card--charge bn-stage-card--charge-{{ c.key }} bn-charge-card {{ chargeCompact ? 'bn-stage-card--compact' : '' }} {{ pipelineCompact ? 'bn-stage-card--pipeline-compact' : '' }} {{ !c.count ? 'bn-stage-card--empty' : '' }}"
                 t-attf-style="--bn-tank-fill: {{ c.percent || 0 }}%; --stg: {{ c.color }};"
                 t-att-data-charge-key="c.key"
                 t-att-title="'Create consolidated invoice for ' + (c.label || 'this stage')"
                 t-on-click="openConsolidatedBillingFromStage">
-            <div class="bn-stage-top">
+            <div t-attf-class="bn-stage-top {{ pipelineCompact ? 'bn-stage-top--icon-only' : '' }}">
                 <span class="bn-stage-ico"><i t-attf-class="fa {{ c.icon }}"/></span>
-                <span class="bn-stage-title-stack">
+                <span class="bn-stage-title-stack" t-if="!pipelineCompact">
                     <span t-if="c.billing_milestone_label"
                           class="bn-bill-milestone"
                           t-out="c.billing_milestone_label"/>
@@ -461,9 +460,6 @@
     <t t-name="bharatnyay_core.DashboardPipeline">
         <div class="bn-pipeline-viz">
             <div class="bn-section-title mt-2">Case pipeline</div>
-            <p class="bn-pipeline-viz__hint">
-                Each milestone flows: postal delivery → unbilled charges → invoices.
-            </p>
             <div class="bn-pipeline-viz__scroll">
                 <div class="bn-pipeline-viz__canvas">
                     <t t-call="bharatnyay_core.DashboardStageCardStrip"/>
@@ -473,6 +469,7 @@
                             <t t-set="podGroup" t-value="podGroupForStage(s.key)"/>
                             <t t-set="c" t-value="chargeStageForKey(s.key)"/>
                             <t t-set="inv" t-value="invoiceStageForKey(s.key)"/>
+                            <t t-set="pipelineCompact" t-value="true"/>
                             <div t-attf-class="bn-pipeline-viz__branch-lane bn-pipeline-viz__branch-lane--{{ s.key }}">
                                 <div class="bn-pipeline-viz__lane-head">
                                     <span class="bn-pipeline-viz__vlink bn-pipeline-viz__vlink--from-case" aria-hidden="true">
@@ -484,9 +481,10 @@
                                               t-out="s.billing_milestone_label"/>
                                         <span class="bn-pipeline-viz__lane-title" t-out="s.label"/>
                                     </div>
+                                    <span class="bn-pipeline-viz__lane-accent" aria-hidden="true"/>
                                 </div>
 
-                                <div t-attf-class="bn-pipeline-viz__branch-panel bn-pipeline-viz__branch-panel--{{ s.key }}">
+                                <div class="bn-pipeline-viz__lane-body">
                                     <div class="bn-pipeline-viz__lane-flow">
                                         <div class="bn-pipeline-viz__flow-step" t-if="podGroup">
                                             <div class="bn-pipeline-viz__branch-label">Postal delivery</div>
@@ -501,12 +499,9 @@
                                             </div>
                                         </div>
 
-                                        <div t-att-class="'bn-pipeline-viz__flow-link' + (podGroup &amp;&amp; podGroup.done &amp;&amp; podGroup.done.count ? ' bn-pipeline-viz__flow-link--active' : '')"
+                                        <div class="bn-pipeline-viz__flow-divider"
                                              t-if="podGroup &amp;&amp; (c || inv)"
-                                             aria-hidden="true">
-                                            <span class="bn-pipeline-viz__flow-link-stem"/>
-                                            <span class="bn-pipeline-viz__flow-link-label">POD confirmed → billable</span>
-                                        </div>
+                                             aria-hidden="true"/>
 
                                         <div class="bn-pipeline-viz__billing-row" t-if="c || inv">
                                             <div class="bn-pipeline-viz__billing-col" t-if="c">

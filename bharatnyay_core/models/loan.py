@@ -942,6 +942,9 @@ class BharatLoan(models.Model):
             ('fixup_milestone_code_metadata', self._bharat_fixup_milestone_code_field_metadata),
             ('cleanup_action_menu', self._bharat_cleanup_action_menu),
             ('migrate_loans_to_milestone_only', self._bharat_migrate_loans_to_milestone_only),
+            ('migrate_interim_order_billing_events', self.env['bharat.loan.billing.event']._bharat_migrate_interim_order_billing_events),
+            ('recompute_postal_billing_codes', self.env['bharat.loan.postal.dispatch']._bharat_recompute_billing_milestone_codes),
+            ('backfill_hearing_postal_billing', self.env['bharat.loan.billing.event']._bharat_backfill_hearing_postal_billing),
             ('sanitize_case_vault_documents', self.env['bharat.case.vault.batch']._bharat_sanitize_case_vault_documents),
         ):
             try:

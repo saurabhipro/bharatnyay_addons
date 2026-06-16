@@ -10,7 +10,7 @@ POSTAL_DOCUMENT_TYPES = [
 
 POSTAL_DOCUMENT_BILLING_CODE = {
     'notice_1': 'notice_1',
-    'interim_order_1': 'interim_order_1',
+    'interim_order_1': 'hearing_1',
     'award': 'award',
 }
 
@@ -212,6 +212,19 @@ class BharatLoanPostalDispatch(models.Model):
         if any(k in vals for k in ('post_office_status_id', 'delivery_date', 'pod', 'dispatch_date')):
             self._apply_post_office_status_side_effects()
         return res
+
+    @api.model
+    def _bharat_recompute_billing_milestone_codes(self):
+        """Align stored billing codes after interim_order_1 → hearing_1 mapping fix."""
+        self.env.cr.execute(
+            """
+            UPDATE bharat_loan_postal_dispatch
+               SET billing_milestone_code = 'hearing_1'
+             WHERE document_type = 'interim_order_1'
+               AND COALESCE(billing_milestone_code, '') != 'hearing_1'
+            """
+        )
+        return True
 
     @api.model
     def _backfill_for_existing_loans(self):

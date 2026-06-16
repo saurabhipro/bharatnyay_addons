@@ -237,7 +237,8 @@ class BharatLoanBillingEvent(models.Model):
         status = dispatch.post_office_status_id
         if not status or not status.triggers_billing:
             return self.browse()
-        code = dispatch.billing_milestone_code
+        from .postal_dispatch import POSTAL_DOCUMENT_BILLING_CODE
+        code = POSTAL_DOCUMENT_BILLING_CODE.get(dispatch.document_type or '', False)
         if not code or code not in BILLABLE_MILESTONE_CODES:
             return self.browse()
         Milestone = self.env['bharat.loan.milestone'].sudo()
@@ -255,6 +256,55 @@ class BharatLoanBillingEvent(models.Model):
         )
 
     @api.model
+    def _bharat_migrate_interim_order_billing_events(self):
+        """Move legacy interim_order_1 billing rows into the hearing_1 pipeline bucket."""
+        legacy = self.sudo().search([
+            ('milestone_code', '=', 'interim_order_1'),
+            ('state', '!=', 'cancelled'),
+        ])
+        if not legacy:
+            return True
+        labels = self._bharat_milestone_labels()
+        Dispatch = self.env['bharat.loan.postal.dispatch'].sudo()
+        for event in legacy:
+            duplicate = self.search([
+                ('loan_id', '=', event.loan_id.id),
+                ('milestone_code', '=', 'hearing_1'),
+                ('state', '!=', 'cancelled'),
+                ('id', '!=', event.id),
+            ], limit=1)
+            if duplicate:
+                if event.state == 'pending' and duplicate.state != 'pending':
+                    event.unlink()
+                continue
+            event.write({
+                'milestone_code': 'hearing_1',
+                'milestone_label': labels.get('hearing_1', 'Hearing 1'),
+            })
+            dispatch = Dispatch.search([
+                ('loan_id', '=', event.loan_id.id),
+                ('document_type', '=', 'interim_order_1'),
+            ], limit=1)
+            if dispatch and not dispatch.billing_event_id:
+                dispatch.billing_event_id = event.id
+        return True
+
+    @api.model
+    def _bharat_backfill_hearing_postal_billing(self):
+        """Accrue hearing charges for IO1 dispatches already marked delivered."""
+        Dispatch = self.env['bharat.loan.postal.dispatch'].sudo()
+        dispatches = Dispatch.search([
+            ('document_type', '=', 'interim_order_1'),
+            ('billing_event_id', '=', False),
+        ]).filtered(lambda d: d._dispatch_pod_done())
+        for dispatch in dispatches:
+            try:
+                self.bharat_accrue_for_postal_dispatch(dispatch)
+            except UserError:
+                continue
+        return True
+
+    @api.model
     def dashboard_pending_charges_pipeline(self, loan_ids=None):
         """Pending POD-stage charges for dashboard (Notice 1 → Hearing 1 → Award → Total)."""
         domain = [('state', '=', 'pending')]
@@ -262,6 +312,20 @@ class BharatLoanBillingEvent(models.Model):
             domain.append(('loan_id', 'in', loan_ids or [0]))
         events = self.sudo().search(domain)
         postal_codes = list(POSTAL_BILLING_MILESTONE_CODES)
+        legacy_hearing_codes = frozenset({'hearing_1', 'interim_order_1'})
+
+        Loan = self.env['bharat.loan'].sudo()
+        Dispatch = self.env['bharat.loan.postal.dispatch'].sudo()
+        loans = Loan.browse(loan_ids) if loan_ids is not None else Loan.search([])
+        dispatch_map = {
+            (dispatch.loan_id.id, dispatch.document_type): dispatch
+            for dispatch in Dispatch.search([('loan_id', 'in', loans.ids)])
+        }
+        doc_for_code = {
+            'notice_1': 'notice_1',
+            'hearing_1': 'interim_order_1',
+            'award': 'award',
+        }
 
         specs = (
             ('notice_1', _('Notice 1'), '#3b82f6', 'fa-envelope-o'),
@@ -270,7 +334,26 @@ class BharatLoanBillingEvent(models.Model):
         )
         stages = []
         for code, label, color, icon in specs:
-            stage_events = events.filtered(lambda e, c=code: e.milestone_code == c)
+            if code == 'hearing_1':
+                stage_events = events.filtered(
+                    lambda e: e.milestone_code in legacy_hearing_codes,
+                )
+                stage_domain = domain + [('milestone_code', 'in', list(legacy_hearing_codes))]
+            else:
+                stage_events = events.filtered(lambda e, c=code: e.milestone_code == c)
+                stage_domain = domain + [('milestone_code', '=', code)]
+
+            doc_type = doc_for_code[code]
+            reached = Dispatch._dashboard_pod_milestone_reached_codes(code)
+            pod_done = 0
+            for loan in loans:
+                if (loan.milestone_code or '') not in reached:
+                    continue
+                dispatch = dispatch_map.get((loan.id, doc_type))
+                if dispatch and dispatch._dispatch_pod_done():
+                    pod_done += 1
+
+            case_count = len(stage_events.mapped('loan_id'))
             count = len(stage_events)
             stages.append({
                 'key': code,
@@ -279,19 +362,18 @@ class BharatLoanBillingEvent(models.Model):
                 'color': color,
                 'icon': icon,
                 'count': count,
-                'cases': len(stage_events.mapped('loan_id')),
+                'cases': case_count,
                 'amount': round(sum(stage_events.mapped('unit_price')), 2),
-                'percent': 0.0,
-                'domain': domain + [('milestone_code', '=', code)],
+                'percent': round(100.0 * case_count / pod_done, 1) if pod_done else 0.0,
+                'domain': stage_domain,
             })
 
         total_count = sum(stage['count'] for stage in stages)
         total_amount = round(sum(stage['amount'] for stage in stages), 2)
-        pipeline_events = events.filtered(lambda e: e.milestone_code in POSTAL_BILLING_MILESTONE_CODES)
-        for stage in stages:
-            stage['percent'] = (
-                round(100.0 * stage['count'] / total_count, 1) if total_count else 0.0
-            )
+        pipeline_events = events.filtered(
+            lambda e: e.milestone_code in POSTAL_BILLING_MILESTONE_CODES
+            or e.milestone_code == 'interim_order_1',
+        )
 
         return {
             'stages': stages,
@@ -301,7 +383,11 @@ class BharatLoanBillingEvent(models.Model):
                 'count': total_count,
                 'cases': len(pipeline_events.mapped('loan_id')),
                 'amount': total_amount,
-                'domain': domain + [('milestone_code', 'in', postal_codes)],
+                'domain': domain + [
+                    '|',
+                    ('milestone_code', 'in', postal_codes),
+                    ('milestone_code', '=', 'interim_order_1'),
+                ],
             },
         }
 

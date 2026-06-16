@@ -1561,9 +1561,9 @@
         &__branch-lanes {
             display: grid;
             grid-template-columns: repeat(3, minmax(320px, 1fr));
-            gap: 1.25rem;
-            margin-top: 0.65rem;
-            padding: 0.25rem 0.15rem 0.35rem;
+            gap: 0;
+            margin-top: 0.75rem;
+            padding: 0.5rem 0 0.35rem;
         }
 
         &__branch-lane {
@@ -1571,6 +1571,42 @@
             flex-direction: column;
             align-items: stretch;
             min-width: 0;
+            padding: 0 1.25rem;
+            position: relative;
+
+            &:not(:last-child) {
+                border-right: 1px solid #dbe3ee;
+            }
+
+            &--notice_1 {
+                .bn-pipeline-viz__lane-title {
+                    color: #2563eb;
+                }
+
+                .bn-pipeline-viz__lane-accent {
+                    background: linear-gradient(90deg, transparent, #3b82f6 50%, transparent);
+                }
+            }
+
+            &--hearing_1 {
+                .bn-pipeline-viz__lane-title {
+                    color: #7c3aed;
+                }
+
+                .bn-pipeline-viz__lane-accent {
+                    background: linear-gradient(90deg, transparent, #8b5cf6 50%, transparent);
+                }
+            }
+
+            &--award {
+                .bn-pipeline-viz__lane-title {
+                    color: #dc2626;
+                }
+
+                .bn-pipeline-viz__lane-accent {
+                    background: linear-gradient(90deg, transparent, #ef4444 50%, transparent);
+                }
+            }
         }
 
         &__lane-head {
@@ -1578,54 +1614,40 @@
             flex-direction: column;
             align-items: center;
             gap: 0.35rem;
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.65rem;
         }
 
         &__lane-titles {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.12rem;
+            gap: 0.15rem;
         }
 
         &__lane-milestone {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
         }
 
         &__lane-title {
-            font-size: 0.72rem;
+            font-size: 0.82rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: #16a34a;
         }
 
-        &__branch-panel {
+        &__lane-accent {
+            width: 4.5rem;
+            height: 2px;
+            border-radius: 999px;
+            opacity: 0.9;
+        }
+
+        &__lane-body {
             display: flex;
             flex-direction: column;
-            gap: 0.65rem;
-            padding: 0.85rem;
-            border-radius: 12px;
-            background: #ffffff;
-            border: 1px solid color-mix(in srgb, #22c55e 22%, var(--bn-border));
-            box-shadow:
-                0 1px 2px rgba(15, 23, 42, 0.04),
-                0 8px 24px rgba(34, 197, 94, 0.08);
-
-            &--notice_1 {
-                border-color: color-mix(in srgb, #3b82f6 28%, var(--bn-border));
-                box-shadow: 0 8px 24px rgba(59, 130, 246, 0.1);
-            }
-
-            &--hearing_1 {
-                border-color: color-mix(in srgb, #8b5cf6 28%, var(--bn-border));
-                box-shadow: 0 8px 24px rgba(139, 92, 246, 0.1);
-            }
-
-            &--award {
-                border-color: color-mix(in srgb, #ef4444 28%, var(--bn-border));
-                box-shadow: 0 8px 24px rgba(239, 68, 68, 0.1);
-            }
+            min-width: 0;
         }
 
         &__lane-flow {
@@ -1640,42 +1662,17 @@
             gap: 0.45rem;
         }
 
-        &__flow-link {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.2rem 0 0.35rem;
-            gap: 0.22rem;
-
-            &-stem {
-                width: 3px;
-                height: 1.35rem;
-                border-radius: 999px;
-                background: linear-gradient(180deg, #cbd5e1, #94a3b8);
-                transition: background 0.2s ease, box-shadow 0.2s ease;
-            }
-
-            &-label {
-                font-size: 0.58rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.06em;
-                color: #94a3b8;
-                text-align: center;
-                line-height: 1.25;
-                max-width: 11rem;
-            }
-
-            &--active {
-                .bn-pipeline-viz__flow-link-stem {
-                    background: linear-gradient(180deg, #4ade80, #16a34a);
-                    box-shadow: 0 0 10px rgba(34, 197, 94, 0.28);
-                }
-
-                .bn-pipeline-viz__flow-link-label {
-                    color: #15803d;
-                }
-            }
+        &__flow-divider {
+            height: 1px;
+            margin: 0.55rem 0.15rem;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                #e8edf4 18%,
+                #cbd5e1 50%,
+                #e8edf4 82%,
+                transparent 100%
+            );
         }
 
         &__billing-footer {
@@ -1738,6 +1735,7 @@
             letter-spacing: 0.07em;
             color: #64748b;
             line-height: 1.2;
+            text-align: center;
         }
 
         &__branch-divider {
@@ -1823,6 +1821,54 @@
         .bn-stage-card--charge,
         .bn-stage-card--pod {
             min-height: 108px;
+        }
+
+        .bn-stage-card--pipeline-compact {
+            min-height: 96px;
+            padding: 0.55rem 0.6rem 0.5rem;
+            gap: 0.28rem;
+
+            .bn-stage-top--icon-only {
+                justify-content: center;
+                margin-bottom: 0.1rem;
+            }
+
+            .bn-stage-ico {
+                width: 1.65rem;
+                height: 1.65rem;
+                font-size: 0.72rem;
+            }
+
+            .bn-pod-status {
+                font-size: 0.72rem;
+                font-weight: 800;
+                text-align: center;
+                letter-spacing: 0.04em;
+            }
+
+            .bn-charge-amount {
+                margin-top: 0.1rem;
+            }
+
+            .bn-stage-value {
+                justify-content: center;
+            }
+
+            .bn-stage-bill-caption,
+            .bn-charge-card__action {
+                text-align: center;
+            }
+        }
+
+        .bn-milestone-invoice-card--pipeline-compact {
+            min-height: 96px;
+            padding: 0.55rem 0.6rem 0.5rem;
+            gap: 0.28rem;
+
+            .bn-milestone-invoice-card__head--icon-only {
+                justify-content: center;
+                margin-bottom: 0.05rem;
+            }
         }
 
         .bn-stage-card--charge-total {
@@ -2125,7 +2171,10 @@
     @media (max-width: 1199px) {
         .bn-pipeline-viz__branch-lanes {
             grid-template-columns: repeat(3, minmax(250px, 1fr));
-            gap: 1rem;
+        }
+
+        .bn-pipeline-viz__branch-lane {
+            padding: 0 0.95rem;
         }
     }
 
@@ -2136,6 +2185,10 @@
 
         .bn-pipeline-viz__branch-lanes {
             grid-template-columns: repeat(3, minmax(240px, 1fr));
+        }
+
+        .bn-pipeline-viz__branch-lane {
+            padding: 0 0.75rem;
         }
 
         .bn-pipeline-viz__pod-pair {
