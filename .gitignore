@@ -5,3 +5,9 @@ __pycache__/
 *.identifier
 *:Zone.Identifier
 **/*:Zone.Identifier
+
+# Local Python virtual environments (never commit)
+.venv/
+.venv_*/
+venv/
+env/

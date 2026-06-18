@@ -1,6 +1,6 @@
 {
     "name": "BharatNyay Website",
-    "version": "18.0.1.3.9",
+    "version": "18.0.1.4.0",
     "icon": "/bharatnyay_website/static/description/icon.png",
     "summary": "Public marketing site & landing experience for BharatNyay ODR",
     "description": """

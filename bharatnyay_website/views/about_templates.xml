@@ -83,6 +83,97 @@
                         </div>
                     </section>
 
+                    <section class="bn-about-arbitrators" id="our-arbitrators" aria-labelledby="bn-arbitrators-heading">
+                        <div class="container">
+                            <div class="bn-arbitrators-header text-center">
+                                <span class="bn-prose-kicker">Panel</span>
+                                <h2 id="bn-arbitrators-heading">Our empanelled <span>arbitrators</span></h2>
+                                <p class="bn-arbitrators-lead">Domain specialists across corporate, technology, banking, real estate, and intellectual property disputes — appointed through governed, confidential arbitral proceedings on BharatNyay.</p>
+                            </div>
+                            <div class="row g-4 g-lg-5 justify-content-center">
+                                <div class="col-sm-6 col-lg-4">
+                                    <article class="bn-arbitrator-card">
+                                        <div class="bn-arbitrator-photo-wrap">
+                                            <img src="/bharatnyay_website/static/src/img/arbitrators/rahul-yadav.jpg"
+                                                 alt="Rahul Yadav — Corporate Arbitrator"
+                                                 class="bn-arbitrator-photo"
+                                                 loading="lazy"/>
+                                        </div>
+                                        <div class="bn-arbitrator-body">
+                                            <h3 class="bn-arbitrator-name">Rahul Yadav</h3>
+                                            <p class="bn-arbitrator-role">Corporate Arbitrator</p>
+                                            <p class="bn-arbitrator-location"><i class="fa fa-map-marker" aria-hidden="true"/> Gurugram</p>
+                                            <p class="bn-arbitrator-bio">Handles arbitration involving shareholder, contractual, and corporate governance disputes. He emphasizes confidentiality, efficiency, and commercially sustainable outcomes.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <article class="bn-arbitrator-card">
+                                        <div class="bn-arbitrator-photo-wrap">
+                                            <img src="/bharatnyay_website/static/src/img/arbitrators/abhishek-kaushik.jpg"
+                                                 alt="Abhishek Kaushik — Technology &amp; ODR Arbitrator"
+                                                 class="bn-arbitrator-photo"
+                                                 loading="lazy"/>
+                                        </div>
+                                        <div class="bn-arbitrator-body">
+                                            <h3 class="bn-arbitrator-name">Abhishek Kaushik</h3>
+                                            <p class="bn-arbitrator-role">Technology &amp; ODR Arbitrator</p>
+                                            <p class="bn-arbitrator-location"><i class="fa fa-map-marker" aria-hidden="true"/> Delhi</p>
+                                            <p class="bn-arbitrator-bio">Specializes in arbitration involving cyber law, technology contracts, and digital commerce. A strong advocate of Online Dispute Resolution for fast and secure conflict management.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <article class="bn-arbitrator-card">
+                                        <div class="bn-arbitrator-photo-wrap">
+                                            <div class="bn-arbitrator-photo bn-arbitrator-photo--initials" aria-hidden="true">
+                                                <span>HC</span>
+                                            </div>
+                                        </div>
+                                        <div class="bn-arbitrator-body">
+                                            <h3 class="bn-arbitrator-name">Himanshu Choudhary</h3>
+                                            <p class="bn-arbitrator-role">IPR &amp; Technology Arbitrator</p>
+                                            <p class="bn-arbitrator-location"><i class="fa fa-map-marker" aria-hidden="true"/> Delhi</p>
+                                            <p class="bn-arbitrator-bio">Specializes in arbitration involving intellectual property, technology, and innovation-driven disputes. He assists businesses, creators, and startups in resolving trademark, copyright, patent, and licensing conflicts through confidential and efficient arbitral proceedings.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <article class="bn-arbitrator-card">
+                                        <div class="bn-arbitrator-photo-wrap">
+                                            <img src="/bharatnyay_website/static/src/img/arbitrators/parambir-singh-ghotra.jpg"
+                                                 alt="Parambir Singh Ghotra — Banking &amp; Finance Arbitrator"
+                                                 class="bn-arbitrator-photo"
+                                                 loading="lazy"/>
+                                        </div>
+                                        <div class="bn-arbitrator-body">
+                                            <h3 class="bn-arbitrator-name">Parambir Singh Ghotra</h3>
+                                            <p class="bn-arbitrator-role">Banking &amp; Finance Arbitrator</p>
+                                            <p class="bn-arbitrator-location"><i class="fa fa-map-marker" aria-hidden="true"/> Chandigarh</p>
+                                            <p class="bn-arbitrator-bio">Focuses on arbitration involving banking, infrastructure, finance, and SARFAESI-related disputes. Known for balancing legal precision with commercial practicality.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <article class="bn-arbitrator-card">
+                                        <div class="bn-arbitrator-photo-wrap">
+                                            <img src="/bharatnyay_website/static/src/img/arbitrators/paramvir-singh-randhawa.jpg"
+                                                 alt="Paramvir Singh Randhawa — Real Estate Arbitrator"
+                                                 class="bn-arbitrator-photo"
+                                                 loading="lazy"/>
+                                        </div>
+                                        <div class="bn-arbitrator-body">
+                                            <h3 class="bn-arbitrator-name">Paramvir Singh Randhawa</h3>
+                                            <p class="bn-arbitrator-role">Real Estate Arbitrator</p>
+                                            <p class="bn-arbitrator-location"><i class="fa fa-map-marker" aria-hidden="true"/> Punjab</p>
+                                            <p class="bn-arbitrator-bio">Experienced in arbitrating disputes relating to real estate, construction, and RERA matters. Promotes efficient dispute resolution while preserving long-term commercial relationships.</p>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <section class="bn-about-body bn-about-body--alt" id="proceedings">
                         <div class="container">
                             <div class="row gy-5">
