@@ -768,7 +768,7 @@
         text-transform: uppercase;
         text-align: center;
         margin: 0;
-        white-space: nowrap;
+        max-width: min(42rem, 100%);
     }
 
     .bn-trusted-logos {
