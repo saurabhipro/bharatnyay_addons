@@ -533,7 +533,10 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                     'utc': utc_str,
                 })
             return {'slots': slots}
-        busy_entries = self._busy_hearing_entries_utc(au, exclude_loan=None)
+        busy_entries = self._busy_hearing_entries_utc(
+            au,
+            exclude_loan=self.loan_id if self.hearing_reschedule else None,
+        )
         tz = self._user_timezone()
         slots = []
         now_local = datetime.now(tz)
@@ -570,13 +573,13 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
                 'available': status in ('free', 'own'),
                 'utc': utc_str,
             }
-            if booked and booking.get('loan_number'):
+            if booking and booking.get('loan_number'):
                 slot_data['loan_number'] = booking['loan_number']
             elif status == 'own' and self.loan_id:
                 slot_data['loan_number'] = (
                     self.loan_id.loan_number or self.loan_id.display_name or ''
                 ).strip()
-            if booked and booking.get('customer_name'):
+            if booking and booking.get('customer_name'):
                 slot_data['customer_name'] = booking['customer_name']
             elif status == 'own' and self.loan_id:
                 slot_data['customer_name'] = (self.loan_id.customer_name or '').strip()
@@ -849,6 +852,7 @@ class BharatLoanHearingScheduleWizard(models.TransientModel):
             day = fields.Date.from_string(vals['scheduler_date'])
             wiz_stub = self.new({
                 'loan_id': loan.id,
+                'hearing_reschedule': reschedule,
                 'scheduler_date': vals['scheduler_date'],
             })
             vals['slot_board_json'] = self._slot_board_json_dumps(wiz_stub._slot_board_dict())
