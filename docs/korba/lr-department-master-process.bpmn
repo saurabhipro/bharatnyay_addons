@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0"
+  id="Definitions_LR_SOP"
+  targetNamespace="http://bpmn.io/schema/bpmn"
+  exporter="bpmn.io"
+  exporterVersion="17.0.0">
+  <bpmn:process id="LR_Master_Process" name="SECL L and R Master SOP" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Central" name="Ministry of Coal / Central Govt">
+        <bpmn:flowNodeRef>Task_S4_Notification</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_S7_Notification</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Handle_Objections</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_S9_Declaration</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Area" name="Area L and R / Project Office">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Certificates_1ABC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Exploration_2A</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_DroneSurvey</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_AssetSurvey</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Prepare_Comp_Proposal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_Employment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_HousePlot</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_CropComp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Payment_Attempt</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Initiate_PTT_Deposit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Deposit_PTT</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_State" name="State Revenue / SDM / Collector">
+        <bpmn:flowNodeRef>Task_State_Gazette</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Committees" name="Committees">
+        <bpmn:flowNodeRef>Task_Joint_Committee_Survey</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ASC_Review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DRRC_Meeting</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Standing_Committee</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_HQ" name="SECL HQ">
+        <bpmn:flowNodeRef>Task_HQ_Scrutiny_Comp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HQ_Approval_Comp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HQ_Scrutiny_Emp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HQ_Approval_PTT</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PAP" name="PAP / Landowner">
+        <bpmn:flowNodeRef>Task_Objection_Window</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Payment_Consent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Receive_Compensation</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Tribunal" name="Part-Time Tribunal Bilaspur">
+        <bpmn:flowNodeRef>Task_PTT_Hold_Funds</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_1</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_1" name="Project identified"><bpmn:outgoing>Flow_01</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:task id="Task_Certificates_1ABC" name="Certificates 1A/1B/1C"><bpmn:incoming>Flow_01</bpmn:incoming><bpmn:outgoing>Flow_02</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_S4_Notification" name="Sec 4(1) prospecting notification"><bpmn:incoming>Flow_02</bpmn:incoming><bpmn:outgoing>Flow_03</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_State_Gazette" name="State Gazette republication"><bpmn:incoming>Flow_03</bpmn:incoming><bpmn:outgoing>Flow_04</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Exploration_2A" name="Prospecting Certificate 2A"><bpmn:incoming>Flow_04</bpmn:incoming><bpmn:outgoing>Flow_05</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_S7_Notification" name="Sec 7(1) acquisition notification"><bpmn:incoming>Flow_05</bpmn:incoming><bpmn:outgoing>Flow_06</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Objection_Window" name="30-day objection window"><bpmn:incoming>Flow_06</bpmn:incoming><bpmn:outgoing>Flow_07</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Handle_Objections" name="Coal Controller inquiry"><bpmn:incoming>Flow_07</bpmn:incoming><bpmn:outgoing>Flow_08</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_S9_Declaration" name="Sec 9(1) declaration"><bpmn:incoming>Flow_08</bpmn:incoming><bpmn:outgoing>Flow_09</bpmn:outgoing></bpmn:task>
+    <bpmn:subProcess id="SubProcess_DroneSurvey" name="SOP 2 Drone Survey">
+      <bpmn:incoming>Flow_09</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:startEvent id="Start_DroneSurvey" name="Start"><bpmn:outgoing>DroneSurvey_F01</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:task id="Task_DroneSurvey_1" name="Procure VHR satellite imagery"><bpmn:incoming>DroneSurvey_F01</bpmn:incoming><bpmn:outgoing>DroneSurvey_F02</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_DroneSurvey_2" name="Drone survey with GPS coordinates"><bpmn:incoming>DroneSurvey_F02</bpmn:incoming><bpmn:outgoing>DroneSurvey_F03</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_DroneSurvey_3" name="Generate ortho-mosaic and 3D models"><bpmn:incoming>DroneSurvey_F03</bpmn:incoming><bpmn:outgoing>DroneSurvey_F04</bpmn:outgoing></bpmn:task>
+      <bpmn:endEvent id="End_DroneSurvey" name="Done"><bpmn:incoming>DroneSurvey_F04</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="DroneSurvey_F01" sourceRef="Start_DroneSurvey" targetRef="Task_DroneSurvey_1"/>
+      <bpmn:sequenceFlow id="DroneSurvey_F02" sourceRef="Task_DroneSurvey_1" targetRef="Task_DroneSurvey_2"/>
+      <bpmn:sequenceFlow id="DroneSurvey_F03" sourceRef="Task_DroneSurvey_2" targetRef="Task_DroneSurvey_3"/>
+      <bpmn:sequenceFlow id="DroneSurvey_F04" sourceRef="Task_DroneSurvey_3" targetRef="End_DroneSurvey"/>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_AssetSurvey" name="SOP 3 Asset Survey">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+      <bpmn:startEvent id="Start_AssetSurvey" name="Start"><bpmn:outgoing>AssetSurvey_F01</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:task id="Task_AssetSurvey_1" name="Constitute joint committee"><bpmn:incoming>AssetSurvey_F01</bpmn:incoming><bpmn:outgoing>AssetSurvey_F02</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_AssetSurvey_2" name="Socio-economic survey and Measurement Book"><bpmn:incoming>AssetSurvey_F02</bpmn:incoming><bpmn:outgoing>AssetSurvey_F03</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_AssetSurvey_3" name="Videography and geotags"><bpmn:incoming>AssetSurvey_F03</bpmn:incoming><bpmn:outgoing>AssetSurvey_F04</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_AssetSurvey_4" name="Calculate land and asset compensation"><bpmn:incoming>AssetSurvey_F04</bpmn:incoming><bpmn:outgoing>AssetSurvey_F05</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_AssetSurvey_5" name="Verify B-1 P-II Statement V and VI"><bpmn:incoming>AssetSurvey_F05</bpmn:incoming><bpmn:outgoing>AssetSurvey_F06</bpmn:outgoing></bpmn:task>
+      <bpmn:endEvent id="End_AssetSurvey" name="Done"><bpmn:incoming>AssetSurvey_F06</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="AssetSurvey_F01" sourceRef="Start_AssetSurvey" targetRef="Task_AssetSurvey_1"/>
+      <bpmn:sequenceFlow id="AssetSurvey_F02" sourceRef="Task_AssetSurvey_1" targetRef="Task_AssetSurvey_2"/>
+      <bpmn:sequenceFlow id="AssetSurvey_F03" sourceRef="Task_AssetSurvey_2" targetRef="Task_AssetSurvey_3"/>
+      <bpmn:sequenceFlow id="AssetSurvey_F04" sourceRef="Task_AssetSurvey_3" targetRef="Task_AssetSurvey_4"/>
+      <bpmn:sequenceFlow id="AssetSurvey_F05" sourceRef="Task_AssetSurvey_4" targetRef="Task_AssetSurvey_5"/>
+      <bpmn:sequenceFlow id="AssetSurvey_F06" sourceRef="Task_AssetSurvey_5" targetRef="End_AssetSurvey"/>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_Employment" name="SOP 5-8 Employment">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+      <bpmn:startEvent id="Start_Employment" name="Start"><bpmn:outgoing>Employment_F01</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:task id="Task_Employment_1" name="Prepare Descending Order List"><bpmn:incoming>Employment_F01</bpmn:incoming><bpmn:outgoing>Employment_F02</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_Employment_2" name="Issue notice and Nomination Form"><bpmn:incoming>Employment_F02</bpmn:incoming><bpmn:outgoing>Employment_F03</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_Employment_3" name="Receive and register nomination"><bpmn:incoming>Employment_F03</bpmn:incoming><bpmn:outgoing>Employment_F04</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_Employment_4" name="Area Screening Committee verification"><bpmn:incoming>Employment_F04</bpmn:incoming><bpmn:outgoing>Employment_F05</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_Employment_5" name="State authority verification"><bpmn:incoming>Employment_F05</bpmn:incoming><bpmn:outgoing>Employment_F06</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_Employment_6" name="Area GM forwards to HQ"><bpmn:incoming>Employment_F06</bpmn:incoming><bpmn:outgoing>Employment_F07</bpmn:outgoing></bpmn:task>
+      <bpmn:endEvent id="End_Employment" name="Done"><bpmn:incoming>Employment_F07</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="Employment_F01" sourceRef="Start_Employment" targetRef="Task_Employment_1"/>
+      <bpmn:sequenceFlow id="Employment_F02" sourceRef="Task_Employment_1" targetRef="Task_Employment_2"/>
+      <bpmn:sequenceFlow id="Employment_F03" sourceRef="Task_Employment_2" targetRef="Task_Employment_3"/>
+      <bpmn:sequenceFlow id="Employment_F04" sourceRef="Task_Employment_3" targetRef="Task_Employment_4"/>
+      <bpmn:sequenceFlow id="Employment_F05" sourceRef="Task_Employment_4" targetRef="Task_Employment_5"/>
+      <bpmn:sequenceFlow id="Employment_F06" sourceRef="Task_Employment_5" targetRef="Task_Employment_6"/>
+      <bpmn:sequenceFlow id="Employment_F07" sourceRef="Task_Employment_6" targetRef="End_Employment"/>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_HousePlot" name="SOP 7 House Plot / Cash R&R">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+      <bpmn:startEvent id="Start_HousePlot" name="Start"><bpmn:outgoing>HousePlot_F01</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:task id="Task_HousePlot_1" name="Family survey during asset survey"><bpmn:incoming>HousePlot_F01</bpmn:incoming><bpmn:outgoing>HousePlot_F02</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_HousePlot_2" name="Determine PAF eligibility"><bpmn:incoming>HousePlot_F02</bpmn:incoming><bpmn:outgoing>HousePlot_F03</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_HousePlot_3" name="Allot house plot or cash compensation"><bpmn:incoming>HousePlot_F03</bpmn:incoming><bpmn:outgoing>HousePlot_F04</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_HousePlot_4" name="Physical verification and affidavit"><bpmn:incoming>HousePlot_F04</bpmn:incoming><bpmn:outgoing>HousePlot_F05</bpmn:outgoing></bpmn:task>
+      <bpmn:endEvent id="End_HousePlot" name="Done"><bpmn:incoming>HousePlot_F05</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="HousePlot_F01" sourceRef="Start_HousePlot" targetRef="Task_HousePlot_1"/>
+      <bpmn:sequenceFlow id="HousePlot_F02" sourceRef="Task_HousePlot_1" targetRef="Task_HousePlot_2"/>
+      <bpmn:sequenceFlow id="HousePlot_F03" sourceRef="Task_HousePlot_2" targetRef="Task_HousePlot_3"/>
+      <bpmn:sequenceFlow id="HousePlot_F04" sourceRef="Task_HousePlot_3" targetRef="Task_HousePlot_4"/>
+      <bpmn:sequenceFlow id="HousePlot_F05" sourceRef="Task_HousePlot_4" targetRef="End_HousePlot"/>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="SubProcess_CropComp" name="SOP 9 Crop Compensation">
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+      <bpmn:startEvent id="Start_CropComp" name="Start"><bpmn:outgoing>CropComp_F01</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:task id="Task_CropComp_1" name="Area committee inspection"><bpmn:incoming>CropComp_F01</bpmn:incoming><bpmn:outgoing>CropComp_F02</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_CropComp_2" name="SDM demand note and calculation"><bpmn:incoming>CropComp_F02</bpmn:incoming><bpmn:outgoing>CropComp_F03</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_CropComp_3" name="Joint site inspection and photos"><bpmn:incoming>CropComp_F03</bpmn:incoming><bpmn:outgoing>CropComp_F04</bpmn:outgoing></bpmn:task>
+      <bpmn:task id="Task_CropComp_4" name="HQ and Standing Committee approval"><bpmn:incoming>CropComp_F04</bpmn:incoming><bpmn:outgoing>CropComp_F05</bpmn:outgoing></bpmn:task>
+      <bpmn:endEvent id="End_CropComp" name="Done"><bpmn:incoming>CropComp_F05</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="CropComp_F01" sourceRef="Start_CropComp" targetRef="Task_CropComp_1"/>
+      <bpmn:sequenceFlow id="CropComp_F02" sourceRef="Task_CropComp_1" targetRef="Task_CropComp_2"/>
+      <bpmn:sequenceFlow id="CropComp_F03" sourceRef="Task_CropComp_2" targetRef="Task_CropComp_3"/>
+      <bpmn:sequenceFlow id="CropComp_F04" sourceRef="Task_CropComp_3" targetRef="Task_CropComp_4"/>
+      <bpmn:sequenceFlow id="CropComp_F05" sourceRef="Task_CropComp_4" targetRef="End_CropComp"/>
+    </bpmn:subProcess>
+    <bpmn:task id="Task_Joint_Committee_Survey" name="Joint committee certifies MB"><bpmn:incoming>Flow_11</bpmn:incoming><bpmn:outgoing>Flow_12</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Prepare_Comp_Proposal" name="Compensation proposal"><bpmn:incoming>Flow_12</bpmn:incoming><bpmn:outgoing>Flow_13</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_ASC_Review" name="ASC review"><bpmn:incoming>Flow_13</bpmn:incoming><bpmn:outgoing>Flow_14</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_HQ_Scrutiny_Comp" name="HQ L and R scrutiny"><bpmn:incoming>Flow_14</bpmn:incoming><bpmn:outgoing>Flow_15</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Standing_Committee" name="Standing Committee"><bpmn:incoming>Flow_15</bpmn:incoming><bpmn:outgoing>Flow_16</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_HQ_Approval_Comp" name="DTPP approval"><bpmn:incoming>Flow_16</bpmn:incoming><bpmn:outgoing>Flow_17</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_DRRC_Meeting" name="SOP 4 DRRC meeting"><bpmn:incoming>Flow_17</bpmn:incoming><bpmn:outgoing>Flow_18</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_HQ_Scrutiny_Emp" name="HQ employment approval"><bpmn:incoming>Flow_19</bpmn:incoming><bpmn:outgoing>Flow_21</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Payment_Attempt" name="Attempt compensation payment"><bpmn:incoming>Flow_23</bpmn:incoming><bpmn:outgoing>Flow_24</bpmn:outgoing></bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_Payment_Consent" name="Consent?"><bpmn:incoming>Flow_24</bpmn:incoming><bpmn:outgoing>Flow_25_Yes</bpmn:outgoing><bpmn:outgoing>Flow_25_No</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:task id="Task_Receive_Compensation" name="PAP receives payment"><bpmn:incoming>Flow_25_Yes</bpmn:incoming><bpmn:outgoing>Flow_26</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Initiate_PTT_Deposit" name="Initiate PTT deposit"><bpmn:incoming>Flow_25_No</bpmn:incoming><bpmn:outgoing>Flow_27</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_HQ_Approval_PTT" name="HQ PTT approval"><bpmn:incoming>Flow_27</bpmn:incoming><bpmn:outgoing>Flow_28</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_Deposit_PTT" name="Deposit in PTT"><bpmn:incoming>Flow_28</bpmn:incoming><bpmn:outgoing>Flow_29</bpmn:outgoing></bpmn:task>
+    <bpmn:task id="Task_PTT_Hold_Funds" name="PTT holds funds"><bpmn:incoming>Flow_29</bpmn:incoming><bpmn:outgoing>Flow_30</bpmn:outgoing></bpmn:task>
+    <bpmn:endEvent id="EndEvent_1" name="Process closed"><bpmn:incoming>Flow_26</bpmn:incoming><bpmn:incoming>Flow_30</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01" sourceRef="StartEvent_1" targetRef="Task_Certificates_1ABC"/>
+    <bpmn:sequenceFlow id="Flow_02" sourceRef="Task_Certificates_1ABC" targetRef="Task_S4_Notification"/>
+    <bpmn:sequenceFlow id="Flow_03" sourceRef="Task_S4_Notification" targetRef="Task_State_Gazette"/>
+    <bpmn:sequenceFlow id="Flow_04" sourceRef="Task_State_Gazette" targetRef="Task_Exploration_2A"/>
+    <bpmn:sequenceFlow id="Flow_05" sourceRef="Task_Exploration_2A" targetRef="Task_S7_Notification"/>
+    <bpmn:sequenceFlow id="Flow_06" sourceRef="Task_S7_Notification" targetRef="Task_Objection_Window"/>
+    <bpmn:sequenceFlow id="Flow_07" sourceRef="Task_Objection_Window" targetRef="Task_Handle_Objections"/>
+    <bpmn:sequenceFlow id="Flow_08" sourceRef="Task_Handle_Objections" targetRef="Task_S9_Declaration"/>
+    <bpmn:sequenceFlow id="Flow_09" sourceRef="Task_S9_Declaration" targetRef="SubProcess_DroneSurvey"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="SubProcess_DroneSurvey" targetRef="SubProcess_AssetSurvey"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="SubProcess_AssetSurvey" targetRef="Task_Joint_Committee_Survey"/>
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_Joint_Committee_Survey" targetRef="Task_Prepare_Comp_Proposal"/>
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_Prepare_Comp_Proposal" targetRef="Task_ASC_Review"/>
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_ASC_Review" targetRef="Task_HQ_Scrutiny_Comp"/>
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_HQ_Scrutiny_Comp" targetRef="Task_Standing_Committee"/>
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_Standing_Committee" targetRef="Task_HQ_Approval_Comp"/>
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_HQ_Approval_Comp" targetRef="Task_DRRC_Meeting"/>
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_DRRC_Meeting" targetRef="SubProcess_Employment"/>
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="SubProcess_Employment" targetRef="Task_HQ_Scrutiny_Emp"/>
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Task_HQ_Scrutiny_Emp" targetRef="SubProcess_HousePlot"/>
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="SubProcess_HousePlot" targetRef="SubProcess_CropComp"/>
+    <bpmn:sequenceFlow id="Flow_23" sourceRef="SubProcess_CropComp" targetRef="Task_Payment_Attempt"/>
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Task_Payment_Attempt" targetRef="Gateway_Payment_Consent"/>
+    <bpmn:sequenceFlow id="Flow_25_Yes" sourceRef="Gateway_Payment_Consent" targetRef="Task_Receive_Compensation"/>
+    <bpmn:sequenceFlow id="Flow_25_No" sourceRef="Gateway_Payment_Consent" targetRef="Task_Initiate_PTT_Deposit"/>
+    <bpmn:sequenceFlow id="Flow_26" sourceRef="Task_Receive_Compensation" targetRef="EndEvent_1"/>
+    <bpmn:sequenceFlow id="Flow_27" sourceRef="Task_Initiate_PTT_Deposit" targetRef="Task_HQ_Approval_PTT"/>
+    <bpmn:sequenceFlow id="Flow_28" sourceRef="Task_HQ_Approval_PTT" targetRef="Task_Deposit_PTT"/>
+    <bpmn:sequenceFlow id="Flow_29" sourceRef="Task_Deposit_PTT" targetRef="Task_PTT_Hold_Funds"/>
+    <bpmn:sequenceFlow id="Flow_30" sourceRef="Task_PTT_Hold_Funds" targetRef="EndEvent_1"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="LR_Master_Process">
+      <bpmndi:BPMNShape id="Lane_Central_di" bpmnElement="Lane_Central" isHorizontal="true" bioc:stroke="#1565C0" bioc:fill="#E3F2FD">
+        <dc:Bounds x="160" y="80" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Area_di" bpmnElement="Lane_Area" isHorizontal="true" bioc:stroke="#2E7D32" bioc:fill="#E8F5E9">
+        <dc:Bounds x="160" y="220" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_State_di" bpmnElement="Lane_State" isHorizontal="true" bioc:stroke="#F57F17" bioc:fill="#FFF8E1">
+        <dc:Bounds x="160" y="360" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Committees_di" bpmnElement="Lane_Committees" isHorizontal="true" bioc:stroke="#6A1B9A" bioc:fill="#F3E5F5">
+        <dc:Bounds x="160" y="500" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_HQ_di" bpmnElement="Lane_HQ" isHorizontal="true" bioc:stroke="#00695C" bioc:fill="#E0F2F1">
+        <dc:Bounds x="160" y="640" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_PAP_di" bpmnElement="Lane_PAP" isHorizontal="true" bioc:stroke="#E65100" bioc:fill="#FFF3E0">
+        <dc:Bounds x="160" y="780" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Tribunal_di" bpmnElement="Lane_Tribunal" isHorizontal="true" bioc:stroke="#C62828" bioc:fill="#FFEBEE">
+        <dc:Bounds x="160" y="920" width="5200" height="140"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_S4_Notification_di" bpmnElement="Task_S4_Notification" bioc:stroke="#1565C0" bioc:fill="#BBDEFB">
+        <dc:Bounds x="560" y="115" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_S7_Notification_di" bpmnElement="Task_S7_Notification" bioc:stroke="#1565C0" bioc:fill="#BBDEFB">
+        <dc:Bounds x="1070" y="115" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Handle_Objections_di" bpmnElement="Task_Handle_Objections" bioc:stroke="#1565C0" bioc:fill="#BBDEFB">
+        <dc:Bounds x="1410" y="115" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_S9_Declaration_di" bpmnElement="Task_S9_Declaration" bioc:stroke="#1565C0" bioc:fill="#BBDEFB">
+        <dc:Bounds x="1580" y="115" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1" bioc:stroke="#1B5E20" bioc:fill="#A5D6A7">
+        <dc:Bounds x="220" y="272" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Certificates_1ABC_di" bpmnElement="Task_Certificates_1ABC" bioc:stroke="#2E7D32" bioc:fill="#C8E6C9">
+        <dc:Bounds x="390" y="255" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Exploration_2A_di" bpmnElement="Task_Exploration_2A" bioc:stroke="#2E7D32" bioc:fill="#C8E6C9">
+        <dc:Bounds x="900" y="255" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_DroneSurvey_di" bpmnElement="SubProcess_DroneSurvey" bioc:stroke="#3949AB" bioc:fill="#E8EAF6" isExpanded="false">
+        <dc:Bounds x="1750" y="250" width="130" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_AssetSurvey_di" bpmnElement="SubProcess_AssetSurvey" bioc:stroke="#3949AB" bioc:fill="#E8EAF6" isExpanded="false">
+        <dc:Bounds x="1920" y="250" width="130" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Prepare_Comp_Proposal_di" bpmnElement="Task_Prepare_Comp_Proposal" bioc:stroke="#2E7D32" bioc:fill="#C8E6C9">
+        <dc:Bounds x="2260" y="255" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_Employment_di" bpmnElement="SubProcess_Employment" bioc:stroke="#3949AB" bioc:fill="#E8EAF6" isExpanded="false">
+        <dc:Bounds x="3280" y="250" width="130" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_HousePlot_di" bpmnElement="SubProcess_HousePlot" bioc:stroke="#3949AB" bioc:fill="#E8EAF6" isExpanded="false">
+        <dc:Bounds x="3620" y="250" width="130" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_CropComp_di" bpmnElement="SubProcess_CropComp" bioc:stroke="#3949AB" bioc:fill="#E8EAF6" isExpanded="false">
+        <dc:Bounds x="3790" y="250" width="130" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Payment_Attempt_di" bpmnElement="Task_Payment_Attempt" bioc:stroke="#2E7D32" bioc:fill="#C8E6C9">
+        <dc:Bounds x="3960" y="255" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Initiate_PTT_Deposit_di" bpmnElement="Task_Initiate_PTT_Deposit" bioc:stroke="#2E7D32" bioc:fill="#C8E6C9">
+        <dc:Bounds x="4300" y="255" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Deposit_PTT_di" bpmnElement="Task_Deposit_PTT" bioc:stroke="#2E7D32" bioc:fill="#C8E6C9">
+        <dc:Bounds x="4640" y="255" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_State_Gazette_di" bpmnElement="Task_State_Gazette" bioc:stroke="#F57F17" bioc:fill="#FFECB3">
+        <dc:Bounds x="730" y="395" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Joint_Committee_Survey_di" bpmnElement="Task_Joint_Committee_Survey" bioc:stroke="#6A1B9A" bioc:fill="#E1BEE7">
+        <dc:Bounds x="2090" y="535" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ASC_Review_di" bpmnElement="Task_ASC_Review" bioc:stroke="#6A1B9A" bioc:fill="#E1BEE7">
+        <dc:Bounds x="2430" y="535" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DRRC_Meeting_di" bpmnElement="Task_DRRC_Meeting" bioc:stroke="#6A1B9A" bioc:fill="#E1BEE7">
+        <dc:Bounds x="3110" y="535" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Standing_Committee_di" bpmnElement="Task_Standing_Committee" bioc:stroke="#6A1B9A" bioc:fill="#E1BEE7">
+        <dc:Bounds x="2770" y="535" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HQ_Scrutiny_Comp_di" bpmnElement="Task_HQ_Scrutiny_Comp" bioc:stroke="#00695C" bioc:fill="#B2DFDB">
+        <dc:Bounds x="2600" y="675" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HQ_Approval_Comp_di" bpmnElement="Task_HQ_Approval_Comp" bioc:stroke="#00695C" bioc:fill="#B2DFDB">
+        <dc:Bounds x="2940" y="675" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HQ_Scrutiny_Emp_di" bpmnElement="Task_HQ_Scrutiny_Emp" bioc:stroke="#00695C" bioc:fill="#B2DFDB">
+        <dc:Bounds x="3450" y="675" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HQ_Approval_PTT_di" bpmnElement="Task_HQ_Approval_PTT" bioc:stroke="#00695C" bioc:fill="#B2DFDB">
+        <dc:Bounds x="4470" y="675" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Objection_Window_di" bpmnElement="Task_Objection_Window" bioc:stroke="#E65100" bioc:fill="#FFE0B2">
+        <dc:Bounds x="1240" y="815" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Payment_Consent_di" bpmnElement="Gateway_Payment_Consent" bioc:stroke="#F9A825" bioc:fill="#FFF59D" isMarkerVisible="true">
+        <dc:Bounds x="4130" y="825" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Receive_Compensation_di" bpmnElement="Task_Receive_Compensation" bioc:stroke="#E65100" bioc:fill="#FFE0B2">
+        <dc:Bounds x="4300" y="815" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PTT_Hold_Funds_di" bpmnElement="Task_PTT_Hold_Funds" bioc:stroke="#C62828" bioc:fill="#FFCDD2">
+        <dc:Bounds x="4810" y="955" width="120" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1" bioc:stroke="#B71C1C" bioc:fill="#EF9A9A">
+        <dc:Bounds x="4980" y="972" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_01_di" bpmnElement="Flow_01" bioc:stroke="#546E7A">
+        <di:waypoint x="238" y="290"/>
+        <di:waypoint x="450" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02_di" bpmnElement="Flow_02" bioc:stroke="#546E7A">
+        <di:waypoint x="450" y="290"/>
+        <di:waypoint x="620" y="150"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03_di" bpmnElement="Flow_03" bioc:stroke="#546E7A">
+        <di:waypoint x="620" y="150"/>
+        <di:waypoint x="790" y="430"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04_di" bpmnElement="Flow_04" bioc:stroke="#546E7A">
+        <di:waypoint x="790" y="430"/>
+        <di:waypoint x="960" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05_di" bpmnElement="Flow_05" bioc:stroke="#546E7A">
+        <di:waypoint x="960" y="290"/>
+        <di:waypoint x="1130" y="150"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06_di" bpmnElement="Flow_06" bioc:stroke="#546E7A">
+        <di:waypoint x="1130" y="150"/>
+        <di:waypoint x="1300" y="850"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07_di" bpmnElement="Flow_07" bioc:stroke="#546E7A">
+        <di:waypoint x="1300" y="850"/>
+        <di:waypoint x="1470" y="150"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08_di" bpmnElement="Flow_08" bioc:stroke="#546E7A">
+        <di:waypoint x="1470" y="150"/>
+        <di:waypoint x="1640" y="150"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09_di" bpmnElement="Flow_09" bioc:stroke="#546E7A">
+        <di:waypoint x="1640" y="150"/>
+        <di:waypoint x="1815" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10" bioc:stroke="#546E7A">
+        <di:waypoint x="1815" y="290"/>
+        <di:waypoint x="1985" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11" bioc:stroke="#546E7A">
+        <di:waypoint x="1985" y="290"/>
+        <di:waypoint x="2150" y="570"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12" bioc:stroke="#546E7A">
+        <di:waypoint x="2150" y="570"/>
+        <di:waypoint x="2320" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13" bioc:stroke="#546E7A">
+        <di:waypoint x="2320" y="290"/>
+        <di:waypoint x="2490" y="570"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14" bioc:stroke="#546E7A">
+        <di:waypoint x="2490" y="570"/>
+        <di:waypoint x="2660" y="710"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15" bioc:stroke="#546E7A">
+        <di:waypoint x="2660" y="710"/>
+        <di:waypoint x="2830" y="570"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16" bioc:stroke="#546E7A">
+        <di:waypoint x="2830" y="570"/>
+        <di:waypoint x="3000" y="710"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17" bioc:stroke="#546E7A">
+        <di:waypoint x="3000" y="710"/>
+        <di:waypoint x="3170" y="570"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18" bioc:stroke="#546E7A">
+        <di:waypoint x="3170" y="570"/>
+        <di:waypoint x="3345" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19" bioc:stroke="#546E7A">
+        <di:waypoint x="3345" y="290"/>
+        <di:waypoint x="3510" y="710"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21" bioc:stroke="#546E7A">
+        <di:waypoint x="3510" y="710"/>
+        <di:waypoint x="3685" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22" bioc:stroke="#546E7A">
+        <di:waypoint x="3685" y="290"/>
+        <di:waypoint x="3855" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_23_di" bpmnElement="Flow_23" bioc:stroke="#546E7A">
+        <di:waypoint x="3855" y="290"/>
+        <di:waypoint x="4020" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24" bioc:stroke="#546E7A">
+        <di:waypoint x="4020" y="290"/>
+        <di:waypoint x="4155" y="850"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_Yes_di" bpmnElement="Flow_25_Yes" bioc:stroke="#546E7A">
+        <di:waypoint x="4155" y="850"/>
+        <di:waypoint x="4360" y="850"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_No_di" bpmnElement="Flow_25_No" bioc:stroke="#546E7A">
+        <di:waypoint x="4155" y="850"/>
+        <di:waypoint x="4360" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_26_di" bpmnElement="Flow_26" bioc:stroke="#546E7A">
+        <di:waypoint x="4360" y="850"/>
+        <di:waypoint x="4998" y="990"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_27_di" bpmnElement="Flow_27" bioc:stroke="#546E7A">
+        <di:waypoint x="4360" y="290"/>
+        <di:waypoint x="4530" y="710"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_28_di" bpmnElement="Flow_28" bioc:stroke="#546E7A">
+        <di:waypoint x="4530" y="710"/>
+        <di:waypoint x="4700" y="290"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_29_di" bpmnElement="Flow_29" bioc:stroke="#546E7A">
+        <di:waypoint x="4700" y="290"/>
+        <di:waypoint x="4870" y="990"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_30_di" bpmnElement="Flow_30" bioc:stroke="#546E7A">
+        <di:waypoint x="4870" y="990"/>
+        <di:waypoint x="4998" y="990"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_DroneSurvey">
+    <bpmndi:BPMNPlane id="SubProcess_DroneSurvey_plane" bpmnElement="SubProcess_DroneSurvey">
+      <bpmndi:BPMNShape id="Start_DroneSurvey_di" bpmnElement="Start_DroneSurvey" bioc:stroke="#1B5E20" bioc:fill="#A5D6A7">
+        <dc:Bounds x="180" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DroneSurvey_1_di" bpmnElement="Task_DroneSurvey_1" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="360" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DroneSurvey_2_di" bpmnElement="Task_DroneSurvey_2" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="540" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DroneSurvey_3_di" bpmnElement="Task_DroneSurvey_3" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="720" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_DroneSurvey_di" bpmnElement="End_DroneSurvey" bioc:stroke="#B71C1C" bioc:fill="#EF9A9A">
+        <dc:Bounds x="900" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DroneSurvey_F01_di" bpmnElement="DroneSurvey_F01" bioc:stroke="#546E7A">
+        <di:waypoint x="198" y="145"/>
+        <di:waypoint x="435" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DroneSurvey_F02_di" bpmnElement="DroneSurvey_F02" bioc:stroke="#546E7A">
+        <di:waypoint x="435" y="160"/>
+        <di:waypoint x="615" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DroneSurvey_F03_di" bpmnElement="DroneSurvey_F03" bioc:stroke="#546E7A">
+        <di:waypoint x="615" y="160"/>
+        <di:waypoint x="795" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DroneSurvey_F04_di" bpmnElement="DroneSurvey_F04" bioc:stroke="#546E7A">
+        <di:waypoint x="795" y="160"/>
+        <di:waypoint x="918" y="145"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_AssetSurvey">
+    <bpmndi:BPMNPlane id="SubProcess_AssetSurvey_plane" bpmnElement="SubProcess_AssetSurvey">
+      <bpmndi:BPMNShape id="Start_AssetSurvey_di" bpmnElement="Start_AssetSurvey" bioc:stroke="#1B5E20" bioc:fill="#A5D6A7">
+        <dc:Bounds x="180" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AssetSurvey_1_di" bpmnElement="Task_AssetSurvey_1" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="360" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AssetSurvey_2_di" bpmnElement="Task_AssetSurvey_2" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="540" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AssetSurvey_3_di" bpmnElement="Task_AssetSurvey_3" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="720" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AssetSurvey_4_di" bpmnElement="Task_AssetSurvey_4" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="900" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AssetSurvey_5_di" bpmnElement="Task_AssetSurvey_5" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="1080" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_AssetSurvey_di" bpmnElement="End_AssetSurvey" bioc:stroke="#B71C1C" bioc:fill="#EF9A9A">
+        <dc:Bounds x="1260" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="AssetSurvey_F01_di" bpmnElement="AssetSurvey_F01" bioc:stroke="#546E7A">
+        <di:waypoint x="198" y="145"/>
+        <di:waypoint x="435" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="AssetSurvey_F02_di" bpmnElement="AssetSurvey_F02" bioc:stroke="#546E7A">
+        <di:waypoint x="435" y="160"/>
+        <di:waypoint x="615" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="AssetSurvey_F03_di" bpmnElement="AssetSurvey_F03" bioc:stroke="#546E7A">
+        <di:waypoint x="615" y="160"/>
+        <di:waypoint x="795" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="AssetSurvey_F04_di" bpmnElement="AssetSurvey_F04" bioc:stroke="#546E7A">
+        <di:waypoint x="795" y="160"/>
+        <di:waypoint x="975" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="AssetSurvey_F05_di" bpmnElement="AssetSurvey_F05" bioc:stroke="#546E7A">
+        <di:waypoint x="975" y="160"/>
+        <di:waypoint x="1155" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="AssetSurvey_F06_di" bpmnElement="AssetSurvey_F06" bioc:stroke="#546E7A">
+        <di:waypoint x="1155" y="160"/>
+        <di:waypoint x="1278" y="145"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Employment">
+    <bpmndi:BPMNPlane id="SubProcess_Employment_plane" bpmnElement="SubProcess_Employment">
+      <bpmndi:BPMNShape id="Start_Employment_di" bpmnElement="Start_Employment" bioc:stroke="#1B5E20" bioc:fill="#A5D6A7">
+        <dc:Bounds x="180" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employment_1_di" bpmnElement="Task_Employment_1" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="360" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employment_2_di" bpmnElement="Task_Employment_2" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="540" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employment_3_di" bpmnElement="Task_Employment_3" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="720" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employment_4_di" bpmnElement="Task_Employment_4" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="900" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employment_5_di" bpmnElement="Task_Employment_5" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="1080" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employment_6_di" bpmnElement="Task_Employment_6" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="1260" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Employment_di" bpmnElement="End_Employment" bioc:stroke="#B71C1C" bioc:fill="#EF9A9A">
+        <dc:Bounds x="1440" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Employment_F01_di" bpmnElement="Employment_F01" bioc:stroke="#546E7A">
+        <di:waypoint x="198" y="145"/>
+        <di:waypoint x="435" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Employment_F02_di" bpmnElement="Employment_F02" bioc:stroke="#546E7A">
+        <di:waypoint x="435" y="160"/>
+        <di:waypoint x="615" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Employment_F03_di" bpmnElement="Employment_F03" bioc:stroke="#546E7A">
+        <di:waypoint x="615" y="160"/>
+        <di:waypoint x="795" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Employment_F04_di" bpmnElement="Employment_F04" bioc:stroke="#546E7A">
+        <di:waypoint x="795" y="160"/>
+        <di:waypoint x="975" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Employment_F05_di" bpmnElement="Employment_F05" bioc:stroke="#546E7A">
+        <di:waypoint x="975" y="160"/>
+        <di:waypoint x="1155" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Employment_F06_di" bpmnElement="Employment_F06" bioc:stroke="#546E7A">
+        <di:waypoint x="1155" y="160"/>
+        <di:waypoint x="1335" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Employment_F07_di" bpmnElement="Employment_F07" bioc:stroke="#546E7A">
+        <di:waypoint x="1335" y="160"/>
+        <di:waypoint x="1458" y="145"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_HousePlot">
+    <bpmndi:BPMNPlane id="SubProcess_HousePlot_plane" bpmnElement="SubProcess_HousePlot">
+      <bpmndi:BPMNShape id="Start_HousePlot_di" bpmnElement="Start_HousePlot" bioc:stroke="#1B5E20" bioc:fill="#A5D6A7">
+        <dc:Bounds x="180" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HousePlot_1_di" bpmnElement="Task_HousePlot_1" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="360" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HousePlot_2_di" bpmnElement="Task_HousePlot_2" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="540" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HousePlot_3_di" bpmnElement="Task_HousePlot_3" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="720" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HousePlot_4_di" bpmnElement="Task_HousePlot_4" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="900" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_HousePlot_di" bpmnElement="End_HousePlot" bioc:stroke="#B71C1C" bioc:fill="#EF9A9A">
+        <dc:Bounds x="1080" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="HousePlot_F01_di" bpmnElement="HousePlot_F01" bioc:stroke="#546E7A">
+        <di:waypoint x="198" y="145"/>
+        <di:waypoint x="435" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="HousePlot_F02_di" bpmnElement="HousePlot_F02" bioc:stroke="#546E7A">
+        <di:waypoint x="435" y="160"/>
+        <di:waypoint x="615" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="HousePlot_F03_di" bpmnElement="HousePlot_F03" bioc:stroke="#546E7A">
+        <di:waypoint x="615" y="160"/>
+        <di:waypoint x="795" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="HousePlot_F04_di" bpmnElement="HousePlot_F04" bioc:stroke="#546E7A">
+        <di:waypoint x="795" y="160"/>
+        <di:waypoint x="975" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="HousePlot_F05_di" bpmnElement="HousePlot_F05" bioc:stroke="#546E7A">
+        <di:waypoint x="975" y="160"/>
+        <di:waypoint x="1098" y="145"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CropComp">
+    <bpmndi:BPMNPlane id="SubProcess_CropComp_plane" bpmnElement="SubProcess_CropComp">
+      <bpmndi:BPMNShape id="Start_CropComp_di" bpmnElement="Start_CropComp" bioc:stroke="#1B5E20" bioc:fill="#A5D6A7">
+        <dc:Bounds x="180" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CropComp_1_di" bpmnElement="Task_CropComp_1" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="360" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CropComp_2_di" bpmnElement="Task_CropComp_2" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="540" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CropComp_3_di" bpmnElement="Task_CropComp_3" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="720" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CropComp_4_di" bpmnElement="Task_CropComp_4" bioc:stroke="#3949AB" bioc:fill="#E8EAF6">
+        <dc:Bounds x="900" y="120" width="150" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CropComp_di" bpmnElement="End_CropComp" bioc:stroke="#B71C1C" bioc:fill="#EF9A9A">
+        <dc:Bounds x="1080" y="127" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="CropComp_F01_di" bpmnElement="CropComp_F01" bioc:stroke="#546E7A">
+        <di:waypoint x="198" y="145"/>
+        <di:waypoint x="435" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="CropComp_F02_di" bpmnElement="CropComp_F02" bioc:stroke="#546E7A">
+        <di:waypoint x="435" y="160"/>
+        <di:waypoint x="615" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="CropComp_F03_di" bpmnElement="CropComp_F03" bioc:stroke="#546E7A">
+        <di:waypoint x="615" y="160"/>
+        <di:waypoint x="795" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="CropComp_F04_di" bpmnElement="CropComp_F04" bioc:stroke="#546E7A">
+        <di:waypoint x="795" y="160"/>
+        <di:waypoint x="975" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="CropComp_F05_di" bpmnElement="CropComp_F05" bioc:stroke="#546E7A">
+        <di:waypoint x="975" y="160"/>
+        <di:waypoint x="1098" y="145"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
