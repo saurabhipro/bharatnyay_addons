@@ -170,6 +170,22 @@
                                         </div>
                                     </article>
                                 </div>
+                                <div class="col-sm-6 col-lg-4">
+                                    <article class="bn-arbitrator-card">
+                                        <div class="bn-arbitrator-photo-wrap">
+                                            <img src="/bharatnyay_website/static/src/img/arbitrators/rohtash.jpg"
+                                                 alt="Dr. Rohtash — Advocate &amp; Assistant Professor of Law"
+                                                 class="bn-arbitrator-photo"
+                                                 loading="lazy"/>
+                                        </div>
+                                        <div class="bn-arbitrator-body">
+                                            <h3 class="bn-arbitrator-name">Dr. Rohtash</h3>
+                                            <p class="bn-arbitrator-role">Advocate &amp; Assistant Professor of Law</p>
+                                            <p class="bn-arbitrator-location"><i class="fa fa-map-marker" aria-hidden="true"/> Chandigarh</p>
+                                            <p class="bn-arbitrator-bio">Advocate at the Punjab &amp; Haryana High Court and Assistant Professor at the Department of Laws, Panjab University. Holds a Ph.D. in Law on economic legislation and distributive justice, with published research on constitutional economics and capital market regulation.</p>
+                                        </div>
+                                    </article>
+                                </div>
                             </div>
                         </div>
                     </section>
