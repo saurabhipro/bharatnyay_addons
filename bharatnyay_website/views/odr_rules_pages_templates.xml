@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Arbitration and Mediation & Conciliation rules pages (/odr/arbitration, /odr/mediation).
+         Controller passes `book` (data/odr_rules_*.json) and `other` (the sister SOP). -->
+    <template id="page_odr_rules" name="ODR rules (SOP) page">
+        <t t-call="website.layout">
+            <t t-set="bn_meta_title" t-value="book['title']"/>
+            <t t-set="bn_meta_description" t-value="book['lead']"/>
+            <t t-set="bn_seo_canonical" t-value="'/odr/' + book['kind']"/>
+            <t t-call="bharatnyay_website.bn_page_seo"/>
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap">
+                <t t-set="bn_nav_inner" t-value="True"/>
+                <t t-call="bharatnyay_website.bn_public_nav"/>
+                <div class="bn-rb-page" data-bn-rb="">
+
+                    <header class="bn-rb-hero">
+                        <div class="container">
+                            <div class="bn-rb-hero-row">
+                                <div class="bn-rb-hero-copy">
+                                    <nav class="bn-rb-crumbs" aria-label="Breadcrumb">
+                                        <a href="/">Home</a><span aria-hidden="true">/</span><a href="/odr/what-is">About ODR</a><span aria-hidden="true">/</span><span class="is-current"><t t-esc="book['label']"/></span>
+                                    </nav>
+                                    <p class="bn-rb-kicker">SOP 2026 · In force from <t t-esc="book['inForce']"/></p>
+                                    <h1 class="bn-rb-title"><span><t t-esc="book['title'].split(' ')[0]"/></span> <t t-esc="' '.join(book['title'].split(' ')[1:])"/></h1>
+                                    <p class="bn-rb-lead"><t t-esc="book['lead']"/></p>
+                                </div>
+                                <div class="bn-rb-hero-side">
+                                    <div class="bn-rb-chips">
+                                        <span><t t-esc="len(book['chapters'])"/> chapters</span>
+                                        <span><t t-esc="sum(len(c['rules']) for c in book['chapters'])"/> rules</span>
+                                        <span>100% on the Portal</span>
+                                    </div>
+                                    <a t-att-href="book['pdf']" class="bn-rb-btn-primary" download="">
+                                        <i class="fa fa-download" aria-hidden="true"/> Download the PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div class="container bn-rb-tabs-wrap">
+                        <div class="bn-rb-tabs" role="tablist" aria-label="Chapters">
+                            <t t-foreach="book['chapters']" t-as="ch">
+                                <button type="button" role="tab" class="bn-rb-tab" t-att-data-ch="ch['id']" aria-selected="false">
+                                    <span class="bn-rb-tab-badge" aria-hidden="true"><t t-esc="ch['roman']"/></span>
+                                    <span class="bn-rb-tab-text">
+                                        <span class="bn-rb-tab-name"><t t-esc="ch['short']"/></span>
+                                        <span class="bn-rb-tab-count"><t t-esc="len(ch['rules'])"/> <t t-esc="len(ch['rules']) == 1 and 'rule' or 'rules'"/></span>
+                                    </span>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+
+                    <div class="container">
+                        <div class="bn-rb-main">
+                            <aside class="bn-rb-aside" aria-label="In this chapter">
+                                <t t-foreach="book['chapters']" t-as="ch">
+                                    <nav class="bn-rb-index" t-att-data-ch="ch['id']" hidden="hidden">
+                                        <p class="bn-rb-index-label">In this chapter</p>
+                                        <t t-foreach="ch['rules']" t-as="r">
+                                            <a t-att-href="'#rule-%d' % r['n']">
+                                                <span class="bn-rb-index-num"><t t-esc="r['n']"/></span>
+                                                <span class="bn-rb-index-title"><t t-esc="r['title']"/></span>
+                                                <span t-if="r['tag']" class="bn-rb-chip"><t t-esc="r['tag']"/></span>
+                                            </a>
+                                        </t>
+                                    </nav>
+                                </t>
+                            </aside>
+
+                            <div class="bn-rb-docs">
+                                <t t-foreach="book['chapters']" t-as="ch">
+                                    <article class="bn-rb-doc" t-att-data-ch="ch['id']" t-att-aria-labelledby="'ch-h-' + ch['id']" hidden="hidden">
+                                        <header class="bn-rb-doc-head">
+                                            <p>Chapter <t t-esc="ch['roman']"/></p>
+                                            <h2 t-att-id="'ch-h-' + ch['id']"><t t-esc="ch['title']"/></h2>
+                                        </header>
+                                        <div class="bn-rb-rules">
+                                            <t t-foreach="ch['rules']" t-as="r">
+                                                <section class="bn-rb-rule" t-att-id="'rule-%d' % r['n']" t-att-aria-labelledby="'rule-h-%d' % r['n']">
+                                                    <div class="bn-rb-rule-head">
+                                                        <h3 t-att-id="'rule-h-%d' % r['n']"><span><t t-esc="r['n']"/>.</span> <t t-esc="r['title']"/></h3>
+                                                        <span t-if="r['tag']" class="bn-rb-chip bn-rb-chip-lg">Timeline · <t t-esc="r['tag']"/></span>
+                                                    </div>
+                                                    <div class="bn-rb-clauses">
+                                                        <t t-foreach="r['clauses']" t-as="c">
+                                                            <div t-attf-class="bn-rb-clause#{c['sub'] and ' is-sub' or ''}">
+                                                                <span class="bn-rb-clause-num"><t t-esc="c['num']"/></span>
+                                                                <p><strong t-if="c['term']"><t t-esc="c['term']"/> </strong><t t-esc="c['text']"/></p>
+                                                            </div>
+                                                        </t>
+                                                    </div>
+                                                </section>
+                                            </t>
+                                        </div>
+                                        <div class="bn-rb-doc-nav">
+                                            <button type="button" class="bn-rb-nav-btn is-prev" data-goto="" hidden="hidden"><span aria-hidden="true">←</span> <span data-nav-label=""/></button>
+                                            <button type="button" class="bn-rb-nav-btn is-next" data-goto="" hidden="hidden"><span data-nav-label=""/> <span aria-hidden="true">→</span></button>
+                                        </div>
+                                    </article>
+                                </t>
+                            </div>
+                        </div>
+
+                        <a t-att-href="'/odr/' + other['kind']" class="bn-rb-also">
+                            <div>
+                                <p class="bn-rb-also-kicker">Also read</p>
+                                <p class="bn-rb-also-title"><t t-esc="other['title']"/></p>
+                                <p class="bn-rb-also-lead"><t t-esc="other['lead']"/></p>
+                            </div>
+                            <span class="bn-rb-also-btn">Open the rules →</span>
+                        </a>
+                    </div>
+
+                </div>
+                <div class="bn-landing-root"><t t-call="bharatnyay_website.bn_public_footer"/></div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

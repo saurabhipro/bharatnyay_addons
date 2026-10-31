@@ -3,6 +3,7 @@ import logging
 
 from odoo import _, fields, http
 from odoo.http import request
+from odoo.tools.misc import file_open
 
 _logger = logging.getLogger(__name__)
 
@@ -28,15 +29,30 @@ class BharatWebsite(http.Controller):
 
     @http.route(['/odr/proceedings'], type='http', auth='public', website=True)
     def odr_proceedings_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_proceedings')
+        # Content now lives on the What is ODR page
+        return request.redirect('/odr/what-is', code=301)
 
     @http.route(['/odr/model-clause'], type='http', auth='public', website=True)
     def odr_model_clause_page(self, **kw):
         return request.render('bharatnyay_website.page_odr_model_clause')
 
-    @http.route(['/odr/procedural-rules'], type='http', auth='public', website=True)
+    @http.route(['/odr/procedural-rules', '/odr/arbitration-rules'], type='http', auth='public', website=True)
     def odr_procedural_rules_page(self, **kw):
-        return request.render('bharatnyay_website.page_odr_procedural_rules')
+        return request.redirect('/odr/arbitration', code=301)
+
+    @http.route(['/odr/arbitration'], type='http', auth='public', website=True)
+    def odr_arbitration_page(self, **kw):
+        return self._render_rules_page('arbitration', 'mediation')
+
+    @http.route(['/odr/mediation'], type='http', auth='public', website=True)
+    def odr_mediation_page(self, **kw):
+        return self._render_rules_page('mediation', 'arbitration')
+
+    def _render_rules_page(self, kind, other_kind):
+        def load(k):
+            with file_open('bharatnyay_website/data/odr_rules_%s.json' % k) as f:
+                return json.load(f)
+        return request.render('bharatnyay_website.page_odr_rules', {'book': load(kind), 'other': load(other_kind)})
 
     @http.route(
         ['/terms-and-conditions', '/terms'],

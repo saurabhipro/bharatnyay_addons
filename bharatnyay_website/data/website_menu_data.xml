@@ -34,28 +34,20 @@
         <field name="sequence" eval="10"/>
     </record>
 
-    <record id="menu_odr_child_proceedings" model="website.menu">
-        <field name="name">ODR Proceedings</field>
-        <field name="url">/odr/proceedings</field>
-        <field name="website_id" ref="website.default_website"/>
-        <field name="parent_id" ref="menu_about_odr"/>
-        <field name="sequence" eval="15"/>
-    </record>
-
-    <record id="menu_odr_child_procedural_rules" model="website.menu">
-        <field name="name">Procedural Rules</field>
-        <field name="url">/odr/procedural-rules</field>
+    <record id="menu_odr_child_arbitration" model="website.menu">
+        <field name="name">Arbitration</field>
+        <field name="url">/odr/arbitration</field>
         <field name="website_id" ref="website.default_website"/>
         <field name="parent_id" ref="menu_about_odr"/>
         <field name="sequence" eval="20"/>
     </record>
 
-    <record id="menu_odr_child_model_clause" model="website.menu">
-        <field name="name">ODR Model Clause</field>
-        <field name="url">/odr/model-clause</field>
+    <record id="menu_odr_child_mediation" model="website.menu">
+        <field name="name">Mediation &amp; Conciliation</field>
+        <field name="url">/odr/mediation</field>
         <field name="website_id" ref="website.default_website"/>
         <field name="parent_id" ref="menu_about_odr"/>
-        <field name="sequence" eval="25"/>
+        <field name="sequence" eval="30"/>
     </record>
 
     <record id="menu_bharatnyay_about_public" model="website.menu">

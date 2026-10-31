@@ -43,6 +43,22 @@
                             </div>
 
                             <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">E-Filing</span>
+                                <h2>How ODR proceedings run: e-filing and case management</h2>
+                                <h3 class="h5">E-Filing and Case Vetting</h3>
+                                <p class="bn-prose-lead">The platform enables seamless electronic filing and preliminary scrutiny of cases, ensuring procedural compliance and efficient case administration.</p>
+                                <p class="fw-semibold small text-uppercase mb-3" style="letter-spacing:0.08em;color:var(--bn-text-muted-light);">Workflow</p>
+                                <t t-call="bharatnyay_website.bn_prose_workflow"/>
+                            </div>
+
+                            <div class="bn-prose-block">
+                                <span class="bn-prose-kicker">Capabilities</span>
+                                <h2>Platform capabilities on BharatNyay</h2>
+                                <p class="bn-prose-lead">End-to-end tooling aligned to arbitration, mediation, and conciliation programmes — governed, transparent, and built for India-facing ODR.</p>
+                                <t t-call="bharatnyay_website.bn_prose_capabilities"/>
+                            </div>
+
+                            <div class="bn-prose-block">
                                 <span class="bn-prose-kicker">Platform</span>
                                 <h2>Core online ODR services on BharatNyay</h2>
                                 <t t-call="bharatnyay_website.bn_prose_what_odr_services"/>
@@ -68,9 +84,10 @@
                             </div>
 
                             <div class="bn-prose-cta-bar">
-                                <p class="bn-prose-cta-hint">Continue with proceedings stages and platform mapping.</p>
+                                <p class="bn-prose-cta-hint">Read the procedural rules for each modality.</p>
                                 <div class="d-flex flex-wrap gap-2">
-                                    <a href="/odr/proceedings" class="btn bn-btn-pill-primary btn-sm">Proceedings ladder →</a>
+                                    <a href="/odr/arbitration" class="btn bn-btn-pill-primary btn-sm">Arbitration rules →</a>
+                                    <a href="/odr/mediation" class="btn bn-btn-pill-primary btn-sm">Mediation &amp; Conciliation rules →</a>
                                     <a href="/how-it-works" class="btn bn-btn-pill-soft btn-sm">How BharatNyay maps here</a>
                                 </div>
                             </div>

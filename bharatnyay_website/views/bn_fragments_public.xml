@@ -27,9 +27,8 @@
                                 </li>
                                 <li><hr class="dropdown-divider bn-odr-dd-divider"/></li>
                                 <li><a class="dropdown-item" href="/odr/what-is"><i class="fa fa-lightbulb-o bn-dd-icon" aria-hidden="true"/> What is ODR</a></li>
-                                <li><a class="dropdown-item" href="/odr/proceedings"><i class="fa fa-sitemap bn-dd-icon" aria-hidden="true"/> ODR proceedings</a></li>
-                                <li><a class="dropdown-item" href="/odr/procedural-rules"><i class="fa fa-gavel bn-dd-icon" aria-hidden="true"/> Procedural rules</a></li>
-                                <li><a class="dropdown-item" href="/odr/model-clause"><i class="fa fa-file-text-o bn-dd-icon" aria-hidden="true"/> ODR model clause</a></li>
+                                <li><a class="dropdown-item" href="/odr/arbitration"><i class="fa fa-balance-scale bn-dd-icon" aria-hidden="true"/> Arbitration</a></li>
+                                <li><a class="dropdown-item" href="/odr/mediation"><i class="fa fa-handshake-o bn-dd-icon" aria-hidden="true"/> Mediation &amp; Conciliation</a></li>
                             </ul>
                         </li>
                         <li class="nav-item"><a class="nav-link" href="/#testimonials">Stories</a></li>
@@ -78,9 +77,8 @@
                         <h6 class="bn-footer-heading">ODR resources</h6>
                         <nav class="bn-footer-links" aria-label="ODR resources">
                             <a href="/odr/what-is">What is ODR?</a>
-                            <a href="/odr/proceedings">ODR proceedings</a>
-                            <a href="/odr/procedural-rules">Procedural rules</a>
-                            <a href="/odr/model-clause">Model clause</a>
+                            <a href="/odr/arbitration">Arbitration</a>
+                            <a href="/odr/mediation">Mediation &amp; Conciliation</a>
                         </nav>
                     </div>
                     <div class="col-12 col-md-4 col-lg-3">

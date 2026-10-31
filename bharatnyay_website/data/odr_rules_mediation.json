@@ -1,0 +1,647 @@
+{
+ "kind": "mediation",
+ "label": "Mediation & Conciliation",
+ "title": "Mediation & Conciliation Rules",
+ "sopTitle": "Bharat Nyay Mediation & Conciliation SOP 2026",
+ "lead": "The Standard Operating Procedure for mediation and conciliation on Bharat Nyay — from the first request to a binding settlement agreement, conducted entirely on the Portal.",
+ "inForce": "22 June 2026",
+ "chapters": [
+  {
+   "id": "ch1",
+   "roman": "I",
+   "short": "Introductory",
+   "title": "Introductory Rules",
+   "rules": [
+    {
+     "n": 1,
+     "title": "Applicability",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "1.1",
+       "term": "",
+       "text": "The Bharat Nyay Mediation and Conciliation Rules apply where parties have submitted their dispute to Bharat Nyay, in its capacity as a mediation and conciliation institution.",
+       "sub": false
+      },
+      {
+       "num": "1.2",
+       "term": "",
+       "text": "The Bharat Nyay Mediation and Conciliation Rules came into force on 22 June 2026 and, unless the parties have agreed otherwise, shall apply to any mediation or conciliation which is commenced on or after that date.",
+       "sub": false
+      },
+      {
+       "num": "1.3",
+       "term": "",
+       "text": "Where parties have agreed to refer their disputes to Bharat Nyay for mediation or conciliation (whether before or after a dispute has arisen) under the Bharat Nyay Rules of Dispute Resolution, the parties shall be deemed to have agreed that the mediation or conciliation shall be conducted and administered under the Bharat Nyay Mediation and Conciliation Rules, and that these rules have been incorporated by reference into their agreement.",
+       "sub": false
+      },
+      {
+       "num": "1.4",
+       "term": "",
+       "text": "If any rule from the Bharat Nyay Mediation and Conciliation Rules conflict with a mandatory provision of law from which the parties cannot derogate, that mandatory provision will prevail.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "title": "Definitions",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "2.1",
+       "term": "“Case”",
+       "text": "refers to a workspace that the Subject Matter Experts (SME) shall create on the Portal. Every Case will have a unique case ID that it will communicate to the parties.",
+       "sub": false
+      },
+      {
+       "num": "2.2",
+       "term": "“Dispute”",
+       "text": "refers to any action, cause of action, claim, complaint, conflict, difference or disagreement between parties arising out of certain transactions between them.",
+       "sub": false
+      },
+      {
+       "num": "2.3",
+       "term": "“Lawyer”",
+       "text": "refers to an advocate or senior advocate licenced to practice in India as well as any legal practitioner from another jurisdiction that has been admitted to the rolls of a professional body in a recognised jurisdiction or is otherwise licenced to practice law by a government or judicial authority.",
+       "sub": false
+      },
+      {
+       "num": "2.4",
+       "term": "“Portal”",
+       "text": "refers to the online platform available at www.BharatNyay.in. It includes various features (both in-built and interconnected with third-party applications) like video conferencing (with an option to record proceedings and have them transcribed), audio conferencing, chat messenger (supporting audio recording and document exchange), calendar, cloud storage (for storing and exchanging documents), digital signatures and electronic hearing bundle.",
+       "sub": false
+      },
+      {
+       "num": "2.5",
+       "term": "“Subject Matter Experts”",
+       "text": "refers to Bharat Nyay’s administrative and technical personnel that are responsible for coordinating the swift management and resolution of Disputes, including (but not limited to), processing requests for mediation or conciliation and arbitration, financial administration, coordination and tracking progress of the mediation or conciliation proceedings and providing technical assistance.",
+       "sub": false
+      },
+      {
+       "num": "2.6",
+       "term": "“Bharat Nyay”",
+       "text": "refers to Vighnaharta Lawtech Solutions Private Limited, a private company incorporated under the Companies Act, 2013 and having its registered office at Flat No. 402, Tower – 1, Unitech Cascade, Sector Pi-2, Noida, Uttar Pradesh – 201301 and regional office at 1319, Sector-44B, Chandigarh, and include its successors.",
+       "sub": false
+      },
+      {
+       "num": "2.7",
+       "term": "“Bharat Nyay Panel”",
+       "text": "refers to a database of qualified arbitrators, mediators, conciliators, adjudicators and other experts that Bharat Nyay maintains as an internal database.",
+       "sub": false
+      },
+      {
+       "num": "2.8",
+       "term": "“Bharat Nyay Arbitration SOP”",
+       "text": "refers to the Bharat Nyay Arbitration SOP 2026 (and any amendments made from time to time) that govern the conduct of arbitration proceedings on the Portal.",
+       "sub": false
+      },
+      {
+       "num": "2.9",
+       "term": "“Bharat Nyay MC SOP”",
+       "text": "refers to the Bharat Nyay Mediation and Conciliation SOP 2026 (and any amendments made from time to time) that govern the conduct of conciliation proceedings on the Portal.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 3,
+     "title": "Interpretation",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "3.1",
+       "term": "",
+       "text": "In the Bharat Nyay MC Rules:",
+       "sub": false
+      },
+      {
+       "num": "3.1.1",
+       "term": "",
+       "text": "‘mediation’ and ‘conciliation’ have been referred to as interchangeably for the purposes of the procedure. For convenience, references in these rules are to conciliation.",
+       "sub": true
+      },
+      {
+       "num": "3.1.2",
+       "term": "",
+       "text": "any pronoun shall be understood to be gender-neutral; and",
+       "sub": true
+      },
+      {
+       "num": "3.1.3",
+       "term": "",
+       "text": "any singular noun shall be understood to refer to the plural in the appropriate circumstances.",
+       "sub": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch2",
+   "roman": "II",
+   "short": "Commencing",
+   "title": "Commencing Proceedings",
+   "rules": [
+    {
+     "n": 4,
+     "title": "Commencement of conciliation",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "4.1",
+       "term": "",
+       "text": "Any party wishing to commence conciliation (the “First Party”) shall send an email to the Subject Matter Experts (SME) at admin@bharatnyay.in or contact the Subject Matter Experts (SME) by telephone (as provided at www.bharatnyay.in). When contacting the Subject Matter Experts (SME), the First Party should provide the following details:",
+       "sub": false
+      },
+      {
+       "num": "4.1.1",
+       "term": "",
+       "text": "a demand that the Dispute be referred to mediation or conciliation;",
+       "sub": true
+      },
+      {
+       "num": "4.1.2",
+       "term": "",
+       "text": "evidence of agreement between the parties that the dispute will be referred to conciliation under these rules, or confirmation that the parties will enter into a conciliation submission agreement on the Bharat Nyay platform;",
+       "sub": true
+      },
+      {
+       "num": "4.1.3",
+       "term": "",
+       "text": "full names and contact details (including postal address(es), telephone number(s), facsimile number(s) and electronic mail address(es), to the extent known) of the other parties in the conciliation;",
+       "sub": true
+      },
+      {
+       "num": "4.1.4",
+       "term": "",
+       "text": "a summary of the Dispute;",
+       "sub": true
+      },
+      {
+       "num": "4.1.5",
+       "term": "",
+       "text": "if applicable, a statement of any matters which the parties have previously agreed relating to how the conciliation proceedings should be conducted; and",
+       "sub": true
+      },
+      {
+       "num": "4.1.6",
+       "term": "",
+       "text": "the languages that the parties (and their Lawyers) are fluent in.",
+       "sub": true
+      },
+      {
+       "num": "4.2",
+       "term": "",
+       "text": "The Subject Matter Experts (SME) shall then provide the First Party and its Lawyers access to the Case on the Portal.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 5,
+     "title": "Service",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "5.1",
+       "term": "",
+       "text": "On receipt of the information (referred to in clause 4.1 above), the Subject Matter Experts (SME) shall, at the First Party’s expense, send a notice to the other parties (“Notice”), in such format as adopted by the Subject Matter Experts (SME). The Notice shall be sent by tracked email, SMS message and (if required) by speed post or by registered post with acknowledgment due, to the address(es) of the other parties.",
+       "sub": false
+      },
+      {
+       "num": "5.2",
+       "term": "",
+       "text": "If the Notice is refused by the other parties or undelivered for any reason, or the other parties, having accepted service of the Notice, do not respond to the Subject Matter Experts (SME) or register on the Portal within the period prescribed in the Notice, the conciliation proceedings will stand terminated. The parties will then have to make a joint request to the Subject Matter Experts (SME) to restart the conciliation proceedings.",
+       "sub": false
+      },
+      {
+       "num": "5.3",
+       "term": "",
+       "text": "The date of commencement of the conciliation proceedings shall be the date on which all relevant parties to the conciliation have accessed the Case on the Portal.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch3",
+   "roman": "III",
+   "short": "Conciliation",
+   "title": "Conciliation Proceedings",
+   "rules": [
+    {
+     "n": 6,
+     "title": "Appointment of the conciliator by the Subject Matter Experts (SME)",
+     "tag": "2 days",
+     "clauses": [
+      {
+       "num": "6.1",
+       "term": "",
+       "text": "Unless agreed by the parties, the Subject Matter Experts (SME) shall appoint only one conciliator. The conciliator shall be appointed within two days of the date of commencement of the conciliation.",
+       "sub": false
+      },
+      {
+       "num": "6.2",
+       "term": "",
+       "text": "The Subject Matter Experts (SME) shall appoint the conciliator from the Bharat Nyay Panel while having due regard to:",
+       "sub": false
+      },
+      {
+       "num": "6.2.1",
+       "term": "",
+       "text": "the nature and circumstances of the Dispute;",
+       "sub": true
+      },
+      {
+       "num": "6.2.2",
+       "term": "",
+       "text": "the nationality and location of the parties as well as the languages spoken by the parties;",
+       "sub": true
+      },
+      {
+       "num": "6.2.3",
+       "term": "",
+       "text": "any qualifications required of the conciliator by the agreement of the parties;",
+       "sub": true
+      },
+      {
+       "num": "6.2.4",
+       "term": "",
+       "text": "the conciliator’s availability and ability to conduct the conciliation promptly and efficiently; and",
+       "sub": true
+      },
+      {
+       "num": "6.2.5",
+       "term": "",
+       "text": "other considerations that ensure that the conciliator is independent and impartial.",
+       "sub": true
+      }
+     ]
+    },
+    {
+     "n": 7,
+     "title": "Statutory Declaration",
+     "tag": "2 days",
+     "clauses": [
+      {
+       "num": "7.1",
+       "term": "",
+       "text": "The Conciliator shall submit a declaration in accordance with section 12, Fifth Schedule, Sixth Schedule and Seventh Schedule of the Arbitration and Conciliation Act, 1996 as amended from time to time within two days from the appointment.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 8,
+     "title": "Challenge to the conciliator",
+     "tag": "2 days",
+     "clauses": [
+      {
+       "num": "8.1",
+       "term": "",
+       "text": "If any of the parties decides to challenge the appointment of the conciliator, whether for an alleged lack of impartiality, independence or otherwise, it shall do so within 2 days of it having been notified about the conciliator specifying the grounds on which the conciliator has been challenged.",
+       "sub": false
+      },
+      {
+       "num": "8.2",
+       "term": "",
+       "text": "If a conciliator is challenged, the Subject Matter Experts (SME) shall appoint a new conciliator within 36 hours. If the new conciliator is also challenged by the party that challenged the first conciliator (who was replaced), it shall do so within 24 hours of being notified. In its second challenge application, the party shall specify the grounds on which the conciliator has been challenged. The Subject Matter Experts (SME) shall then, after hearing the other parties, decide on the challenge application within 60 hours and take appropriate steps.",
+       "sub": false
+      },
+      {
+       "num": "8.3",
+       "term": "",
+       "text": "The Subject Matter Experts (SME) may constitute an independent committee to examine and decide each challenge application.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 9,
+     "title": "Submission of statements to the conciliator",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "9.1",
+       "term": "",
+       "text": "The conciliator, upon appointment, may request each party to submit a brief written statement describing the general nature of the dispute and the points at issue. Each party shall send a copy of such statement to the other party on the Portal.",
+       "sub": false
+      },
+      {
+       "num": "9.2",
+       "term": "",
+       "text": "The conciliator may request parties to submit further written statements of their position and the facts and grounds in support thereof, supplemented by any documents and other evidence that the party deems appropriate.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 10,
+     "title": "Conduct of the proceedings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "10.1",
+       "term": "",
+       "text": "The conciliator may conduct the proceedings in such manner as it considers appropriate to ensure the avoidance of unnecessary delay and expense, having regard to the complexity of the issues involved, and provided that such procedures ensure fair and equal treatment of the parties.",
+       "sub": false
+      },
+      {
+       "num": "10.2",
+       "term": "",
+       "text": "The proceedings will be conducted entirely on the Portal including audio-video or audio-only hearings and exchange of correspondence.",
+       "sub": false
+      },
+      {
+       "num": "10.3",
+       "term": "",
+       "text": "The parties shall use the cloud storage, virtual hearing rooms and breakout rooms on the Portal to exchange and store documents.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 11,
+     "title": "Role of conciliator",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "11.1",
+       "term": "",
+       "text": "The conciliator shall assist the parties in an independent and impartial manner in their attempt to reach an amicable settlement of their dispute.",
+       "sub": false
+      },
+      {
+       "num": "11.2",
+       "term": "",
+       "text": "The conciliator shall be guided by principles of objectivity, fairness and justice, giving consideration to, among other things, the rights and obligations of the parties, the usages of the trade concerned and the circumstances surrounding the dispute, including any established practices between the parties.",
+       "sub": false
+      },
+      {
+       "num": "11.3",
+       "term": "",
+       "text": "The conciliator may, at any stage of the conciliation proceedings, make proposals for a settlement of the dispute. Such proposals are not required to be in writing or accompanied by reasons.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 12,
+     "title": "Co-operation of parties with conciliator",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "12.1",
+       "term": "",
+       "text": "The parties shall act and cooperate with the conciliator in good faith.",
+       "sub": false
+      },
+      {
+       "num": "12.2",
+       "term": "",
+       "text": "The parties shall use their reasonable endeavours to comply with requests by the conciliator to submit written materials, provide evidence and attend meetings.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 13,
+     "title": "Confidentiality",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "13.1",
+       "term": "",
+       "text": "All documentary or other evidence produced or exchanged during the conciliation proceedings shall be treated as completely confidential (unless it already exists in the public domain). The parties agree that no information exchanged during the conciliation proceedings may be disclosed to any third party unless it is required to do so by law or by an order of a competent court or regulatory authority.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch4",
+   "roman": "IV",
+   "short": "Settlement",
+   "title": "Settlement and Other Proceedings",
+   "rules": [
+    {
+     "n": 14,
+     "title": "Settlement agreement",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "14.1",
+       "term": "",
+       "text": "When it appears to the conciliator that there exist elements of a settlement which may be acceptable to the parties, the conciliator shall formulate the terms of a possible settlement and submit them to the parties for their comments. After receiving the comments from the parties, the conciliator may reformulate the terms of a possible settlement.",
+       "sub": false
+      },
+      {
+       "num": "14.2",
+       "term": "",
+       "text": "If the parties reach agreement on a settlement of the dispute, they may draw up and sign a written settlement agreement. If requested by the parties, the conciliator may draw up, or assist the parties in drawing up, the settlement agreement.",
+       "sub": false
+      },
+      {
+       "num": "14.3",
+       "term": "",
+       "text": "When the parties sign the settlement agreement, it shall be final and binding on the parties.",
+       "sub": false
+      },
+      {
+       "num": "14.4",
+       "term": "",
+       "text": "The conciliator shall authenticate the settlement agreement and furnish a copy to the parties.",
+       "sub": false
+      },
+      {
+       "num": "14.5",
+       "term": "",
+       "text": "The settlement agreement shall have the same status and effect as if it is an arbitral award on agreed terms on the substance of the dispute rendered in accordance with the Bharat Nyay Arbitration SOP 2026.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 15,
+     "title": "Termination of conciliation proceedings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "15.1",
+       "term": "",
+       "text": "The conciliation proceedings shall be terminated by:",
+       "sub": false
+      },
+      {
+       "num": "15.1.1",
+       "term": "",
+       "text": "the signing of the settlement agreement by the parties, on the date of the agreement;",
+       "sub": true
+      },
+      {
+       "num": "15.1.2",
+       "term": "",
+       "text": "a written declaration of the conciliator, after consultation with the parties, to the effect that further efforts at conciliation are no longer justified, on the date of the declaration;",
+       "sub": true
+      },
+      {
+       "num": "15.1.3",
+       "term": "",
+       "text": "a written declaration of all parties addressed to the conciliator to the effect that the conciliation proceedings are terminated, on the date of the declaration; and/or",
+       "sub": true
+      },
+      {
+       "num": "15.1.4",
+       "term": "",
+       "text": "a written declaration of a party to the other party and the conciliator, if appointed, to the effect that the conciliation proceedings are terminated, on the date of the declaration.",
+       "sub": true
+      },
+      {
+       "num": "15.2",
+       "term": "",
+       "text": "If there is an arbitration clause or the parties submit to arbitration upon termination of the conciliation proceedings (and no settlement agreement is signed), then the dispute will be referred to arbitration under Bharat Nyay Arbitration Rules 2026.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 16,
+     "title": "Admissibility of conciliation proceedings in other proceedings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "16.1",
+       "term": "",
+       "text": "The parties shall not rely on any communications or evidence exchanged during the conciliation proceedings, in any arbitration, judicial, quasi-judicial, administrative or quasi-administrative proceedings without prior consent of the other parties to the conciliation (“Conciliation Protection”). The Conciliation Protection includes (but is not limited to):",
+       "sub": false
+      },
+      {
+       "num": "16.1.1",
+       "term": "",
+       "text": "suggestions and views expressed by any party for possible resolution of the dispute during the conciliation proceedings;",
+       "sub": true
+      },
+      {
+       "num": "16.1.2",
+       "term": "",
+       "text": "any admission/acceptance made by any party during the conciliation proceedings;",
+       "sub": true
+      },
+      {
+       "num": "16.1.3",
+       "term": "",
+       "text": "any proposals made by the conciliator; and",
+       "sub": true
+      },
+      {
+       "num": "16.1.4",
+       "term": "",
+       "text": "willingness expressed by any party in accepting a proposal made by the conciliator.",
+       "sub": true
+      }
+     ]
+    },
+    {
+     "n": 17,
+     "title": "Role of conciliator in other proceedings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "17.1",
+       "term": "",
+       "text": "Unless otherwise agreed by the parties:",
+       "sub": false
+      },
+      {
+       "num": "17.1.1",
+       "term": "",
+       "text": "the conciliator shall not act as an arbitrator, Lawyer or representative of either party in any arbitration, judicial, quasi-judicial, administrative or quasi-administrative proceedings in respect of the Dispute that was the subject of the conciliation proceedings; and",
+       "sub": true
+      },
+      {
+       "num": "17.1.2",
+       "term": "",
+       "text": "the conciliator shall not be presented by the parties as a witness in any arbitration, judicial, quasi-judicial, administrative or quasi-administrative proceedings.",
+       "sub": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch5",
+   "roman": "V",
+   "short": "Miscellaneous",
+   "title": "Miscellaneous",
+   "rules": [
+    {
+     "n": 18,
+     "title": "Exclusion of Liability",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "18.1",
+       "term": "",
+       "text": "Without prejudice to any existing rule of law, the conciliator shall not be liable to the parties (or any third party) for any act or omission in connection with proceedings conducted under the Bharat Nyay Conciliation Rules, except for actions directly arising out of gross negligence.",
+       "sub": false
+      },
+      {
+       "num": "18.2",
+       "term": "",
+       "text": "The Subject Matter Experts (SME) or Bharat Nyay shall not be liable to the parties (or any third party) for any act or omission in connection with any proceedings conducted under the Bharat Nyay Conciliation Rules, except for actions directly arising out of gross negligence.",
+       "sub": false
+      },
+      {
+       "num": "18.3",
+       "term": "",
+       "text": "After a settlement agreement has been executed, the conciliator, Bharat Nyay and the Subject Matter Experts (SME) shall not be under any obligation to make any statement to any person about any matter concerning the proceedings, and no party shall seek to make the conciliator, Bharat Nyay and the Subject Matter Experts (SME) a witness in any legal proceeding.",
+       "sub": false
+      },
+      {
+       "num": "18.4",
+       "term": "",
+       "text": "No action for defamation, libel, slander, or similar causes of action can be taken against the conciliator, Bharat Nyay or the Subject Matter Experts (SME) in connection with any statement given, comment or discussion that took place during the conciliation process.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 19,
+     "title": "Data Protection and Record Keeping",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "19.1",
+       "term": "",
+       "text": "Bharat Nyay shall comply with all data protection laws issued by the Government of India from time to time.",
+       "sub": false
+      },
+      {
+       "num": "19.2",
+       "term": "",
+       "text": "Bharat Nyay shall comply with any relevant data security guidelines and technical standards issued by the Government of India from time to time.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 20,
+     "title": "Governing Law and Settlement of Disputes",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "20.1",
+       "term": "",
+       "text": "Any claims arising out of or in connection with the administration of the conciliation proceedings by the Subject Matter Experts (SME) under the Bharat Nyay Conciliation Rules shall be governed by the laws of India and settled by the courts in Chandigarh, India which shall have exclusive jurisdiction.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "pdf": "/bharatnyay_website/static/src/files/bharatnyay-mediation-conciliation-sop-2026.pdf"
+}

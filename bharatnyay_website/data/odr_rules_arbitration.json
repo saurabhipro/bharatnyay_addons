@@ -1,0 +1,1026 @@
+{
+ "kind": "arbitration",
+ "label": "Arbitration",
+ "title": "Arbitration Rules",
+ "sopTitle": "Bharat Nyay Arbitration SOP 2026",
+ "lead": "The Standard Operating Procedure that governs every arbitration administered by Bharat Nyay — from the Request for Arbitration to enforcement of the Award, conducted entirely on the Portal.",
+ "inForce": "22 June 2026",
+ "chapters": [
+  {
+   "id": "ch1",
+   "roman": "I",
+   "short": "Introductory",
+   "title": "Introductory Rules",
+   "rules": [
+    {
+     "n": 1,
+     "title": "Applicability",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "1.1",
+       "term": "",
+       "text": "The Bharat Nyay Arbitration Rules apply where parties have submitted their dispute to Bharat Nyay, in its capacity as an arbitral institution.",
+       "sub": false
+      },
+      {
+       "num": "1.2",
+       "term": "",
+       "text": "The Bharat Nyay Arbitration Rules came into force on 22 June 2026 (superseding the earlier arbitration rules) and, unless the parties have agreed otherwise, shall apply to any arbitration which is commenced on or after that date.",
+       "sub": false
+      },
+      {
+       "num": "1.3",
+       "term": "",
+       "text": "Where parties have agreed to refer their disputes to Bharat Nyay for arbitration (whether before or after a dispute has arisen), the parties shall be deemed to have agreed that the arbitration shall be conducted and administered under the Bharat Nyay Arbitration Rules (unless the parties have agreed otherwise) and that these Arbitration Rules have been incorporated by reference into their agreement.",
+       "sub": false
+      },
+      {
+       "num": "1.4",
+       "term": "",
+       "text": "If any rule from the Bharat Nyay Arbitration Rules conflict with a mandatory provision of law applicable to the arbitration or the arbitration agreement from which the parties cannot derogate, that mandatory provision will prevail.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 2,
+     "title": "Definitions",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "2.1",
+       "term": "“Arbitral Tribunal”",
+       "text": "refers to the sole Arbitrator or a panel of three Arbitrators.",
+       "sub": false
+      },
+      {
+       "num": "2.2",
+       "term": "“Arbitration Agreement”",
+       "text": "refers to either an arbitration clause incorporated in an agreement agreed by or between the parties or any other form of a written agreement between the parties providing for the settlement of disputes by arbitration. The agreement can be contained in a tangible form of a document, such as a contract, letter, telegram, telex, facsimile, electronic data interchange (EDI), email or message.",
+       "sub": false
+      },
+      {
+       "num": "2.3",
+       "term": "“Arbitrator”",
+       "text": "refers to an expert appointed (or to be appointed) to resolve any Dispute through arbitration under the Bharat Nyay Arbitration Rules.",
+       "sub": false
+      },
+      {
+       "num": "2.4",
+       "term": "“Award”",
+       "text": "refers to the arbitral award passed by the Arbitral Tribunal under the Bharat Nyay Arbitration Rules.",
+       "sub": false
+      },
+      {
+       "num": "2.5",
+       "term": "“Case”",
+       "text": "refers to a workspace that the SME (Subject Matter Experts) shall create on the Portal. Every Case will have a unique case ID that it will communicate to the parties. The date of commencement of the arbitration will be included in the case ID.",
+       "sub": false
+      },
+      {
+       "num": "2.6",
+       "term": "“Dispute”",
+       "text": "refers to any action, cause of action, claim, complaint or difference between parties arising out of certain transactions between them.",
+       "sub": false
+      },
+      {
+       "num": "2.7",
+       "term": "“Electronic Signature”",
+       "text": "refers to data in electronic form, in or attached to a data message, used to identify a signer and to express acknowledgment of the content of the data message.",
+       "sub": false
+      },
+      {
+       "num": "2.8",
+       "term": "“Lawyer”",
+       "text": "refers to an advocate or senior advocate licensed to practice in India as well as any legal practitioner from another jurisdiction that has been admitted to the rolls of a professional body in a recognized jurisdiction or is otherwise licensed to practice law by a government or judicial authority.",
+       "sub": false
+      },
+      {
+       "num": "2.9",
+       "term": "“Portal”",
+       "text": "refers to the online arbitration platform available at www.bharatnyay.in and that is available to download from the Android Play Store, Apple App Store and Windows Market Store. It includes various features (both in-built and interconnected with third-party applications) like video conferencing (with an option to record proceedings and have them transcribed), audio conferencing with telephone dial-in, chat messenger (supporting audio-recording and document exchange), calendar, cloud storage (for storing and exchanging documents), digital signatures and electronic hearing bundle.",
+       "sub": false
+      },
+      {
+       "num": "2.10",
+       "term": "“Respondent”",
+       "text": "refers to any party to the arbitration that is defending the Dispute and against whom relief is being claimed.",
+       "sub": false
+      },
+      {
+       "num": "2.11",
+       "term": "“SME (Subject Matter Experts)”",
+       "text": "refers to Bharat Nyay’s administrative and technical personnel that are responsible for coordinating the swift management and resolution of Disputes, including (but not limited to), processing requests for arbitration, financial administration, coordination and tracking progress of the arbitration proceedings and providing technical assistance.",
+       "sub": false
+      },
+      {
+       "num": "2.12",
+       "term": "“Bharat Nyay”",
+       "text": "refers to Vighnaharta Lawtech Solutions Private Limited, a private company incorporated under the Companies Act, 2013 and having its registered office at Flat No. 402, Tower – 1, Unitech Cascade, Sector Pi-2, Noida, Uttar Pradesh – 201301 and regional office at 1319, Sector-44B, Chandigarh, and include its successors.",
+       "sub": false
+      },
+      {
+       "num": "2.13",
+       "term": "“Bharat Nyay Panel”",
+       "text": "refers to a list of qualified arbitrators that Bharat Nyay maintains as an internal database.",
+       "sub": false
+      },
+      {
+       "num": "2.14",
+       "term": "“Bharat Nyay Arbitration Rules”",
+       "text": "refers to these rules (and any amendments made from time to time) that govern the conduct of arbitration proceedings.",
+       "sub": false
+      },
+      {
+       "num": "2.15",
+       "term": "“Bharat Nyay Arbitration Fees Schedule”",
+       "text": "refers to a schedule of fees that Bharat Nyay would charge the parties for providing secretarial, administrative, technical and other support during the arbitration as well as providing access to the Portal. The Bharat Nyay Arbitration Fees Schedule shall form part of the Bharat Nyay Arbitration Rules.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 3,
+     "title": "Interpretation",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "3.1",
+       "term": "",
+       "text": "In the Bharat Nyay Arbitration Rules:",
+       "sub": false
+      },
+      {
+       "num": "3.1.1",
+       "term": "",
+       "text": "any pronoun shall be understood to be gender-neutral; and",
+       "sub": true
+      },
+      {
+       "num": "3.1.2",
+       "term": "",
+       "text": "any singular noun shall be understood to refer to the plural in the appropriate circumstances.",
+       "sub": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch2",
+   "roman": "II",
+   "short": "Commencing",
+   "title": "Commencing Arbitration Proceedings",
+   "rules": [
+    {
+     "n": 4,
+     "title": "Commencement of arbitration",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "4.1",
+       "term": "",
+       "text": "Any party wishing to commence an arbitration (the “Claimant”) shall send an email to the SME (Subject Matter Experts) at admin@bharatnyay.in or contact the SME (Subject Matter Experts) by telephone (as provided at www.bharatnyay.in). When contacting the SME (Subject Matter Experts), the Claimant should provide the following details (“Request for Arbitration”):",
+       "sub": false
+      },
+      {
+       "num": "4.1.1",
+       "term": "",
+       "text": "a demand that the Dispute be referred to arbitration;",
+       "sub": true
+      },
+      {
+       "num": "4.1.2",
+       "term": "",
+       "text": "details of the Arbitration Agreement or a confirmation that the Claimant shall enter into (along with the Respondent) a submission agreement where the parties shall refer their Dispute to Bharat Nyay and have it resolved under the Bharat Nyay Arbitration Rules;",
+       "sub": true
+      },
+      {
+       "num": "4.1.3",
+       "term": "",
+       "text": "full names and contact details (including postal address(es), telephone number(s), facsimile number(s) and electronic mail address(es), to the extent known) of the Respondent, other Claimants and their Lawyers, if any;",
+       "sub": true
+      },
+      {
+       "num": "4.1.4",
+       "term": "",
+       "text": "a summary of the Dispute, including an estimate of the monetary value of the Dispute; and",
+       "sub": true
+      },
+      {
+       "num": "4.1.5",
+       "term": "",
+       "text": "a confirmation that it shall pay and shall be liable to pay the arbitration fees in accordance with the Bharat Nyay Arbitration Fees Schedule.",
+       "sub": true
+      },
+      {
+       "num": "4.2",
+       "term": "",
+       "text": "The date of receipt of the complete Request for Arbitration by the SME (Subject Matter Experts) shall be deemed the date of commencement of the arbitration.",
+       "sub": false
+      },
+      {
+       "num": "4.3",
+       "term": "",
+       "text": "On receipt of a valid Request for Arbitration, the SME (Subject Matter Experts) shall provide the Claimant and the Claimant’s Lawyers access to the Case on the Portal.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 5,
+     "title": "Service",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "5.1",
+       "term": "",
+       "text": "On receipt of a valid Request for Arbitration, the SME (Subject Matter Experts) shall, at the Claimant’s expense, send a notice to the Respondent (“Notice”), in such format as adopted by the SME (Subject Matter Experts). The Notice shall be sent by tracked email, fax, WhatsApp and by speed post or by registered post with acknowledgment due, to the address(es) of the Respondent as specified in the Request for Arbitration.",
+       "sub": false
+      },
+      {
+       "num": "5.2",
+       "term": "",
+       "text": "The SME (Subject Matter Experts) shall cause for any documentary proof of delivery of the Notice to the Respondent to be securely stored on the Portal.",
+       "sub": false
+      },
+      {
+       "num": "5.3",
+       "term": "",
+       "text": "The Notice shall include a mechanism using which the Respondent will be able to access the Case on the Portal.",
+       "sub": false
+      },
+      {
+       "num": "5.4",
+       "term": "",
+       "text": "If the Notice is refused by the Respondent or undelivered for any reason, or the Respondent, having accepted service of the Notice, does not register on the Portal within the period prescribed in the Notice, the arbitration shall proceed ex-parte.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 6,
+     "title": "Response to the Request for Arbitration",
+     "tag": "14 days",
+     "clauses": [
+      {
+       "num": "6.1",
+       "term": "",
+       "text": "Upon receipt of the Notice or otherwise having knowledge or information about the commencement of the arbitration, the Respondent (along with Respondent’s Lawyers) should login to the Portal using the instructions mentioned in the Notice.",
+       "sub": false
+      },
+      {
+       "num": "6.2",
+       "term": "",
+       "text": "The Respondent may then serve a response to the Request for Arbitration (“Response”) using the Portal within 14 days of receipt of the Request for Arbitration. The Response shall contain (or be accompanied by):",
+       "sub": false
+      },
+      {
+       "num": "6.2.1",
+       "term": "",
+       "text": "a confirmation or denial of all or part of the claims;",
+       "sub": true
+      },
+      {
+       "num": "6.2.2",
+       "term": "",
+       "text": "the full names and contact details (including postal address(es), telephone number(s), facsimile number(s) and electronic mail address(es)) of other Respondents and Lawyers, if any;",
+       "sub": true
+      },
+      {
+       "num": "6.2.3",
+       "term": "",
+       "text": "a statement briefly describing the nature and circumstances of the Dispute and the defence to the claim, including any counterclaims advanced against any other party to the arbitration, specifying the relief claimed, including the amounts of any quantified counterclaims and, to the extent possible, an estimate of the monetary value of any other counterclaims; and",
+       "sub": true
+      },
+      {
+       "num": "6.2.4",
+       "term": "",
+       "text": "a confirmation that it shall pay, and shall be liable to pay filing fee for the counterclaim in accordance with the Bharat Nyay Arbitration Fees Schedule.",
+       "sub": true
+      },
+      {
+       "num": "6.3",
+       "term": "",
+       "text": "If the Respondent does not intend to serve a Response but otherwise seeks to defend the Claimant’s claims, it shall inform the SME (Subject Matter Experts) within 4 days of receipt of the Request for Arbitration.",
+       "sub": false
+      },
+      {
+       "num": "6.4",
+       "term": "",
+       "text": "If the Respondent requires more than 14 days to submit the Response, it shall submit an application to the SME (Subject Matter Experts) on the Portal. The decision of the SME (Subject Matter Experts) on such an application shall be final.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch3",
+   "roman": "III",
+   "short": "Tribunal",
+   "title": "Arbitral Tribunal and Arbitrator",
+   "rules": [
+    {
+     "n": 7,
+     "title": "Appointment of Arbitrator by SME (Subject Matter Experts)",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "7.1",
+       "term": "Where a prior arbitration agreement exists.",
+       "text": "Where the parties have entered into a prior arbitration agreement containing a specific clause providing for the reference of disputes between them to an arbitrator or an arbitral tribunal, and a dispute arises pursuant to such agreement, the parties shall first be entitled to appoint the arbitrator or constitute the arbitral tribunal in accordance with the procedure mutually agreed upon between them. Where both parties fail to mutually agree upon or appoint an arbitrator, or otherwise fail to constitute the arbitral tribunal in accordance with the agreed procedure, Bharat Nyay may facilitate the appointment of an independent and impartial arbitrator or the constitution of an independent and impartial arbitral tribunal, subject to the terms of the arbitration agreement, the applicable provisions of the Arbitration and Conciliation Act, 1996, and other applicable laws. Any appointment facilitated by Bharat Nyay shall be subject to the parties’ arbitration agreement, the applicable statutory appointment procedure, and the requirements of independence, impartiality, and disclosure of circumstances that may give rise to justifiable doubts regarding the arbitrator’s independence or impartiality. Nothing in this provision shall be construed as overriding a mandatory statutory procedure for the appointment of an arbitrator or as conferring upon Bharat Nyay any power that is not available to it under the arbitration agreement or applicable law.",
+       "sub": false
+      },
+      {
+       "num": "7.2",
+       "term": "",
+       "text": "Unless agreed by the parties, the Arbitral Tribunal shall comprise a sole arbitrator appointed by the SME (Subject Matter Experts). The SME (Subject Matter Experts) shall appoint the arbitrator from the Bharat Nyay Panel while having due regard to:",
+       "sub": false
+      },
+      {
+       "num": "7.2.1",
+       "term": "",
+       "text": "the nature and circumstances of the Dispute;",
+       "sub": true
+      },
+      {
+       "num": "7.2.2",
+       "term": "",
+       "text": "the nationality and location of the parties;",
+       "sub": true
+      },
+      {
+       "num": "7.2.3",
+       "term": "",
+       "text": "any qualifications required of the arbitrator by the agreement of the parties;",
+       "sub": true
+      },
+      {
+       "num": "7.2.4",
+       "term": "",
+       "text": "the arbitrator’s availability and ability to conduct the arbitration promptly and efficiently; and",
+       "sub": true
+      },
+      {
+       "num": "7.2.5",
+       "term": "",
+       "text": "other considerations that ensure that the arbitrator is independent and impartial.",
+       "sub": true
+      }
+     ]
+    },
+    {
+     "n": 8,
+     "title": "Appointment of Arbitrator by the parties",
+     "tag": "5 days",
+     "clauses": [
+      {
+       "num": "8.1",
+       "term": "",
+       "text": "If the parties have agreed that an arbitrator is to be appointed by one or more of the parties to the Dispute, or by arbitrators already appointed, then such agreement shall be treated as an agreement to nominate an arbitrator under the Bharat Nyay Arbitration Rules.",
+       "sub": false
+      },
+      {
+       "num": "8.2",
+       "term": "",
+       "text": "The parties may nominate their arbitrators in the Request for Arbitration, Response or separately on the Portal in the following manner:",
+       "sub": false
+      },
+      {
+       "num": "8.2.1",
+       "term": "",
+       "text": "if a sole arbitrator is to be appointed, either party may propose to the other the names of one or more persons, one of whom would serve as the sole arbitrator. The parties shall then have to agree on the sole arbitrator within 5 days, failing which the SME (Subject Matter Experts) shall appoint the sole arbitrator from the Bharat Nyay Panel; or",
+       "sub": true
+      },
+      {
+       "num": "8.2.2",
+       "term": "",
+       "text": "if three arbitrators are to be appointed, the Claimant and Respondent shall each nominate one arbitrator. The presiding arbitrator shall then be nominated by the party-appointed arbitrators within 5 days, failing which the SME (Subject Matter Experts) shall appoint the presiding arbitrator from the Bharat Nyay Panel.",
+       "sub": true
+      }
+     ]
+    },
+    {
+     "n": 9,
+     "title": "Constitution of the Arbitral Tribunal",
+     "tag": "7 days",
+     "clauses": [
+      {
+       "num": "9.1",
+       "term": "",
+       "text": "The SME (Subject Matter Experts) shall appoint the arbitrators under Rule 7 or 8 above within 7 days of receiving the Response or the parties nominations. If the SME (Subject Matter Experts) does not receive a Response or the parties nominations, then it shall appoint the arbitrators promptly after the period to file a Response has elapsed.",
+       "sub": false
+      },
+      {
+       "num": "9.2",
+       "term": "",
+       "text": "Every Arbitrator conducting the arbitration under the Bharat Nyay Arbitration Rules shall be and remain at all times independent and impartial, and shall not act as an advocate for any party whether or not nominated by the parties. No Arbitrator shall advise any party or comment on the merits, or outcome, of the Dispute.",
+       "sub": false
+      },
+      {
+       "num": "9.3",
+       "term": "",
+       "text": "Before appointment or confirmation, the Arbitrator shall confirm on the Portal that the Arbitrator is independent, impartial and available to act as an arbitrator on the Dispute.",
+       "sub": false
+      },
+      {
+       "num": "9.4",
+       "term": "",
+       "text": "An Arbitrator shall immediately disclose to the parties, and to the other Arbitrators (as well as to the SME (Subject Matter Experts)), any circumstances which may arise at any time during the arbitration which may give rise to justifiable doubts as to the Arbitrator’s impartiality or independence.",
+       "sub": false
+      },
+      {
+       "num": "9.5",
+       "term": "",
+       "text": "No party or anyone acting on its behalf shall, at any time, have any ex-parte communication relating to the Dispute with the Arbitral Tribunal.",
+       "sub": false
+      },
+      {
+       "num": "9.6",
+       "term": "",
+       "text": "After appointment, the Arbitrator will have access to the Case on the Portal. The terms of appointment of the Arbitrator shall be fixed by the SME (Subject Matter Experts).",
+       "sub": false
+      },
+      {
+       "num": "9.7",
+       "term": "",
+       "text": "By accepting appointment, the Arbitrator undertakes to carry out his/her responsibilities in accordance with the Bharat Nyay Arbitration Rules.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 10,
+     "title": "Challenge to appointment of arbitrator",
+     "tag": "5 days",
+     "clauses": [
+      {
+       "num": "10.1",
+       "term": "",
+       "text": "If any of the parties decides to challenge the appointment of the Arbitrator, whether for an alleged lack of impartiality or independence or otherwise, it shall do so within 5 days of it having been notified about the Arbitrator specifying: (a) the grounds on which the Arbitrator has been challenged; and (b) suggestions for an alternate arbitrator.",
+       "sub": false
+      },
+      {
+       "num": "10.2",
+       "term": "",
+       "text": "If an Arbitrator is challenged, the SME (Subject Matter Experts) shall decide on the challenge application within 5 days and take appropriate steps to change the Arbitrator (if required). While deciding on the challenge of an Arbitrator, it may give the other parties an opportunity of making representations.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch4",
+   "roman": "IV",
+   "short": "Proceedings",
+   "title": "Proceedings",
+   "rules": [
+    {
+     "n": 11,
+     "title": "Validity of the Arbitration Agreement",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "11.1",
+       "term": "",
+       "text": "The Arbitral Tribunal shall have the power to determine the existence and validity of an Arbitration Agreement and their jurisdiction over the Dispute.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 12,
+     "title": "Interim Relief",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "12.1",
+       "term": "",
+       "text": "The Arbitral Tribunal may, at the request of a party, issue an order granting an injunction or any other interim relief it deems appropriate. The Arbitral Tribunal may order the party requesting interim relief to provide appropriate security in connection with the relief sought.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 13,
+     "title": "Statement of Claim",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "13.1",
+       "term": "",
+       "text": "The Claimant shall, within a period of time to be determined by the Arbitral Tribunal at the Preliminary Meeting, serve its Statement of Claim using the Portal. The Statement of Claim should set out:",
+       "sub": false
+      },
+      {
+       "num": "13.1.1",
+       "term": "",
+       "text": "a statement of facts supporting the claim;",
+       "sub": true
+      },
+      {
+       "num": "13.1.2",
+       "term": "",
+       "text": "the legal grounds or arguments supporting the claim;",
+       "sub": true
+      },
+      {
+       "num": "13.1.3",
+       "term": "",
+       "text": "the relief claimed, together with the amount of all quantifiable claims; and",
+       "sub": true
+      },
+      {
+       "num": "13.1.4",
+       "term": "",
+       "text": "if the Arbitral Tribunal so determines at the Preliminary Meeting, the Claimant shall also attach witness-of-fact statements supporting its claim.",
+       "sub": true
+      },
+      {
+       "num": "13.2",
+       "term": "",
+       "text": "The Claimant may make claims arising out of or in connection with more than one agreement in a single arbitration.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 14,
+     "title": "Statements of Defence and Counterclaim",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "14.1",
+       "term": "",
+       "text": "After receipt of the Statement of Claim, the Respondent shall, within a period of time to be determined by the Arbitral Tribunal, serve a Statement of Defence using the Portal. The Statement of Defence must set out the Respondent’s defence to the Statement of Claim, including a statement of facts and submissions on legal issues. The Statement of Defence must include any counterclaim, which shall comply with the requirements of Rule 15 above.",
+       "sub": false
+      },
+      {
+       "num": "14.2",
+       "term": "",
+       "text": "If the Statement of Claim was accompanied by witness-of-fact statements from the Claimant, then the Statements of Defence and Counterclaim should also be accompanied by any witness-of-fact statements from the Respondent.",
+       "sub": false
+      },
+      {
+       "num": "14.3",
+       "term": "",
+       "text": "If a counterclaim is submitted by the Respondent, the Claimant shall, within a period of time to be determined by the Arbitral Tribunal, send to the Respondent a Defence to Counterclaim setting out its full defence to the counterclaim, including, without limitation, a statement of facts and contentions of law on which it relies.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 15,
+     "title": "Additional Pleadings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "15.1",
+       "term": "",
+       "text": "Failure of any party to submit the Statement of Claim, Statement of Defence or other pleadings will not automatically result in a delay to the arbitration proceedings.",
+       "sub": false
+      },
+      {
+       "num": "15.2",
+       "term": "",
+       "text": "The Arbitral Tribunal along with the parties shall decide if any pleadings (after the exchange of the Statement of Claim, Statement of Defence and a Defence to Counterclaim, as applicable) are required. If additional pleadings are required, the Arbitral Tribunal shall fix the period of time for exchanging such pleadings.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 16,
+     "title": "Evidence",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "16.1",
+       "term": "",
+       "text": "The Arbitral Tribunal may conduct proceedings in the manner it considers appropriate, including in determining the admissibility, relevance, materiality and weight of any evidence submitted by the parties.",
+       "sub": false
+      },
+      {
+       "num": "16.2",
+       "term": "",
+       "text": "At any time during the arbitration, the Arbitral Tribunal may at the request of a party or on its own motion, order a party to produce such documents or other evidence as it considers necessary or appropriate and may order a party to make available to the Arbitral Tribunal or the other party, any property in its possession or control for inspection or testing.",
+       "sub": false
+      },
+      {
+       "num": "16.3",
+       "term": "",
+       "text": "If the parties are submitting reports and opinions from independent experts or the Arbitral Tribunal appoints an independent expert to assist it on certain disputed issues, then the Arbitral Tribunal shall decide a procedural timetable for the reports to be submitted as well as issue directions on how it intends to treat expert evidence.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 17,
+     "title": "Hearings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "17.1",
+       "term": "",
+       "text": "The Arbitral Tribunal may, with the consent of all the parties participating in the proceedings, issue the Award without any hearing.",
+       "sub": false
+      },
+      {
+       "num": "17.2",
+       "term": "",
+       "text": "If a hearing takes place, it shall be conducted exclusively on the Portal. If any party requires a physical and in-person hearing, it shall make an application to the Arbitral Tribunal and provide reasons. The Arbitral Tribunal shall decide the application after providing the other party an opportunity to respond to the application.",
+       "sub": false
+      },
+      {
+       "num": "17.3",
+       "term": "",
+       "text": "No party shall record the hearings or have them independently transcribed without the express permission of the other party and the Arbitral Tribunal. If either party objects to such recording, the decision of the Arbitral Tribunal shall be final.",
+       "sub": false
+      },
+      {
+       "num": "17.4",
+       "term": "",
+       "text": "The Arbitral Tribunal shall control the hearing at which all the parties are entitled to be present. Except with the approval of the Arbitral Tribunal, persons not involved in the proceedings cannot attend the hearings on the Portal.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 18,
+     "title": "Conduct of Proceedings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "18.1",
+       "term": "",
+       "text": "The Arbitral Tribunal may conduct the arbitration in such manner as it considers appropriate to ensure the avoidance of unnecessary delay and expense, having regard to the complexity of the issues involved and the amount in dispute, and provided that such procedures ensure fair and equal treatment of the parties and afford the parties a reasonable opportunity to present their case.",
+       "sub": false
+      },
+      {
+       "num": "18.2",
+       "term": "",
+       "text": "The proceedings will be conducted entirely on the Portal including audio-video or audio-only hearings and exchange of correspondence.",
+       "sub": false
+      },
+      {
+       "num": "18.3",
+       "term": "",
+       "text": "The parties and the Arbitral Tribunal shall use the cloud storage and virtual arbitration room on the Portal to exchange and store documents.",
+       "sub": false
+      },
+      {
+       "num": "18.4",
+       "term": "",
+       "text": "The Arbitral Tribunal, after consulting the parties, may adopt procedural measures or modify existing directions from time to time.",
+       "sub": false
+      },
+      {
+       "num": "18.5",
+       "term": "",
+       "text": "The Arbitral Tribunal may proceed with the arbitration despite any party’s failure or refusal to comply with the Bharat Nyay Arbitration Rules or with the Arbitral Tribunal’s orders or directions, or any partial or interim Award, and may impose such sanctions as the Arbitral Tribunal deems appropriate in such circumstances.",
+       "sub": false
+      },
+      {
+       "num": "18.6",
+       "term": "",
+       "text": "In all matters not expressly provided for in the Bharat Nyay Arbitration Rules, the SME (Subject Matter Experts) and the Arbitral Tribunal shall act in the spirit of the Bharat Nyay Arbitration Rules and shall make every effort to make sure that the Award is enforceable at law.",
+       "sub": false
+      },
+      {
+       "num": "18.7",
+       "term": "",
+       "text": "All pleadings submitted by the parties (including Request for Arbitration, Response, Statement of Claim, Statement of Defence and Counterclaim and Defence to Counterclaim) and witness-of-fact statements and expert reports must be duly signed. The signatures can be Electronic Signatures.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 19,
+     "title": "Confidentiality",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "19.1",
+       "term": "",
+       "text": "The parties agree that no information concerning the existence of arbitration proceedings may be disclosed to any third party unless it is required to do so by law or by an order of a competent regulatory authority.",
+       "sub": false
+      },
+      {
+       "num": "19.2",
+       "term": "",
+       "text": "All documentary or other evidence produced or exchanged during the arbitration shall be treated as completely confidential (unless it already exists in the public domain).",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 20,
+     "title": "Seat of Arbitration",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "20.1",
+       "term": "",
+       "text": "Unless expressly agreed in a written document by the parties, the seat of the arbitration shall be decided by the Arbitral Tribunal.",
+       "sub": false
+      },
+      {
+       "num": "20.2",
+       "term": "",
+       "text": "The proceedings of the arbitration will be conducted over the Portal and the parties may access the Portal from anywhere in the world.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 21,
+     "title": "Language",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "21.1",
+       "term": "",
+       "text": "Unless otherwise agreed by the parties, the proceedings shall be conducted in English.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 22,
+     "title": "Lawyers and other representatives",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "22.1",
+       "term": "",
+       "text": "Each party must promptly inform the SME (Subject Matter Experts), the Arbitral Tribunal and the other parties of any changes to its Lawyers or other representatives.",
+       "sub": false
+      },
+      {
+       "num": "22.2",
+       "term": "",
+       "text": "The Arbitral Tribunal may take necessary measures to avoid any conflict of interest of an Arbitrator arising from a change in party representation.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 23,
+     "title": "Closure of the proceedings",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "23.1",
+       "term": "",
+       "text": "As soon as possible after the last hearing concerning matters to be decided in an Award or the filing of the last authorized submissions concerning such matters, whichever is later, the Arbitral Tribunal shall:",
+       "sub": false
+      },
+      {
+       "num": "23.1.1",
+       "term": "",
+       "text": "declare the proceedings closed concerning the matters to be decided in the Award; and",
+       "sub": true
+      },
+      {
+       "num": "23.1.2",
+       "term": "",
+       "text": "inform the SME (Subject Matter Experts) and the parties of the date by which it expects to submit its draft award to the SME (Subject Matter Experts).",
+       "sub": true
+      },
+      {
+       "num": "23.2",
+       "term": "",
+       "text": "After the proceedings are closed, no further submission or argument may be made, or evidence produced, concerning the matters to be decided in the Award, unless requested or authorized by the Arbitral Tribunal.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch5",
+   "roman": "V",
+   "short": "Award",
+   "title": "Award",
+   "rules": [
+    {
+     "n": 24,
+     "title": "Awards",
+     "tag": "12 months",
+     "clauses": [
+      {
+       "num": "24.1",
+       "term": "",
+       "text": "Other than in arbitration proceedings with a sole arbitrator, all decisions by the Arbitral Tribunal shall be made by a simple majority.",
+       "sub": false
+      },
+      {
+       "num": "24.2",
+       "term": "",
+       "text": "The Arbitral Tribunal shall endeavor to render its final Award within 12 months from the date of commencement of the arbitration. If it becomes apparent to the Arbitral Tribunal that the final Award cannot be rendered within 12 months, it shall promptly notify the parties and the SME (Subject Matter Experts) in writing, with brief reasons, of the estimated length of time required for the Arbitral Tribunal to render its final Award.",
+       "sub": false
+      },
+      {
+       "num": "24.3",
+       "term": "",
+       "text": "The Award shall be in writing and signed by the Arbitral Tribunal.",
+       "sub": false
+      },
+      {
+       "num": "24.4",
+       "term": "",
+       "text": "The Award shall include detailed reasons upon which it is based.",
+       "sub": false
+      },
+      {
+       "num": "24.5",
+       "term": "",
+       "text": "The Award shall be reviewed by the SME (Subject Matter Experts) before being signed by the Arbitral Tribunal. The SME (Subject Matter Experts) may lay down modifications as to the form of the Award and, without affecting the Arbitral Tribunal’s liberty of decision, draw the attention of the Arbitral Tribunal to any substantive issues. No Award shall be issued to the parties until it has been approved by the SME (Subject Matter Experts) as to its form.",
+       "sub": false
+      },
+      {
+       "num": "24.6",
+       "term": "",
+       "text": "The Award shall be released to the parties by the SME (Subject Matter Experts) on the Portal.",
+       "sub": false
+      },
+      {
+       "num": "24.7",
+       "term": "",
+       "text": "The Arbitral Tribunal shall use its best endeavors to render the Award that is made in accordance with the law of the seat of the arbitration.",
+       "sub": false
+      },
+      {
+       "num": "24.8",
+       "term": "",
+       "text": "The Award shall be treated as confidential by the parties and may only be disclosed to a third party if:",
+       "sub": false
+      },
+      {
+       "num": "24.8.1",
+       "term": "",
+       "text": "all parties provide written consent;",
+       "sub": true
+      },
+      {
+       "num": "24.8.2",
+       "term": "",
+       "text": "it falls into the public domain as a result of an action before a court of competent jurisdiction;",
+       "sub": true
+      },
+      {
+       "num": "24.8.3",
+       "term": "",
+       "text": "it falls into the public domain as a result of an action before a tribunal or competent authority; or",
+       "sub": true
+      },
+      {
+       "num": "24.8.4",
+       "term": "",
+       "text": "it is required to be disclosed to comply with a legal requirement imposed on a Party or to establish or protect a party’s legal rights against a third party.",
+       "sub": true
+      },
+      {
+       "num": "24.9",
+       "term": "",
+       "text": "The Arbitral Tribunal shall deposit the original Award, together with the record of the arbitration proceedings, with the SME (Subject Matter Experts). The SME (Subject Matter Experts) shall have the power to file the original Award in any court of competent jurisdiction, where required by law or at the request of a party.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 25,
+     "title": "Correction and Interpretation of the Award",
+     "tag": "14 days",
+     "clauses": [
+      {
+       "num": "25.1",
+       "term": "",
+       "text": "Within 14 days from the notification of the Award to the parties on the Portal, any party, with notice to the other party and the SME (Subject Matter Experts), may request the Arbitral Tribunal, to correct any computation errors, clerical or typographical errors or any other errors of a similar nature in the Award.",
+       "sub": false
+      },
+      {
+       "num": "25.2",
+       "term": "",
+       "text": "The Arbitral Tribunal shall consider a request for correction and either: (a) reject the request; or (b) issue a revised Award, after inviting comments and inputs from the other party.",
+       "sub": false
+      },
+      {
+       "num": "25.3",
+       "term": "",
+       "text": "A party may make an application for an additional award in respect of claims made in the arbitration proceedings which the Arbitral Tribunal has omitted to decide in the Award. Such an application must be made to the SME (Subject Matter Experts) on the Portal within 14 days from receipt of the Award by such party.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 26,
+     "title": "Award by mutual consent",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "26.1",
+       "term": "",
+       "text": "If the parties settle during the arbitration proceedings, the settlement may be recorded in the form of an Award made by consent of the parties, if so requested by the parties jointly and if the Arbitral Tribunal agrees to do so.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 27,
+     "title": "Enforcement",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "27.1",
+       "term": "",
+       "text": "If any enforcement procedures are commenced to have the Award recognised and/or enforced in any court of competent jurisdiction, the party seeking to enforce the Award shall inform the SME (Subject Matter Experts) about its attempt to do so.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ch6",
+   "roman": "VI",
+   "short": "Miscellaneous",
+   "title": "Miscellaneous",
+   "rules": [
+    {
+     "n": 28,
+     "title": "Exclusion of Liability",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "28.1",
+       "term": "",
+       "text": "The SME (Subject Matter Experts) or Bharat Nyay shall not be liable to the parties (or any third party) for any act or omission in connection with any arbitration conducted under the Bharat Nyay Arbitration Rules, except for actions directly arising out of gross negligence.",
+       "sub": false
+      },
+      {
+       "num": "28.2",
+       "term": "",
+       "text": "After an award has been made and the possibilities of interpretation and correction have lapsed or been exhausted, the Arbitral Tribunal, Bharat Nyay and the SME (Subject Matter Experts) shall not be under any obligation to make any statement to any person about any matter concerning the arbitration, and no party shall seek to make the Arbitral Tribunal, Bharat Nyay or the SME (Subject Matter Experts) a witness in any legal proceedings arising out of the arbitration.",
+       "sub": false
+      },
+      {
+       "num": "28.3",
+       "term": "",
+       "text": "No action for defamation, libel, slander, or similar causes of action can be taken against the Arbitral Tribunal, Bharat Nyay or the SME (Subject Matter Experts) in connection with any statement given, comment or discussion that took place during the arbitration process.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 29,
+     "title": "Waiver",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "29.1",
+       "term": "",
+       "text": "A party which knew or ought to have known of non-compliance with the Bharat Nyay Arbitration Rules but proceeds with the arbitration without promptly objecting to such non-compliance, shall be deemed to have waived its right to object.",
+       "sub": false
+      },
+      {
+       "num": "29.2",
+       "term": "",
+       "text": "The Arbitral Tribunal shall determine any issue which may arise as to whether a party has waived its right to object to the non-compliance by any other party.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 30,
+     "title": "Appointing Authority",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "30.1",
+       "term": "",
+       "text": "Nothing in the Bharat Nyay Arbitration Rules shall prevent parties to a Dispute or Arbitration Agreement from having Bharat Nyay as the authority to appoint arbitrators in an ad hoc arbitration, without subjecting the arbitration to the Bharat Nyay Arbitration Rules. The party requesting appointment of the arbitrators shall pay fees in accordance with the Bharat Nyay Arbitration Fees Schedule.",
+       "sub": false
+      }
+     ]
+    },
+    {
+     "n": 31,
+     "title": "Governing Law and Settlement of Disputes",
+     "tag": "",
+     "clauses": [
+      {
+       "num": "31.1",
+       "term": "",
+       "text": "Any claims arising out of or in connection with the administration of the arbitration proceedings by the SME (Subject Matter Experts) under the Bharat Nyay Arbitration Rules shall be governed by the laws of India and settled by the courts in Chandigarh, India which shall have exclusive jurisdiction.",
+       "sub": false
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "pdf": "/bharatnyay_website/static/src/files/bharatnyay-arbitration-sop-2026.pdf"
+}
