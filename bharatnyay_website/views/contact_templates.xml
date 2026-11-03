@@ -92,8 +92,9 @@
                                             <li>
                                                 <i class="fa fa-map-marker" aria-hidden="true"/>
                                                 <span>
-                                                    <t t-if="res_company.street"><t t-esc="res_company.street"/><br/></t>
-                                                    Corporate HQ · New Delhi, India
+                                                    <strong>Vighnaharta Lawtech Solutions Private Limited</strong><br/>
+                                                    Registered Office: 402, Tower–1, Unitech Cascade, Sector PI-2, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301<br/>
+                                                    CIN: U69100UW2026PTC254843
                                                 </span>
                                             </li>
                                             <li>

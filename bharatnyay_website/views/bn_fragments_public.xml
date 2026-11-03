@@ -79,6 +79,8 @@
                             <a href="/odr/what-is">What is ODR?</a>
                             <a href="/odr/arbitration">Arbitration</a>
                             <a href="/odr/mediation">Mediation &amp; Conciliation</a>
+                            <a href="/bharatnyay_website/static/src/files/bharatnyay-arbitration-sop-2026.pdf" download="">Arbitration SOP (PDF)</a>
+                            <a href="/bharatnyay_website/static/src/files/bharatnyay-mediation-conciliation-sop-2026.pdf" download="">Mediation SOP (PDF)</a>
                         </nav>
                     </div>
                     <div class="col-12 col-md-4 col-lg-3">
@@ -90,7 +92,7 @@
                             </a>
                             <span class="bn-footer-contact-item">
                                 <i class="fa fa-map-marker" aria-hidden="true"/>
-                                <span>Corporate HQ · New Delhi, India</span>
+                                <span><strong>Vighnaharta Lawtech Solutions Private Limited</strong><br/>Registered Office · 402, Tower–1, Unitech Cascade, Sector PI-2, Noida, Gautam Buddha Nagar, Uttar Pradesh – 201301</span>
                             </span>
                             <span class="bn-footer-contact-item">
                                 <i class="fa fa-phone" aria-hidden="true"/>
@@ -101,7 +103,7 @@
                     </div>
                 </div>
                 <div class="bn-footer-bottom">
-                    <span class="bn-footer-copy">© <t t-esc="datetime.datetime.now().year"/> BharatNyay. All rights reserved.</span>
+                    <span class="bn-footer-copy">© <t t-esc="datetime.datetime.now().year"/> BharatNyay · Vighnaharta Lawtech Solutions Private Limited · CIN: U69100UW2026PTC254843. All rights reserved.</span>
                     <nav class="bn-footer-legal" aria-label="Legal links">
                         <a href="/terms-and-conditions">Terms &amp; Conditions</a>
                         <a href="/privacy-policy">Privacy Policy</a>
